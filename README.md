@@ -1,2 +1,2 @@
 # idealGasSim
-Ideal gas simulator project
+Ideally will simulate gas 
