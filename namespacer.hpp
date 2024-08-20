@@ -1,7 +1,6 @@
 #include <cmath>
 #include <ctime>
 #include <iostream>
-#include <random>
 #include <vector>
 
 namespace thermo {
@@ -9,6 +8,7 @@ struct PhysVector {
   double x, y, z;
   double get_module();
   PhysVector(double Ix = 0.0, double Iy = 0.0, double Iz = 0.0);
+  PhysVector operator*(double factor) const;
 };
 
 class Particle {
@@ -17,6 +17,11 @@ class Particle {
   PhysVector position_;
   PhysVector speed_;
   PhysVector momentum_;
+
+ public:
+  PhysVector get_speed();
+  PhysVector get_position();
+  PhysVector get_momentum();
 
  public:
   Particle(PhysVector Ipos, PhysVector Ispeed);
