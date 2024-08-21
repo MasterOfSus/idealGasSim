@@ -10,19 +10,15 @@ struct PhysVector {
   PhysVector operator*(double factor) const;
 };
 
-class Particle {
-  //static double mass_;
-  
-  //int last_collision_;
-  PhysVector position_;
-  PhysVector speed_;
-  //PhysVector momentum_;
+struct Particle {
+  // static double mass_;
 
- public:
-  double radius=5.;
-  PhysVector get_speed();
-  PhysVector get_position();
-  //PhysVector get_momentum();
+  // int last_collision_;
+  PhysVector position;
+  PhysVector speed;
+  // PhysVector momentum_;
+  double radius = 5.;
+  // PhysVector get_momentum();
 
   Particle(PhysVector Ipos, PhysVector Ispeed);
 };
@@ -35,8 +31,8 @@ class Gas {
  public:
   Gas(int n);
   double find_iteration();
-  //double get_pressure();     // returns the value of the pressure of the gas
-  //double get_volume();       // returns the volume of the gas
-  //double get_temperature();  // returns the temperature of the gas
+  // double get_pressure();     // returns the value of the pressure of the gas
+  // double get_volume();       // returns the volume of the gas
+  // double get_temperature();  // returns the temperature of the gas
 };
 }  // namespace thermo

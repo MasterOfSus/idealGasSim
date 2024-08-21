@@ -4,6 +4,34 @@
 #include "namespacer.hpp"
 
 namespace thermo {
+
+double calculateA(std::vector<Particle>::iterator const P1,
+                  std::vector<Particle>::iterator const P2) {
+  double a;
+  a = std::pow(((*P1).speed.x - (*P2).speed.x), 2) +
+      std::pow(((*P1).speed.y - (*P2).speed.y), 2) +
+      std::pow(((*P1).speed.z - (*P2).speed.z), 2);
+  return a;
+}
+
+double calculateB(std::vector<Particle>::iterator const P1,
+                  std::vector<Particle>::iterator const P2) {
+  double b;
+  b = ((*P1).position.x - (*P2).position.x) * ((*P1).speed.x - (*P2).speed.x) +
+      ((*P1).position.y - (*P2).position.y) * ((*P1).speed.y - (*P2).speed.y) +
+      ((*P1).position.z - (*P2).position.z) * ((*P1).speed.z - (*P2).speed.z);
+  return b;
+}
+double calculateC(std::vector<Particle>::iterator const P1,
+                  std::vector<Particle>::iterator const P2) {
+  double c;
+  c = std::pow(((*P1).position.x - (*P2).position.x), 2) +
+      std::pow(((*P1).position.y - (*P2).position.y), 2) +
+      std::pow(((*P1).position.z - (*P2).position.z), 2) -
+      4 * pow((*P1).radius, 2);
+  return c;
+}
+
 // all class member functions
 
 double PhysVector::get_module() { return std::sqrt(x * x + y * y + z * z); }
@@ -13,9 +41,7 @@ PhysVector PhysVector::operator*(double factor) const {
 }
 
 Particle::Particle(PhysVector Ipos, PhysVector Ispeed)
-    : position_{Ipos}, speed_{Ispeed} {}
-PhysVector Particle::get_speed() { return speed_; };
-PhysVector Particle::get_position() { return position_; };
+    : position{Ipos}, speed{Ispeed} {}
 // PhysVector Particle::get_momentum() { return (speed_ * mass_); };
 
 Gas::Gas(int n) {
@@ -34,21 +60,9 @@ double Gas::time_impact(std::vector<Particle>::iterator P1,
   double c{0};
   double result{10000};
 
-  a = std::pow(((*P1).get_speed().x - (*P2).get_speed().x), 2);
-  a = a + std::pow(((*P1).get_speed().y - (*P2).get_speed().y), 2);
-  a = a + std::pow(((*P1).get_speed().z - (*P2).get_speed().z), 2);
-
-  b = ((*P1).get_position().x - (*P2).get_position().x) *
-      ((*P1).get_speed().x - (*P2).get_speed().x);
-  b = b + ((*P1).get_position().y - (*P2).get_position().y) *
-              ((*P1).get_speed().y - (*P2).get_speed().y);
-  b = b + ((*P1).get_position().z - (*P2).get_position().z) *
-              ((*P1).get_speed().z - (*P2).get_speed().z);
-
-  c = std::pow(((*P1).get_position().x - (*P2).get_position().x), 2);
-  c = c + std::pow(((*P1).get_position().y - (*P2).get_position().y), 2);
-  c = c + std::pow(((*P1).get_position().z - (*P2).get_position().z), 2) -
-      4 * pow((*P1).radius, 2);
+  a = calculateA(P1, P2);
+  b = calculateB(P1, P2);
+  c = calculateC(P1, P2);
 
   double delta{std::pow(b, 2) - a * c};
 
@@ -89,7 +103,7 @@ double Gas::find_iteration() {
 
 int main() {
   // QUI INTERFACCIA UTENTE INSERIMENTO DATI
-  
+
   thermo::Gas gas{10};  // Creazione del gas con particelle randomizzate
   gas.find_iteration();
 }
