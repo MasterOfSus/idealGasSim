@@ -22,14 +22,22 @@ struct Particle {
 
   Particle(PhysVector Ipos, PhysVector Ispeed);
 };
+
+struct Box {
+  double side;
+  Box(double Iside);
+};
+
 class Gas {
   std::vector<Particle> particles_{};
+  Box box_;
   void update_gas_state();  // called in each iteration of the game loop
   double time_impact(std::vector<Particle>::iterator a,
                      std::vector<Particle>::iterator b);
+  double time_impact(std::vector<Particle>::iterator P1, Box box, int side);
 
  public:
-  Gas(int n);
+  Gas(int n, double l);
   double find_iteration();
   // double get_pressure();     // returns the value of the pressure of the gas
   // double get_volume();       // returns the volume of the gas

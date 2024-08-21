@@ -44,7 +44,11 @@ Particle::Particle(PhysVector Ipos, PhysVector Ispeed)
     : position{Ipos}, speed{Ispeed} {}
 // PhysVector Particle::get_momentum() { return (speed_ * mass_); };
 
-Gas::Gas(int n) {
+Box::Box(double Iside) : side{Iside} {}
+
+
+Gas::Gas(int n, double l): box_{l} {
+
   std::default_random_engine eng(std::time(nullptr));
   std::uniform_real_distribution<double> dist(0.0, 20.0);
   for (int i{0}; i != n; ++i) {
@@ -76,8 +80,33 @@ double Gas::time_impact(std::vector<Particle>::iterator P1,
       result = t2;
     }
   }
-
   return result;
+}
+
+double Gas::time_impact(std::vector<Particle>::iterator P1, Box box,
+                        int nSide) {
+  double t;
+  switch (nSide) {
+    case 1:
+      t = -(*P1).position.x / (*P1).speed.x;
+      break;
+    case 2:
+      t = -(*P1).position.y / (*P1).speed.y;
+      break;
+    case 3:
+      t = -(*P1).position.z / (*P1).speed.z;
+      break;
+    case 4:
+      t = (box.side - (2 * (*P1).radius) - (*P1).position.x )/ (*P1).speed.x;
+      break;
+    case 5:
+      t = (box.side - (2 * (*P1).radius) - (*P1).position.y )/ (*P1).speed.y;
+      break;
+    case 6:
+      t = (box.side - (2 * (*P1).radius) - (*P1).position.z )/ (*P1).speed.z;
+      break;
+  }
+  return t;
 }
 
 double Gas::find_iteration() {
@@ -95,6 +124,8 @@ double Gas::find_iteration() {
       }
     }
   }
+
+
   return shortest;
 }
 // end of member functions
@@ -104,6 +135,6 @@ double Gas::find_iteration() {
 int main() {
   // QUI INTERFACCIA UTENTE INSERIMENTO DATI
 
-  thermo::Gas gas{10};  // Creazione del gas con particelle randomizzate
+  thermo::Gas gas{10, 200};  // Creazione del gas con particelle randomizzate
   gas.find_iteration();
 }
