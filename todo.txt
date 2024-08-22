@@ -2,3 +2,4 @@ le cose da fare:
 
 aggiungere costruttori che inseriscono solo particelle e costruttori che deleghino
 
+file di test con doctest
