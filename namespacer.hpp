@@ -27,7 +27,7 @@ struct Box {
   Box(double Iside);
 };
 
-struct Iteration {
+struct Collision {
   char flag;
   double time;
   std::vector<Particle>::iterator firstPaticle;
@@ -35,9 +35,9 @@ struct Iteration {
   char wallCollision;  //-1 no collision, 0 down ...
   std::vector<Particle>::iterator secondPaticle;
 
-  Iteration(double Itime, std::vector<Particle>::iterator IfirstPaticle,
+  Collision(double Itime, std::vector<Particle>::iterator IfirstPaticle,
             char IwallCollision);
-  Iteration(double Itime, std::vector<Particle>::iterator IfirstPaticle,
+  Collision(double Itime, std::vector<Particle>::iterator IfirstPaticle,
             std::vector<Particle>::iterator IsecondPaticle);
 };
 
@@ -51,7 +51,7 @@ class Gas {
 
  public:
   Gas(int n, double l);
-  Iteration find_iteration();
+  Collision find_iteration();
   // double get_pressure();     // returns the value of the pressure of the gas
   // double get_volume();       // returns the volume of the gas
   // double get_temperature();  // returns the temperature of the gas

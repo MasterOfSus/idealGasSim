@@ -46,14 +46,14 @@ Particle::Particle(PhysVector Ipos, PhysVector Ispeed)
 
 Box::Box(double Iside) : side{Iside} {}
 
-Iteration::Iteration(double Itime,
+Collision::Collision(double Itime,
                      std::vector<Particle>::iterator IfirstPaticle,
                      char IwallCollision)
     : time{Itime},
       firstPaticle{IfirstPaticle},
       wallCollision{IwallCollision},
       flag{'w'} {}
-Iteration::Iteration(double Itime,
+Collision::Collision(double Itime,
                      std::vector<Particle>::iterator IfirstPaticle,
                      std::vector<Particle>::iterator IsecondPaticle)
     : time{Itime},
@@ -124,7 +124,7 @@ double Gas::time_impact(std::vector<Particle>::iterator P1, char side) {
   return t;
 }
 
-Iteration Gas::find_iteration() {
+Collision Gas::find_iteration() {
   double shortestP{1000};
   double shortestW{1000};
   double timeP{0};
@@ -146,12 +146,12 @@ Iteration Gas::find_iteration() {
       }
     }
 
-    for (char s : {'x', 'y', 'z'}) {
-      timeW = time_impact(it, s);
+    for (char w : {'x', 'y', 'z'}) {
+      timeW = time_impact(it, w);
       if (timeW < shortestW) {
         shortestW = timeW;
         firstP1 = it;
-        firstW = s;
+        firstW = w;
         std::cout << shortestW << '\n';
       }
     }
