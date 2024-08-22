@@ -17,9 +17,8 @@ struct Particle {
   PhysVector position;
   PhysVector speed;
   // PhysVector momentum_;
-  double radius = 5.;
+  double radius = 1.;
   // PhysVector get_momentum();
-
   Particle(PhysVector Ipos, PhysVector Ispeed);
 };
 
@@ -28,17 +27,31 @@ struct Box {
   Box(double Iside);
 };
 
+struct Iteration {
+  char flag;
+  double time;
+  std::vector<Particle>::iterator firstPaticle;
+
+  char wallCollision;  //-1 no collision, 0 down ...
+  std::vector<Particle>::iterator secondPaticle;
+
+  Iteration(double Itime, std::vector<Particle>::iterator IfirstPaticle,
+            char IwallCollision);
+  Iteration(double Itime, std::vector<Particle>::iterator IfirstPaticle,
+            std::vector<Particle>::iterator IsecondPaticle);
+};
+
 class Gas {
   std::vector<Particle> particles_{};
   Box box_;
   void update_gas_state();  // called in each iteration of the game loop
   double time_impact(std::vector<Particle>::iterator a,
                      std::vector<Particle>::iterator b);
-  double time_impact(std::vector<Particle>::iterator P1, Box box, int side);
+  double time_impact(std::vector<Particle>::iterator P1, char side);
 
  public:
   Gas(int n, double l);
-  double find_iteration();
+  Iteration find_iteration();
   // double get_pressure();     // returns the value of the pressure of the gas
   // double get_volume();       // returns the volume of the gas
   // double get_temperature();  // returns the temperature of the gas

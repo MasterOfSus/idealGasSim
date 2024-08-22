@@ -46,9 +46,22 @@ Particle::Particle(PhysVector Ipos, PhysVector Ispeed)
 
 Box::Box(double Iside) : side{Iside} {}
 
+Iteration::Iteration(double Itime,
+                     std::vector<Particle>::iterator IfirstPaticle,
+                     char IwallCollision)
+    : time{Itime},
+      firstPaticle{IfirstPaticle},
+      wallCollision{IwallCollision},
+      flag{'w'} {}
+Iteration::Iteration(double Itime,
+                     std::vector<Particle>::iterator IfirstPaticle,
+                     std::vector<Particle>::iterator IsecondPaticle)
+    : time{Itime},
+      firstPaticle{IfirstPaticle},
+      secondPaticle{IsecondPaticle},
+      flag{'p'} {}
 
-Gas::Gas(int n, double l): box_{l} {
-
+Gas::Gas(int n, double l) : box_{l} {
   std::default_random_engine eng(std::time(nullptr));
   std::uniform_real_distribution<double> dist(0.0, 20.0);
   for (int i{0}; i != n; ++i) {
@@ -83,50 +96,72 @@ double Gas::time_impact(std::vector<Particle>::iterator P1,
   return result;
 }
 
-double Gas::time_impact(std::vector<Particle>::iterator P1, Box box,
-                        int nSide) {
+double Gas::time_impact(std::vector<Particle>::iterator P1, char side) {
   double t;
-  switch (nSide) {
-    case 1:
-      t = -(*P1).position.x / (*P1).speed.x;
+  switch (side) {
+    case 'x':
+      if ((*P1).speed.x < 0) {
+        t = -(*P1).position.x / (*P1).speed.x;
+      } else {
+        t = (box_.side - (2 * (*P1).radius) - (*P1).position.x) / (*P1).speed.x;
+      }
       break;
-    case 2:
-      t = -(*P1).position.y / (*P1).speed.y;
+    case 'y':
+      if ((*P1).speed.y < 0) {
+        t = -(*P1).position.y / (*P1).speed.y;
+      } else {
+        t = (box_.side - (2 * (*P1).radius) - (*P1).position.y) / (*P1).speed.y;
+      }
       break;
-    case 3:
-      t = -(*P1).position.z / (*P1).speed.z;
-      break;
-    case 4:
-      t = (box.side - (2 * (*P1).radius) - (*P1).position.x )/ (*P1).speed.x;
-      break;
-    case 5:
-      t = (box.side - (2 * (*P1).radius) - (*P1).position.y )/ (*P1).speed.y;
-      break;
-    case 6:
-      t = (box.side - (2 * (*P1).radius) - (*P1).position.z )/ (*P1).speed.z;
+    case 'z':
+      if ((*P1).speed.z < 0) {
+        t = -(*P1).position.z / (*P1).speed.z;
+      } else {
+        t = (box_.side - (2 * (*P1).radius) - (*P1).position.z) / (*P1).speed.z;
+      }
       break;
   }
   return t;
 }
 
-double Gas::find_iteration() {
-  double shortest{1000};
-  double time{0};
+Iteration Gas::find_iteration() {
+  double shortestP{1000};
+  double shortestW{1000};
+  double timeP{0};
+  std::vector<Particle>::iterator firstP1;
+  std::vector<Particle>::iterator firstP2;
+  char firstW;
+  double timeW{0};
+
+  int nWall{0};
 
   for (auto it = particles_.begin(), last = particles_.end(); it != last;
        ++it) {
-    for (auto it2 = particles_.begin(), last2 = particles_.end(); it2 != last2;
-         ++it2) {
-      time = time_impact(it, it2);
-      if (time < shortest) {
-        shortest = time;
-        std::cout << shortest << '\n';
+    std::cout << "ciclo grosso \n";
+    for (auto it2{it}, last2 = particles_.end(); it2 != last2; ++it2) {
+      timeP = time_impact(it, it2);
+      if (timeP < shortestP) {
+        shortestP = timeP;
+        std::cout << shortestP << '\n';
+      }
+    }
+
+    for (char s : {'x', 'y', 'z'}) {
+      timeW = time_impact(it, s);
+      if (timeW < shortestW) {
+        shortestW = timeW;
+        firstP1 = it;
+        firstW = s;
+        std::cout << shortestW << '\n';
       }
     }
   }
 
-
-  return shortest;
+  if (shortestP < shortestW) {
+    return {shortestP, firstP1, firstP2};
+  } else {
+    return {shortestW, firstP1, firstW};
+  }
 }
 // end of member functions
 
@@ -136,5 +171,8 @@ int main() {
   // QUI INTERFACCIA UTENTE INSERIMENTO DATI
 
   thermo::Gas gas{10, 200};  // Creazione del gas con particelle randomizzate
-  gas.find_iteration();
+  auto l = gas.find_iteration();
+  std::cout << "la prima particella si è schiantata contro un " << l.flag
+            << " è stat la particella in posizione x: "
+            << (*l.firstPaticle).position.x << "\n dopo un tempo " << l.time;
 }
