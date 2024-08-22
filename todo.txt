@@ -1,0 +1,4 @@
+le cose da fare:
+
+aggiungere costruttori che inseriscono solo particelle e costruttori che deleghino
+
