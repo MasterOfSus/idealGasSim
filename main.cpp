@@ -40,6 +40,10 @@ PhysVector PhysVector::operator*(double factor) const {
   return PhysVector{factor * x, factor * y, factor * z};
 }
 
+double PhysVector::operator*(const PhysVector& vector) const {
+	return x*vector.x + y*vector.y + z*vector.z;
+}
+
 Particle::Particle(PhysVector Ipos, PhysVector Ispeed)
     : position{Ipos}, speed{Ispeed} {}
 // PhysVector Particle::get_momentum() { return (speed_ * mass_); };

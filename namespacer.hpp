@@ -8,6 +8,7 @@ struct PhysVector {
   double get_module();
   PhysVector(double Ix = 0.0, double Iy = 0.0, double Iz = 0.0);
   PhysVector operator*(double factor) const;
+	double operator*(const PhysVector& vector) const;
 };
 
 struct Particle {
