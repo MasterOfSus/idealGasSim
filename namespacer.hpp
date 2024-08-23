@@ -8,7 +8,7 @@ struct PhysVector {
   double get_module();
   PhysVector(double Ix = 0.0, double Iy = 0.0, double Iz = 0.0);
   PhysVector operator*(double factor) const;
-	double operator*(const PhysVector& vector) const;
+  double operator*(const PhysVector& vector) const;
 };
 
 struct Particle {
@@ -55,6 +55,9 @@ class Gas {
   Gas(Particle Ipaticle, double Iside);
   Gas(std::vector<Particle> Ipaticles, double Iside);
   Collision find_iteration();
+
+  static Particle generate_random_particle(double min, double max);
+
   // double get_pressure();     // returns the value of the pressure of the gas
   // double get_volume();       // returns the volume of the gas
   // double get_temperature();  // returns the temperature of the gas

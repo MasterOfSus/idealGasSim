@@ -66,17 +66,22 @@ Collision::Collision(double Itime,
       flag{'p'} {}
 
 Gas::Gas(int In, double Iside) : box_{Iside} {
-  std::default_random_engine eng(std::time(nullptr));
-  std::uniform_real_distribution<double> dist(0.0, 20.0);
   for (int i{0}; i != In; ++i) {
-    particles_.push_back(
-        {{dist(eng), dist(eng), dist(eng)}, {dist(eng), dist(eng), dist(eng)}});
+    particles_.push_back(generate_random_particle(0., 20.));
   }
 }
 Gas::Gas(Particle Iparticle, double Iside)
     : box_{Iside}, particles_{Iparticle} {}
 Gas::Gas(std::vector<Particle> Iparticles, double Iside)
     : box_{Iside}, particles_{Iparticles} {}
+
+Particle Gas::generate_random_particle(double min, double max) {
+    static std::default_random_engine eng(std::time(nullptr));
+    std::uniform_real_distribution<double> dist(min, max);
+    
+    return {{dist(eng), dist(eng), dist(eng)}, {dist(eng), dist(eng), dist(eng)}};
+}
+
 
 double Gas::time_impact(std::vector<Particle>::iterator P1,
                         std::vector<Particle>::iterator P2) {
