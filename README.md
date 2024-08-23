@@ -8,5 +8,6 @@ ONLY MEANINGFUL DESCRIPTIONS TO PUSHES!!!!
 
 ## To do
 
-- [ ] Prova
-- [x] Prova3
+- [ ] Aggiungere costruttori che inseriscono solo particelle e costruttori che deleghino
+- [ ] File di test con doctest
+- [ ] Capire ed implementare la gestione degli urti a piu di due particelle (facoltativo)
