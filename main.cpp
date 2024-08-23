@@ -41,7 +41,7 @@ PhysVector PhysVector::operator*(double factor) const {
 }
 
 double PhysVector::operator*(const PhysVector& vector) const {
-	return x*vector.x + y*vector.y + z*vector.z;
+  return x * vector.x + y * vector.y + z * vector.z;
 }
 
 Particle::Particle(PhysVector Ipos, PhysVector Ispeed)
@@ -65,14 +65,18 @@ Collision::Collision(double Itime,
       secondPaticle{IsecondPaticle},
       flag{'p'} {}
 
-Gas::Gas(int n, double l) : box_{l} {
+Gas::Gas(int In, double Iside) : box_{Iside} {
   std::default_random_engine eng(std::time(nullptr));
   std::uniform_real_distribution<double> dist(0.0, 20.0);
-  for (int i{0}; i != n; ++i) {
+  for (int i{0}; i != In; ++i) {
     particles_.push_back(
         {{dist(eng), dist(eng), dist(eng)}, {dist(eng), dist(eng), dist(eng)}});
   }
 }
+Gas::Gas(Particle Iparticle, double Iside)
+    : box_{Iside}, particles_{Iparticle} {}
+Gas::Gas(std::vector<Particle> Iparticles, double Iside)
+    : box_{Iside}, particles_{Iparticles} {}
 
 double Gas::time_impact(std::vector<Particle>::iterator P1,
                         std::vector<Particle>::iterator P2) {
@@ -167,6 +171,7 @@ Collision Gas::find_iteration() {
     return {shortestW, firstP1, firstW};
   }
 }
+
 // end of member functions
 
 }  // namespace thermo

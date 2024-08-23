@@ -51,7 +51,9 @@ class Gas {
   double time_impact(std::vector<Particle>::iterator P1, char side);
 
  public:
-  Gas(int n, double l);
+  Gas(int In, double Iside);
+  Gas(Particle Ipaticle, double Iside);
+  Gas(std::vector<Particle> Ipaticles, double Iside);
   Collision find_iteration();
   // double get_pressure();     // returns the value of the pressure of the gas
   // double get_volume();       // returns the volume of the gas
