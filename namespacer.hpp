@@ -3,63 +3,47 @@
 #include <vector>
 
 namespace thermo {
-struct PhysVector {
-  double x, y, z;
-  double get_module();
-  PhysVector(double Ix = 0.0, double Iy = 0.0, double Iz = 0.0);
-  PhysVector operator*(double factor) const;
-  double operator*(const PhysVector& vector) const;
+
+struct PhysVector {  // representation of a simple three-dimensional vector
+  double x_, y_, z_;
 };
 
 struct Particle {
-  // static double mass_;
+  static double mass_;
+  static double radius_;
 
-  // int last_collision_;
-  PhysVector position;
-  PhysVector speed;
-  // PhysVector momentum_;
-  double radius = 1.;
-  // PhysVector get_momentum();
-  Particle(PhysVector Ipos, PhysVector Ispeed);
+  PhysVector position_;
+  PhysVector speed_;
 };
 
-struct Box {
-  double side;
-  Box(double Iside);
+struct Wall {
+  char wall_type_;
 };
 
 struct Collision {
-  char flag;
-  double time;
-  std::vector<Particle>::iterator firstPaticle;
-
-  char wallCollision;  //-1 no collision, 0 down ...
-  std::vector<Particle>::iterator secondPaticle;
-
-  Collision(double Itime, std::vector<Particle>::iterator IfirstPaticle,
-            char IwallCollision);
-  Collision(double Itime, std::vector<Particle>::iterator IfirstPaticle,
-            std::vector<Particle>::iterator IsecondPaticle);
+  double time_;
+  std::vector<std::vector<Particle>::iterator> particles_;
+  std::vector<Wall> walls_;
 };
 
 class Gas {
-  std::vector<Particle> particles_{};
-  Box box_;
-  void update_gas_state();  // called in each iteration of the game loop
-  double time_impact(std::vector<Particle>::iterator a,
-                     std::vector<Particle>::iterator b);
-  double time_impact(std::vector<Particle>::iterator P1, char side);
+  std::vector<Particle> particles_;
+  double side_;  // side of the cubical container
 
  public:
-  Gas(int In, double Iside);
-  Gas(Particle Ipaticle, double Iside);
-  Gas(std::vector<Particle> Ipaticles, double Iside);
-  Collision find_iteration();
+  void update_gas_state();  // called in each iteration of the game loop
+  // double collision_time(const std::vector<Particle>::iterator&,
+  //                      const std::vector<Particle>::iterator&);
+  // double collision_time(const std::vector<Particle>::iterator&, const Wall&);
 
-  static Particle generate_random_particle(double min, double max);
+  Gas(const Gas&);
+  Gas(int, double, double);
+
+	Collision find_iteration();
 
   // double get_pressure();     // returns the value of the pressure of the gas
   // double get_volume();       // returns the volume of the gas
   // double get_temperature();  // returns the temperature of the gas
 };
+
 }  // namespace thermo
