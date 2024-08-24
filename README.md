@@ -9,5 +9,7 @@ ONLY MEANINGFUL DESCRIPTIONS TO PUSHES!!!!
 ## To do
 
 - [x] Aggiungere costruttori che inseriscono solo particelle e costruttori che deleghino
-- [ ] File di test con doctest
+- [ ] Scrivere gli unit tests
 - [ ] Capire ed implementare la gestione degli urti a piu di due particelle (facoltativo)
+- [ ] Inserire una svalangata di assert una volta completata l'implementazione di base
+- [ ] Exception handling
