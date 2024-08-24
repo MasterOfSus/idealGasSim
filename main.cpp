@@ -7,20 +7,20 @@ namespace thermo {
 
 // static variables initalization
 
-double Particle::mass_ {1.66*4};
-double Particle::radius_ {0.143};
+double Particle::mass_{1.66 * 4};
+double Particle::radius_{0.143};
 
 // a set of three auxiliary functions returning parameters for a reduced
 // quadratic formula
-double get_a(const std::vector<Particle>::iterator& P1,
-             const std::vector<Particle>::iterator& P2) {
+double get_a(const std::vector<Particle>::iterator P1,
+             const std::vector<Particle>::iterator P2) {
   return std::pow(((*P1).speed_.x_ - (*P2).speed_.x_), 2) +
          std::pow(((*P1).speed_.y_ - (*P2).speed_.y_), 2) +
          std::pow(((*P1).speed_.z_ - (*P2).speed_.z_), 2);
 }
 
-double get_b(const std::vector<Particle>::iterator& P1,
-             const std::vector<Particle>::iterator& P2) {
+double get_b(const std::vector<Particle>::iterator P1,
+             const std::vector<Particle>::iterator P2) {
   return ((*P1).position_.x_ - (*P2).position_.x_) *
              ((*P1).speed_.x_ - (*P2).speed_.x_) +
          ((*P1).position_.y_ - (*P2).position_.y_) *
@@ -29,8 +29,8 @@ double get_b(const std::vector<Particle>::iterator& P1,
              ((*P1).speed_.z_ - (*P2).speed_.z_);
 }
 
-double get_c(const std::vector<Particle>::iterator& P1,
-             const std::vector<Particle>::iterator& P2) {
+double get_c(const std::vector<Particle>::iterator P1,
+             const std::vector<Particle>::iterator P2) {
   return std::pow(((*P1).position_.x_ - (*P2).position_.x_), 2) +
          std::pow(((*P1).position_.y_ - (*P2).position_.y_), 2) +
          std::pow(((*P1).position_.z_ - (*P2).position_.z_), 2) -
@@ -67,7 +67,8 @@ Gas::Gas(int n, double l, double temperature) : side_{l} {
 
   for (int i{1}; i != (num + 1); ++i) {
     for (int j{1}; j != (num + 1); ++j) {
-      for (int k{1}; k != (num + 1) && static_cast<int>(particles_.size()) != n; ++j) {
+      for (int k{1}; k != (num + 1) && static_cast<int>(particles_.size()) != n;
+           ++j) {
         particles_.push_back({{i * side_ / (num + 1), j * side_ / (num + 1),
                                k * side_ / (num + 1)},
                               {dist(eng), dist(eng), dist(eng)}});
@@ -76,9 +77,8 @@ Gas::Gas(int n, double l, double temperature) : side_{l} {
   }
 }
 
-
-double collision_time(const std::vector<Particle>::iterator& P1,
-                      const std::vector<Particle>::iterator& P2) {
+double collision_time(const std::vector<Particle>::iterator P1,
+                      const std::vector<Particle>::iterator P2) {
   double a{get_a(P1, P2)};
   double b{get_b(P1, P2)};
   double c{get_c(P1, P2)};
@@ -99,8 +99,8 @@ double collision_time(const std::vector<Particle>::iterator& P1,
   return result;
 }
 
-double collision_time(const std::vector<Particle>::iterator& P1,
-                      const Wall& wall, double side) {
+double collision_time(const std::vector<Particle>::iterator P1,
+                      const Wall wall, double side) {
   double t;
   switch (wall.wall_type_) {
     case 'x':
@@ -147,8 +147,8 @@ Collision Gas::find_iteration() {
         std::cout << shortestP << '\n';
       }
     }
-		
-		std::vector<Wall> walls {{'x'}, {'y'}, {'z'}};
+
+    std::vector<Wall> walls{{'x'}, {'y'}, {'z'}};
 
     for (Wall wall : walls) {
       timeW = collision_time(it, wall, side_);
@@ -184,7 +184,7 @@ int main() {
               << (*it).position_.z_ << "\n";
   }
   std::cout << "muri: \n";
-  for (auto	wall : l.walls_) {
+  for (auto wall : l.walls_) {
     std::cout << wall.wall_type_ << "\n";
   }
 }

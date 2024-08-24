@@ -32,14 +32,11 @@ class Gas {
 
  public:
   void update_gas_state();  // called in each iteration of the game loop
-  // double collision_time(const std::vector<Particle>::iterator&,
-  //                      const std::vector<Particle>::iterator&);
-  // double collision_time(const std::vector<Particle>::iterator&, const Wall&);
 
-  Gas(const Gas&);
+	Gas(const Gas&);
   Gas(int, double, double);
 
-	Collision find_iteration();
+  Collision find_iteration();
 
   // double get_pressure();     // returns the value of the pressure of the gas
   // double get_volume();       // returns the volume of the gas
