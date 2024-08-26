@@ -66,7 +66,7 @@ PhysVector operator-(const PhysVector& v1, const PhysVector& v2) {
 }
 
 PhysVector operator/(const PhysVector& vector, double factor) {
-  return {factor / vector.x_, factor / vector.y_, factor / vector.z_};
+  return {vector.x_/factor, vector.y_/factor, vector.z_/factor};
 }
 
 void operator+=(PhysVector& v1, const PhysVector& v2) {
@@ -102,9 +102,9 @@ Gas::Gas(const Gas& gas)
 Gas::Gas(int n, double l, double temperature) : side_{l} {
   std::default_random_engine eng(std::time(nullptr));
   std::uniform_real_distribution<double> dist(
-      0.0, sqrt(2 * temperature / (3 * Particle::mass_)));
+      -sqrt(2 * temperature / (3 * Particle::mass_)), sqrt(2 * temperature / (3 * Particle::mass_)));
 
-  int num = static_cast<int>(std::ceil(sqrt(n)));
+  int num = static_cast<int>(std::ceil(pow(n, 1./3.)));
 
 	if (l/static_cast<double>(num) < 2*Particle::radius_) {
 		throw std::runtime_error("Too many particles to fit in a square grid!!");
@@ -142,7 +142,7 @@ double collision_time(const std::vector<Particle>::iterator P1,
     }
   }
 	assert(result > 0);
-	// std::cout << "Calculated time for collision between two particles: " << result << "\n";
+	/*if (result < 100000)*/ std::cout << "Calculated time for collision between two particles: " << result << "\n";
   return result;
 }
 
@@ -172,7 +172,7 @@ double collision_time(const std::vector<Particle>::iterator P1,
       }
       break;
   }
-	// std::cout << "Calculated time for collision between " << wall.wall_type_ << " wall and particle: " << t << "\n";
+	std::cout << "Calculated time for collision between " << wall.wall_type_ << " wall and particle: " << t << "\n";
 	assert(t > 0);
 	return t;
 }
@@ -222,7 +222,7 @@ void Collision::set_time(double side) {
 		time_ = collision_time(*((*(clusters_.begin())).particles_iterators_.begin()), *((*(clusters_.begin())).particles_iterators_.begin() + 1));
 	else
 		time_ = collision_time(*((*(clusters_.begin())).particles_iterators_.begin()), *((*(clusters_.begin())).walls_.begin()), side);
-	std::cout << "Set time for collision at: " << time_ << "\n";
+	// std::cout << "Set time for collision at: " << time_ << "\n";
 	assert(time_ > 0 && time_ != NAN);
 }
 
@@ -273,9 +273,11 @@ void solve_cluster(Cluster& cluster) {
 	if (cluster.particles_iterators_.size() == 2) {
 		std::cout << "Solving two-particle cluster with results: \n";
 		PhysVector n {(*(*(cluster.particles_iterators_.begin()))).position_ - (*(*(cluster.particles_iterators_.begin()+1))).position_};
+		std::cout << "n norm before normalization = " << norm(n) << "\n";
 		n = n / norm(n);
-		std::cout << "P1 = (" << (*(*(cluster.particles_iterators_.begin()))).position_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()))).position_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()))).position_.z_ << ")" << " S1 = (" << (*(*(cluster.particles_iterators_.begin()))).speed_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()))).speed_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()))).speed_.z_ << "\n";
-		std::cout << "P2 = (" << (*(*(cluster.particles_iterators_.begin()+1))).position_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).position_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).position_.z_ << ")" << " S2 = (" << (*(*(cluster.particles_iterators_.begin()+1))).speed_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).speed_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).speed_.z_ << "\n";
+		std::cout << "n norm = " << norm(n) << "\n";
+		std::cout << "P1 = (" << (*(*(cluster.particles_iterators_.begin()))).position_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()))).position_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()))).position_.z_ << ")" << " S1 = (" << (*(*(cluster.particles_iterators_.begin()))).speed_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()))).speed_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()))).speed_.z_ << ")\n";
+		std::cout << "P2 = (" << (*(*(cluster.particles_iterators_.begin()+1))).position_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).position_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).position_.z_ << ")" << " S2 = (" << (*(*(cluster.particles_iterators_.begin()+1))).speed_.x_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).speed_.y_ << ", " << (*(*(cluster.particles_iterators_.begin()+1))).speed_.z_ << ")\n";
 		PhysVector momentum_var_1 {n * (n * ((*(*(cluster.particles_iterators_.begin() + 1))).speed_ - (*(*(cluster.particles_iterators_.begin()))).speed_))};
 		(*(*(cluster.particles_iterators_.begin()))).speed_ += momentum_var_1;
 		(*(*(cluster.particles_iterators_.begin() + 1))).speed_ -= momentum_var_1;
@@ -305,7 +307,7 @@ void solve_cluster(Cluster& cluster) {
 
 void Collision::solve_collisions() {
 	int i {0};
-	for (Cluster cluster: clusters_) {
+	for (Cluster& cluster: clusters_) {
 		solve_cluster(cluster);
 		++i;
 	}
@@ -314,8 +316,9 @@ void Collision::solve_collisions() {
 }
 
 void Particle::move(double time) {
-	assert(norm(speed_*time) != 0);
+	// std::cout << "Adding vector of norm " << norm(speed_*time) << " to position vector P = (" << position_.x_ << ", " << position_.y_ << ", " << position_.z_ << ") -> ";
 	position_ += (speed_*time);
+	// std::cout << "P' = ("<< position_.x_ << ", " << position_.y_ << ", " << position_.z_ << ")\n";
 }
 
 void Gas::update_gas_state() {
@@ -323,7 +326,7 @@ void Gas::update_gas_state() {
 	total_time += collision.get_time();
 	std::cout << "Chosen collision time: " << collision.get_time() << "\n";
 	std::cout << "Calculated new collision at time: " << total_time << "\n";
-	for (Particle particle: particles_) {
+	for (Particle& particle: particles_) {
 		assert(collision.get_time() != 0);
 		particle.move(collision.get_time());
 	}
@@ -343,9 +346,10 @@ void Gas::output_particles_positions() {
 }  // namespace thermo
 
 int main() {
-	thermo::Gas gas = {100, 50., 30.};
-	gas.output_particles_positions();
-	int i {5};
+	thermo::Particle::radius_ = 1.5;
+	thermo::Gas gas = {3000, 50., 0.3};
+	// gas.output_particles_positions();
+	int i {10};
 	while (--i) {
 		try {
 			gas.update_gas_state();
@@ -354,5 +358,5 @@ int main() {
 			exit(1);
 		}
 	}
-	gas.output_particles_positions();
+	// gas.output_particles_positions();
 }
