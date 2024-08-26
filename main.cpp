@@ -54,7 +54,13 @@ PhysVector grid_vector(int nI, int tot, double side) {
 
   std::cout << x << ' ' << y << ' ' << z << "\n\n\n";
 
-  return {x,y,z};
+  return {x, y, z};
+}
+
+PhysVector random_vector(double max) {
+  static std::default_random_engine eng(std::time(nullptr));
+  static std::uniform_real_distribution<double> dist(0.0, max);
+  return {dist(eng), dist(eng), dist(eng)};
 }
 
 // all class member functions
@@ -79,15 +85,11 @@ Gas::Gas(const Gas& gas)
       side_{gas.side_} {}
 
 Gas::Gas(int n, double l, double temperature) : side_{l} {
-  std::default_random_engine eng(std::time(nullptr));
-  std::uniform_real_distribution<double> dist(
-      0.0, sqrt(2 * temperature / (3 * Particle::mass_)));
-
-  int num = static_cast<int>(std::ceil(sqrt(n)));
+  double velMax{sqrt(2 * temperature / (3 * Particle::mass_))};
 
   for (int i{0}; i != n; ++i) {
     particles_.emplace_back(
-        Particle{grid_vector(i, n, side_), {dist(eng), dist(eng), dist(eng)}});
+        Particle{grid_vector(i, n, side_), random_vector(velMax)});
   }
 }
 
