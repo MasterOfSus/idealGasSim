@@ -6,6 +6,8 @@ nah, I don't feel like it
 
 ONLY MEANINGFUL DESCRIPTIONS TO PUSHES!!!!
 
+OK RAGAA QUESTO ESAME SI DA A GENNAIO
+
 Thermodinamic coordinates could be implemented as another class (similar to sample/statistics in pf_lab3) instead of having methods of the class gas, then have a method that takes a  gas object and returns the coordinates relative to that gas.
 In alternative just a loose function "coordinates" that does roughly the same thing.
 
