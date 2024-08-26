@@ -37,6 +37,26 @@ double get_c(const std::vector<Particle>::iterator P1,
          4 * pow((*P1).radius_, 2);
 }
 
+PhysVector grid_vector(int nI, int tot, double side) {
+  static int elementPerSide = (std::ceil(cbrt(tot)));
+  std::cout << "side: " << side << '\n';
+  std::cout << "nI: " << nI << '\n';
+  std::cout << "tot: " << tot << '\n';
+
+  static double particleDistance = side / elementPerSide;
+  // aggiungere accert che controlla che le particelle non si compenetrino
+  std::cout << "particleDistance: " << particleDistance << '\n';
+
+  double x{particleDistance * (nI % elementPerSide)};
+  double y{particleDistance * (nI / elementPerSide % elementPerSide)};
+  double z{particleDistance *
+           (nI / (elementPerSide * elementPerSide) % elementPerSide)};
+
+  std::cout << x << ' ' << y << ' ' << z << "\n\n\n";
+
+  return {x,y,z};
+}
+
 // all class member functions
 
 // physvector implementation
@@ -65,15 +85,9 @@ Gas::Gas(int n, double l, double temperature) : side_{l} {
 
   int num = static_cast<int>(std::ceil(sqrt(n)));
 
-  for (int i{1}; i != (num + 1); ++i) {
-    for (int j{1}; j != (num + 1); ++j) {
-      for (int k{1}; k != (num + 1) && static_cast<int>(particles_.size()) != n;
-           ++j) {
-        particles_.push_back({{i * side_ / (num + 1), j * side_ / (num + 1),
-                               k * side_ / (num + 1)},
-                              {dist(eng), dist(eng), dist(eng)}});
-      }
-    }
+  for (int i{0}; i != n; ++i) {
+    particles_.emplace_back(
+        Particle{grid_vector(i, n, side_), {dist(eng), dist(eng), dist(eng)}});
   }
 }
 
@@ -99,8 +113,8 @@ double collision_time(const std::vector<Particle>::iterator P1,
   return result;
 }
 
-double collision_time(const std::vector<Particle>::iterator P1,
-                      const Wall wall, double side) {
+double collision_time(const std::vector<Particle>::iterator P1, const Wall wall,
+                      double side) {
   double t;
   switch (wall.wall_type_) {
     case 'x':
@@ -174,7 +188,7 @@ Collision Gas::find_iteration() {
 int main() {
   // QUI INTERFACCIA UTENTE INSERIMENTO DATI
 
-  thermo::Gas gas{10, 200.,
+  thermo::Gas gas{100, 200.,
                   3.};  // Creazione del gas con particelle randomizzate
   auto l = gas.find_iteration();
   std::cout << "Urto al tempo " << l.time_ << ":\n"
