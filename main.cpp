@@ -47,14 +47,13 @@ PhysVector grid_vector(int nI, int tot, double side) {
   // aggiungere accert che controlla che le particelle non si compenetrino
   std::cout << "particleDistance: " << particleDistance << '\n';
 
-  double x{particleDistance * (nI % elementPerSide)};
-  double y{particleDistance * (nI / elementPerSide % elementPerSide)};
-  double z{particleDistance *
-           (nI / (elementPerSide * elementPerSide) % elementPerSide)};
+  int x {nI % elementPerSide};
+  int y {(nI / elementPerSide) % elementPerSide};
+  int z {nI / (elementPerSide * elementPerSide)};
 
   std::cout << x << ' ' << y << ' ' << z << "\n\n\n";
 
-  return {x, y, z};
+  return {x * particleDistance, y * particleDistance, z * particleDistance};
 }
 
 PhysVector random_vector(double max) {
@@ -66,17 +65,34 @@ PhysVector random_vector(double max) {
 // all class member functions
 
 // physvector implementation
-double norm(const PhysVector& vector) {
-  return std::sqrt(vector.x_ * vector.x_ + vector.y_ * vector.y_ +
-                   vector.z_ * vector.z_);
+double norm(const PhysVector& v) {
+  return std::sqrt(v.x_ * v.x_ + v.y_ * v.y_ + v.z_ * v.z_);
 }
 
-PhysVector operator*(const PhysVector& vector, double factor) {
-  return {factor * vector.x_, factor * vector.y_, factor * vector.z_};
+PhysVector operator*(const PhysVector& v, double factor) {
+  return {factor * v.x_, factor * v.y_, factor * v.z_};
+}
+
+PhysVector operator/(const PhysVector& v, double factor) {
+  return v * (1 / factor);
 }
 
 double operator*(const PhysVector& v1, const PhysVector& v2) {
   return v1.x_ * v2.x_ + v1.y_ * v2.y_ + v1.z_ * v2.z_;
+}
+
+PhysVector operator+(const PhysVector& v1, const PhysVector& v2) {
+  return {v1.x_ + v2.x_, v1.y_ + v2.y_, v1.z_ + v2.z_};
+}
+
+PhysVector operator-(const PhysVector& v1, const PhysVector& v2) {
+  return {v1.x_ - v2.x_, v1.y_ - v2.y_, v1.z_ - v2.z_};
+}
+
+void PhysVector::operator+=(const PhysVector& v) {
+  x_ += v.x_;
+  y_ += v.y_;
+  z_ += v.z_;
 }
 
 // gas implementation
@@ -155,12 +171,10 @@ Collision Gas::find_iteration() {
 
   for (auto it = particles_.begin(), last = particles_.end(); it != last;
        ++it) {
-    std::cout << "ciclo grosso \n";
     for (auto it2{it}, last2 = particles_.end(); it2 != last2; ++it2) {
       timeP = collision_time(it, it2);
       if (timeP < shortestP && timeP > 0) {
         shortestP = timeP;
-        std::cout << shortestP << '\n';
       }
     }
 
@@ -183,6 +197,27 @@ Collision Gas::find_iteration() {
     return {shortestW, {firstP1}, {firstW}};
   }
 }
+
+void Gas::update_gas_state(Collision collision) {
+  double time{collision.time_};
+  if (collision.particles_.size() + collision.walls_.size() > 2) {
+    std::cout << "Urto a più di 2";
+  } else if (collision.particles_.size() == 2) {
+    auto P1 = collision.particles_[0];
+    auto P2 = collision.particles_[1];
+
+    // Aggiorna le posizioni dei particelle
+    P1->position_ += P1->speed_ * time;
+    P2->position_ += P2->speed_ * time;
+
+    PhysVector delta_position{P1->position_ - P2->position_};
+
+    PhysVector n{delta_position / norm(delta_position)};
+    (*P1).speed_ += n * (n * ((*P2).speed_ - (*P1).speed_));
+    (*P2).speed_ += n * (n * ((*P1).speed_ - (*P2).speed_));
+  }
+}
+
 // end of member functions
 
 }  // namespace thermo
