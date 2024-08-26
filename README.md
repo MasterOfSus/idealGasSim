@@ -16,3 +16,8 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Capire ed implementare la gestione degli urti a piu di due particelle (facoltativo)
 - [ ] Inserire una svalangata di assert una volta completata l'implementazione di base
 - [ ] Exception handling
+
+## Da discutere nella prossima call
+
+- Siamo in tempo?
+- Trattino basso nelle struct
