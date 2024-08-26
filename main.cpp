@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <iostream>
 #include <random>
 
@@ -8,7 +10,8 @@ namespace thermo {
 // static variables initalization
 
 double Particle::mass_{1.66 * 4};
-double Particle::radius_{0.143};
+//double Particle::radius_{0.143};
+double Particle::radius_{1};
 
 // a set of three auxiliary functions returning parameters for a reduced
 // quadratic formula
@@ -47,9 +50,9 @@ PhysVector grid_vector(int nI, int tot, double side) {
   // aggiungere accert che controlla che le particelle non si compenetrino
   std::cout << "particleDistance: " << particleDistance << '\n';
 
-  int x {nI % elementPerSide};
-  int y {(nI / elementPerSide) % elementPerSide};
-  int z {nI / (elementPerSide * elementPerSide)};
+  int x{nI % elementPerSide};
+  int y{(nI / elementPerSide) % elementPerSide};
+  int z{nI / (elementPerSide * elementPerSide)};
 
   std::cout << x << ' ' << y << ' ' << z << "\n\n\n";
 
@@ -186,7 +189,6 @@ Collision Gas::find_iteration() {
         shortestW = timeW;
         firstP1 = it;
         firstW = wall;
-        std::cout << shortestW << '\n';
       }
     }
   }
@@ -200,21 +202,39 @@ Collision Gas::find_iteration() {
 
 void Gas::update_gas_state(Collision collision) {
   double time{collision.time_};
-  if (collision.particles_.size() + collision.walls_.size() > 2) {
-    std::cout << "Urto a più di 2";
-  } else if (collision.particles_.size() == 2) {
-    auto P1 = collision.particles_[0];
-    auto P2 = collision.particles_[1];
 
+  if (collision.particles_.size() == 2) {
     // Aggiorna le posizioni dei particelle
-    P1->position_ += P1->speed_ * time;
-    P2->position_ += P2->speed_ * time;
+    auto& P1{*collision.particles_[0]};
+    auto& P2{*collision.particles_[1]};
 
-    PhysVector delta_position{P1->position_ - P2->position_};
+    P1.position_ += P1.speed_ * time;
+    P2.position_ += P2.speed_ * time;
+
+    PhysVector delta_position{P1.position_ - P2.position_};
 
     PhysVector n{delta_position / norm(delta_position)};
-    (*P1).speed_ += n * (n * ((*P2).speed_ - (*P1).speed_));
-    (*P2).speed_ += n * (n * ((*P1).speed_ - (*P2).speed_));
+
+    P1.speed_ += n * (n * (P2.speed_ - P1.speed_));
+    P2.speed_ += n * (n * (P1.speed_ - P2.speed_));
+  } else if (collision.particles_.size() == 1 && collision.walls_.size() == 1) {
+    auto& P1{*collision.particles_[0]};
+
+    char wall{collision.walls_[0].wall_type_};
+
+    switch (wall) {
+      case 'x':
+        P1.speed_.x_ = -P1.speed_.x_;
+        break;
+      case 'y':
+        P1.speed_.y_ = -P1.speed_.y_;
+        break;
+      case 'z':
+        P1.speed_.z_ = -P1.speed_.z_;
+        break;
+    }
+  } else {
+    std::cout << "Urto a più di 2";
   }
 }
 
@@ -224,18 +244,22 @@ void Gas::update_gas_state(Collision collision) {
 
 int main() {
   // QUI INTERFACCIA UTENTE INSERIMENTO DATI
+  thermo::Gas gas{10000, 200., 3.};
 
-  thermo::Gas gas{100, 200.,
-                  3.};  // Creazione del gas con particelle randomizzate
-  auto l = gas.find_iteration();
-  std::cout << "Urto al tempo " << l.time_ << ":\n"
-            << "posizioni: \n";
-  for (auto it : l.particles_) {
-    std::cout << (*it).position_.x_ << ", " << (*it).position_.y_ << ", "
-              << (*it).position_.z_ << "\n";
-  }
-  std::cout << "muri: \n";
-  for (auto wall : l.walls_) {
-    std::cout << wall.wall_type_ << "\n";
+  for (int i{0}; i != 100; ++i) {
+    auto l = gas.find_iteration();
+    std::cout << "Urto al tempo " << l.time_ << ":\n"
+              << "posizioni: \n";
+    for (auto it : l.particles_) {
+      std::cout << (*it).position_.x_ << ", " << (*it).position_.y_ << ", "
+                << (*it).position_.z_ << "\n";
+    }
+    std::cout << "muri: \n";
+    for (auto wall : l.walls_) {
+      std::cout << wall.wall_type_ << "\n";
+    }
+
+    gas.update_gas_state(l);
+    usleep(500000);
   }
 }

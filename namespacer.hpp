@@ -26,7 +26,6 @@ struct Collision {
   double time_;
   std::vector<std::vector<Particle>::iterator> particles_;
   std::vector<Wall> walls_;
-  char type();
 };
 
 class Gas {
