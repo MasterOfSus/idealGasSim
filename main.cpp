@@ -1,5 +1,6 @@
 #include <unistd.h>
 
+#include <cmath>
 #include <iostream>
 #include <random>
 
@@ -10,51 +11,20 @@ namespace thermo {
 // static variables initalization
 
 double Particle::mass_{1.66 * 4};
-//double Particle::radius_{0.143};
-double Particle::radius_{1};
+double Particle::radius_{0.143};
 
 // a set of three auxiliary functions returning parameters for a reduced
 // quadratic formula
-double get_a(const std::vector<Particle>::iterator P1,
-             const std::vector<Particle>::iterator P2) {
-  return std::pow(((*P1).speed_.x_ - (*P2).speed_.x_), 2) +
-         std::pow(((*P1).speed_.y_ - (*P2).speed_.y_), 2) +
-         std::pow(((*P1).speed_.z_ - (*P2).speed_.z_), 2);
-}
-
-double get_b(const std::vector<Particle>::iterator P1,
-             const std::vector<Particle>::iterator P2) {
-  return ((*P1).position_.x_ - (*P2).position_.x_) *
-             ((*P1).speed_.x_ - (*P2).speed_.x_) +
-         ((*P1).position_.y_ - (*P2).position_.y_) *
-             ((*P1).speed_.y_ - (*P2).speed_.y_) +
-         ((*P1).position_.z_ - (*P2).position_.z_) *
-             ((*P1).speed_.z_ - (*P2).speed_.z_);
-}
-
-double get_c(const std::vector<Particle>::iterator P1,
-             const std::vector<Particle>::iterator P2) {
-  return std::pow(((*P1).position_.x_ - (*P2).position_.x_), 2) +
-         std::pow(((*P1).position_.y_ - (*P2).position_.y_), 2) +
-         std::pow(((*P1).position_.z_ - (*P2).position_.z_), 2) -
-         4 * pow((*P1).radius_, 2);
-}
 
 PhysVector grid_vector(int nI, int tot, double side) {
   static int elementPerSide = (std::ceil(cbrt(tot)));
-  std::cout << "side: " << side << '\n';
-  std::cout << "nI: " << nI << '\n';
-  std::cout << "tot: " << tot << '\n';
 
   static double particleDistance = side / elementPerSide;
   // aggiungere accert che controlla che le particelle non si compenetrino
-  std::cout << "particleDistance: " << particleDistance << '\n';
 
   int x{nI % elementPerSide};
   int y{(nI / elementPerSide) % elementPerSide};
   int z{nI / (elementPerSide * elementPerSide)};
-
-  std::cout << x << ' ' << y << ' ' << z << "\n\n\n";
 
   return {x * particleDistance, y * particleDistance, z * particleDistance};
 }
@@ -98,6 +68,29 @@ void PhysVector::operator+=(const PhysVector& v) {
   z_ += v.z_;
 }
 
+double get_a(const std::vector<Particle>::iterator P1,
+             const std::vector<Particle>::iterator P2) {
+  return ((*P1).speed_ - (*P2).speed_) * ((*P1).speed_ - (*P2).speed_);
+}
+
+double get_b(const std::vector<Particle>::iterator P1,
+             const std::vector<Particle>::iterator P2) {
+  return ((*P1).position_.x_ - (*P2).position_.x_) *
+             ((*P1).speed_.x_ - (*P2).speed_.x_) +
+         ((*P1).position_.y_ - (*P2).position_.y_) *
+             ((*P1).speed_.y_ - (*P2).speed_.y_) +
+         ((*P1).position_.z_ - (*P2).position_.z_) *
+             ((*P1).speed_.z_ - (*P2).speed_.z_);
+}
+
+double get_c(const std::vector<Particle>::iterator P1,
+             const std::vector<Particle>::iterator P2) {
+  return std::pow(((*P1).position_.x_ - (*P2).position_.x_), 2) +
+         std::pow(((*P1).position_.y_ - (*P2).position_.y_), 2) +
+         std::pow(((*P1).position_.z_ - (*P2).position_.z_), 2) -
+         4 * pow((*P1).radius_, 2);
+}
+
 // gas implementation
 Gas::Gas(const Gas& gas)
     : particles_(gas.particles_.begin(), gas.particles_.end()),
@@ -108,7 +101,8 @@ Gas::Gas(int n, double l, double temperature) : side_{l} {
 
   for (int i{0}; i != n; ++i) {
     particles_.emplace_back(
-        Particle{grid_vector(i, n, side_), random_vector(velMax)});
+        Particle{grid_vector(i, n, side_ - 1.) + PhysVector{0.5, 0.5, 0.5},
+                 random_vector(velMax)});
   }
 }
 
@@ -117,6 +111,7 @@ double collision_time(const std::vector<Particle>::iterator P1,
   double a{get_a(P1, P2)};
   double b{get_b(P1, P2)};
   double c{get_c(P1, P2)};
+
   double result{10000.};
 
   double delta{std::pow(b, 2) - a * c};
@@ -169,6 +164,7 @@ Collision Gas::find_iteration() {
   double timeP{0};
   std::vector<Particle>::iterator firstP1;
   std::vector<Particle>::iterator firstP2;
+  std::vector<Particle>::iterator firstP3;
   Wall firstW;
   double timeW{0};
 
@@ -178,6 +174,8 @@ Collision Gas::find_iteration() {
       timeP = collision_time(it, it2);
       if (timeP < shortestP && timeP > 0) {
         shortestP = timeP;
+        firstP1 = it;
+        firstP2 = it2;
       }
     }
 
@@ -187,7 +185,7 @@ Collision Gas::find_iteration() {
       timeW = collision_time(it, wall, side_);
       if (timeW < shortestW && timeW > 0) {
         shortestW = timeW;
-        firstP1 = it;
+        firstP3 = it;
         firstW = wall;
       }
     }
@@ -196,20 +194,31 @@ Collision Gas::find_iteration() {
   if (shortestP < shortestW) {
     return {shortestP, {firstP1, firstP2}, {}};
   } else {
-    return {shortestW, {firstP1}, {firstW}};
+    return {shortestW, {firstP3}, {firstW}};
+  }
+}
+void Gas::update_positions(double time) {
+  for (auto it = particles_.begin(), last = particles_.end(); it != last;
+       ++it) {
+    it->position_ += it->speed_ * time;
   }
 }
 
 void Gas::update_gas_state(Collision collision) {
   double time{collision.time_};
 
+  Gas::update_positions(time);
+
   if (collision.particles_.size() == 2) {
     // Aggiorna le posizioni dei particelle
     auto& P1{*collision.particles_[0]};
     auto& P2{*collision.particles_[1]};
 
-    P1.position_ += P1.speed_ * time;
-    P2.position_ += P2.speed_ * time;
+    std::cout << "posizione nuova: " << P1.position_.x_ << ", "
+              << P1.position_.y_ << ", " << P1.position_.z_ << "\n";
+
+    std::cout << "posizione nuova: " << P2.position_.x_ << ", "
+              << P2.position_.y_ << ", " << P2.position_.z_ << "\n";
 
     PhysVector delta_position{P1.position_ - P2.position_};
 
@@ -218,7 +227,7 @@ void Gas::update_gas_state(Collision collision) {
     P1.speed_ += n * (n * (P2.speed_ - P1.speed_));
     P2.speed_ += n * (n * (P1.speed_ - P2.speed_));
   } else if (collision.particles_.size() == 1 && collision.walls_.size() == 1) {
-    auto& P1{*collision.particles_[0]};
+    auto& P1{*(collision.particles_[0])};
 
     char wall{collision.walls_[0].wall_type_};
 
@@ -244,22 +253,26 @@ void Gas::update_gas_state(Collision collision) {
 
 int main() {
   // QUI INTERFACCIA UTENTE INSERIMENTO DATI
-  thermo::Gas gas{10000, 200., 3.};
+  thermo::Gas gas{300, 20., 3.};
 
-  for (int i{0}; i != 100; ++i) {
+  for (int i{0}; i != 10; ++i) {
     auto l = gas.find_iteration();
     std::cout << "Urto al tempo " << l.time_ << ":\n"
               << "posizioni: \n";
-    for (auto it : l.particles_) {
+    auto it = l.particles_[0];
+    std::cout << (*it).position_.x_ << ", " << (*it).position_.y_ << ", "
+              << (*it).position_.z_ << "\n";
+    if (l.particles_.size() == 2) {
+      it = l.particles_[1];
       std::cout << (*it).position_.x_ << ", " << (*it).position_.y_ << ", "
                 << (*it).position_.z_ << "\n";
     }
     std::cout << "muri: \n";
-    for (auto wall : l.walls_) {
-      std::cout << wall.wall_type_ << "\n";
+    if (l.walls_.size() != 0) {
+      for (auto wall : l.walls_) {
+        std::cout << wall.wall_type_ << "\n";
+      }
     }
-
     gas.update_gas_state(l);
-    usleep(500000);
   }
 }

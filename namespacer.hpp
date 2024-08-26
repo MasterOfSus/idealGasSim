@@ -7,7 +7,7 @@ namespace thermo {
 struct PhysVector {  // representation of a simple three-dimensional vector
   double x_, y_, z_;
 
-  void operator+=(const PhysVector& v2);
+  void operator+=(const PhysVector& v);
 };
 
 struct Particle {
@@ -33,9 +33,9 @@ class Gas {
   double side_;  // side of the cubical container
 
  public:
+  void update_positions(double time);
   void update_gas_state(
       Collision collision);  // called in each iteration of the game loop
-
   Gas(const Gas&);
   Gas(int, double, double);
 
