@@ -16,7 +16,8 @@ double Particle::radius_{0.143};
 // a set of three auxiliary functions returning parameters for a reduced
 // quadratic formula
 
-PhysVector grid_vector(int nI, int tot, double side) {
+PhysVector grid_vector(int nI, int tot, double side)
+{
   static int elementPerSide = (std::ceil(cbrt(tot)));
 
   static double particleDistance = side / elementPerSide;
@@ -29,7 +30,8 @@ PhysVector grid_vector(int nI, int tot, double side) {
   return {x * particleDistance, y * particleDistance, z * particleDistance};
 }
 
-PhysVector random_vector(double max) {
+PhysVector random_vector(double max)
+{
   static std::default_random_engine eng(std::time(nullptr));
   static std::uniform_real_distribution<double> dist(0.0, max);
   return {dist(eng), dist(eng), dist(eng)};
@@ -38,65 +40,78 @@ PhysVector random_vector(double max) {
 // all class member functions
 
 // physvector implementation
-double norm(const PhysVector& v) {
+double norm(const PhysVector& v)
+{
   return std::sqrt(v.x_ * v.x_ + v.y_ * v.y_ + v.z_ * v.z_);
 }
 
-PhysVector operator*(const PhysVector& v, double factor) {
+PhysVector operator*(const PhysVector& v, double factor)
+{
   return {factor * v.x_, factor * v.y_, factor * v.z_};
 }
 
-PhysVector operator/(const PhysVector& v, double factor) {
+PhysVector operator/(const PhysVector& v, double factor)
+{
   return v * (1 / factor);
 }
 
-double operator*(const PhysVector& v1, const PhysVector& v2) {
+double operator*(const PhysVector& v1, const PhysVector& v2)
+{
   return v1.x_ * v2.x_ + v1.y_ * v2.y_ + v1.z_ * v2.z_;
 }
 
-PhysVector operator+(const PhysVector& v1, const PhysVector& v2) {
+PhysVector operator+(const PhysVector& v1, const PhysVector& v2)
+{
   return {v1.x_ + v2.x_, v1.y_ + v2.y_, v1.z_ + v2.z_};
 }
 
-PhysVector operator-(const PhysVector& v1, const PhysVector& v2) {
+PhysVector operator-(const PhysVector& v1, const PhysVector& v2)
+{
   return {v1.x_ - v2.x_, v1.y_ - v2.y_, v1.z_ - v2.z_};
 }
 
-void PhysVector::operator+=(const PhysVector& v) {
+void PhysVector::operator+=(const PhysVector& v)
+{
   x_ += v.x_;
   y_ += v.y_;
   z_ += v.z_;
 }
 
 double get_a(const std::vector<Particle>::iterator P1,
-             const std::vector<Particle>::iterator P2) {
+             const std::vector<Particle>::iterator P2)
+{
   return ((*P1).speed_ - (*P2).speed_) * ((*P1).speed_ - (*P2).speed_);
 }
 
 double get_b(const std::vector<Particle>::iterator P1,
-             const std::vector<Particle>::iterator P2) {
-  return ((*P1).position_.x_ - (*P2).position_.x_) *
-             ((*P1).speed_.x_ - (*P2).speed_.x_) +
-         ((*P1).position_.y_ - (*P2).position_.y_) *
-             ((*P1).speed_.y_ - (*P2).speed_.y_) +
-         ((*P1).position_.z_ - (*P2).position_.z_) *
-             ((*P1).speed_.z_ - (*P2).speed_.z_);
+             const std::vector<Particle>::iterator P2)
+{
+  return ((*P1).position_.x_ - (*P2).position_.x_)
+           * ((*P1).speed_.x_ - (*P2).speed_.x_)
+       + ((*P1).position_.y_ - (*P2).position_.y_)
+             * ((*P1).speed_.y_ - (*P2).speed_.y_)
+       + ((*P1).position_.z_ - (*P2).position_.z_)
+             * ((*P1).speed_.z_ - (*P2).speed_.z_);
 }
 
 double get_c(const std::vector<Particle>::iterator P1,
-             const std::vector<Particle>::iterator P2) {
-  return std::pow(((*P1).position_.x_ - (*P2).position_.x_), 2) +
-         std::pow(((*P1).position_.y_ - (*P2).position_.y_), 2) +
-         std::pow(((*P1).position_.z_ - (*P2).position_.z_), 2) -
-         4 * pow((*P1).radius_, 2);
+             const std::vector<Particle>::iterator P2)
+{
+  return std::pow(((*P1).position_.x_ - (*P2).position_.x_), 2)
+       + std::pow(((*P1).position_.y_ - (*P2).position_.y_), 2)
+       + std::pow(((*P1).position_.z_ - (*P2).position_.z_), 2)
+       - 4 * pow((*P1).radius_, 2);
 }
 
 // gas implementation
 Gas::Gas(const Gas& gas)
-    : particles_(gas.particles_.begin(), gas.particles_.end()),
-      side_{gas.side_} {}
+    : particles_(gas.particles_.begin(), gas.particles_.end())
+    , side_{gas.side_}
+{}
 
-Gas::Gas(int n, double l, double temperature) : side_{l} {
+Gas::Gas(int n, double l, double temperature)
+    : side_{l}
+{
   double velMax{sqrt(2 * temperature / (3 * Particle::mass_))};
 
   for (int i{0}; i != n; ++i) {
@@ -107,7 +122,8 @@ Gas::Gas(int n, double l, double temperature) : side_{l} {
 }
 
 double collision_time(const std::vector<Particle>::iterator P1,
-                      const std::vector<Particle>::iterator P2) {
+                      const std::vector<Particle>::iterator P2)
+{
   double a{get_a(P1, P2)};
   double b{get_b(P1, P2)};
   double c{get_c(P1, P2)};
@@ -130,81 +146,74 @@ double collision_time(const std::vector<Particle>::iterator P1,
 }
 
 double collision_time(const std::vector<Particle>::iterator P1, const Wall wall,
-                      double side) {
+                      double side)
+{
   double t;
   switch (wall.wall_type_) {
-    case 'x':
-      if ((*P1).speed_.x_ < 0) {
-        t = -(*P1).position_.x_ / (*P1).speed_.x_;
-      } else {
-        t = (side - (2 * (*P1).radius_) - (*P1).position_.x_) / (*P1).speed_.x_;
-      }
-      break;
-    case 'y':
-      if ((*P1).speed_.y_ < 0) {
-        t = -(*P1).position_.y_ / (*P1).speed_.y_;
-      } else {
-        t = (side - (2 * (*P1).radius_) - (*P1).position_.y_) / (*P1).speed_.y_;
-      }
-      break;
-    case 'z':
-      if ((*P1).speed_.z_ < 0) {
-        t = -(*P1).position_.z_ / (*P1).speed_.z_;
-      } else {
-        t = (side - (2 * (*P1).radius_) - (*P1).position_.z_) / (*P1).speed_.z_;
-      }
-      break;
+  case 'x':
+    if ((*P1).speed_.x_ < 0) {
+      t = -(*P1).position_.x_ / (*P1).speed_.x_;
+    } else {
+      t = (side - (2 * (*P1).radius_) - (*P1).position_.x_) / (*P1).speed_.x_;
+    }
+    break;
+  case 'y':
+    if ((*P1).speed_.y_ < 0) {
+      t = -(*P1).position_.y_ / (*P1).speed_.y_;
+    } else {
+      t = (side - (2 * (*P1).radius_) - (*P1).position_.y_) / (*P1).speed_.y_;
+    }
+    break;
+  case 'z':
+    if ((*P1).speed_.z_ < 0) {
+      t = -(*P1).position_.z_ / (*P1).speed_.z_;
+    } else {
+      t = (side - (2 * (*P1).radius_) - (*P1).position_.z_) / (*P1).speed_.z_;
+    }
+    break;
   }
   return t;
 }
 
-Collision Gas::find_iteration() {
-  double shortestP{1000};
-  double shortestW{1000};
-  double timeP{0};
-  std::vector<Particle>::iterator firstP1;
-  std::vector<Particle>::iterator firstP2;
-  std::vector<Particle>::iterator firstP3;
-  Wall firstW;
-  double timeW{0};
+Collision Gas::find_iteration()
+{
+  double time{0};
+  Collision firstColl{1000, {}, {}};
 
   for (auto it = particles_.begin(), last = particles_.end(); it != last;
        ++it) {
     for (auto it2{it}, last2 = particles_.end(); it2 != last2; ++it2) {
-      timeP = collision_time(it, it2);
-      if (timeP < shortestP && timeP > 0) {
-        shortestP = timeP;
-        firstP1 = it;
-        firstP2 = it2;
+      time = collision_time(it, it2);
+      if (time < firstColl.time_ && time > 0) {
+        firstColl.time_      = time;
+        firstColl.particles_ = {it, it2};
       }
     }
 
     std::vector<Wall> walls{{'x'}, {'y'}, {'z'}};
 
     for (Wall wall : walls) {
-      timeW = collision_time(it, wall, side_);
-      if (timeW < shortestW && timeW > 0) {
-        shortestW = timeW;
-        firstP3 = it;
-        firstW = wall;
+      time = collision_time(it, wall, side_);
+      if (time < firstColl.time_ && time > 0) {
+        firstColl.time_      = time;
+        firstColl.particles_ = {it};
+        firstColl.walls_     = {wall};
       }
     }
   }
 
-  if (shortestP < shortestW) {
-    return {shortestP, {firstP1, firstP2}, {}};
-  } else {
-    return {shortestW, {firstP3}, {firstW}};
-  }
+  return firstColl;
 }
-void Gas::update_positions(double time) {
+void Gas::update_positions(double time)
+{
   for (auto it = particles_.begin(), last = particles_.end(); it != last;
        ++it) {
     it->position_ += it->speed_ * time;
   }
 }
 
-void Gas::update_gas_state(Collision collision) {
+void Gas::update_gas_state(Collision collision)
+{
   double time{collision.time_};
 
   Gas::update_positions(time);
@@ -232,15 +241,15 @@ void Gas::update_gas_state(Collision collision) {
     char wall{collision.walls_[0].wall_type_};
 
     switch (wall) {
-      case 'x':
-        P1.speed_.x_ = -P1.speed_.x_;
-        break;
-      case 'y':
-        P1.speed_.y_ = -P1.speed_.y_;
-        break;
-      case 'z':
-        P1.speed_.z_ = -P1.speed_.z_;
-        break;
+    case 'x':
+      P1.speed_.x_ = -P1.speed_.x_;
+      break;
+    case 'y':
+      P1.speed_.y_ = -P1.speed_.y_;
+      break;
+    case 'z':
+      P1.speed_.z_ = -P1.speed_.z_;
+      break;
     }
   } else {
     std::cout << "Urto a più di 2";
@@ -249,9 +258,10 @@ void Gas::update_gas_state(Collision collision) {
 
 // end of member functions
 
-}  // namespace thermo
+} // namespace thermo
 
-int main() {
+int main()
+{
   // QUI INTERFACCIA UTENTE INSERIMENTO DATI
   thermo::Gas gas{300, 20., 3.};
 
