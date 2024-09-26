@@ -46,6 +46,6 @@ TEST_CASE("Testing physics.vector")
   }
   SUBCASE("Norm")
   {
-    CHECK(v1.norm() == doctest::Approx(3.74166));
+    CHECK(v1.norm() == doctest::Approx(3.7417));
   }
 }
