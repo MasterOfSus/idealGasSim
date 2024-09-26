@@ -37,7 +37,7 @@ PhysVector random_vector(double max)
   return {dist(eng), dist(eng), dist(eng)};
 }
 
-// all class member functions
+// all class member functions 
 
 // physvector implementation
 double norm(const PhysVector& v)
