@@ -1,10 +1,10 @@
 #ifndef OUTPUT_HPP
 #define OUTPUT_HPP
 
-namespace thermo {
+namespace gasSim {
 namespace output {
 
 } // namespace output
-} // namespace thermo
+} // namespace gasSim
 
 #endif

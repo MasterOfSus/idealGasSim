@@ -1,7 +1,7 @@
 #include "physics_engine.hpp"
 #include <cmath>
 
-namespace thermo {
+namespace gasSim {
 namespace physics {
 
 vector vector::operator+(const vector& v)

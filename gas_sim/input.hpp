@@ -1,10 +1,10 @@
 #ifndef INPUT_HPP
 #define INPUT_HPP
 
-namespace thermo {
+namespace gasSim {
 namespace input {
 
 } // namespace input
-} // namespace thermo
+} // namespace gasSim
 
 #endif

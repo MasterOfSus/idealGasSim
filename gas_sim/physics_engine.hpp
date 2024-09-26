@@ -1,7 +1,7 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
-namespace thermo {
+namespace gasSim {
 namespace physics {
 struct vector
 {
@@ -22,6 +22,6 @@ struct vector
 };
 
 } // namespace physics
-} // namespace thermo
+} // namespace gasSim
 
 #endif
