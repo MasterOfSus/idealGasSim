@@ -22,6 +22,8 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 ## Da discutere nella prossima call
 
-* Per l'attuale implementazione funziona l'operazione vector*scalar, ma non scalar*vector
+* Per l'attuale implementazione funziona l'operazione vector * scalar, ma non scalar * vector
+* Implementazione con struct collsion?
+
 
 

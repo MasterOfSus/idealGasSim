@@ -21,6 +21,14 @@ struct vector
   double norm();
 };
 
+struct particle {
+  static double mass;
+  static double radius;
+
+  vector position;
+  vector speed;
+};
+
 } // namespace physics
 } // namespace gasSim
 
