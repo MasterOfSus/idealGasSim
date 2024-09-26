@@ -11,9 +11,23 @@
 
 TEST_CASE("Testing physics.vector")
 {
+  SUBCASE("Constructor default")
+  {
+    gasSim::physics::vector v;
+    CHECK(v.x == 0);
+    CHECK(v.y == 0);
+    CHECK(v.z == 0);
+  }
+
   gasSim::physics::vector v1{1, 2, 3};
   gasSim::physics::vector v2{0, 0, -1};
 
+  SUBCASE("Constructor")
+  {
+    CHECK(v1.x == 1);
+    CHECK(v1.y == 2);
+    CHECK(v1.z == 3);
+  }
   SUBCASE("Sum")
   {
     gasSim::physics::vector sum{v1 + v2};
