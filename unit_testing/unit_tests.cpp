@@ -2,17 +2,14 @@
 #include <iostream>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
-#include "doctest.h"
-
 #include "../gas_sim/graphics.hpp"
+#include "doctest.h"
 // #include "input.hpp"
 #include "../gas_sim/output.hpp"
 #include "../gas_sim/physics_engine.hpp"
 
-TEST_CASE("Testing physics.vector")
-{
-  SUBCASE("Constructor default")
-  {
+TEST_CASE("Testing physics::vector") {
+  SUBCASE("Constructor default") {
     gasSim::physics::vector v;
     CHECK(v.x == 0);
     CHECK(v.y == 0);
@@ -21,45 +18,37 @@ TEST_CASE("Testing physics.vector")
 
   gasSim::physics::vector v1{1, 2, 3};
   gasSim::physics::vector v2{0, 0, -1};
-
-  SUBCASE("Constructor")
-  {
+  //gasSim::physics::vector g(5);
+  //std::cout << g.x << ' ' << g.y << ' ' << g.z << '\n';
+  SUBCASE("Constructor") {
     CHECK(v1.x == 1);
     CHECK(v1.y == 2);
     CHECK(v1.z == 3);
   }
-  SUBCASE("Sum")
-  {
+  SUBCASE("Sum") {
     gasSim::physics::vector sum{v1 + v2};
     gasSim::physics::vector test{1, 2, 2};
     CHECK(sum == test);
   }
-  SUBCASE("Subtraction")
-  {
+  SUBCASE("Subtraction") {
     gasSim::physics::vector sub{v2 - v1};
     gasSim::physics::vector test{-1, -2, -4};
     CHECK(sub == test);
   }
-  SUBCASE("Product")
-  {
+  SUBCASE("Product") {
     double scalar{0.25};
     gasSim::physics::vector test{0.25, 0.5, 0.75};
     CHECK(v1 * scalar == test);
   }
-  SUBCASE("Division")
-  {
+  SUBCASE("Division") {
     double scalar{10};
     gasSim::physics::vector test{0.1, 0.2, 0.3};
     CHECK(v1 / scalar == test);
   }
-  SUBCASE("Division by zero")
-  {
+  SUBCASE("Division by zero") {
     double scalar{0};
     gasSim::physics::vector test{INFINITY, INFINITY, INFINITY};
     CHECK(v1 / scalar == test);
   }
-  SUBCASE("Norm")
-  {
-    CHECK(v1.norm() == doctest::Approx(3.7417));
-  }
+  SUBCASE("Norm") { CHECK(v1.norm() == doctest::Approx(3.7417)); }
 }
