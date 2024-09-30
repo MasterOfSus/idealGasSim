@@ -42,17 +42,20 @@ vector randomVector(const double maxNorm) {
 }
 // End of vector functions
 
+
 // Definition of particle functions
 bool particle::operator==(const particle& p) const {
   return (position == p.position && speed == p.speed);
 }
 // End of particle functions
 
+
 // Definition of square_box functions
 bool square_box::operator==(const square_box& b) const {
   return (side == b.side);
 }
 // End of square_box functions
+
 
 // Definition of gas functions
 gas::gas(std::vector<particle> particles, square_box box)
@@ -63,6 +66,7 @@ gas::gas(const gas& gas)
 
 const std::vector<particle>& gas::get_particles() const { return particles_; }
 const square_box& gas::get_box() const { return box_; }
+// End of gas functions
 
 }  // namespace physics
 }  // namespace gasSim
