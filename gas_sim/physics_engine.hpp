@@ -30,16 +30,25 @@ struct particle {
 
   vector position;
   vector speed;
+
+  bool operator==(const particle& p) const;
 };
 
 struct square_box {
   double side;
+
+  bool operator==(const square_box& b) const;
 };
 
 class gas {
  public:
+  gas(std::vector<particle> particles, square_box box);
+  gas(const gas& gas);
+
+  const std::vector<particle>& get_particles() const;
+  const square_box& get_box() const;
+
   void update_gas_state();  // called in each iteration of the game loop
-  gas(const gas&);
 
  private:
   std::vector<particle> particles_;

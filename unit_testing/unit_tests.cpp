@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <vector>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "../gas_sim/graphics.hpp"
@@ -7,6 +8,9 @@
 // #include "input.hpp"
 #include "../gas_sim/output.hpp"
 #include "../gas_sim/physics_engine.hpp"
+
+double gasSim::physics::particle::mass = 10;
+double gasSim::physics::particle::radius = 5;
 
 TEST_CASE("Testing physics::vector") {
   gasSim::physics::vector goodVector1{1.1, -2.11, 56.253};
@@ -63,4 +67,17 @@ CHECK(v1 / scalar == test);
 }
   */
   SUBCASE("Norm") { CHECK(goodVector1.norm() == doctest::Approx(56.3033)); }
+}
+TEST_CASE("Testing physics::gas") {
+  gasSim::physics::square_box goodBox{5};
+
+  gasSim::physics::particle goodParticle{{3, 4, 5}, {6, 7, 8}};
+  std::vector<gasSim::physics::particle> goodVector{goodParticle};
+
+  gasSim::physics::gas goodGas{goodVector, goodBox};
+  SUBCASE("Constructor") {
+    gasSim::physics::gas copyGas{goodGas};
+    CHECK(goodGas.get_box() == goodBox);
+    CHECK(goodGas.get_particles() == goodVector);
+  }
 }
