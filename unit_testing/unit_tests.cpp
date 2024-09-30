@@ -28,32 +28,32 @@ TEST_CASE("Testing physics::vector") {
   SUBCASE("Sum") {
     gasSim::physics::vector sum{goodVector1 + goodVector2};
     gasSim::physics::vector actualSum{13.4, -1.99, 49.953};
-    CHECK((doctest::Approx(sum.x) == actualSum.x &&
-           doctest::Approx(sum.y) == actualSum.y &&
-           doctest::Approx(sum.z) == actualSum.z));
+    CHECK(doctest::Approx(sum.x) == actualSum.x);
+    CHECK(doctest::Approx(sum.y) == actualSum.y);
+    CHECK(doctest::Approx(sum.z) == actualSum.z);
   }
   SUBCASE("Subtraction") {
     gasSim::physics::vector subtraction{goodVector2 - goodVector1};
     gasSim::physics::vector actualSubtraction{11.2, 2.23, -62.553};
-    CHECK((doctest::Approx(subtraction.x) == actualSubtraction.x &&
-           doctest::Approx(subtraction.y) == actualSubtraction.y &&
-           doctest::Approx(subtraction.z) == actualSubtraction.z));
+    CHECK(doctest::Approx(subtraction.x) == actualSubtraction.x);
+    CHECK(doctest::Approx(subtraction.y) == actualSubtraction.y);
+    CHECK(doctest::Approx(subtraction.z) == actualSubtraction.z);
   }
   SUBCASE("Product") {
     double l{0.25};
     gasSim::physics::vector product{goodVector1 * l};
     gasSim::physics::vector actualProduct{0.275, -0.5275, 14.06325};
-    CHECK((doctest::Approx(product.x) == actualProduct.x &&
-           doctest::Approx(product.y) == actualProduct.y &&
-           doctest::Approx(product.z) == actualProduct.z));
+    CHECK(doctest::Approx(product.x) == actualProduct.x);
+    CHECK(doctest::Approx(product.y) == actualProduct.y);
+    CHECK(doctest::Approx(product.z) == actualProduct.z);
   }
   SUBCASE("Division") {
     double l{10};
     gasSim::physics::vector product{goodVector1 / l};
     gasSim::physics::vector actualProduct{0.11, -0.211, 5.6253};
-    CHECK((doctest::Approx(product.x) == actualProduct.x &&
-           doctest::Approx(product.y) == actualProduct.y &&
-           doctest::Approx(product.z) == actualProduct.z));
+    CHECK(doctest::Approx(product.x) == actualProduct.x);
+    CHECK(doctest::Approx(product.y) == actualProduct.y);
+    CHECK(doctest::Approx(product.z) == actualProduct.z);
   }
   /*
 SUBCASE("Division by zero") {
