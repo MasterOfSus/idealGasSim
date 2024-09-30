@@ -8,15 +8,11 @@ namespace physics {
 struct vector {
   double x, y, z;
 
-  vector();
-  vector(double x, double y, double z);
-  vector(double maxValue);
-
   vector operator+(const vector& v);
   vector operator-(const vector& v);
 
-  vector operator*(double scalar);
-  vector operator/(double scalar);
+  vector operator*(const double scalar);
+  vector operator/(const double scalar);
 
   double operator*(const vector& v);
 
@@ -25,6 +21,8 @@ struct vector {
 
   double norm();
 };
+
+vector randomVector(double maxNorm);
 
 struct particle {
   static double mass;
