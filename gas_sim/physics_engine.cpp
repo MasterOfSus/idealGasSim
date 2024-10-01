@@ -79,13 +79,28 @@ gas::gas(const gas& gas)
       box_{gas.box_} {}
 
 gas::gas(int nParticles, double maxSpeed, const square_box& box) {
-  int i{0};
-  
-  std::generate_n(particles_.begin(), nParticles, [&i, maxSpeed]() {
-    particle p{gridVector(i), randomVector(maxSpeed)};
-    ++i;
-    return p;
-  });
+  int index{0};
+  int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
+  double side{box.side};
+  double particleDistance = side / elementPerSide;
+
+  std::generate_n(
+      particles_.begin(), nParticles,
+      [&index, elementPerSide, side, particleDistance, maxSpeed]() {
+        // aggiungere accert che controlla che le particelle non si
+        // compenetrino
+
+
+        int x{index % elementPerSide};
+        int y{(index / elementPerSide) % elementPerSide};
+        int z{index / (elementPerSide * elementPerSide)};
+
+        particle p{
+            {x * particleDistance, y * particleDistance, z * particleDistance},
+            randomVector(maxSpeed)};
+        ++index;
+        return p;
+      });
 }
 
 const std::vector<particle>& gas::get_particles() const { return particles_; }
