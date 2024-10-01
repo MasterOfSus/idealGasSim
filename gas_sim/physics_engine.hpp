@@ -42,8 +42,9 @@ struct square_box {
 
 class gas {
  public:
-  gas(std::vector<particle> particles, square_box box);
+  gas(const std::vector<particle>& particles, const square_box& box);
   gas(const gas& gas);
+  gas(int nParticles, double maxSpeed, const square_box& box);
 
   const std::vector<particle>& get_particles() const;
   const square_box& get_box() const;

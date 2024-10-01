@@ -1,5 +1,6 @@
 #include "physics_engine.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <random>
 
@@ -40,8 +41,22 @@ vector randomVector(const double maxNorm) {
   std::uniform_real_distribution<double> dist(0.0, pow(maxNorm / 3, 1. / 2.));
   return {dist(eng), dist(eng), dist(eng)};
 }
-// End of vector functions
 
+vector gridVector(int n) {
+  static int tot;
+  static double side;
+  static int elementPerSide = (std::ceil(cbrt(tot)));
+
+  static double particleDistance = side / elementPerSide;
+  // aggiungere accert che controlla che le particelle non si compenetrino
+
+  int x{n % elementPerSide};
+  int y{(n / elementPerSide) % elementPerSide};
+  int z{n / (elementPerSide * elementPerSide)};
+
+  return {x * particleDistance, y * particleDistance, z * particleDistance};
+}
+// End of vector functions
 
 // Definition of particle functions
 bool particle::operator==(const particle& p) const {
@@ -49,20 +64,29 @@ bool particle::operator==(const particle& p) const {
 }
 // End of particle functions
 
-
 // Definition of square_box functions
 bool square_box::operator==(const square_box& b) const {
   return (side == b.side);
 }
 // End of square_box functions
 
-
 // Definition of gas functions
-gas::gas(std::vector<particle> particles, square_box box)
+gas::gas(const std::vector<particle>& particles, const square_box& box)
     : particles_{particles}, box_{box} {}
+
 gas::gas(const gas& gas)
     : particles_(gas.particles_.begin(), gas.particles_.end()),
       box_{gas.box_} {}
+
+gas::gas(int nParticles, double maxSpeed, const square_box& box) {
+  int i{0};
+  
+  std::generate_n(particles_.begin(), nParticles, [&i, maxSpeed]() {
+    particle p{gridVector(i), randomVector(maxSpeed)};
+    ++i;
+    return p;
+  });
+}
 
 const std::vector<particle>& gas::get_particles() const { return particles_; }
 const square_box& gas::get_box() const { return box_; }
