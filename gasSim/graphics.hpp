@@ -2,9 +2,7 @@
 #define GRAPHICS_HPP
 
 namespace gasSim {
-namespace graphics {
-
-} // namespace graphics
-} // namespace gasSim
+namespace graphics {}  // namespace graphics
+}  // namespace gasSim
 
 #endif
