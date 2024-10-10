@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -10,7 +11,7 @@
 #include "../gasSim/physicsEngine.hpp"
 
 double gasSim::physics::Particle::mass = 10;
-double gasSim::physics::Particle::radius = 5;
+double gasSim::physics::Particle::radius = 1;
 
 TEST_CASE("Testing physics::PhysVector") {
   gasSim::physics::PhysVector goodVector1{1.1, -2.11, 56.253};
@@ -71,15 +72,19 @@ CHECK(v1 / scalar == test);
 TEST_CASE("Testing physics::Gas") {
   double goodSide{10.};
   double goodTemperature{1.};
-  int goodNumber{1};
-  gasSim::physics::Particle::mass = 1.;
-  gasSim::physics::Particle::radius = 1.;
+  int goodNumber{10};
 
   gasSim::physics::Gas goodGas{goodNumber, goodTemperature, goodSide};
-  SUBCASE("Constructor") {
+  SUBCASE("Constructor from gas") {
     gasSim::physics::Gas copyGas{goodGas};
-    CHECK(goodGas.getBoxSide() == goodSide);
-    CHECK(goodGas.getParticles().size() == 1);
-    CHECK(goodGas.getParticles()[0].speed.norm() <= 4. / 3. * goodTemperature);
+    CHECK(copyGas.getBoxSide() == goodSide);
+    CHECK(copyGas.getParticles().size() == goodNumber);
+
+    double maxSpeed =4. / 3. * goodTemperature;
+
+    std::for_each(copyGas.getParticles().begin(), copyGas.getParticles().end(),
+                  [=](const gasSim::physics::Particle& p) {
+                    CHECK(p.speed.norm() <= maxSpeed);
+                  });
   }
 }

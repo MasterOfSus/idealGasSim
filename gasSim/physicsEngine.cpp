@@ -65,34 +65,26 @@ Gas::Gas(const Gas& gas) : particles_(gas.particles_), boxSide_(gas.boxSide_) {}
 
 Gas::Gas(int nParticles, double temperature, double boxSide)
     : boxSide_(boxSide) {
-  while (nParticles--) {
-    particles_.emplace_back(
-        Particle{gridVector(nParticles), randomVector(4. / 3. * temperature)});
-  }
-  // int index{0};
-  // int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
-  // double side{};
-  // double particleDistance = side / elementPerSide;
-  // double maxSpeed = 4./3. * temperature; // espressione sbagliata appena
+  int index{0};
+  int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
+  double particleDistance = boxSide / elementPerSide;
+  double maxSpeed = 4. / 3. * temperature;  // espressione sbagliata appena
   // riesco faccio il calcolo
-  /*
-std::generate_n(
-particles_.begin(), nParticles,
-[&index, elementPerSide, side, particleDistance, maxSpeed]() {
-  // aggiungere assert che controlla che le particelle non si
-  // compenetrino
 
-  int x{index % elementPerSide};
-  int y{(index / elementPerSide) % elementPerSide};
-  int z{index / (elementPerSide * elementPerSide)};
+  std::generate_n(std::back_inserter(particles_), nParticles, [=, &index]() {
+    // aggiungere assert che controlla che le particelle non si
+    // compenetrino
 
-  Particle p{
-      {x * particleDistance, y * particleDistance, z * particleDistance},
-      randomVector(maxSpeed)};
-  ++index;
-  return p;
-});
-                  */
+    int x{index % elementPerSide};
+    int y{(index / elementPerSide) % elementPerSide};
+    int z{index / (elementPerSide * elementPerSide)};
+
+    Particle p{
+        {x * particleDistance, y * particleDistance, z * particleDistance},
+        randomVector(maxSpeed)};
+    ++index;
+    return p;
+  });
 }
 
 const std::vector<Particle>& Gas::getParticles() const { return particles_; }
