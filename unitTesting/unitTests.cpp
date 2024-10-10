@@ -70,7 +70,7 @@ CHECK(v1 / scalar == test);
   SUBCASE("Norm") { CHECK(goodVector1.norm() == doctest::Approx(56.3033)); }
 }
 TEST_CASE("Testing physics::Gas") {
-  double goodSide{10.};
+  double goodSide{9.};
   double goodTemperature{1.};
   int goodNumber{10};
 

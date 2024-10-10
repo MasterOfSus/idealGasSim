@@ -1,6 +1,7 @@
 #include "physicsEngine.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <csignal>
 #include <random>
@@ -43,7 +44,7 @@ PhysVector randomVector(const double maxNorm) {
   return {dist(eng), dist(eng), dist(eng)};
 }
 
-PhysVector gridVector(int n) {
+/*PhysVector gridVector(int n) {
   static int tot;
   static double side;
   static int pointPerSide = (std::ceil(std::cbrt(tot)));
@@ -56,7 +57,7 @@ PhysVector gridVector(int n) {
   int z{n / (pointPerSide * pointPerSide)};
 
   return {x * distance, y * distance, z * distance};
-}
+}*/
 // End of PhysVector functions
 
 // Definition of Gas functions
@@ -65,23 +66,28 @@ Gas::Gas(const Gas& gas) : particles_(gas.particles_), boxSide_(gas.boxSide_) {}
 
 Gas::Gas(int nParticles, double temperature, double boxSide)
     : boxSide_(boxSide) {
-  int index{0};
+  assert(nParticles > 0);
+  assert(temperature > 0);
+  assert(boxSide > 0);
+ 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
   double particleDistance = boxSide / elementPerSide;
+  assert(particleDistance > 2 * Particle::radius);
+
   double maxSpeed = 4. / 3. * temperature;  // espressione sbagliata appena
   // riesco faccio il calcolo
 
+  auto gridVector = [=](int i) {
+    int x{i % elementPerSide};
+    int y{(i / elementPerSide) % elementPerSide};
+    int z{i / (elementPerSide * elementPerSide)};
+    return PhysVector{x * particleDistance, y * particleDistance,
+                      z * particleDistance};
+  };
+
+  int index{0};
   std::generate_n(std::back_inserter(particles_), nParticles, [=, &index]() {
-    // aggiungere assert che controlla che le particelle non si
-    // compenetrino
-
-    int x{index % elementPerSide};
-    int y{(index / elementPerSide) % elementPerSide};
-    int z{index / (elementPerSide * elementPerSide)};
-
-    Particle p{
-        {x * particleDistance, y * particleDistance, z * particleDistance},
-        randomVector(maxSpeed)};
+    Particle p{{gridVector(index)}, randomVector(maxSpeed)};
     ++index;
     return p;
   });
