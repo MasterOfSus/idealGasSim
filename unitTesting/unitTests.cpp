@@ -69,22 +69,32 @@ CHECK(v1 / scalar == test);
   */
   SUBCASE("Norm") { CHECK(goodVector1.norm() == doctest::Approx(56.3033)); }
 }
+TEST_CASE("Testing physics::Particle") {
+  gasSim::physics::PhysVector goodPosition{1, 1, 1}, goodSpeed{2, 2, 2};
+  gasSim::physics::Particle goodParticle{goodPosition, goodSpeed};
+  SUBCASE("Equality") {
+    gasSim::physics::Particle copyParticle{goodPosition, goodSpeed};
+    CHECK(goodParticle == copyParticle);
+  }
+}
 TEST_CASE("Testing physics::Gas") {
   double goodSide{9.};
   double goodTemperature{1.};
   int goodNumber{10};
 
   gasSim::physics::Gas goodGas{goodNumber, goodTemperature, goodSide};
+  SUBCASE("Speed check") {
+    double maxSpeed = 4. / 3. * goodTemperature;
+    auto firstIt = goodGas.getParticles().begin(),
+         lastIt = goodGas.getParticles().end();
+
+    std::for_each(firstIt, lastIt, [=](const gasSim::physics::Particle& p) {
+      CHECK(p.speed.norm() <= maxSpeed);
+    });
+  }
   SUBCASE("Constructor from gas") {
     gasSim::physics::Gas copyGas{goodGas};
     CHECK(copyGas.getBoxSide() == goodSide);
     CHECK(copyGas.getParticles().size() == goodNumber);
-
-    double maxSpeed =4. / 3. * goodTemperature;
-
-    std::for_each(copyGas.getParticles().begin(), copyGas.getParticles().end(),
-                  [=](const gasSim::physics::Particle& p) {
-                    CHECK(p.speed.norm() <= maxSpeed);
-                  });
   }
 }

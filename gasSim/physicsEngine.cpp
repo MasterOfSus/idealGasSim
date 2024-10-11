@@ -68,8 +68,14 @@ PhysVector randomVectorGauss(const double standardDev) {
 }*/
 // End of PhysVector functions
 
-// Definition of Gas functions
 
+// Definition of particle functions
+bool Particle::operator==(const Particle& p) const {
+  return (position == p.position && speed == p.speed);
+}
+// End of particle functions
+
+// Definition of Gas functions
 Gas::Gas(const Gas& gas) : particles_(gas.particles_), boxSide_(gas.boxSide_) {}
 
 Gas::Gas(int nParticles, double temperature, double boxSide)
