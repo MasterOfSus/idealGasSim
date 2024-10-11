@@ -22,13 +22,14 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 ## Da discutere nella prossima call
 
-* Per l'attuale implementazione funziona l'operazione vector * scalar, ma non scalar * vector
-* Implementazione con struct collsion?
-    + Se si, allora facciamo un unica funzione collisionTime e viene overloadata 2 volte per le pareti e per le particelle
-    + Se no 1, bisogna fare due funzioni diverse e gestire in qualche modo il passaggio degli oggetti che hanno colliso
-    + Se no 2, ci sarà un unica funzione che gestisce la collisione degli oggetti con 2 cicli/2 algoritmi
 * Quando usare i const
 * Quale regole di naming abbiamo deciso
+* RandomVector
 
+## Cosa discusse
 
-
+* Usiamo per grafici e statistica
+* Implementazione input con command line con librerie
+* Implementiamo scalar*vcetor
+* Implementiamo scatola dentro classe gas
+* Pubblic inheritance per la class collision
