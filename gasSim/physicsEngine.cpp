@@ -39,10 +39,18 @@ bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
 double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
 
 PhysVector randomVector(const double maxNorm) {
+  assert(maxNorm>0);
   static std::default_random_engine eng(std::random_device{}());
-  std::uniform_real_distribution<double> dist(0.0, pow(maxNorm / 3, 1. / 2.));
+  std::uniform_real_distribution<double> dist(0., pow(maxNorm / 3, 1. / 2.));
   return {dist(eng), dist(eng), dist(eng)};
 }
+PhysVector randomVectorGauss(const double standardDev) {
+  assert(standardDev>0);
+  static std::default_random_engine eng(std::random_device{}());
+  std::normal_distribution<double> dist(0., standardDev);
+  return {dist(eng), dist(eng), dist(eng)};
+}
+
 
 /*PhysVector gridVector(int n) {
   static int tot;

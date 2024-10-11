@@ -24,7 +24,8 @@ struct PhysVector {
   double norm() const;
 };
 
-PhysVector randomVector(double maxNorm);
+PhysVector randomVector(const double maxNorm);
+PhysVector randomVectorGauss(const double standardDev);
 
 struct Particle {
   static double mass;
