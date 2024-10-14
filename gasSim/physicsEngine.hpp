@@ -1,6 +1,7 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
+#include <variant>
 #include <vector>
 
 namespace gasSim {
@@ -35,8 +36,20 @@ struct Particle {
 
   PhysVector position;
   PhysVector speed;
+};
+struct Wall {
+  double a, b, c, d;
+};
 
-  bool operator==(const Particle& p) const;
+struct Collision {
+  enum class collisionType { Particle2Particle, Particle2Wall };
+  const collisionType type;
+  const double time;
+  const Particle firstParticle;
+  const std::variant<Particle, Wall> secondItem;
+
+  Collision(double t, Particle p1, Particle p2);
+  Collision(double t, Particle p1, Wall w);
 };
 
 class Gas {

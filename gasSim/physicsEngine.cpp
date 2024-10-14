@@ -34,28 +34,24 @@ bool PhysVector::operator==(const PhysVector& v) const {
   return (x == v.x && y == v.y && z == v.z);
 }
 
-PhysVector operator*(const double c, const PhysVector v){
-  return v*c;
-}
-
+PhysVector operator*(const double c, const PhysVector v) { return v * c; }
 
 bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
 
 double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
 
 PhysVector randomVector(const double maxNorm) {
-  assert(maxNorm>0);
+  assert(maxNorm > 0);
   static std::default_random_engine eng(std::random_device{}());
   std::uniform_real_distribution<double> dist(0., pow(maxNorm / 3, 1. / 2.));
   return {dist(eng), dist(eng), dist(eng)};
 }
 PhysVector randomVectorGauss(const double standardDev) {
-  assert(standardDev>0);
+  assert(standardDev > 0);
   static std::default_random_engine eng(std::random_device{}());
   std::normal_distribution<double> dist(0., standardDev);
   return {dist(eng), dist(eng), dist(eng)};
 }
-
 
 /*PhysVector gridVector(int n) {
   static int tot;
@@ -73,12 +69,21 @@ PhysVector randomVectorGauss(const double standardDev) {
 }*/
 // End of PhysVector functions
 
-
-// Definition of particle functions
-bool Particle::operator==(const Particle& p) const {
-  return (position == p.position && speed == p.speed);
+Collision::Collision(double t, Particle p1, Particle p2)
+    : type(collisionType::Particle2Particle),
+      time(t),
+      firstParticle(p1),
+      secondItem(p2) {
+  assert(time > 0);
 }
-// End of particle functions
+
+Collision::Collision(double t, Particle p1, Wall w)
+    : type(collisionType::Particle2Wall),
+      time(t),
+      firstParticle(p1),
+      secondItem(w) {
+  assert(time > 0);
+}
 
 // Definition of Gas functions
 Gas::Gas(const Gas& gas) : particles_(gas.particles_), boxSide_(gas.boxSide_) {}
@@ -88,7 +93,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   assert(nParticles > 0);
   assert(temperature > 0);
   assert(boxSide > 0);
- 
+
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
   double particleDistance = boxSide / elementPerSide;
   assert(particleDistance > 2 * Particle::radius);

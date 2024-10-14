@@ -47,13 +47,13 @@ TEST_CASE("Testing physics::PhysVector") {
   SUBCASE("Product") {
     double l{0.25};
     gasSim::physics::PhysVector product{goodVector1 * l};
-    gasSim::physics::PhysVector product2{l*goodVector1};
+    gasSim::physics::PhysVector product2{l * goodVector1};
     gasSim::physics::PhysVector actualProduct{0.275, -0.5275, 14.06325};
 
     CHECK(doctest::Approx(product.x) == actualProduct.x);
     CHECK(doctest::Approx(product.y) == actualProduct.y);
     CHECK(doctest::Approx(product.z) == actualProduct.z);
-    CHECK(product==product2);
+    CHECK(product == product2);
   }
   SUBCASE("Division") {
     double l{10};
@@ -80,12 +80,32 @@ CHECK(v1 / scalar == test);
   */
   SUBCASE("Norm") { CHECK(goodVector1.norm() == doctest::Approx(56.3033)); }
 }
-TEST_CASE("Testing physics::Particle") {
-  gasSim::physics::PhysVector goodPosition{1, 1, 1}, goodSpeed{2, 2, 2};
-  gasSim::physics::Particle goodParticle{goodPosition, goodSpeed};
-  SUBCASE("Equality") {
-    gasSim::physics::Particle copyParticle{goodPosition, goodSpeed};
-    CHECK(goodParticle == copyParticle);
+
+TEST_CASE("Testing physics::Collision") {
+  double goodTime{4};
+
+  gasSim::physics::PhysVector goodVector1{4.23, 5.34, 6.45};
+  gasSim::physics::PhysVector goodVector2{5.46, 4.35, 3.24};
+
+  gasSim::physics::Particle goodFirstParticle{goodVector1, goodVector2};
+
+  SUBCASE("Constructor Particle2Particle") {
+    gasSim::physics::PhysVector goodVector3{13.4, -1.99, 49.953};
+    gasSim::physics::PhysVector goodVector4{0.11, -0.211, 5.6253};
+
+    gasSim::physics::Particle goodSecondParticle{goodVector3, goodVector4};
+
+    gasSim::physics::Collision goodCollision{goodTime, goodFirstParticle,
+                                             goodSecondParticle};
+    CHECK(goodCollision.firstParticle.position == goodVector1);
+    CHECK(goodCollision.firstParticle.speed == goodVector2);
+    CHECK(std::get<gasSim::physics::Particle>(goodCollision.secondItem)
+              .position == goodVector3);
+    CHECK(std::get<gasSim::physics::Particle>(goodCollision.secondItem).speed ==
+          goodVector4);
+  }
+  SUBCASE("Constructor Particle2Wall") {
+    //Appena abbiamo deciso cos'è un muro
   }
 }
 TEST_CASE("Testing physics::Gas") {
