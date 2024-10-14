@@ -47,10 +47,13 @@ TEST_CASE("Testing physics::PhysVector") {
   SUBCASE("Product") {
     double l{0.25};
     gasSim::physics::PhysVector product{goodVector1 * l};
+    gasSim::physics::PhysVector product2{l*goodVector1};
     gasSim::physics::PhysVector actualProduct{0.275, -0.5275, 14.06325};
+
     CHECK(doctest::Approx(product.x) == actualProduct.x);
     CHECK(doctest::Approx(product.y) == actualProduct.y);
     CHECK(doctest::Approx(product.z) == actualProduct.z);
+    CHECK(product==product2);
   }
   SUBCASE("Division") {
     double l{10};
@@ -59,6 +62,14 @@ TEST_CASE("Testing physics::PhysVector") {
     CHECK(doctest::Approx(product.x) == actualProduct.x);
     CHECK(doctest::Approx(product.y) == actualProduct.y);
     CHECK(doctest::Approx(product.z) == actualProduct.z);
+  }
+  SUBCASE("Scalar Product") {
+    double scalarProduct1{goodVector1 * goodVector2};
+    double scalarProduct2{goodVector2 * goodVector1};
+    double actualProduct{-341.1171};
+
+    CHECK(scalarProduct1 == actualProduct);
+    CHECK(scalarProduct1 == scalarProduct2);
   }
   /*
 SUBCASE("Division by zero") {

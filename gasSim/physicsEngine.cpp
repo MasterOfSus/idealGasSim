@@ -34,6 +34,11 @@ bool PhysVector::operator==(const PhysVector& v) const {
   return (x == v.x && y == v.y && z == v.z);
 }
 
+PhysVector operator*(const double c, const PhysVector v){
+  return v*c;
+}
+
+
 bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
 
 double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }

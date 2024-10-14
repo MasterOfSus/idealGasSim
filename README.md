@@ -30,6 +30,5 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 * Usiamo per grafici e statistica
 * Implementazione input con command line con librerie
-* Implementiamo scalar*vcetor
 * Implementiamo scatola dentro classe gas
 * Pubblic inheritance per la class collision

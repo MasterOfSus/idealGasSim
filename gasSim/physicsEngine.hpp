@@ -24,6 +24,8 @@ struct PhysVector {
   double norm() const;
 };
 
+PhysVector operator*(const double c, const PhysVector v);
+
 PhysVector randomVector(const double maxNorm);
 PhysVector randomVectorGauss(const double standardDev);
 
