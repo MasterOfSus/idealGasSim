@@ -5,6 +5,7 @@
 #include <cmath>
 #include <csignal>
 #include <random>
+#include <stdexcept>
 
 namespace gasSim {
 namespace physics {
@@ -69,20 +70,40 @@ PhysVector randomVectorGauss(const double standardDev) {
 }*/
 // End of PhysVector functions
 
-Collision::Collision(double t, Particle p1, Particle p2)
-    : type(collisionType::Particle2Particle),
-      time(t),
-      firstParticle(p1),
-      secondItem(p2) {
-  assert(time > 0);
+Collision::Collision(double t, Particle& p1, Particle& p2)
+    : type(CollisionType::ParticleToParticle),
+      firstParticle(&p1),
+      secondParticle(&p2),
+      wall(nullptr),
+      time(t) {}
+
+Collision::Collision(double t, Particle& p1, Wall& w)
+    : type(CollisionType::ParticleToWall),
+      firstParticle(&p1),
+      secondParticle(nullptr),
+      wall(&w),
+      time(t) {}
+
+Collision::CollisionType Collision::getCollisionType() const { return type; }
+double Collision::getTime() const { return time; }
+
+Particle& Collision::getFirstParticle() const { return *firstParticle; }
+
+Particle& Collision::getSecondParticle() const {
+  if (type == CollisionType::ParticleToParticle) {
+    return *secondParticle;  // Restituisce la seconda particella come referenza
+  } else {
+    throw std::runtime_error(
+        "No second particle in a ParticleToWall collision");
+  }
 }
 
-Collision::Collision(double t, Particle p1, Wall w)
-    : type(collisionType::Particle2Wall),
-      time(t),
-      firstParticle(p1),
-      secondItem(w) {
-  assert(time > 0);
+Wall& Collision::getWall() const {
+  if (type == CollisionType::ParticleToWall) {
+    return *wall;
+  } else {
+    throw std::runtime_error("No wall in a ParticleToParticle collision");
+  }
 }
 
 // Definition of Gas functions

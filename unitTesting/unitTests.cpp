@@ -86,26 +86,29 @@ TEST_CASE("Testing physics::Collision") {
 
   gasSim::physics::PhysVector goodVector1{4.23, 5.34, 6.45};
   gasSim::physics::PhysVector goodVector2{5.46, 4.35, 3.24};
-
   gasSim::physics::Particle goodFirstParticle{goodVector1, goodVector2};
 
+  gasSim::physics::PhysVector goodVector3{13.4, -1.99, 49.953};
+  gasSim::physics::PhysVector goodVector4{0.11, -0.211, 5.6253};
+  gasSim::physics::Particle goodSecondParticle{goodVector3, goodVector4};
+
+  gasSim::physics::Collision goodCollision{goodTime, goodFirstParticle,
+                                           goodSecondParticle};
   SUBCASE("Constructor Particle2Particle") {
-    gasSim::physics::PhysVector goodVector3{13.4, -1.99, 49.953};
-    gasSim::physics::PhysVector goodVector4{0.11, -0.211, 5.6253};
-
-    gasSim::physics::Particle goodSecondParticle{goodVector3, goodVector4};
-
-    gasSim::physics::Collision goodCollision{goodTime, goodFirstParticle,
-                                             goodSecondParticle};
-    CHECK(goodCollision.firstParticle.position == goodVector1);
-    CHECK(goodCollision.firstParticle.speed == goodVector2);
-    CHECK(std::get<gasSim::physics::Particle>(goodCollision.secondItem)
-              .position == goodVector3);
-    CHECK(std::get<gasSim::physics::Particle>(goodCollision.secondItem).speed ==
-          goodVector4);
+    CHECK(goodCollision.getFirstParticle().position == goodVector1);
+    CHECK(goodCollision.getFirstParticle().speed == goodVector2);
+    CHECK(goodCollision.getSecondParticle().position == goodVector3);
+    CHECK(goodCollision.getSecondParticle().speed == goodVector4);
+  }
+  SUBCASE("Change the particles") {
+    gasSim::physics::PhysVector actualPosition{4, 0, 4};
+    goodCollision.getFirstParticle().position.x = 4;
+    goodCollision.getFirstParticle().position.y = 0;
+    goodCollision.getFirstParticle().position.z = 4;
+    CHECK(goodCollision.getFirstParticle().position == actualPosition);
   }
   SUBCASE("Constructor Particle2Wall") {
-    //Appena abbiamo deciso cos'è un muro
+    // Appena abbiamo deciso cos'è un muro
   }
 }
 TEST_CASE("Testing physics::Gas") {

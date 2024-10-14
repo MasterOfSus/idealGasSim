@@ -41,15 +41,27 @@ struct Wall {
   double a, b, c, d;
 };
 
-struct Collision {
-  enum class collisionType { Particle2Particle, Particle2Wall };
-  const collisionType type;
-  const double time;
-  const Particle firstParticle;
-  const std::variant<Particle, Wall> secondItem;
+class Collision {
+ public:
+  enum class CollisionType { ParticleToParticle, ParticleToWall };
+  Collision(double t, Particle& p1, Particle& p2);
+  Collision(double t, Particle& p1, Wall& w);
 
-  Collision(double t, Particle p1, Particle p2);
-  Collision(double t, Particle p1, Wall w);
+  CollisionType getCollisionType() const;
+  double getTime() const;
+
+  Particle& getFirstParticle() const;
+
+  Particle& getSecondParticle() const;
+
+  Wall& getWall() const;
+
+ private:
+  CollisionType type;
+  Particle* firstParticle;
+  Particle* secondParticle;
+  Wall* wall;
+  double time;
 };
 
 class Gas {
@@ -60,7 +72,8 @@ class Gas {
   const std::vector<Particle>& getParticles() const;
   double getBoxSide() const;
 
-  void updateGasState();  // called in each iteration of the game loop
+  void updateGasState(
+      Collision fisrtCollision);  // called in each iteration of the game loop
 
  private:
   std::vector<Particle> particles_;
