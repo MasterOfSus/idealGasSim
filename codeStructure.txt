@@ -1,0 +1,65 @@
+Physics engine:
+
+	una struct PhysVector:
+		la struct deve rappresentare un vettore tridimensionale per scopi fisici, in quanto tale non ha inv. di classe
+		membri:
+			tre coordinate, x, y e z
+		metodi/funzioni:
+			+ e +=, - e -=, * e *=, ==, != tra PhysVectors
+			* e *=, / e /= tra un PhysVector e un double
+	
+	una struct Particle:
+		la struct deve rappresentare una particella sferica dotata di massa nello spazio tridimensionale, in quanto tale non ha inv. di classe
+		membri:
+			due PhysVector, position e speed
+			due double static, mass e radius (il programma non ha lo scopo di rappresentare particelle di diverse dimensioni)
+		metodi/funzioni:
+			una funzione move(particle, t), che muove la particella nello spazio alla posizione che avra nel tempo t0 + t
+	
+	una class Collision:
+		membri:
+		costruttori:
+			costruttore di default
+		metodi/funzioni:
+			una funzione virtuale pura solveCollision che risolve la collisione
+	una class particleCollision:
+		eredita pubblicamente da Collision
+		membri:
+			due Particle
+		costruttori:
+			un costruttore che prende due particle e il tempo
+		metodi:
+			il metodo solveCollision per particelle
+	una class wallCollision:
+		eredita pubblicamente da Collision
+		membri:
+			una Particle
+			un indicatore per il muro ????
+		costruttori:
+			un costruttore che prende una particle, l'indicatore del muro e il tempo
+		metodi:
+			il metodo solveCollision per muro-particella
+
+	una class Gas:
+		la classe deve rappresentare un gas in uno spazio tridimensionale contenente un solo tipo di particella sferica e contenuto in un contenitore cubico, in quanto tale ha due invarianti di classe da rispettare:
+			in una qualsiasi istanza del gas, le particelle devono trovarsi all'interno della scatola
+			in una qualsiasi istanza del gas, non devono esserci particelle la cui distanza dei centri sia inferiore al raggio delle particelle
+		membri:
+			un std::vector<Particle>, contenente tutte le particelle del gas
+			un double time, che rappresenta la quantita di tempo passata dal primo stato del gas
+		costruttori:
+			un costruttore parametrico a cui si passano: numero di particelle, temperatura, lato del contenitore
+			un costruttore a copia
+		funzioni membro:
+			una funzione moveGas che fornito un tempo sposta le particelle secondo la legge oraria		private???
+			una funzione getNextCollision che trova la collisione successiva, chiama moveGas e restituisce la collisione;
+				la funzione tiene in memoria una collisione PROBLEMA WEEWOOWEEWOO
+			una funzione goToNextCollision()
+
+Graphics engine:
+	Importa sfml
+	una funzione drawSphere
+	una funzione drawParticle
+	una funzione drawWall
+	una funzione drawAxes
+	una funzione drawGas
