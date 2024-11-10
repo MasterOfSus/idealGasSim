@@ -6,6 +6,7 @@
 #include <csignal>
 #include <random>
 #include <stdexcept>
+#include <string>
 
 namespace gasSim {
 namespace physics {
@@ -70,41 +71,33 @@ PhysVector randomVectorGauss(const double standardDev) {
 }*/
 // End of PhysVector functions
 
-Collision::Collision(double t, Particle& p1, Particle& p2)
-    : type(CollisionType::ParticleToParticle),
-      firstParticle(&p1),
-      secondParticle(&p2),
-      wall(nullptr),
-      time(t) {}
+// Definition of Collision functions
+Collision::Collision(double t, Particle& p1) : time(t), firstParticle_(&p1) {}
 
-Collision::Collision(double t, Particle& p1, Wall& w)
-    : type(CollisionType::ParticleToWall),
-      firstParticle(&p1),
-      secondParticle(nullptr),
-      wall(&w),
-      time(t) {}
-
-Collision::CollisionType Collision::getCollisionType() const { return type; }
 double Collision::getTime() const { return time; }
 
-Particle& Collision::getFirstParticle() const { return *firstParticle; }
+Particle* Collision::getFirstParticle() const {
+  return firstParticle_;
+}  // ATTENZIONE QUA COI PUNTATORI CHE PUNTANO
+// End of Collision functions
 
-Particle& Collision::getSecondParticle() const {
-  if (type == CollisionType::ParticleToParticle) {
-    return *secondParticle;  // Restituisce la seconda particella come referenza
-  } else {
-    throw std::runtime_error(
-        "No second particle in a ParticleToWall collision");
-  }
-}
+// Definition of WallCollision functions
+WallCollision::WallCollision(double t, Particle& p1, char wall)
+    : Collision(t, p1), wall_(wall) {}
 
-Wall& Collision::getWall() const {
-  if (type == CollisionType::ParticleToWall) {
-    return *wall;
-  } else {
-    throw std::runtime_error("No wall in a ParticleToParticle collision");
-  }
+std::string WallCollision::getCollisionType() const {
+  return "Particle to Wall Collision";
 }
+// End of WallCollision functions
+
+// Definition of ParticleCollision functions
+ParticleCollision::ParticleCollision(double t, Particle& p1, Particle& p2)
+    : Collision(t, p1), secondParticle_(&p2) {}
+
+std::string ParticleCollision::getCollisionType() const {
+  return "Particle to Particle Collision";
+}
+// End of ParticleCollision functions
 
 // Definition of Gas functions
 Gas::Gas(const Gas& gas) : particles_(gas.particles_), boxSide_(gas.boxSide_) {}
@@ -139,8 +132,21 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
 }
 
 const std::vector<Particle>& Gas::getParticles() const { return particles_; }
-double Gas::getBoxSide() const { return boxSide_; }
-// End of Gas functions
 
+double Gas::getBoxSide() const { return boxSide_; }
+
+void Gas::gasLoop(int iteration) {
+  double time{INFINITY};
+
+  Collision* partCollision = findFirstPartCollision(time);
+  Collision* wallCollision = findFirstWallCollision(time);
+
+  Collision* firstCollision =
+      (partCollision->getTime() < wallCollision->getTime()) ? partCollision
+                                                            : wallCollision;
+
+  updateGasState(firstCollision);
+}
+// End of Gas functions
 }  // namespace physics
 }  // namespace gasSim

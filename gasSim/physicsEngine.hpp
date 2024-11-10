@@ -1,6 +1,7 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
+#include <string>
 #include <variant>
 #include <vector>
 
@@ -43,25 +44,38 @@ struct Wall {
 
 class Collision {
  public:
-  enum class CollisionType { ParticleToParticle, ParticleToWall };
-  Collision(double t, Particle& p1, Particle& p2);
-  Collision(double t, Particle& p1, Wall& w);
+  Collision(double t, Particle& p1);
 
-  CollisionType getCollisionType() const;
   double getTime() const;
 
-  Particle& getFirstParticle() const;
+  Particle* getFirstParticle() const;
 
-  Particle& getSecondParticle() const;
-
-  Wall& getWall() const;
+  virtual std::string getCollisionType() const = 0;
+  virtual void resolveCollision() = 0;
 
  private:
-  CollisionType type;
-  Particle* firstParticle;
-  Particle* secondParticle;
-  Wall* wall;
+  Particle* firstParticle_;
   double time;
+};
+
+class WallCollision : public Collision {
+ public:
+  WallCollision(double t, Particle& p1, char wall);
+  std::string getCollisionType() const override;
+  void resolveCollision() override;
+
+ private:
+  char wall_;
+};
+
+class ParticleCollision : public Collision {
+ public:
+  ParticleCollision(double t, Particle& p1, Particle& p2);
+  std::string getCollisionType() const override;
+  void resolveCollision() override;
+
+ private:
+  Particle* secondParticle_;
 };
 
 class Gas {
@@ -72,15 +86,19 @@ class Gas {
   const std::vector<Particle>& getParticles() const;
   double getBoxSide() const;
 
+
+  void gasLoop(int iteration);
   void updateGasState(
-      Collision fisrtCollision);  // called in each iteration of the game loop
+      Collision* fisrtCollision);  // called in each iteration of the game loop
+  WallCollision* findFirstWallCollision(double maxTime);
+  ParticleCollision* findFirstPartCollision(double maxTime);
+
 
  private:
   std::vector<Particle> particles_;
   double boxSide_;  // side of the cubical container
-  void updatePositions(double time);
+  void updatePositions(double time); // probabilmente non servirà più
 };
-
 }  // namespace physics
 }  // namespace gasSim
 
