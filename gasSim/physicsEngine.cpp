@@ -3,10 +3,14 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <complex>
 #include <csignal>
+#include <cstddef>
+#include <iostream>
 #include <random>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace gasSim {
 namespace physics {
@@ -72,7 +76,7 @@ PhysVector randomVectorGauss(const double standardDev) {
 // End of PhysVector functions
 
 // Definition of Collision functions
-Collision::Collision(double t, Particle& p1) : time(t), firstParticle_(&p1) {}
+Collision::Collision(double t, Particle* p1) : time(t), firstParticle_(p1) {}
 
 double Collision::getTime() const { return time; }
 
@@ -82,20 +86,31 @@ Particle* Collision::getFirstParticle() const {
 // End of Collision functions
 
 // Definition of WallCollision functions
-WallCollision::WallCollision(double t, Particle& p1, char wall)
+WallCollision::WallCollision(double t, Particle* p1, char wall)
     : Collision(t, p1), wall_(wall) {}
 
+char WallCollision::getWall() const { return wall_; }
 std::string WallCollision::getCollisionType() const {
   return "Particle to Wall Collision";
 }
+
+void WallCollision::resolve() { std::cout << "Risolvo la collisione muro"; }
 // End of WallCollision functions
 
 // Definition of ParticleCollision functions
-ParticleCollision::ParticleCollision(double t, Particle& p1, Particle& p2)
-    : Collision(t, p1), secondParticle_(&p2) {}
+ParticleCollision::ParticleCollision(double t, Particle* p1, Particle* p2)
+    : Collision(t, p1), secondParticle_(p2) {}
+
+Particle* ParticleCollision::getSecondParticle() const {
+  return secondParticle_;
+}
 
 std::string ParticleCollision::getCollisionType() const {
   return "Particle to Particle Collision";
+}
+
+void ParticleCollision::resolve() {
+  std::cout << "Risolvo la collisione particella";
 }
 // End of ParticleCollision functions
 
@@ -135,18 +150,81 @@ const std::vector<Particle>& Gas::getParticles() const { return particles_; }
 
 double Gas::getBoxSide() const { return boxSide_; }
 
-void Gas::gasLoop(int iteration) {
-  double time{INFINITY};
+void Gas::gasLoop(int nIterations) {
+  double deltaTime{INFINITY};
 
-  Collision* partCollision = findFirstPartCollision(time);
-  Collision* wallCollision = findFirstWallCollision(time);
+  ParticleCollision a{findFirstPartCollision(deltaTime)};
+  //WallCollision b{findFirstWallCollision(deltaTime)};
+  Collision* firstCollision{nullptr};
+
+  if (/*a.getTime() > b.getTime()*/ true) {
+    firstCollision = &a;
+  } else {
+    //firstCollision = &b;
+  }
+
+  firstCollision->resolve();
+  // Collision* firstCollision = &pippo;
+  /*Collision* wallCollision = findFirstWallCollision(time);
 
   Collision* firstCollision =
       (partCollision->getTime() < wallCollision->getTime()) ? partCollision
                                                             : wallCollision;
 
-  updateGasState(firstCollision);
+  updateGasState(firstCollision);*/
 }
+ParticleCollision Gas::findFirstPartCollision(double minTime) {
+  assert(minTime > 0);
+  auto externalIterator = particles_.begin();
+  auto endIterator = particles_.end();
+  Particle* firstParticle{nullptr};
+  Particle* secondParticle{nullptr};
+
+  std::for_each(externalIterator, endIterator, [&](const Particle& p1) {
+    auto internalIterator = externalIterator + 1;
+    std::for_each(internalIterator, endIterator, [&](const Particle& p2) {
+      double time{collisionTime(p1, p2)};
+      if (time < minTime) {
+        minTime = time;
+        firstParticle = &(*externalIterator);
+        secondParticle = &(*internalIterator);
+      }
+    });
+  });
+
+  assert(firstParticle != nullptr && secondParticle != nullptr);
+  return {minTime, firstParticle, secondParticle};
+}
+
+double collisionTime(const Particle& p1, const Particle& p2) {
+  PhysVector relativeSpeed = p1.speed - p2.speed;
+  PhysVector relativePosition = p1.position - p2.position;
+
+  double a = relativeSpeed * relativeSpeed;
+  double b = relativePosition * relativeSpeed;
+  double c =
+      (relativePosition * relativePosition) - 4 * std::pow(Particle::radius, 2);
+
+  double result = INFINITY;
+
+  double discriminant = std::pow(b, 2) - a * c;
+
+  if (discriminant > 0) {
+    double sqrtDiscriminant = std::sqrt(discriminant);
+
+    double t1 = (-b - sqrtDiscriminant) / a;
+    double t2 = (-b + sqrtDiscriminant) / a;
+
+    if (t1 > 0) {
+      result = t1;
+    } else if (t2 > 0) {
+      result = t2;
+    }
+  }
+  return result;
+}
+
+double collisionTime(const Particle& p1) {}
 // End of Gas functions
 }  // namespace physics
 }  // namespace gasSim

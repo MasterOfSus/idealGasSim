@@ -11,7 +11,7 @@
 #include "../gasSim/physicsEngine.hpp"
 
 double gasSim::physics::Particle::mass = 10;
-double gasSim::physics::Particle::radius = 1;
+double gasSim::physics::Particle::radius = 0.1;
 
 TEST_CASE("Testing physics::PhysVector") {
   gasSim::physics::PhysVector goodVector1{1.1, -2.11, 56.253};
@@ -92,20 +92,54 @@ TEST_CASE("Testing physics::Collision") {
   gasSim::physics::PhysVector goodVector4{0.11, -0.211, 5.6253};
   gasSim::physics::Particle goodSecondParticle{goodVector3, goodVector4};
 
-  gasSim::physics::Collision goodCollision{goodTime, goodFirstParticle,
-                                           goodSecondParticle};
+  gasSim::physics::ParticleCollision goodCollision{goodTime, &goodFirstParticle,
+                                                   &goodSecondParticle};
   SUBCASE("Constructor Particle2Particle") {
-    CHECK(goodCollision.getFirstParticle().position == goodVector1);
-    CHECK(goodCollision.getFirstParticle().speed == goodVector2);
-    CHECK(goodCollision.getSecondParticle().position == goodVector3);
-    CHECK(goodCollision.getSecondParticle().speed == goodVector4);
+    CHECK(goodCollision.getFirstParticle()->position == goodVector1);
+    CHECK(goodCollision.getFirstParticle()->speed == goodVector2);
+    CHECK(goodCollision.getSecondParticle()->position == goodVector3);
+    CHECK(goodCollision.getSecondParticle()->speed == goodVector4);
   }
   SUBCASE("Change the particles") {
     gasSim::physics::PhysVector actualPosition{4, 0, 4};
-    goodCollision.getFirstParticle().position.x = 4;
-    goodCollision.getFirstParticle().position.y = 0;
-    goodCollision.getFirstParticle().position.z = 4;
-    CHECK(goodCollision.getFirstParticle().position == actualPosition);
+    gasSim::physics::PhysVector actualSpeed{1.34, 0.04, 9.3924};
+    goodCollision.getFirstParticle()->position.x = 4;
+    goodCollision.getFirstParticle()->position.y = 0;
+    goodCollision.getFirstParticle()->position.z = 4;
+    goodCollision.getSecondParticle()->speed = actualSpeed;
+    CHECK(goodCollision.getFirstParticle()->position == actualPosition);
+    CHECK(goodCollision.getSecondParticle()->speed == actualSpeed);
+  }
+}
+TEST_CASE("Testing physics::collisionTime") {
+  gasSim::physics::Particle goodParticle1{{0, 0, 0}, {1, 1, 1}};
+  gasSim::physics::Particle goodParticle2{{0, 0, 1}, {1, 1, -1}};
+
+  std::cout << "\n\n\n\n"
+            << gasSim::physics::collisionTime(goodParticle1, goodParticle2)
+            << "\n\n\n\n";
+}
+TEST_CASE("Testing physics::Collision") {
+  double goodTime{4};
+  char goodWall{'a'};
+
+  gasSim::physics::PhysVector goodVector1{4.23, 5.34, 6.45};
+  gasSim::physics::PhysVector goodVector2{5.46, 4.35, 3.24};
+  gasSim::physics::Particle goodFirstParticle{goodVector1, goodVector2};
+
+  gasSim::physics::WallCollision goodCollision{goodTime, &goodFirstParticle,
+                                               goodWall};
+  SUBCASE("Constructor Wall2Particle") {
+    CHECK(goodCollision.getFirstParticle()->position == goodVector1);
+    CHECK(goodCollision.getFirstParticle()->speed == goodVector2);
+    CHECK(goodCollision.getWall() == goodWall);
+  }
+  SUBCASE("Change the particles") {
+    gasSim::physics::PhysVector actualPosition{4, 0, 4};
+    goodCollision.getFirstParticle()->position.x = 4;
+    goodCollision.getFirstParticle()->position.y = 0;
+    goodCollision.getFirstParticle()->position.z = 4;
+    CHECK(goodCollision.getFirstParticle()->position == actualPosition);
   }
   SUBCASE("Constructor Particle2Wall") {
     // Appena abbiamo deciso cos'è un muro
@@ -114,7 +148,7 @@ TEST_CASE("Testing physics::Collision") {
 TEST_CASE("Testing physics::Gas") {
   double goodSide{9.};
   double goodTemperature{1.};
-  int goodNumber{10};
+  int goodNumber{100};
 
   gasSim::physics::Gas goodGas{goodNumber, goodTemperature, goodSide};
   SUBCASE("Speed check") {
@@ -130,5 +164,11 @@ TEST_CASE("Testing physics::Gas") {
     gasSim::physics::Gas copyGas{goodGas};
     CHECK(copyGas.getBoxSide() == goodSide);
     CHECK(copyGas.getParticles().size() == goodNumber);
+  }
+  SUBCASE("Find first Particle Collsion") {
+    goodGas.findFirstPartCollision(INFINITY);
+  }
+  SUBCASE("Resolve Collision"){
+    goodGas.gasLoop(1);
   }
 }

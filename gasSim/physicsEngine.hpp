@@ -44,25 +44,26 @@ struct Wall {
 
 class Collision {
  public:
-  Collision(double t, Particle& p1);
+  Collision(double t, Particle* p1);
 
   double getTime() const;
 
   Particle* getFirstParticle() const;
 
   virtual std::string getCollisionType() const = 0;
-  virtual void resolveCollision() = 0;
+  virtual void resolve() = 0;
 
  private:
-  Particle* firstParticle_;
   double time;
+  Particle* firstParticle_;
 };
 
 class WallCollision : public Collision {
  public:
-  WallCollision(double t, Particle& p1, char wall);
+  WallCollision(double t, Particle* p1, char wall);
+  char getWall() const;
   std::string getCollisionType() const override;
-  void resolveCollision() override;
+  void resolve() override;
 
  private:
   char wall_;
@@ -70,9 +71,10 @@ class WallCollision : public Collision {
 
 class ParticleCollision : public Collision {
  public:
-  ParticleCollision(double t, Particle& p1, Particle& p2);
+  ParticleCollision(double t, Particle* p1, Particle* p2);
+  Particle* getSecondParticle() const;
   std::string getCollisionType() const override;
-  void resolveCollision() override;
+  void resolve() override;
 
  private:
   Particle* secondParticle_;
@@ -86,19 +88,21 @@ class Gas {
   const std::vector<Particle>& getParticles() const;
   double getBoxSide() const;
 
-
-  void gasLoop(int iteration);
+  void gasLoop(int nIterations);
   void updateGasState(
-      Collision* fisrtCollision);  // called in each iteration of the game loop
-  WallCollision* findFirstWallCollision(double maxTime);
-  ParticleCollision* findFirstPartCollision(double maxTime);
-
+      Collision fisrtCollision);  // called in each iteration of the game loop
+  WallCollision findFirstWallCollision(double maxTime);
+  ParticleCollision findFirstPartCollision(double maxTime);
 
  private:
   std::vector<Particle> particles_;
-  double boxSide_;  // side of the cubical container
-  void updatePositions(double time); // probabilmente non servirà più
+  double boxSide_;                    // side of the cubical container
+  void updatePositions(double time);  // probabilmente non servirà più
 };
+
+double collisionTime(const Particle& p1, const Particle& p2);
+
+double collisionTime(const Particle& p1);
 }  // namespace physics
 }  // namespace gasSim
 
