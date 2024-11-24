@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -16,14 +17,38 @@
 double gasSim::Particle::mass = 10;
 double gasSim::Particle::radius = 0.1;
 
-TEST_CASE("Testing algorithms::for_any_couple") {
+TEST_CASE("Testing for_any_couple") {
   std::vector<int> num{1, 2, 3, 4};
-  int i{0};
-  gasSim::for_each_couple(num.begin(), num.end(), [&i](int a, int b) {
-    std::cout << " " << a << " " << b << "\n";
-    ++i;
-  });
-  CHECK(i == 6);
+
+  SUBCASE("Correct generation of couples") {
+    std::vector<std::set<int>> couples{};
+    // Usiamo std::set perchè non importa l'ordine
+
+    gasSim::for_each_couple(num.begin(), num.end(),
+                            [&](int a, int b) { couples.push_back({a, b}); });
+
+    std::vector<std::set<int>> actualCouples{{1, 2}, {1, 3}, {1, 4},
+                                             {2, 3}, {2, 4}, {3, 4}};
+    CHECK(couples == actualCouples);
+  }
+  SUBCASE("Empty input vector") {
+    std::vector<int> emptyNum{};
+    std::vector<std::set<int>> couples{};
+
+    gasSim::for_each_couple(emptyNum.begin(), emptyNum.end(),
+                            [&](int a, int b) { couples.push_back({a, b}); });
+
+    CHECK(couples.empty());
+  }
+  SUBCASE("Single element vector") {
+    std::vector<int> singleNum{5};
+    std::vector<std::set<int>> couples{};
+
+    gasSim::for_each_couple(singleNum.begin(), singleNum.end(),
+                            [&](int a, int b) { couples.push_back({a, b}); });
+
+    CHECK(couples.empty());
+  }
 }
 
 TEST_CASE("Testing PhysVector") {
@@ -33,7 +58,6 @@ TEST_CASE("Testing PhysVector") {
   // gasSim::PhysVector weirdIntVector{-5, 6, 3};
   gasSim::PhysVector randVec{gasSim::randomVector(5)};
   // gasSim::PhysVector randomvec2(67.);
-  std::string expectedMemberType = "double";
   SUBCASE("Constructor") {
     CHECK(vec1.x == 1.1);
     CHECK(vec1.y == -2.11);
@@ -42,7 +66,15 @@ TEST_CASE("Testing PhysVector") {
     CHECK(vec2.y == 0.12);
     CHECK(vec2.z == -6.3);
   }
-  SUBCASE("Random constructor") { CHECK(randVec.norm() <= 5); }
+  SUBCASE("Equality") {
+    CHECK(vec1 == vec1);
+    CHECK(vec2 == vec2);
+  }
+  SUBCASE("Random constructor") {
+    gasSim::PhysVector randVec2{gasSim::randomVector(5)};
+    CHECK(randVec.norm() <= 5);
+    CHECK(randVec2 != randVec);
+  }
   SUBCASE("Sum") {
     gasSim::PhysVector sum{vec1 + vec2};
     gasSim::PhysVector actualSum{13.4, -1.99, 49.953};
@@ -76,6 +108,13 @@ TEST_CASE("Testing PhysVector") {
     CHECK(doctest::Approx(division.y) == actualDivision.y);
     CHECK(doctest::Approx(division.z) == actualDivision.z);
   }
+  SUBCASE("Division by zero") {
+    double l{0};
+    gasSim::PhysVector division{vec1 / l};
+    gasSim::PhysVector actualDivision{INFINITY, -INFINITY, INFINITY};
+
+    CHECK(division == actualDivision);
+  }
   SUBCASE("Scalar Product") {
     double scalarProduct1{vec1 * vec2};
     double scalarProduct2{vec2 * vec1};
@@ -84,16 +123,18 @@ TEST_CASE("Testing PhysVector") {
     CHECK(scalarProduct1 == actualProduct);
     CHECK(scalarProduct1 == scalarProduct2);
   }
-  SUBCASE("Division by zero") {
-    double l{0};
-    gasSim::PhysVector division{vec1 / l};
-    gasSim::PhysVector actualDivision{INFINITY, -INFINITY, INFINITY};
-
-    CHECK(division == actualDivision);
-  }
   SUBCASE("Norm") { CHECK(vec1.norm() == doctest::Approx(56.3033)); }
 }
 
+TEST_CASE("Testing Particle") {
+  gasSim::Particle part1{{5.28, 9.14, 0.36}, {3.49, 2.05, 7.18}};
+  gasSim::Particle part2{{5.30, 9.05, 0.37}, {1.29, 7.03, 8.45}};
+  gasSim::Particle part3{{6.94, 3.50, 7.18}, {0.16, 9.38, 4.57}};
+  SUBCASE("particles overlap") {
+    CHECK(gasSim::particleOverlap(part1, part2) == true);
+    CHECK(gasSim::particleOverlap(part1, part3) == false);
+  }
+}
 TEST_CASE("Testing Collision") {
   double time{4};
 
