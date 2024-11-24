@@ -13,12 +13,13 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 ## To do
 
-- [x] Aggiungere costruttori che inseriscono solo particelle e costruttori che deleghino
-- [ ] Scrivere gli unit tests
-- [x] Capire ed implementare la gestione degli urti a piu di due particelle (facoltativo) -> NO
-- [ ] Inserire una svalangata di assert una volta completata l'implementazione di base
+- [ ] Unit test per for_any_couple()
 - [ ] Exception handling
-- [ ] Migliorare find_iteration()
+    - [ ] Trow quando c'è qualcosa che non va e fare il catch nel main
+- [ ] Sistemare i test del costruttore del gas
+- [ ] Togliere i namespace extra
+- [ ] Implementare il gas loop con gli if
+
 
 ## Da discutere nella prossima call
 
@@ -26,9 +27,28 @@ In alternative just a loose function "coordinates" that does roughly the same th
 * Quale regole di naming abbiamo deciso
 * RandomVector
 
+
 ## Cosa discusse
 
 * Usiamo per grafici e statistica
-* Implementazione input con command line con librerie
+* NO BOTTONI in una user interface grafica
+* Implementazione input con command line con librerie:
+    * 
 * Implementiamo scatola dentro classe gas
 * Pubblic inheritance per la class collision
+
+
+## Cosa da fare
+
+Nicco input, output
+Liam graphics, opzionalmente statistica
+Diego physicsEngine, forse main
+
+## Interface
+
+* Una modalità tutti i parametri inseriti per quello che noi consideriamo standard
+* Opzione --help, opzione di default
+* Opzione --config, che fa partire il configuratore per la scelta dei dati di base
+* Opzione --gui=false|true, per vedere tutta la roba di Liam
+* Opzione --print, per printare in terminal con i valori
+* Opzione --save=graphics,data , per salvare grafici e video?

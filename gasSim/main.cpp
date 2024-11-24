@@ -1,14 +1,16 @@
 #include "physicsEngine.hpp"
 
-int main(){
-    int numeroParticelle;
-    double temp;
-    double side;
+double gasSim::physics::Particle::mass = 10;
+double gasSim::physics::Particle::radius = 0.1;
 
-    gasSim::physics::Gas Scurreggione{numeroParticelle, temp, side};
+int main() {
+  int numeroParticelle;
+  double temp;
+  double side;
 
-    while (true) {
-    //Scurreggione.updateGasState(Collision fisrtCollision)
-    }
+  gasSim::physics::Gas Scurreggione{numeroParticelle, temp, side};
 
+  while (true) {
+    // Scurreggione.updateGasState(Collision fisrtCollision)
+  }
 }

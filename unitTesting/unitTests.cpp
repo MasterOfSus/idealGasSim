@@ -1,17 +1,31 @@
 #include <algorithm>
 #include <cmath>
+#include <exception>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "../gasSim/graphics.hpp"
 #include "doctest.h"
 // #include "input.hpp"
+#include "../gasSim/algorithms.hpp"
 #include "../gasSim/output.hpp"
 #include "../gasSim/physicsEngine.hpp"
 
 double gasSim::physics::Particle::mass = 10;
 double gasSim::physics::Particle::radius = 0.1;
+
+TEST_CASE("Testing algorithms::for_any_couple") {
+  std::vector<int> goodNumbers{1, 2, 3, 4};
+  int i{0};
+  gasSim::algorithm::for_each_couple(goodNumbers.begin(), goodNumbers.end(),
+                                    [&i](int a, int b) {
+                                      std::cout << " " << a << " " << b << "\n";
+                                      ++i;
+                                    });
+  CHECK(i == 6);
+}
 
 TEST_CASE("Testing physics::PhysVector") {
   gasSim::physics::PhysVector goodVector1{1.1, -2.11, 56.253};
@@ -168,7 +182,11 @@ TEST_CASE("Testing physics::Gas") {
   SUBCASE("Find first Particle Collsion") {
     goodGas.findFirstPartCollision(INFINITY);
   }
-  SUBCASE("Resolve Collision"){
-    goodGas.gasLoop(1);
-  }
+  SUBCASE("Resolve Collision") { goodGas.gasLoop(1); }
+}
+TEST_CASE("Testing physics::Gas 2"){
+  gasSim::physics::Particle p1{{0,0,0}, {1,1,1}};
+  gasSim::physics::Particle p2{{0,0,0.09}, {5,6,7}};
+  std::vector<gasSim::physics::Particle> badParticles{p1,p2};
+  gasSim::physics::Gas badGas{badParticles, 5};
 }

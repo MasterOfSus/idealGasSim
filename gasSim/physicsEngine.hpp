@@ -38,6 +38,8 @@ struct Particle {
   PhysVector position;
   PhysVector speed;
 };
+bool particleOverlap(const Particle& p1, const Particle& p2);
+
 struct Wall {
   double a, b, c, d;
 };
@@ -83,6 +85,7 @@ class ParticleCollision : public Collision {
 class Gas {
  public:
   Gas(const Gas& gas);
+  Gas(std::vector<Particle> particles, double boxSide);
   Gas(int nParticles, double temperature, double boxSide);
 
   const std::vector<Particle>& getParticles() const;

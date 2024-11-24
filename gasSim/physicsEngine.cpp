@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include "algorithms.hpp"
+
 namespace gasSim {
 namespace physics {
 
@@ -58,22 +60,18 @@ PhysVector randomVectorGauss(const double standardDev) {
   std::normal_distribution<double> dist(0., standardDev);
   return {dist(eng), dist(eng), dist(eng)};
 }
-
-/*PhysVector gridVector(int n) {
-  static int tot;
-  static double side;
-  static int pointPerSide = (std::ceil(std::cbrt(tot)));
-
-  static double distance = side / pointPerSide;
-  // aggiungere accert che controlla che le particelle non si compenetrino
-
-  int x{n % pointPerSide};
-  int y{(n / pointPerSide) % pointPerSide};
-  int z{n / (pointPerSide * pointPerSide)};
-
-  return {x * distance, y * distance, z * distance};
-}*/
 // End of PhysVector functions
+
+// Definitio of Particle functions
+bool particleOverlap(const Particle& p1, const Particle& p2) {
+  double centerDistance{(p1.position - p2.position).norm()};
+  if (centerDistance < (p1.radius + p2.radius)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+// End of Particle functions
 
 // Definition of Collision functions
 Collision::Collision(double t, Particle* p1) : time(t), firstParticle_(p1) {}
@@ -115,7 +113,22 @@ void ParticleCollision::resolve() {
 // End of ParticleCollision functions
 
 // Definition of Gas functions
-Gas::Gas(const Gas& gas) : particles_(gas.particles_), boxSide_(gas.boxSide_) {}
+Gas::Gas(const Gas& gas)
+    : particles_(gas.getParticles()), boxSide_(gas.getBoxSide()) {}
+
+Gas::Gas(std::vector<Particle> particles, double boxSide)
+    : particles_(particles), boxSide_(boxSide) {
+  assert(boxSide_ > 0);
+  assert(particles_.size() > 0);
+
+  std::for_each(particles_.begin(), particles_.end(), [&](const Particle& p) {
+     assert(p.position.x<boxSide_);
+  });
+  algorithm::for_each_couple(particles.begin(), particles.end(),
+                             [](const Particle& p1, const Particle& p2) {
+                               assert(particleOverlap(p1, p2) == false);
+                             });
+}
 
 Gas::Gas(int nParticles, double temperature, double boxSide)
     : boxSide_(boxSide) {
@@ -154,13 +167,13 @@ void Gas::gasLoop(int nIterations) {
   double deltaTime{INFINITY};
 
   ParticleCollision a{findFirstPartCollision(deltaTime)};
-  //WallCollision b{findFirstWallCollision(deltaTime)};
+  // WallCollision b{findFirstWallCollision(deltaTime)};
   Collision* firstCollision{nullptr};
 
   if (/*a.getTime() > b.getTime()*/ true) {
     firstCollision = &a;
   } else {
-    //firstCollision = &b;
+    // firstCollision = &b;
   }
 
   firstCollision->resolve();
