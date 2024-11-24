@@ -15,7 +15,8 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 - [ ] Unit test per for_any_couple()
 - [ ] Exception handling
-    - [ ] Trow quando c'è qualcosa che non va e fare il catch nel main
+    - [ ] Throw quando c'è qualcosa che non va e fare il catch nel main
+    - [x] std::invalid_argument per gli argomenti delle funzioni
 - [ ] Sistemare i test del costruttore del gas
 - [ ] Togliere i namespace extra
 - [ ] Implementare il gas loop con gli if

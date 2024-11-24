@@ -1,10 +1,10 @@
 #include "physicsEngine.hpp"
 
-double gasSim::physics::Particle::mass = 10;
-double gasSim::physics::Particle::radius = 0.1;
+double gasSim::Particle::mass = 10;
+double gasSim::Particle::radius = 0.1;
 
 int main() {
   
-  gasSim::physics::randomVector(-1);
+  gasSim::randomVector(-1);
 
 }

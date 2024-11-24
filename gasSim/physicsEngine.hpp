@@ -6,7 +6,6 @@
 #include <vector>
 
 namespace gasSim {
-namespace physics {
 struct PhysVector {
   double x;
   double y;
@@ -106,7 +105,6 @@ class Gas {
 double collisionTime(const Particle& p1, const Particle& p2);
 
 double collisionTime(const Particle& p1);
-}  // namespace physics
 }  // namespace gasSim
 
 #endif

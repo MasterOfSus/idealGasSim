@@ -15,7 +15,6 @@
 #include "algorithms.hpp"
 
 namespace gasSim {
-namespace physics {
 
 // Definition of vector functions
 PhysVector PhysVector::operator+(const PhysVector& v) const {
@@ -137,7 +136,7 @@ Gas::Gas(std::vector<Particle> particles, double boxSide)
     }
   });
 
-  algorithm::for_each_couple(
+  for_each_couple(
       particles.begin(), particles.end(),
       [](const Particle& p1, const Particle& p2) {
         if (particleOverlap(p1, p2) == true) {
@@ -161,10 +160,10 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
   double particleDistance = boxSide / elementPerSide;
 
-  if(particleDistance <= 2 * Particle::radius){
-    throw std::runtime_error("particles are too large/too many, they don't fit in the box");
+  if (particleDistance <= 2 * Particle::radius) {
+    throw std::runtime_error(
+        "particles are too large/too many, they don't fit in the box");
   }
-  
 
   double maxSpeed = 4. / 3. * temperature;  // espressione sbagliata appena
   // riesco faccio il calcolo
@@ -267,5 +266,4 @@ double collisionTime(const Particle& p1, const Particle& p2) {
 
 double collisionTime(const Particle& p1) {}
 // End of Gas functions
-}  // namespace physics
 }  // namespace gasSim

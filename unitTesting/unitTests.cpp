@@ -13,27 +13,27 @@
 #include "../gasSim/output.hpp"
 #include "../gasSim/physicsEngine.hpp"
 
-double gasSim::physics::Particle::mass = 10;
-double gasSim::physics::Particle::radius = 0.1;
+double gasSim::Particle::mass = 10;
+double gasSim::Particle::radius = 0.1;
 
 TEST_CASE("Testing algorithms::for_any_couple") {
   std::vector<int> goodNumbers{1, 2, 3, 4};
   int i{0};
-  gasSim::algorithm::for_each_couple(goodNumbers.begin(), goodNumbers.end(),
-                                    [&i](int a, int b) {
-                                      std::cout << " " << a << " " << b << "\n";
-                                      ++i;
-                                    });
+  gasSim::for_each_couple(goodNumbers.begin(), goodNumbers.end(),
+                          [&i](int a, int b) {
+                            std::cout << " " << a << " " << b << "\n";
+                            ++i;
+                          });
   CHECK(i == 6);
 }
 
-TEST_CASE("Testing physics::PhysVector") {
-  gasSim::physics::PhysVector goodVector1{1.1, -2.11, 56.253};
-  gasSim::physics::PhysVector goodVector2{12.3, 0.12, -6.3};
-  // gasSim::physics::PhysVector weirdFloatVector{-5.5f, 100000.f, 4.3f};
-  // gasSim::physics::PhysVector weirdIntVector{-5, 6, 3};
-  gasSim::physics::PhysVector randomVector1{gasSim::physics::randomVector(5)};
-  // gasSim::physics::PhysVector randomVector2(67.);
+TEST_CASE("Testing PhysVector") {
+  gasSim::PhysVector goodVector1{1.1, -2.11, 56.253};
+  gasSim::PhysVector goodVector2{12.3, 0.12, -6.3};
+  // gasSim::PhysVector weirdFloatVector{-5.5f, 100000.f, 4.3f};
+  // gasSim::PhysVector weirdIntVector{-5, 6, 3};
+  gasSim::PhysVector randomVector1{gasSim::randomVector(5)};
+  // gasSim::PhysVector randomVector2(67.);
   std::string expectedMemberType = "double";
   SUBCASE("Constructor") {
     CHECK(goodVector1.x == 1.1);
@@ -45,24 +45,24 @@ TEST_CASE("Testing physics::PhysVector") {
   }
   SUBCASE("Random constructor") { CHECK(randomVector1.norm() <= 5); }
   SUBCASE("Sum") {
-    gasSim::physics::PhysVector sum{goodVector1 + goodVector2};
-    gasSim::physics::PhysVector actualSum{13.4, -1.99, 49.953};
+    gasSim::PhysVector sum{goodVector1 + goodVector2};
+    gasSim::PhysVector actualSum{13.4, -1.99, 49.953};
     CHECK(doctest::Approx(sum.x) == actualSum.x);
     CHECK(doctest::Approx(sum.y) == actualSum.y);
     CHECK(doctest::Approx(sum.z) == actualSum.z);
   }
   SUBCASE("Subtraction") {
-    gasSim::physics::PhysVector subtraction{goodVector2 - goodVector1};
-    gasSim::physics::PhysVector actualSubtraction{11.2, 2.23, -62.553};
+    gasSim::PhysVector subtraction{goodVector2 - goodVector1};
+    gasSim::PhysVector actualSubtraction{11.2, 2.23, -62.553};
     CHECK(doctest::Approx(subtraction.x) == actualSubtraction.x);
     CHECK(doctest::Approx(subtraction.y) == actualSubtraction.y);
     CHECK(doctest::Approx(subtraction.z) == actualSubtraction.z);
   }
   SUBCASE("Product") {
     double l{0.25};
-    gasSim::physics::PhysVector product{goodVector1 * l};
-    gasSim::physics::PhysVector product2{l * goodVector1};
-    gasSim::physics::PhysVector actualProduct{0.275, -0.5275, 14.06325};
+    gasSim::PhysVector product{goodVector1 * l};
+    gasSim::PhysVector product2{l * goodVector1};
+    gasSim::PhysVector actualProduct{0.275, -0.5275, 14.06325};
 
     CHECK(doctest::Approx(product.x) == actualProduct.x);
     CHECK(doctest::Approx(product.y) == actualProduct.y);
@@ -71,8 +71,8 @@ TEST_CASE("Testing physics::PhysVector") {
   }
   SUBCASE("Division") {
     double l{10};
-    gasSim::physics::PhysVector product{goodVector1 / l};
-    gasSim::physics::PhysVector actualProduct{0.11, -0.211, 5.6253};
+    gasSim::PhysVector product{goodVector1 / l};
+    gasSim::PhysVector actualProduct{0.11, -0.211, 5.6253};
     CHECK(doctest::Approx(product.x) == actualProduct.x);
     CHECK(doctest::Approx(product.y) == actualProduct.y);
     CHECK(doctest::Approx(product.z) == actualProduct.z);
@@ -88,26 +88,26 @@ TEST_CASE("Testing physics::PhysVector") {
   /*
 SUBCASE("Division by zero") {
 double scalar{0};
-gasSim::physics::PhysVector test{INFINITY, INFINITY, INFINITY};
+gasSim::PhysVector test{INFINITY, INFINITY, INFINITY};
 CHECK(v1 / scalar == test);
 }
   */
   SUBCASE("Norm") { CHECK(goodVector1.norm() == doctest::Approx(56.3033)); }
 }
 
-TEST_CASE("Testing physics::Collision") {
+TEST_CASE("Testing Collision") {
   double goodTime{4};
 
-  gasSim::physics::PhysVector goodVector1{4.23, 5.34, 6.45};
-  gasSim::physics::PhysVector goodVector2{5.46, 4.35, 3.24};
-  gasSim::physics::Particle goodFirstParticle{goodVector1, goodVector2};
+  gasSim::PhysVector goodVector1{4.23, 5.34, 6.45};
+  gasSim::PhysVector goodVector2{5.46, 4.35, 3.24};
+  gasSim::Particle goodFirstParticle{goodVector1, goodVector2};
 
-  gasSim::physics::PhysVector goodVector3{13.4, -1.99, 49.953};
-  gasSim::physics::PhysVector goodVector4{0.11, -0.211, 5.6253};
-  gasSim::physics::Particle goodSecondParticle{goodVector3, goodVector4};
+  gasSim::PhysVector goodVector3{13.4, -1.99, 49.953};
+  gasSim::PhysVector goodVector4{0.11, -0.211, 5.6253};
+  gasSim::Particle goodSecondParticle{goodVector3, goodVector4};
 
-  gasSim::physics::ParticleCollision goodCollision{goodTime, &goodFirstParticle,
-                                                   &goodSecondParticle};
+  gasSim::ParticleCollision goodCollision{goodTime, &goodFirstParticle,
+                                          &goodSecondParticle};
   SUBCASE("Constructor Particle2Particle") {
     CHECK(goodCollision.getFirstParticle()->position == goodVector1);
     CHECK(goodCollision.getFirstParticle()->speed == goodVector2);
@@ -115,8 +115,8 @@ TEST_CASE("Testing physics::Collision") {
     CHECK(goodCollision.getSecondParticle()->speed == goodVector4);
   }
   SUBCASE("Change the particles") {
-    gasSim::physics::PhysVector actualPosition{4, 0, 4};
-    gasSim::physics::PhysVector actualSpeed{1.34, 0.04, 9.3924};
+    gasSim::PhysVector actualPosition{4, 0, 4};
+    gasSim::PhysVector actualSpeed{1.34, 0.04, 9.3924};
     goodCollision.getFirstParticle()->position.x = 4;
     goodCollision.getFirstParticle()->position.y = 0;
     goodCollision.getFirstParticle()->position.z = 4;
@@ -125,31 +125,30 @@ TEST_CASE("Testing physics::Collision") {
     CHECK(goodCollision.getSecondParticle()->speed == actualSpeed);
   }
 }
-TEST_CASE("Testing physics::collisionTime") {
-  gasSim::physics::Particle goodParticle1{{0, 0, 0}, {1, 1, 1}};
-  gasSim::physics::Particle goodParticle2{{0, 0, 1}, {1, 1, -1}};
+TEST_CASE("Testing collisionTime") {
+  gasSim::Particle goodParticle1{{0, 0, 0}, {1, 1, 1}};
+  gasSim::Particle goodParticle2{{0, 0, 1}, {1, 1, -1}};
 
   std::cout << "\n\n\n\n"
-            << gasSim::physics::collisionTime(goodParticle1, goodParticle2)
+            << gasSim::collisionTime(goodParticle1, goodParticle2)
             << "\n\n\n\n";
 }
-TEST_CASE("Testing physics::Collision") {
+TEST_CASE("Testing Collision") {
   double goodTime{4};
   char goodWall{'a'};
 
-  gasSim::physics::PhysVector goodVector1{4.23, 5.34, 6.45};
-  gasSim::physics::PhysVector goodVector2{5.46, 4.35, 3.24};
-  gasSim::physics::Particle goodFirstParticle{goodVector1, goodVector2};
+  gasSim::PhysVector goodVector1{4.23, 5.34, 6.45};
+  gasSim::PhysVector goodVector2{5.46, 4.35, 3.24};
+  gasSim::Particle goodFirstParticle{goodVector1, goodVector2};
 
-  gasSim::physics::WallCollision goodCollision{goodTime, &goodFirstParticle,
-                                               goodWall};
+  gasSim::WallCollision goodCollision{goodTime, &goodFirstParticle, goodWall};
   SUBCASE("Constructor Wall2Particle") {
     CHECK(goodCollision.getFirstParticle()->position == goodVector1);
     CHECK(goodCollision.getFirstParticle()->speed == goodVector2);
     CHECK(goodCollision.getWall() == goodWall);
   }
   SUBCASE("Change the particles") {
-    gasSim::physics::PhysVector actualPosition{4, 0, 4};
+    gasSim::PhysVector actualPosition{4, 0, 4};
     goodCollision.getFirstParticle()->position.x = 4;
     goodCollision.getFirstParticle()->position.y = 0;
     goodCollision.getFirstParticle()->position.z = 4;
@@ -159,23 +158,23 @@ TEST_CASE("Testing physics::Collision") {
     // Appena abbiamo deciso cos'è un muro
   }
 }
-TEST_CASE("Testing physics::Gas") {
+TEST_CASE("Testing Gas") {
   double goodSide{9.};
   double goodTemperature{1.};
   int goodNumber{100};
 
-  gasSim::physics::Gas goodGas{goodNumber, goodTemperature, goodSide};
+  gasSim::Gas goodGas{goodNumber, goodTemperature, goodSide};
   SUBCASE("Speed check") {
     double maxSpeed = 4. / 3. * goodTemperature;
     auto firstIt = goodGas.getParticles().begin(),
          lastIt = goodGas.getParticles().end();
 
-    std::for_each(firstIt, lastIt, [=](const gasSim::physics::Particle& p) {
+    std::for_each(firstIt, lastIt, [=](const gasSim::Particle& p) {
       CHECK(p.speed.norm() <= maxSpeed);
     });
   }
   SUBCASE("Constructor from gas") {
-    gasSim::physics::Gas copyGas{goodGas};
+    gasSim::Gas copyGas{goodGas};
     CHECK(copyGas.getBoxSide() == goodSide);
     CHECK(copyGas.getParticles().size() == goodNumber);
   }
@@ -184,11 +183,11 @@ TEST_CASE("Testing physics::Gas") {
   }
   SUBCASE("Resolve Collision") { goodGas.gasLoop(1); }
 }
-TEST_CASE("Testing physics::Gas 2"){
-  gasSim::physics::randomVector(-1);
-  /* 
-  gasSim::physics::Particle p1{{0,0,0}, {1,1,1}};
-  gasSim::physics::Particle p2{{0,0,0.09}, {5,6,7}};
-  std::vector<gasSim::physics::Particle> badParticles{p1,p2};
-  gasSim::physics::Gas badGas{badParticles, 5}; */
+TEST_CASE("Testing Gas 2") {
+  // gasSim::randomVector(-1);
+  /*
+  gasSim::Particle p1{{0,0,0}, {1,1,1}};
+  gasSim::Particle p2{{0,0,0.09}, {5,6,7}};
+  std::vector<gasSim::Particle> badParticles{p1,p2};
+  gasSim::Gas badGas{badParticles, 5}; */
 }
