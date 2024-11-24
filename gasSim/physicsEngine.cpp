@@ -49,13 +49,17 @@ bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
 double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
 
 PhysVector randomVector(const double maxNorm) {
-  assert(maxNorm > 0);
+  if (maxNorm <= 0) {
+    throw std::invalid_argument("maxNorm must be greater than 0");
+  }
   static std::default_random_engine eng(std::random_device{}());
   std::uniform_real_distribution<double> dist(0., pow(maxNorm / 3, 1. / 2.));
   return {dist(eng), dist(eng), dist(eng)};
 }
 PhysVector randomVectorGauss(const double standardDev) {
-  assert(standardDev > 0);
+  if (standardDev <= 0) {
+    throw std::invalid_argument("standardDev must be greater than 0");
+  }
   static std::default_random_engine eng(std::random_device{}());
   std::normal_distribution<double> dist(0., standardDev);
   return {dist(eng), dist(eng), dist(eng)};
@@ -118,27 +122,49 @@ Gas::Gas(const Gas& gas)
 
 Gas::Gas(std::vector<Particle> particles, double boxSide)
     : particles_(particles), boxSide_(boxSide) {
-  assert(boxSide_ > 0);
-  assert(particles_.size() > 0);
+  if (particles_.size() == 0) {
+    throw std::invalid_argument("particles must have at least 1 element");
+  }
+  if (boxSide_ <= 0) {
+    throw std::invalid_argument("boxSide must be greater than 0");
+  }
 
   std::for_each(particles_.begin(), particles_.end(), [&](const Particle& p) {
-     assert(p.position.x<boxSide_);
+    if (p.position.x < 0 || p.position.y < 0 || p.position.z < 0 ||
+        p.position.x > boxSide_ || p.position.y > boxSide_ ||
+        p.position.z > boxSide_) {
+      throw std::invalid_argument("particles must be in the box");
+    }
   });
-  algorithm::for_each_couple(particles.begin(), particles.end(),
-                             [](const Particle& p1, const Particle& p2) {
-                               assert(particleOverlap(p1, p2) == false);
-                             });
+
+  algorithm::for_each_couple(
+      particles.begin(), particles.end(),
+      [](const Particle& p1, const Particle& p2) {
+        if (particleOverlap(p1, p2) == true) {
+          throw std::invalid_argument("particles cannot penetrate each other");
+        }
+      });
 }
 
 Gas::Gas(int nParticles, double temperature, double boxSide)
     : boxSide_(boxSide) {
-  assert(nParticles > 0);
-  assert(temperature > 0);
-  assert(boxSide > 0);
+  if (nParticles <= 0) {
+    throw std::invalid_argument("nParticles must be greater than 0");
+  }
+  if (temperature <= 0) {
+    throw std::invalid_argument("temperature must be greater than 0");
+  }
+  if (boxSide_ <= 0) {
+    throw std::invalid_argument("boxSide must be greater than 0");
+  }
 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
   double particleDistance = boxSide / elementPerSide;
-  assert(particleDistance > 2 * Particle::radius);
+
+  if(particleDistance <= 2 * Particle::radius){
+    throw std::runtime_error("particles are too large/too many, they don't fit in the box");
+  }
+  
 
   double maxSpeed = 4. / 3. * temperature;  // espressione sbagliata appena
   // riesco faccio il calcolo
@@ -187,7 +213,9 @@ void Gas::gasLoop(int nIterations) {
   updateGasState(firstCollision);*/
 }
 ParticleCollision Gas::findFirstPartCollision(double minTime) {
-  assert(minTime > 0);
+  if (minTime <= 0) {
+    throw std::invalid_argument("minTime must be greater than 0");
+  }
   auto externalIterator = particles_.begin();
   auto endIterator = particles_.end();
   Particle* firstParticle{nullptr};

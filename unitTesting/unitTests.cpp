@@ -185,8 +185,10 @@ TEST_CASE("Testing physics::Gas") {
   SUBCASE("Resolve Collision") { goodGas.gasLoop(1); }
 }
 TEST_CASE("Testing physics::Gas 2"){
+  gasSim::physics::randomVector(-1);
+  /* 
   gasSim::physics::Particle p1{{0,0,0}, {1,1,1}};
   gasSim::physics::Particle p2{{0,0,0.09}, {5,6,7}};
   std::vector<gasSim::physics::Particle> badParticles{p1,p2};
-  gasSim::physics::Gas badGas{badParticles, 5};
+  gasSim::physics::Gas badGas{badParticles, 5}; */
 }
