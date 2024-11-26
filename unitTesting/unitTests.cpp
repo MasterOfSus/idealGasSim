@@ -154,12 +154,12 @@ TEST_CASE("Testing WallCollision") {
 TEST_CASE("Testing ParticleCollision") {
   double time{4};
 
-  gasSim::PhysVector vec1{4.23, 5.34, 6.45};
-  gasSim::PhysVector vec2{5.46, 4.35, 3.24};
+  gasSim::PhysVector vec1{4.23, -5.34, 6.45};
+  gasSim::PhysVector vec2{5.46, -4.35, 3.24};
   gasSim::Particle part1{vec1, vec2};
 
   gasSim::PhysVector vec3{13.4, -1.99, 49.953};
-  gasSim::PhysVector vec4{0.11, -0.211, 5.6253};
+  gasSim::PhysVector vec4{0.11, 0.211, 5.6253};
   gasSim::Particle part2{vec3, vec4};
 
   gasSim::ParticleCollision coll{time, &part1, &part2};
@@ -198,6 +198,11 @@ TEST_CASE("Testing collisionTime") {
     gasSim::Particle part1{pos1, speed1};
     gasSim::Particle part2{pos2, speed2};
     CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 1);
+  }
+  SUBCASE("3") {
+    gasSim::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};
+    gasSim::Particle part2{{3.43, 7.54, 6.04}, {7.05, 8.86, -9.04}};
+    CHECK(gasSim::collisionTime(part1, part2) == INFINITY);
   }
 }
 
