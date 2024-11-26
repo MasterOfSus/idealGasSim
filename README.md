@@ -21,7 +21,8 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Sistemare i test del costruttore del gas
 - [x] Togliere i namespace extra
 - [ ] Implementare il gas loop con gli if
-
+- [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision
+- [ ] Provare a implementare la const reference nella class collision che poi si copia l'indirizzo per metterlo nel puntatore
 
 ## Da discutere nella prossima call
 

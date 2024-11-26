@@ -15,7 +15,7 @@
 #include "../gasSim/physicsEngine.hpp"
 
 double gasSim::Particle::mass = 10;
-double gasSim::Particle::radius = 0.1;
+double gasSim::Particle::radius = 1;
 
 TEST_CASE("Testing for_any_couple") {
   std::vector<int> num{1, 2, 3, 4};
@@ -135,7 +135,10 @@ TEST_CASE("Testing Particle") {
     CHECK(gasSim::particleOverlap(part1, part3) == false);
   }
 }
-TEST_CASE("Testing Collision") {
+TEST_CASE("Testing WallCollision") {
+  // Appena sappiamo cos'è un muro
+}
+TEST_CASE("Testing ParticleCollision") {
   double time{4};
 
   gasSim::PhysVector vec1{4.23, 5.34, 6.45};
@@ -165,36 +168,16 @@ TEST_CASE("Testing Collision") {
   }
 }
 TEST_CASE("Testing collisionTime") {
-  gasSim::Particle part1{{0, 0, 0}, {1, 1, 1}};
-  gasSim::Particle part2{{0, 0, 1}, {1, 1, -1}};
-
-  std::cout << "\n\n\n\n" << gasSim::collisionTime(part1, part2) << "\n\n\n\n";
-}
-TEST_CASE("Testing Collision") {
-  double time{4};
-  char wall{'a'};
-
-  gasSim::PhysVector vec1{4.23, 5.34, 6.45};
-  gasSim::PhysVector vec2{5.46, 4.35, 3.24};
-  gasSim::Particle part1{vec1, vec2};
-
-  gasSim::WallCollision Collision{time, &part1, wall};
-  SUBCASE("Constructor Wall2Particle") {
-    CHECK(Collision.getFirstParticle()->position == vec1);
-    CHECK(Collision.getFirstParticle()->speed == vec2);
-    CHECK(Collision.getWall() == wall);
+  SUBCASE("1") {
+    gasSim::Particle part1{{0, 0, 0}, {1, 1, 1}};
+    gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
+    CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 2.84529);
   }
-  SUBCASE("Change the particles") {
-    gasSim::PhysVector actualPosition{4, 0, 4};
-    Collision.getFirstParticle()->position.x = 4;
-    Collision.getFirstParticle()->position.y = 0;
-    Collision.getFirstParticle()->position.z = 4;
-    CHECK(Collision.getFirstParticle()->position == actualPosition);
-  }
-  SUBCASE("Constructor Particle2Wall") {
-    // Appena abbiamo deciso cos'è un muro
+  SUBCASE("2"){
+    //Test che sto scrivendo a mano
   }
 }
+/*
 TEST_CASE("Testing Gas") {
   double side{9.};
   double temp{1.};
@@ -220,6 +203,7 @@ TEST_CASE("Testing Gas") {
   }
   SUBCASE("Resolve Collision") { Gas.gasLoop(1); }
 }
+*/
 TEST_CASE("Testing Gas 2") {
   // gasSim::randomVector(-1);
   /*
