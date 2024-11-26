@@ -127,12 +127,25 @@ TEST_CASE("Testing PhysVector") {
 }
 
 TEST_CASE("Testing Particle") {
-  gasSim::Particle part1{{5.28, 9.14, 0.36}, {3.49, 2.05, 7.18}};
-  gasSim::Particle part2{{5.30, 9.05, 0.37}, {1.29, 7.03, 8.45}};
-  gasSim::Particle part3{{6.94, 3.50, 7.18}, {0.16, 9.38, 4.57}};
+  SUBCASE("Default constructor") {
+    gasSim::PhysVector zeroVec{0, 0, 0};
+    gasSim::PhysVector vec1{7.94, 3.60, 4.27};
+    gasSim::PhysVector vec2{4.85, 8.94, 5.71};
+
+    gasSim::Particle part1;
+    gasSim::Particle part2{vec1,vec2};
+    CHECK(part1.position == zeroVec);
+    CHECK(part1.speed == zeroVec);
+    CHECK(part2.position==vec1);
+    CHECK(part2.speed==vec2);
+  }
   SUBCASE("particles overlap") {
-    CHECK(gasSim::particleOverlap(part1, part2) == true);
-    CHECK(gasSim::particleOverlap(part1, part3) == false);
+    gasSim::Particle part1{{5.28, 9.14, 0.36}, {3.49, 2.05, 7.18}};
+    gasSim::Particle part2{{6.94, 3.50, 7.18}, {0.16, 9.38, 4.57}};
+    gasSim::Particle overlapPart{{5.30, 9.05, 0.37}, {1.29, 7.03, 8.45}};
+
+    CHECK(gasSim::particleOverlap(part1, part2) == false);
+    CHECK(gasSim::particleOverlap(part1, overlapPart) == true);
   }
 }
 TEST_CASE("Testing WallCollision") {
@@ -173,37 +186,56 @@ TEST_CASE("Testing collisionTime") {
     gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
     CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 2.84529);
   }
-  SUBCASE("2"){
-    //Test che sto scrivendo a mano
+  SUBCASE("2") {
+    // Test che sto scrivendo a mano
   }
 }
-/*
+
 TEST_CASE("Testing Gas") {
-  double side{9.};
+  double side{1E3};
   double temp{1.};
   int partNum{100};
 
   gasSim::Gas Gas{partNum, temp, side};
-  SUBCASE("Speed check") {
-    double maxSpeed = 4. / 3. * temp;
-    auto firstIt = Gas.getParticles().begin(),
-         lastIt = Gas.getParticles().end();
-
-    std::for_each(firstIt, lastIt, [=](const gasSim::Particle& p) {
-      CHECK(p.speed.norm() <= maxSpeed);
-    });
-  }
   SUBCASE("Constructor from gas") {
     gasSim::Gas copyGas{Gas};
     CHECK(copyGas.getBoxSide() == side);
     CHECK(copyGas.getParticles().size() == partNum);
   }
-  SUBCASE("Find first Particle Collsion") {
-    Gas.findFirstPartCollision(INFINITY);
-  }
-  SUBCASE("Resolve Collision") { Gas.gasLoop(1); }
+  SUBCASE("Constructor from parameters") {
+    // double side{10};
+    gasSim::Particle part1{{8.10, 2.36, 4.75}, {3.83, 3.23, 5.76}};
+    gasSim::Particle part2{{4.26, 0.24, 0.22}, {5.92, 5.98, 7.65}};
+    gasSim::Particle part3{{2.10, 8.50, 0.32}, {8.92, 7.55, 5.48}};
+
+    // std::vector<gasSim::Particle> pippo{part1, part2, part3};
+
+    gasSim::Particle overlapPart{{7.87, 2.39, 5.00}, {5, 6, 7}};
+    std::vector<gasSim::Particle> badParts1{
+        part1, part2, part3, overlapPart};  // Particelle che si conpenetrano
+    CHECK_THROWS_AS(gasSim::Gas(badParts1, side), std::invalid_argument);
+
+    gasSim::Particle outPart{{1E3 + 1E-4, 7.89, 3.46}, {}};
+    std::vector<gasSim::Particle> badParts2{
+        part1, outPart, part2, part3};  // Particelle che si conpenetrano
+    CHECK_THROWS_AS(gasSim::Gas(badParts2, side), std::invalid_argument);
+
+  } /*
+   SUBCASE("Speed check") {
+     double maxSpeed = 4. / 3. * temp;
+     auto firstIt = Gas.getParticles().begin(),
+          lastIt = Gas.getParticles().end();
+
+     std::for_each(firstIt, lastIt, [=](const gasSim::Particle& p) {
+       CHECK(p.speed.norm() <= maxSpeed);
+     });
+   }
+   SUBCASE("Find first Particle Collsion") {
+     Gas.findFirstPartCollision(INFINITY);
+   }
+   SUBCASE("Resolve Collision") { Gas.gasLoop(1); }*/
 }
-*/
+
 TEST_CASE("Testing Gas 2") {
   // gasSim::randomVector(-1);
   /*

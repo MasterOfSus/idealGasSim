@@ -13,12 +13,13 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 ## To do
 
-- [ ] Unit test per for_any_couple()
-- [ ] Cambiare i nomi agli unitTest
+- [x] Unit test per for_any_couple()
+- [x] Cambiare i nomi agli unitTest
 - [ ] Exception handling
     - [ ] Throw quando c'è qualcosa che non va e fare il catch nel main
     - [x] std::invalid_argument per gli argomenti delle funzioni
 - [ ] Sistemare i test del costruttore del gas
+- [ ] Finire il secondo test carta e penna di collisionTime
 - [x] Togliere i namespace extra
 - [ ] Implementare il gas loop con gli if
 - [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision

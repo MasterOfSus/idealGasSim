@@ -34,8 +34,8 @@ struct Particle {
   static double mass;
   static double radius;
 
-  PhysVector position;
-  PhysVector speed;
+  PhysVector position={};
+  PhysVector speed={};
 };
 bool particleOverlap(const Particle& p1, const Particle& p2);
 
