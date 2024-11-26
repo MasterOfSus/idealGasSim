@@ -133,11 +133,11 @@ TEST_CASE("Testing Particle") {
     gasSim::PhysVector vec2{4.85, 8.94, 5.71};
 
     gasSim::Particle part1;
-    gasSim::Particle part2{vec1,vec2};
+    gasSim::Particle part2{vec1, vec2};
     CHECK(part1.position == zeroVec);
     CHECK(part1.speed == zeroVec);
-    CHECK(part2.position==vec1);
-    CHECK(part2.speed==vec2);
+    CHECK(part2.position == vec1);
+    CHECK(part2.speed == vec2);
   }
   SUBCASE("particles overlap") {
     gasSim::Particle part1{{5.28, 9.14, 0.36}, {3.49, 2.05, 7.18}};
@@ -187,7 +187,17 @@ TEST_CASE("Testing collisionTime") {
     CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 2.84529);
   }
   SUBCASE("2") {
-    // Test che sto scrivendo a mano
+    gasSim::PhysVector pos1{20992.06862014, -19664.47218241, 6281.158218151};
+    gasSim::PhysVector speed1{-2.098936862014, 1.966557218241,
+                              -0.6282474445917};
+    speed1 = speed1 * 1E4;
+
+    gasSim::PhysVector pos2{3.299915613847, 2.900102791466, -0.6838802535057};
+    gasSim::PhysVector speed2{0.8438615274498, -1.027914662675, 1.080195225286};
+    speed2 = speed2 * 1E-4;
+    gasSim::Particle part1{pos1, speed1};
+    gasSim::Particle part2{pos2, speed2};
+    CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 1);
   }
 }
 
