@@ -1,6 +1,7 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
+#include <SFML/Graphics.hpp>
 #include <variant>
 #include <vector>
 
@@ -37,47 +38,90 @@ struct Particle {
   PhysVector position;
   PhysVector speed;
 };
-struct Wall {
-  double a, b, c, d;
+
+class Box {
+  PhysVector vertex;
+};
+
+class Hit {
+ public:
+  double getTime() const { return time_; };
+
+ protected:
+  Hit(double time) : time_{time} {};
+
+ private:
+  double time_;
+};
+
+class WallHit : protected Hit {
+ public:
+  const Particle& getParticle1() const;
+  const int getWallIndex() const;
+  WallHit(const Particle& particle, const Box& box, int wallIndex_);
+
+ private:
+  Particle particle_;
+  Box box_;
+  int wallIndex_;
+};
+
+class PartHit : protected Hit {
+ public:
+  const Particle& getParticle1() const;
+  const Particle& getParticle2() const;
+  PartHit(const Particle& particle1, const Particle& particle2);
+
+ private:
+  Particle particle1_;
+  Particle particle2_;
 };
 
 class Collision {
  public:
-  enum class CollisionType { ParticleToParticle, ParticleToWall };
-  Collision(double t, Particle& p1, Particle& p2);
-  Collision(double t, Particle& p1, Wall& w);
-
-  CollisionType getCollisionType() const;
-  double getTime() const;
-
-  Particle& getFirstParticle() const;
-
-  Particle& getSecondParticle() const;
-
-  Wall& getWall() const;
+  virtual void solveCollision();
 
  private:
-  CollisionType type;
-  Particle* firstParticle;
-  Particle* secondParticle;
-  Wall* wall;
-  double time;
+  Collision() {};
+};
+
+class WallCollision : public Collision {
+ public:
+  virtual void solveCollision();
+  WallCollision(const Particle& particle1, const Box& box, int wallIndex);
+
+ private:
+  Particle particle1_;
+  static Box box_;
+  int wallIndex_;
+};
+
+class PartCollision : public Collision {
+ public:
+  virtual void solveCollision();
+  PartCollision(const Particle& particle1, const Particle& particle2);
+  PartCollision(PartHit partHit);
+
+ private:
+  Particle particle1_;
+  Particle particle2_;
 };
 
 class Gas {
  public:
   Gas(const Gas& gas);
-  Gas(int nParticles, double temperature, double boxSide);
+  Gas(int nParticles, double temperature, Box box);
 
   const std::vector<Particle>& getParticles() const;
   double getBoxSide() const;
 
-  void updateGasState(
-      Collision fisrtCollision);  // called in each iteration of the game loop
+  Hit* getNextHit();
+
+  void solveNextEvent();
 
  private:
   std::vector<Particle> particles_;
-  double boxSide_;  // side of the cubical container
+  Box box_;
   void updatePositions(double time);
 };
 

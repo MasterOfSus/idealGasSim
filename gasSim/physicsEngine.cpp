@@ -41,13 +41,13 @@ bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
 
 double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
 
-PhysVector randomVector(const double maxNorm) {
+PhysVector unifRandoVector(const double maxNorm) {
   assert(maxNorm > 0);
   static std::default_random_engine eng(std::random_device{}());
   std::uniform_real_distribution<double> dist(0., pow(maxNorm / 3, 1. / 2.));
   return {dist(eng), dist(eng), dist(eng)};
 }
-PhysVector randomVectorGauss(const double standardDev) {
+PhysVector gausRandVector(const double standardDev) {
   assert(standardDev > 0);
   static std::default_random_engine eng(std::random_device{}());
   std::normal_distribution<double> dist(0., standardDev);
@@ -70,50 +70,13 @@ PhysVector randomVectorGauss(const double standardDev) {
 }*/
 // End of PhysVector functions
 
-Collision::Collision(double t, Particle& p1, Particle& p2)
-    : type(CollisionType::ParticleToParticle),
-      firstParticle(&p1),
-      secondParticle(&p2),
-      wall(nullptr),
-      time(t) {}
-
-Collision::Collision(double t, Particle& p1, Wall& w)
-    : type(CollisionType::ParticleToWall),
-      firstParticle(&p1),
-      secondParticle(nullptr),
-      wall(&w),
-      time(t) {}
-
-Collision::CollisionType Collision::getCollisionType() const { return type; }
-double Collision::getTime() const { return time; }
-
-Particle& Collision::getFirstParticle() const { return *firstParticle; }
-
-Particle& Collision::getSecondParticle() const {
-  if (type == CollisionType::ParticleToParticle) {
-    return *secondParticle;  // Restituisce la seconda particella come referenza
-  } else {
-    throw std::runtime_error(
-        "No second particle in a ParticleToWall collision");
-  }
-}
-
-Wall& Collision::getWall() const {
-  if (type == CollisionType::ParticleToWall) {
-    return *wall;
-  } else {
-    throw std::runtime_error("No wall in a ParticleToParticle collision");
-  }
-}
-
 // Definition of Gas functions
-Gas::Gas(const Gas& gas) : particles_(gas.particles_), boxSide_(gas.boxSide_) {}
+Gas::Gas(const Gas& gas) : particles_(gas.particles_), box_{gas.box_} {}
 
-Gas::Gas(int nParticles, double temperature, double boxSide)
-    : boxSide_(boxSide) {
+Gas::Gas(int nParticles, double temperature, Box box) : box_{box} {
   assert(nParticles > 0);
   assert(temperature > 0);
-  assert(boxSide > 0);
+  assert(box.vertex.x * box.vertex.y * box.vertex.z > 0);
 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
   double particleDistance = boxSide / elementPerSide;
