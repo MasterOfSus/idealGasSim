@@ -206,7 +206,7 @@ TEST_CASE("Testing collisionTime") {
   }
 }
 
-TEST_CASE("Testing Gas") {
+TEST_CASE("Testing Gas constructor") {
   double side{1E3};
   double temp{1.};
   int partNum{100};
@@ -218,12 +218,9 @@ TEST_CASE("Testing Gas") {
     CHECK(copyGas.getParticles().size() == partNum);
   }
   SUBCASE("Constructor from parameters") {
-    // double side{10};
     gasSim::Particle part1{{8.10, 2.36, 4.75}, {3.83, 3.23, 5.76}};
     gasSim::Particle part2{{4.26, 0.24, 0.22}, {5.92, 5.98, 7.65}};
     gasSim::Particle part3{{2.10, 8.50, 0.32}, {8.92, 7.55, 5.48}};
-
-    // std::vector<gasSim::Particle> pippo{part1, part2, part3};
 
     gasSim::Particle overlapPart{{7.87, 2.39, 5.00}, {5, 6, 7}};
     std::vector<gasSim::Particle> badParts1{
@@ -235,7 +232,10 @@ TEST_CASE("Testing Gas") {
         part1, outPart, part2, part3};  // Particelle che si conpenetrano
     CHECK_THROWS_AS(gasSim::Gas(badParts2, side), std::invalid_argument);
 
-  } /*
+    std::vector<gasSim::Particle> goodParts{part1, part2, part3};
+    CHECK_NOTHROW(gasSim::Gas goodGas{goodParts, side});
+  }
+  /*
    SUBCASE("Speed check") {
      double maxSpeed = 4. / 3. * temp;
      auto firstIt = Gas.getParticles().begin(),
@@ -249,6 +249,41 @@ TEST_CASE("Testing Gas") {
      Gas.findFirstPartCollision(INFINITY);
    }
    SUBCASE("Resolve Collision") { Gas.gasLoop(1); }*/
+}
+TEST_CASE("Testing Gas, find first collision") {
+  SUBCASE("Simple collision") {
+    double side{1E3};
+    gasSim::Particle part1{{0, 0, 0}, {1, 1, 1}};
+    gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
+    std::vector<gasSim::Particle> vec{part1, part2};
+    gasSim::Gas gas{vec, side};
+
+    gasSim::ParticleCollision partColl{gas.findFirstPartCollision()};
+
+    auto first = partColl.getFirstParticle();
+    auto second = partColl.getSecondParticle();
+
+    // Verifica che le due particelle siano part1 e part2 indipendentemente
+    // dall'ordine
+    bool condition1 =
+        (first->position == part1.position && first->speed == part1.speed &&
+         second->position == part2.position && second->speed == part2.speed);
+    bool condition2 =
+        (first->position == part2.position && first->speed == part2.speed &&
+         second->position == part1.position && second->speed == part1.speed);
+    
+    bool result = condition1 || condition2;
+
+    CHECK(result);
+  }
+  SUBCASE("None collision") {
+    gasSim::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};
+    gasSim::Particle part2{{3.43, 7.54, 6.04}, {7.05, 8.86, -9.04}};
+    std::vector<gasSim::Particle> vec{part1, part2};
+    gasSim::Gas gas{vec, 40};
+
+    CHECK_THROWS_AS(gas.findFirstPartCollision(), std::runtime_error);
+  }
 }
 
 TEST_CASE("Testing Gas 2") {

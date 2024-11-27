@@ -1,6 +1,7 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
+#include <set>
 #include <string>
 #include <variant>
 #include <vector>
@@ -93,8 +94,8 @@ class Gas {
   void gasLoop(int nIterations);
   void updateGasState(
       Collision fisrtCollision);  // called in each iteration of the game loop
-  WallCollision findFirstWallCollision(double maxTime);
-  ParticleCollision findFirstPartCollision(double maxTime);
+  WallCollision findFirstWallCollision();
+  ParticleCollision findFirstPartCollision();
 
  private:
   std::vector<Particle> particles_;

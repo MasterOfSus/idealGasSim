@@ -191,17 +191,18 @@ double Gas::getBoxSide() const { return boxSide_; }
 void Gas::gasLoop(int nIterations) {
   double deltaTime{INFINITY};
 
-  ParticleCollision a{findFirstPartCollision(deltaTime)};
+  ParticleCollision a{findFirstPartCollision()};
   // WallCollision b{findFirstWallCollision(deltaTime)};
-  Collision* firstCollision{nullptr};
 
-  if (/*a.getTime() > b.getTime()*/ true) {
-    firstCollision = &a;
-  } else {
-    // firstCollision = &b;
-  }
+  // Collision* firstCollision{nullptr};
 
-  firstCollision->resolve();
+  // if (/*a.getTime() > b.getTime()*/ true) {
+  //   firstCollision = &a;
+  // } else {
+  // firstCollision = &b;
+  // }
+
+  // firstCollision->resolve();
   // Collision* firstCollision = &pippo;
   /*Collision* wallCollision = findFirstWallCollision(time);
 
@@ -211,29 +212,27 @@ void Gas::gasLoop(int nIterations) {
 
   updateGasState(firstCollision);*/
 }
-ParticleCollision Gas::findFirstPartCollision(double minTime) {
-  if (minTime <= 0) {
-    throw std::invalid_argument("minTime must be greater than 0");
-  }
+ParticleCollision Gas::findFirstPartCollision() {
+  double topTime{INFINITY};
   auto externalIterator = particles_.begin();
   auto endIterator = particles_.end();
-  Particle* firstParticle{nullptr};
-  Particle* secondParticle{nullptr};
+  Particle* firstPart;
+  Particle* secondPart;
 
-  std::for_each(externalIterator, endIterator, [&](const Particle& p1) {
-    auto internalIterator = externalIterator + 1;
-    std::for_each(internalIterator, endIterator, [&](const Particle& p2) {
-      double time{collisionTime(p1, p2)};
-      if (time < minTime) {
-        minTime = time;
-        firstParticle = &(*externalIterator);
-        secondParticle = &(*internalIterator);
-      }
-    });
-  });
+  for_each_couple(particles_.begin(), particles_.end(),
+                  [&](Particle& p1, Particle& p2) {
+                    double time{collisionTime(p1, p2)};
+                    if (time < topTime) {
+                      firstPart = &p1;
+                      secondPart = &p2;
+                      topTime = time;
+                    }
+                  });
 
-  assert(firstParticle != nullptr && secondParticle != nullptr);
-  return {minTime, firstParticle, secondParticle};
+  if (topTime == INFINITY) {
+    throw std::runtime_error("I did not find any collisions");
+  }
+  return {topTime, firstPart, secondPart};
 }
 
 double collisionTime(const Particle& p1, const Particle& p2) {
