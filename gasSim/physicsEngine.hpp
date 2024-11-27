@@ -35,8 +35,8 @@ struct Particle {
   static double mass;
   static double radius;
 
-  PhysVector position={};
-  PhysVector speed={};
+  PhysVector position = {};
+  PhysVector speed = {};
 };
 bool particleOverlap(const Particle& p1, const Particle& p2);
 
@@ -105,7 +105,9 @@ class Gas {
 
 double collisionTime(const Particle& p1, const Particle& p2);
 
-double collisionTime(const Particle& p1);
+WallCollision collisionTime(Particle& p, double squareSide);
+
+double collisionTime(double wallDistance, double speed);
 }  // namespace gasSim
 
 #endif

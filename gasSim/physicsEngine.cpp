@@ -189,10 +189,8 @@ const std::vector<Particle>& Gas::getParticles() const { return particles_; }
 double Gas::getBoxSide() const { return boxSide_; }
 
 void Gas::gasLoop(int nIterations) {
-  double deltaTime{INFINITY};
-
   ParticleCollision a{findFirstPartCollision()};
-  // WallCollision b{findFirstWallCollision(deltaTime)};
+  WallCollision b{findFirstWallCollision()};
 
   // Collision* firstCollision{nullptr};
 
@@ -214,8 +212,6 @@ void Gas::gasLoop(int nIterations) {
 }
 ParticleCollision Gas::findFirstPartCollision() {
   double topTime{INFINITY};
-  auto externalIterator = particles_.begin();
-  auto endIterator = particles_.end();
   Particle* firstPart;
   Particle* secondPart;
 
@@ -230,9 +226,57 @@ ParticleCollision Gas::findFirstPartCollision() {
                   });
 
   if (topTime == INFINITY) {
-    throw std::runtime_error("I did not find any collisions");
+    throw std::logic_error("No particle to particle collisions found");
   }
   return {topTime, firstPart, secondPart};
+}
+
+WallCollision Gas::findFirstWallCollision() {
+  WallCollision firstColl{INFINITY, nullptr, 'x'};
+
+  std::for_each(particles_.begin(), particles_.end(), [&](Particle& p) {
+    WallCollision coll{collisionTime(p, boxSide_)};
+    if (coll.getTime() < firstColl.getTime()) {
+      firstColl = coll;
+    }
+  });
+
+  if (firstColl.getTime() == INFINITY) {
+    throw std::logic_error("No particle to wall collisions found");
+  }
+  return firstColl;
+}
+
+WallCollision collisionTime(Particle& p, double squareSide) {
+  auto wallDistance = [&](double position, double speed) -> double {
+    if (speed < 0) {
+      return -Particle::radius - position;
+    } else {
+      return squareSide - Particle::radius - position;
+    }
+  };
+
+  auto calculateTime = [&](double position, double speed) {
+    return wallDistance(position, speed) / speed;
+  };
+
+  double timeX{calculateTime(p.position.x, p.speed.x)};
+  double timeY{calculateTime(p.position.y, p.speed.y)};
+  double timeZ{calculateTime(p.position.z, p.speed.z)};
+
+  double minTime{timeX};
+  char wall{'x'};
+  if (timeY < minTime) {
+    minTime = timeY;
+    wall = 'y';
+  }
+  if (timeZ < minTime) {
+    minTime = timeZ;
+    wall = 'z';
+  }
+  assert(minTime > 0);
+
+  return {minTime, &p, wall};
 }
 
 double collisionTime(const Particle& p1, const Particle& p2) {
@@ -263,6 +307,5 @@ double collisionTime(const Particle& p1, const Particle& p2) {
   return result;
 }
 
-double collisionTime(const Particle& p1) {}
 // End of Gas functions
 }  // namespace gasSim

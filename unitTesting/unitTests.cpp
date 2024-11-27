@@ -282,7 +282,7 @@ TEST_CASE("Testing Gas, find first collision") {
     std::vector<gasSim::Particle> vec{part1, part2};
     gasSim::Gas gas{vec, 40};
 
-    CHECK_THROWS_AS(gas.findFirstPartCollision(), std::runtime_error);
+    CHECK_THROWS_AS(gas.findFirstPartCollision(), std::logic_error);
   }
 }
 
