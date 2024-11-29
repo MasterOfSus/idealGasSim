@@ -105,7 +105,7 @@ class Gas {
 
 double collisionTime(const Particle& p1, const Particle& p2);
 
-WallCollision collisionTime(Particle& p, double squareSide);
+WallCollision calculateWallColl(Particle& p, double squareSide);
 
 double collisionTime(double wallDistance, double speed);
 }  // namespace gasSim

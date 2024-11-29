@@ -192,6 +192,11 @@ void Gas::gasLoop(int nIterations) {
   ParticleCollision a{findFirstPartCollision()};
   WallCollision b{findFirstWallCollision()};
 
+  if (a.getTime() < b.getTime()) {
+    a.resolve();
+  }else{
+    b.resolve();
+  }
   // Collision* firstCollision{nullptr};
 
   // if (/*a.getTime() > b.getTime()*/ true) {
@@ -235,7 +240,7 @@ WallCollision Gas::findFirstWallCollision() {
   WallCollision firstColl{INFINITY, nullptr, 'x'};
 
   std::for_each(particles_.begin(), particles_.end(), [&](Particle& p) {
-    WallCollision coll{collisionTime(p, boxSide_)};
+    WallCollision coll{calculateWallColl(p, boxSide_)};
     if (coll.getTime() < firstColl.getTime()) {
       firstColl = coll;
     }
@@ -247,7 +252,7 @@ WallCollision Gas::findFirstWallCollision() {
   return firstColl;
 }
 
-WallCollision collisionTime(Particle& p, double squareSide) {
+WallCollision calculateWallColl(Particle& p, double squareSide) {
   auto wallDistance = [&](double position, double speed) -> double {
     if (speed < 0) {
       return -Particle::radius - position;

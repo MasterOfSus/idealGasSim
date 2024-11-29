@@ -24,10 +24,11 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Implementare il gas loop con gli if
 - [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer)
 - [ ] Provare a implementare la const reference nella class collision che poi si copia l'indirizzo per metterlo nel puntatore
-- [ ] Scrivere findFirstWallCollision()
+- [x] Scrivere findFirstWallCollision()
     * Implementare collisionTime con una sola particella
     * Implementare dei metodi getter delle coordinate dei muri e una funzione sempliche collisionTime che calcola, più bella ma da ottimizzzare di più
     * Implementare una funzione collisionTime che prende solo la lunghezza della scatola e trova i muri con una lambda
+- [ ] Scrivere test di findFirstWallCollision()
 - [ ] Cambiare i wall char con degli enum
 
 ## Da discutere nella prossima call

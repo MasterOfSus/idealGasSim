@@ -205,6 +205,14 @@ TEST_CASE("Testing collisionTime") {
     CHECK(gasSim::collisionTime(part1, part2) == INFINITY);
   }
 }
+TEST_CASE("Testing calculateWallColl") {
+  SUBCASE("1") {
+    gasSim::Particle part{{0.1, 0.1, 5}, {10, 0, 0}};
+    gasSim::WallCollision coll{gasSim::calculateWallColl(part, 10)};
+    CHECK(doctest::Approx(coll.getTime()) == 0.89);
+    CHECK(coll.getFirstParticle() == &part);
+  }
+}
 
 TEST_CASE("Testing Gas constructor") {
   double side{1E3};
@@ -271,7 +279,7 @@ TEST_CASE("Testing Gas, find first collision") {
     bool condition2 =
         (first->position == part2.position && first->speed == part2.speed &&
          second->position == part1.position && second->speed == part1.speed);
-    
+
     bool result = condition1 || condition2;
 
     CHECK(result);
