@@ -14,6 +14,7 @@ struct PhysVector {
 
   PhysVector operator+(const PhysVector& v) const;
   PhysVector operator-(const PhysVector& v) const;
+  PhysVector operator+=(const PhysVector& v) const;
 
   PhysVector operator*(const double c) const;
   PhysVector operator/(const double c) const;
@@ -92,15 +93,17 @@ class Gas {
   double getBoxSide() const;
 
   void gasLoop(int nIterations);
-  void updateGasState(
-      Collision fisrtCollision);  // called in each iteration of the game loop
+  void updateGasState(Collision fisrtCollision);
   WallCollision findFirstWallCollision();
   ParticleCollision findFirstPartCollision();
+  void resolveCollision(ParticleCollision coll);
+  void resolveCollision(WallCollision coll);
+  
 
  private:
   std::vector<Particle> particles_;
   double boxSide_;                    // side of the cubical container
-  void updatePositions(double time);  // probabilmente non servirà più
+  void updatePositions(double time);
 };
 
 double collisionTime(const Particle& p1, const Particle& p2);

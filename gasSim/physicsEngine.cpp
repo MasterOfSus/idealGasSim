@@ -25,6 +25,10 @@ PhysVector PhysVector::operator-(const PhysVector& v) const {
   return {x - v.x, y - v.y, z - v.z};
 }
 
+PhysVector PhysVector::operator+=(const PhysVector& v) const {
+  return {x + v.x, y + v.y, z + v.z};
+}
+
 PhysVector PhysVector::operator*(const double c) const {
   return {x * c, y * c, z * c};
 }
@@ -193,10 +197,11 @@ void Gas::gasLoop(int nIterations) {
   WallCollision b{findFirstWallCollision()};
 
   if (a.getTime() < b.getTime()) {
-    a.resolve();
-  }else{
-    b.resolve();
+    resolveCollision(a);
+  } else {
+    resolveCollision(b);
   }
+
   // Collision* firstCollision{nullptr};
 
   // if (/*a.getTime() > b.getTime()*/ true) {
@@ -311,6 +316,11 @@ double collisionTime(const Particle& p1, const Particle& p2) {
   }
   return result;
 }
+void Gas::updatePositions(double time) {
+  std::for_each(particles_.begin(), particles_.end(),
+                [time](Particle& part) { part.position += part.speed * time; });
+}
 
+void resolveCollision(ParticleCollision coll) { coll.getFirstParticle(); }
 // End of Gas functions
 }  // namespace gasSim
