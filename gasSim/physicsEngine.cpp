@@ -321,6 +321,7 @@ void Gas::updatePositions(double time) {
                 [time](Particle& part) { part.position += part.speed * time; });
 }
 
-void resolveCollision(ParticleCollision coll) { coll.getFirstParticle(); }
+void Gas::resolveCollision(ParticleCollision coll) { coll.getFirstParticle(); }
+void Gas::resolveCollision(WallCollision coll) { coll.getFirstParticle(); }
 // End of Gas functions
 }  // namespace gasSim
