@@ -4,20 +4,67 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <cmath>
+#include <cwctype>
 #include <stdexcept>
 #include <vector>
 
 #include "physicsEngine.hpp"
 
 namespace gasSim {
-namespace graphics {
 
 using PhysVector = physics::PhysVector;
 using Particle = physics::Particle;
 using Gas = physics::Gas;
 
-static sf::CircleShape defPartImage{1., 20};
+class RenderStyle {
+	public:
+	const char* const getGridOpts() const { return gridOpts_; };
+	void setGridOpts(const char* opts);
+	const sf::Color& getGridColor() const { return gridColor_; };
+	void setGridColor(const sf::Color& color) { gridColor_ = color; };
+	double getGridSpacing() const { return gridSpacing_; };
+	void setGridSpacing(const double spacing);
+
+	const char* const getAxesOpts() const { return axesOpts_; };
+	void setAxesOpts(const char* opts);
+	const sf::Color& getAxesColor() const { return axesColor_; };
+	void setAxesColor(const sf::Color& color) { axesColor_ = color; };
+	double getAxesLength() const { return axesLength_; };
+	void setAxesLength(const double length);
+
+	const char* const getWallsOpts() const { return wallsOpts_; };
+	void setWallsOpts(const char* opts);
+	const sf::Color& getWallsColor() const { return wallsColor_; };
+	void setWallsColor(const sf::Color& color) { wallsColor_ = color; };
+
+	const sf::CircleShape& getPartProj() const { return partProj_; };
+	void setPartProj(const sf::CircleShape& circle) { partProj_ = circle; };
+
+	const sf::Color& getBackgroundColor() const { return background_; };
+	void setBackgroundColor(const sf::Color& color) { background_ = color; };
+
+	RenderStyle(); 
+
+	private:
+
+	const char* gridOpts_ {"xy"};
+	sf::Color gridColor_ {0, 0, 0, 128};
+	double gridSpacing_ {1.};
+
+	const char* axesOpts_ {"xyz"};
+	sf::Color axesColor_ {0, 0, 0, 255};
+	double axesLength_ {10.};
+
+	const char* wallsOpts_ {"tdlrfb"}; // top, down, left, right, front, back
+	sf::Color wallsColor_ {0, 0, 0, 64};
+
+	sf::CircleShape partProj_ {1., 20};
+	sf::Color partColor_ {240, 0, 0, 255};
+
+	sf::Color background_ {255, 255, 255, 255};
+};
 
 class Camera {
  public:
@@ -28,13 +75,13 @@ class Camera {
   };
   void setAspectRatio(const double ratio);
   void setPlaneDistance(const double distance);
-  void setFOV(const double FOV);
+	void setFOV(const double FOV); // field of view setting in degrees
   void setResolution(const int height, const int width);
 
   PhysVector const& getFocus() const { return focusPoint_; };
   PhysVector const& getSight() const { return sightVector_; };
   double getAspectRatio() const {
-    return static_cast<double>(width_) / static_cast<double>(height_);
+    return static_cast<float>(width_) / static_cast<float>(height_);
   };
   double getPlaneDistance() const { return planeDistance_; };
   double getFOV() const { return fov_; };
@@ -42,8 +89,8 @@ class Camera {
   int getWidth() const { return width_; };
 
   // parametric constructor
-  Camera(PhysVector focusPosition, PhysVector sightVector, double aspectRatio,
-         double planeDistance, double fov, int height);
+  Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
+         double planeDistance, double fov, int width, int height);
 
  private:
   PhysVector focusPoint_;
@@ -52,7 +99,7 @@ class Camera {
   double fov_;
   int width_;
   int height_;
-};
+};	
 
 double getCamTopSide(const Camera& camera);
 
@@ -70,16 +117,18 @@ struct ParticleProjection {
 
 PhysVector projectParticle(const Particle& particle, const Camera& camera);
 
-std::vector<PhysVector> projectParticles(
-    const std::vector<Particle>& particles);
-void drawAxes(char opt, const Camera& camera, sf::RenderTexture& texture);
-// void drawGrid(char opt, const Camera& camera, sf::RenderTexture& image);
-void drawWalls(char opt, const Gas& gas, const Camera& camera,
-               sf::RenderTexture& texture);
+std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles);
+
+void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
+void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
+void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
+
+inline sf::CircleShape defPartProj {1.f, 20};
+
+void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture);
 
 sf::RenderTexture drawGas(const Gas& gas);
 
-}  // namespace graphics
 }  // namespace gasSim
 
 #endif
