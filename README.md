@@ -13,12 +13,23 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 ## To do
 
-- [x] Aggiungere costruttori che inseriscono solo particelle e costruttori che deleghino
-- [ ] Scrivere gli unit tests
-- [x] Capire ed implementare la gestione degli urti a piu di due particelle (facoltativo) -> NO
-- [ ] Inserire una svalangata di assert una volta completata l'implementazione di base
+- [x] Unit test per for_any_couple()
+- [x] Cambiare i nomi agli unitTest
 - [ ] Exception handling
-- [ ] Migliorare find_iteration()
+    - [ ] Throw quando c'è qualcosa che non va e fare il catch nel main
+    - [x] std::invalid_argument per gli argomenti delle funzioni
+- [ ] Sistemare i test del costruttore del gas
+- [x] Finire il secondo test carta e penna di collisionTime
+- [x] Togliere i namespace extra
+- [ ] Implementare il gas loop con gli if
+- [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer)
+- [ ] Provare a implementare la const reference nella class collision che poi si copia l'indirizzo per metterlo nel puntatore
+- [x] Scrivere firstWallCollision()
+    * Implementare collisionTime con una sola particella
+    * Implementare dei metodi getter delle coordinate dei muri e una funzione sempliche collisionTime che calcola, più bella ma da ottimizzzare di più
+    * Implementare una funzione collisionTime che prende solo la lunghezza della scatola e trova i muri con una lambda
+- [ ] Scrivere test di firstWallCollision()
+- [ ] Cambiare i wall char con degli enum
 
 ## Da discutere nella prossima call
 
@@ -26,9 +37,28 @@ In alternative just a loose function "coordinates" that does roughly the same th
 * Quale regole di naming abbiamo deciso
 * RandomVector
 
+
 ## Cosa discusse
 
 * Usiamo per grafici e statistica
-* Implementazione input con command line con librerie
+* NO BOTTONI in una user interface grafica
+* Implementazione input con command line con librerie:
+    * 
 * Implementiamo scatola dentro classe gas
 * Pubblic inheritance per la class collision
+
+
+## Cosa da fare
+
+Nicco input, output
+Liam graphics, opzionalmente statistica
+Diego physicsEngine, forse main
+
+## Interface
+
+* Una modalità tutti i parametri inseriti per quello che noi consideriamo standard
+* Opzione --help, opzione di default
+* Opzione --config, che fa partire il configuratore per la scelta dei dati di base
+* Opzione --gui=false|true, per vedere tutta la roba di Liam
+* Opzione --print, per printare in terminal con i valori
+* Opzione --save=graphics,data , per salvare grafici e video?
