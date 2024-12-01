@@ -17,6 +17,8 @@
 namespace gasSim {
 
 // Definition of vector functions
+PhysVector PhysVector::operator-() const { return {-x, -y, -z}; }
+
 PhysVector PhysVector::operator+(const PhysVector& v) const {
   return {x + v.x, y + v.y, z + v.z};
 }
@@ -25,9 +27,9 @@ PhysVector PhysVector::operator-(const PhysVector& v) const {
   return {x - v.x, y - v.y, z - v.z};
 }
 
-PhysVector PhysVector::operator+=(const PhysVector& v) const {
-  return {x + v.x, y + v.y, z + v.z};
-}
+void PhysVector::operator+=(const PhysVector& v) { *this = *this + v; }
+
+void PhysVector::operator-=(const PhysVector& v) { *this = *this - v; }
 
 PhysVector PhysVector::operator*(const double c) const {
   return {x * c, y * c, z * c};
@@ -50,6 +52,8 @@ PhysVector operator*(const double c, const PhysVector v) { return v * c; }
 bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
 
 double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
+
+void PhysVector::normalize() { *this = *this / this->norm(); }
 
 PhysVector randomVector(const double maxNorm) {
   if (maxNorm <= 0) {
@@ -99,25 +103,51 @@ std::string WallCollision::getCollisionType() const {
   return "Particle to Wall Collision";
 }
 
-void WallCollision::resolve() { std::cout << "Risolvo la collisione muro"; }
+void WallCollision::resolve() {
+  Particle* part{getFirstParticle()};
+
+  switch (wall_) {
+    case 'l':
+    case 'r':
+      part->speed.x = -part->speed.x;
+      break;
+    case 'f':
+    case 'b':
+      part->speed.y = -part->speed.y;
+      break;
+    case 'u':
+    case 'd':
+      part->speed.z = -part->speed.z;
+      break;
+  }
+}
 // End of WallCollision functions
 
-// Definition of ParticleCollision functions
-ParticleCollision::ParticleCollision(double t, Particle* p1, Particle* p2)
+// Definition of PartCollision functions
+PartCollision::PartCollision(double t, Particle* p1, Particle* p2)
     : Collision(t, p1), secondParticle_(p2) {}
 
-Particle* ParticleCollision::getSecondParticle() const {
-  return secondParticle_;
-}
+Particle* PartCollision::getSecondParticle() const { return secondParticle_; }
 
-std::string ParticleCollision::getCollisionType() const {
+std::string PartCollision::getCollisionType() const {
   return "Particle to Particle Collision";
 }
 
-void ParticleCollision::resolve() {
-  std::cout << "Risolvo la collisione particella";
+void PartCollision::resolve() {
+  Particle* part1{getFirstParticle()};
+  Particle* part2{secondParticle_};
+
+  PhysVector centerDist{part1->position - part2->position};
+  centerDist.normalize();
+
+  PhysVector speedDiff{part1->speed - part2->speed};
+
+  double projection = centerDist * speedDiff;
+
+  part1->speed -= centerDist * projection;
+  part2->speed += centerDist * projection;
 }
-// End of ParticleCollision functions
+// End of PartCollision functions
 
 // Definition of Gas functions
 Gas::Gas(const Gas& gas)
@@ -193,34 +223,23 @@ const std::vector<Particle>& Gas::getParticles() const { return particles_; }
 double Gas::getBoxSide() const { return boxSide_; }
 
 void Gas::gasLoop(int nIterations) {
-  ParticleCollision a{findFirstPartCollision()};
-  WallCollision b{findFirstWallCollision()};
+  PartCollision pColl{firstPartCollision()};
+  WallCollision wColl{firstWallCollision()};
 
-  if (a.getTime() < b.getTime()) {
-    resolveCollision(a);
+  Collision* firstColl{nullptr};
+
+  if (pColl.getTime() < wColl.getTime()) {
+    firstColl = &pColl;
   } else {
-    resolveCollision(b);
+    firstColl = &wColl;
   }
 
-  // Collision* firstCollision{nullptr};
+  updatePositions(firstColl->getTime());
+  life_ += firstColl->getTime();
 
-  // if (/*a.getTime() > b.getTime()*/ true) {
-  //   firstCollision = &a;
-  // } else {
-  // firstCollision = &b;
-  // }
-
-  // firstCollision->resolve();
-  // Collision* firstCollision = &pippo;
-  /*Collision* wallCollision = findFirstWallCollision(time);
-
-  Collision* firstCollision =
-      (partCollision->getTime() < wallCollision->getTime()) ? partCollision
-                                                            : wallCollision;
-
-  updateGasState(firstCollision);*/
+  firstColl->resolve();
 }
-ParticleCollision Gas::findFirstPartCollision() {
+PartCollision Gas::firstPartCollision() {
   double topTime{INFINITY};
   Particle* firstPart;
   Particle* secondPart;
@@ -241,7 +260,7 @@ ParticleCollision Gas::findFirstPartCollision() {
   return {topTime, firstPart, secondPart};
 }
 
-WallCollision Gas::findFirstWallCollision() {
+WallCollision Gas::firstWallCollision() {
   WallCollision firstColl{INFINITY, nullptr, 'x'};
 
   std::for_each(particles_.begin(), particles_.end(), [&](Particle& p) {
@@ -275,15 +294,19 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
   double timeZ{calculateTime(p.position.z, p.speed.z)};
 
   double minTime{timeX};
-  char wall{'x'};
+
+  char wall = (p.speed.x < 0) ? 'l' : 'r';
+
   if (timeY < minTime) {
     minTime = timeY;
-    wall = 'y';
+    wall = (p.speed.y < 0) ? 'f' : 'b';
   }
+
   if (timeZ < minTime) {
     minTime = timeZ;
-    wall = 'z';
+    wall = (p.speed.z < 0) ? 'd' : 'u';
   }
+
   assert(minTime > 0);
 
   return {minTime, &p, wall};
@@ -321,7 +344,5 @@ void Gas::updatePositions(double time) {
                 [time](Particle& part) { part.position += part.speed * time; });
 }
 
-void Gas::resolveCollision(ParticleCollision coll) { coll.getFirstParticle(); }
-void Gas::resolveCollision(WallCollision coll) { coll.getFirstParticle(); }
 // End of Gas functions
 }  // namespace gasSim

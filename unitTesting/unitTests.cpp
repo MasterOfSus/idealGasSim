@@ -124,6 +124,13 @@ TEST_CASE("Testing PhysVector") {
     CHECK(scalarProduct1 == scalarProduct2);
   }
   SUBCASE("Norm") { CHECK(vec1.norm() == doctest::Approx(56.3033)); }
+  SUBCASE("Normalize") {
+    vec1.normalize();
+    gasSim::PhysVector normalizeVec1{0.019537, -0.0374756, 0.999107};
+    CHECK(doctest::Approx(vec1.x) == normalizeVec1.x);
+    CHECK(doctest::Approx(vec1.y) == normalizeVec1.y);
+    CHECK(doctest::Approx(vec1.z) == normalizeVec1.z);
+  }
 }
 
 TEST_CASE("Testing Particle") {
@@ -151,7 +158,7 @@ TEST_CASE("Testing Particle") {
 TEST_CASE("Testing WallCollision") {
   // Appena sappiamo cos'è un muro
 }
-TEST_CASE("Testing ParticleCollision") {
+TEST_CASE("Testing PartCollision") {
   double time{4};
 
   gasSim::PhysVector vec1{4.23, -5.34, 6.45};
@@ -162,7 +169,7 @@ TEST_CASE("Testing ParticleCollision") {
   gasSim::PhysVector vec4{0.11, 0.211, 5.6253};
   gasSim::Particle part2{vec3, vec4};
 
-  gasSim::ParticleCollision coll{time, &part1, &part2};
+  gasSim::PartCollision coll{time, &part1, &part2};
   SUBCASE("Constructor Particle2Particle") {
     CHECK(coll.getFirstParticle()->position == vec1);
     CHECK(coll.getFirstParticle()->speed == vec2);
@@ -254,10 +261,11 @@ TEST_CASE("Testing Gas constructor") {
      });
    }
    SUBCASE("Find first Particle Collsion") {
-     Gas.findFirstPartCollision(INFINITY);
+     Gas.firstPartCollision(INFINITY);
    }
    SUBCASE("Resolve Collision") { Gas.gasLoop(1); }*/
 }
+/*
 TEST_CASE("Testing Gas, find first collision") {
   SUBCASE("Simple collision") {
     double side{1E3};
@@ -266,7 +274,7 @@ TEST_CASE("Testing Gas, find first collision") {
     std::vector<gasSim::Particle> vec{part1, part2};
     gasSim::Gas gas{vec, side};
 
-    gasSim::ParticleCollision partColl{gas.findFirstPartCollision()};
+    gasSim::PartCollision partColl{gas.firstPartCollision()};
 
     auto first = partColl.getFirstParticle();
     auto second = partColl.getSecondParticle();
@@ -290,10 +298,10 @@ TEST_CASE("Testing Gas, find first collision") {
     std::vector<gasSim::Particle> vec{part1, part2};
     gasSim::Gas gas{vec, 40};
 
-    CHECK_THROWS_AS(gas.findFirstPartCollision(), std::logic_error);
+    CHECK_THROWS_AS(gas.firstPartCollision(), std::logic_error);
   }
 }
-
+*/
 TEST_CASE("Testing Gas 2") {
   // gasSim::randomVector(-1);
   /*

@@ -12,9 +12,12 @@ struct PhysVector {
   double y;
   double z;
 
+  PhysVector operator-() const;
+
   PhysVector operator+(const PhysVector& v) const;
   PhysVector operator-(const PhysVector& v) const;
-  PhysVector operator+=(const PhysVector& v) const;
+  void operator+=(const PhysVector& v);
+  void operator-=(const PhysVector& v);
 
   PhysVector operator*(const double c) const;
   PhysVector operator/(const double c) const;
@@ -25,6 +28,8 @@ struct PhysVector {
   bool operator!=(const PhysVector& v) const;
 
   double norm() const;
+
+  void normalize();
 };
 
 PhysVector operator*(const double c, const PhysVector v);
@@ -40,10 +45,6 @@ struct Particle {
   PhysVector speed = {};
 };
 bool particleOverlap(const Particle& p1, const Particle& p2);
-
-struct Wall {
-  double a, b, c, d;
-};
 
 class Collision {
  public:
@@ -72,9 +73,9 @@ class WallCollision : public Collision {
   char wall_;
 };
 
-class ParticleCollision : public Collision {
+class PartCollision : public Collision {
  public:
-  ParticleCollision(double t, Particle* p1, Particle* p2);
+  PartCollision(double t, Particle* p1, Particle* p2);
   Particle* getSecondParticle() const;
   std::string getCollisionType() const override;
   void resolve() override;
@@ -93,17 +94,15 @@ class Gas {
   double getBoxSide() const;
 
   void gasLoop(int nIterations);
-  void updateGasState(Collision fisrtCollision);
-  WallCollision findFirstWallCollision();
-  ParticleCollision findFirstPartCollision();
-  void resolveCollision(ParticleCollision coll);
-  void resolveCollision(WallCollision coll);
-  
 
  private:
   std::vector<Particle> particles_;
-  double boxSide_;                    // side of the cubical container
+  double boxSide_;  // side of the cubical container
+  double life_{0};
   void updatePositions(double time);
+  void updateGasState(Collision fisrtCollision);
+  WallCollision firstWallCollision();
+  PartCollision firstPartCollision();
 };
 
 double collisionTime(const Particle& p1, const Particle& p2);
