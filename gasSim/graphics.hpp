@@ -14,10 +14,6 @@
 
 namespace gasSim {
 
-using PhysVector = physics::PhysVector;
-using Particle = physics::Particle;
-using Gas = physics::Gas;
-
 class RenderStyle {
 	public:
 	const std::string& getGridOpts() const { return gridOpts_; };

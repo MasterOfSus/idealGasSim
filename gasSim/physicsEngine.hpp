@@ -35,8 +35,8 @@ struct PhysVector {
 
 PhysVector operator*(const double c, const PhysVector v);
 
-PhysVector randomVector(const double maxNorm);
-PhysVector randomVectorGauss(const double standardDev);
+PhysVector unifRandoVector(const double maxNorm);
+PhysVector gausRandVector(const double standardDev);
 
 struct Particle {
   static double mass;
@@ -142,9 +142,6 @@ class Gas {
   Hit* getNextHit();
 
   void solveNextEvent();
-
- private:
-  std::vector<Particle> particles_;
   void updatePositions(double time);
   void updateGasState(Collision fisrtCollision);
   WallCollision firstWallCollision();

@@ -212,7 +212,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
 
   int index{0};
   std::generate_n(std::back_inserter(particles_), nParticles, [=, &index]() {
-    Particle p{{gridVector(index)}, randomVector(maxSpeed)};
+    Particle p{{gridVector(index)}, unifRandoVector(maxSpeed)};
     ++index;
     return p;
   });
