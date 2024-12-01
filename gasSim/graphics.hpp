@@ -20,22 +20,22 @@ using Gas = physics::Gas;
 
 class RenderStyle {
 	public:
-	const char* const getGridOpts() const { return gridOpts_; };
-	void setGridOpts(const char* opts);
+	const std::string& getGridOpts() const { return gridOpts_; };
+	void setGridOpts(const std::string& opts);
 	const sf::Color& getGridColor() const { return gridColor_; };
 	void setGridColor(const sf::Color& color) { gridColor_ = color; };
 	double getGridSpacing() const { return gridSpacing_; };
 	void setGridSpacing(const double spacing);
 
-	const char* const getAxesOpts() const { return axesOpts_; };
-	void setAxesOpts(const char* opts);
+	const std::string& getAxesOpts() const { return axesOpts_; };
+	void setAxesOpts(const std::string& opts);
 	const sf::Color& getAxesColor() const { return axesColor_; };
 	void setAxesColor(const sf::Color& color) { axesColor_ = color; };
 	double getAxesLength() const { return axesLength_; };
 	void setAxesLength(const double length);
 
-	const char* const getWallsOpts() const { return wallsOpts_; };
-	void setWallsOpts(const char* opts);
+	const std::string& getWallsOpts() const { return wallsOpts_; };
+	void setWallsOpts(const std::string& opts);
 	const sf::Color& getWallsColor() const { return wallsColor_; };
 	void setWallsColor(const sf::Color& color) { wallsColor_ = color; };
 
@@ -45,22 +45,23 @@ class RenderStyle {
 	const sf::Color& getBackgroundColor() const { return background_; };
 	void setBackgroundColor(const sf::Color& color) { background_ = color; };
 
-	RenderStyle(); 
+	RenderStyle() {};
+	RenderStyle(const sf::CircleShape& defPartProj) : partProj_(defPartProj) {}
 
 	private:
 
-	const char* gridOpts_ {"xy"};
+	std::string gridOpts_ {"x"}; // x -> xy plane, y -> yz plane, z -> zx plane
 	sf::Color gridColor_ {0, 0, 0, 128};
 	double gridSpacing_ {1.};
 
-	const char* axesOpts_ {"xyz"};
+	std::string axesOpts_ {"xyz"};
 	sf::Color axesColor_ {0, 0, 0, 255};
 	double axesLength_ {10.};
 
-	const char* wallsOpts_ {"tdlrfb"}; // top, down, left, right, front, back
+	std::string wallsOpts_ {"udlrfb"}; // top, down, left, right, front, back
 	sf::Color wallsColor_ {0, 0, 0, 64};
 
-	sf::CircleShape partProj_ {1., 20};
+	sf::CircleShape partProj_ {1.f, 20};
 	sf::Color partColor_ {240, 0, 0, 255};
 
 	sf::Color background_ {255, 255, 255, 255};
@@ -122,8 +123,6 @@ std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles
 void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
-
-inline sf::CircleShape defPartProj {1.f, 20};
 
 void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture);
 

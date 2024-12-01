@@ -9,15 +9,48 @@
 namespace gasSim {
 
 // renderStyle member functions
-void RenderStyle::setGridOpts(const char* opts) {
+void RenderStyle::setGridOpts(const std::string& opts) {
+	if (opts.length() > 3) throw std::invalid_argument("Too many grid options.");
+	for (char opt: opts) {
+		if (opt != 'x' && opt != 'y' && opt != 'z') throw std::invalid_argument("Invalid grid option.");
+	}
+	gridOpts_.clear();
+	if (opts.find('x') != std::string::npos) gridOpts_.push_back('x');
+	if (opts.find('y') != std::string::npos) gridOpts_.push_back('y');
+	if (opts.find('z') != std::string::npos) gridOpts_.push_back('z');
 }
 
-void RenderStyle::setAxesOpts(const char* opts) {
-
+void RenderStyle::setAxesOpts(const std::string& opts) {
+	if (opts.length() > 6) throw std::invalid_argument("Too many axes options.");
+	for (char opt: opts) {
+		if (opt != 'x' && opt != 'y' && opt != 'z') throw std::invalid_argument("Invalid axes option.");
+	}
+	axesOpts_.clear();
+	if (opts.find('x') != std::string::npos) axesOpts_.push_back('x');
+	if (opts.find('y') != std::string::npos) axesOpts_.push_back('y');
+	if (opts.find('z') != std::string::npos) axesOpts_.push_back('z');
 }
 
-void RenderStyle::setWallsOpts(const char* opts) {
+void RenderStyle::setAxesLength(const double length) {
+	if (length < 0.) throw std::invalid_argument("Invalid axis length.");
+	axesLength_ = length;
+}
 
+void RenderStyle::setWallsOpts(const std::string& opts) {
+	if (opts.length() > 3) throw std::invalid_argument("Too many walls options.");
+	for (char opt: opts) {
+		if (opt != 'u' && opt != 'd' &&
+				opt != 'l' && opt != 'r' &&
+				opt != 'f' && opt != 'b')
+			throw std::invalid_argument("Invalid walls option.");
+	}
+	wallsOpts_.clear();
+	if (opts.find('u') != std::string::npos) wallsOpts_.push_back('u');
+	if (opts.find('d') != std::string::npos) wallsOpts_.push_back('d');
+	if (opts.find('l') != std::string::npos) wallsOpts_.push_back('l');
+	if (opts.find('r') != std::string::npos) wallsOpts_.push_back('r');
+	if (opts.find('f') != std::string::npos) wallsOpts_.push_back('f');
+	if (opts.find('b') != std::string::npos) wallsOpts_.push_back('b');
 }
 
 // Camera member functions
@@ -112,8 +145,8 @@ PhysVector getPointProjection(const PhysVector& point, const Camera& camera) {
   return {
 		m * a,
 		o * a, 
-		(point - camera.getFocus()).norm() /
-		(camera.getFocus() - a).norm()
+		(camera.getFocus() - a).norm() /
+		(point - camera.getFocus()).norm()
 		};
 }
 
@@ -138,57 +171,71 @@ std::vector<PhysVector> projectParticles(const std::vector<Particle>& particles,
   return projections;
 }
 
-void setDefParticleTexture(const std::string& textureFile) {
-	sf::Texture texture;
-	if(texture.loadFromFile(textureFile)) {
-		defPartProj.setTexture(&texture);
-	} else {
-		defPartProj.setFillColor(sf::Color::Magenta);
+void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
+	static sf::CircleShape partProj = style.getPartProj();
+	partProj.setRadius(getNPixels(gas.getParticles().begin()->radius, camera));
+	std::vector<PhysVector> projections = projectParticles(gas.getParticles());
+	std::sort(projections.begin(), projections.end(), 
+						[](const PhysVector& a, const PhysVector& b) {
+							return a.z > b.z;});
+	for (const PhysVector& projection: projections) {
+		partProj.setPosition(projection.x, projection.y); // wrong, but heart's in the righ place
+		partProj.setScale(projection.z, projection.z);
+		texture.draw(partProj);
 	}
 }
 
-void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture) {
-	float nPixels { static_cast<float>(camera.getHeight() * gas.getParticles()[0].radius / getCamTopSide(camera)) };
-  defPartProj.setRadius(nPixels);
-	std::vector<PhysVector> projections = projectParticles(gas.getParticles());
-  sort(projections.begin(), projections.end(),  // sort by scaling coordinates
-       [](const PhysVector& v1, const PhysVector& v2) { return v1.z < v2.z; });
-  for (const PhysVector& projection : projections) {
-		defPartProj.setScale(1.f/static_cast<float>(projection.z), 1.f/static_cast<float>(projection.z));
-		defPartProj.setPosition(projection.x, projection.y);
-		texture.draw(defPartProj);
-  }
+void drawAxes(const Camera& camera, sf::RenderTexture texture, const RenderStyle& style = {}) {
+// imagine there was a functioning arrow here
+	sf::CircleShape arrow {1.f, 3};
+	float axesLength = style.getAxesLength();
+
+	for (char opt: style.getAxesOpts()) {
+		switch (opt) {
+			case 'x':
+				{
+					PhysVector proj = getPointProjection({axesLength, 0., 0.}, camera);
+					arrow.setPosition(proj.x, proj.y);
+					texture.draw(arrow);
+					break;
+				}
+			case 'y':
+				{
+					PhysVector proj = getPointProjection({0., axesLength, 0.}, camera);
+					arrow.setPosition(proj.x, proj.y);
+					texture.draw(arrow);
+					break;
+				}
+			case 'z':
+				{
+					PhysVector proj = getPointProjection({0., 0., axesLength}, camera);
+					arrow.setPosition(proj.x, proj.y);
+					texture.draw(arrow);
+					break;
+				}
+		}
+	}
 }
 
-void drawAxes(/*char* opt,*/ const Camera& camera, const double axisLength,
-              sf::RenderTexture texture) {
-  static sf::CircleShape tip{10., 3};
-  static sf::ConvexShape shaft;
-  static bool i{true};
-  PhysVector originProj{getPointProjection({0., 0., 0.}, camera)};
-  shaft.setPoint(
-      1, {static_cast<float>(originProj.x), static_cast<float>(originProj.y)});
-  PhysVector arrowTipsPs[3]{{getPointProjection({axisLength, 0., 0.}, camera)},
-                            {getPointProjection({0., axisLength, 0.}, camera)},
-                            {getPointProjection({0., 0., axisLength}, camera)}};
-  for (const PhysVector& position : arrowTipsPs) {
-    sf::Vector2f auxPos{static_cast<float>(position.x),
-                        static_cast<float>(position.y)};
-    shaft.setPoint(2, auxPos);
-    tip.setPosition(auxPos);
-    texture.draw(shaft);
-    texture.draw(tip);
-  }
+void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
+	sf::Vertex line[2];
+	line[0].color = style.getGridColor();
+	line[1].color = style.getGridColor();
+	for (char opt: style.getGridOpts()) {
+		switch (opt) {
+			case 'x':
+				break;
+			case 'y':
+				break;
+			case 'z':
+				break;
+		}
+	}
 }
 
-void drawGrid(const char* opt, const Camera& camera, sf::RenderTexture& texture) {
-	for () {}
+void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& = {}) {
+
 }
-
-/*void drawWalls(char opt, const Gas& gas, const Camera& camera,
-sf::RenderTexture& texture) {
-
-}*/
 
 sf::RenderTexture drawGas(const Gas& gas);
 
