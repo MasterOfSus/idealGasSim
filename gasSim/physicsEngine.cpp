@@ -55,7 +55,7 @@ double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
 
 void PhysVector::normalize() { *this = *this / this->norm(); }
 
-PhysVector randomVector(const double maxNorm) {
+PhysVector unifRandoVector(const double maxNorm) {
   if (maxNorm <= 0) {
     throw std::invalid_argument("maxNorm must be greater than 0");
   }
@@ -63,7 +63,7 @@ PhysVector randomVector(const double maxNorm) {
   std::uniform_real_distribution<double> dist(0., pow(maxNorm / 3, 1. / 2.));
   return {dist(eng), dist(eng), dist(eng)};
 }
-PhysVector randomVectorGauss(const double standardDev) {
+PhysVector gausRandVector(const double standardDev) {
   if (standardDev <= 0) {
     throw std::invalid_argument("standardDev must be greater than 0");
   }

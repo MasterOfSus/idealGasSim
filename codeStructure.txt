@@ -15,30 +15,12 @@ Physics engine:
 			due double static, mass e radius (il programma non ha lo scopo di rappresentare particelle di diverse dimensioni)
 		metodi/funzioni:
 			una funzione move(particle, t), che muove la particella nello spazio alla posizione che avra nel tempo t0 + t
-	
-	una class Collision:
-		membri:
-		costruttori:
-			costruttore di default
-		metodi/funzioni:
-			una funzione virtuale pura solveCollision che risolve la collisione
-	una class particleCollision:
-		eredita pubblicamente da Collision
-		membri:
-			due Particle
-		costruttori:
-			un costruttore che prende due particle e il tempo
-		metodi:
-			il metodo solveCollision per particelle
-	una class wallCollision:
-		eredita pubblicamente da Collision
-		membri:
-			una Particle
-			un indicatore per il muro ????
-		costruttori:
-			un costruttore che prende una particle, l'indicatore del muro e il tempo
-		metodi:
-			il metodo solveCollision per muro-particella
+
+Amogus
+E necessario distinguere tra una collisione ed un cluster:
+una collisione e una coppia di particelle o un muro e particella che collideranno tra loro in un tempo t maggiore o uguale a zero, mentre un cluster e una coppia di particelle oppure un muro e una particella che si trovano in contatto tra loro. Un cluster e una collisione con tempo uguale a zero. In questo senso un cluster e una collisione specializzata, in quanto su di esso puo essere applicato un metodo che risolve la collisione.
+
+Ma se si risolvesse una collisione a piu particelle considerando urti immediatamente successivi fino a che tutte le particelle hanno tempo d'urto maggiore di zero?
 
 	una class Gas:
 		la classe deve rappresentare un gas in uno spazio tridimensionale contenente un solo tipo di particella sferica e contenuto in un contenitore cubico, in quanto tale ha due invarianti di classe da rispettare:
@@ -57,9 +39,35 @@ Physics engine:
 			una funzione goToNextCollision()
 
 Graphics engine:
-	Importa sfml
-	una funzione drawSphere
-	una funzione drawParticle
-	una funzione drawWall
-	una funzione drawAxes
-	una funzione drawGas
+	use the default antialiasing
+	Per disegnare un gas bisogna:
+		definire un osservatore:
+			osservatore prospettico: un fuoco, un piano - fatto
+		disegnare i muri:
+			proiettare sul piano visivo un rettangolo
+			inscurire ogni pixel del rettangolo
+				utilizzando la classe ConvexShape
+		disegnare gli assi
+			disegnare una retta:
+				proiettare sul piano visivo una retta
+					disegnare la retta con la classe di default sf::Line
+		disegnare le particelle:
+			disegnare una sfera
+				proiettare sul piano prospettico il centro e il raggio di una sfera.
+					disegnare la forma di una sfera
+						utilizzando una illuminazione costante relativamente all'osservatore -> una sfera verra sempre disegnata allo stesso modo, ma piu scura se piu lontana.
+
+allora:
+	l'idea e quella di implementare due classi separate per la risoluzione degli urti:
+		per calcolare l'urto successivo allo stato corrente del gas e necessaria una classe Hit, che tiene in memoria sia le particelle coinvolte
+		che il tempo nel quale la collisione avra luogo.
+		per risolvere una collisione invece si propone l'utilizzo di una classe Cluster, che tiene in memoria solo le particelle coinvolte, dotata di 
+		un metodo solveCluster che risolve la collisione.
+		
+		si propone di implementare la differenza tra un Hit con un muro e con una particella tramite il polimorfismo, creando una classe WallHit e una
+		ParticleHit, che ereditino da una classe virtuale Hit?
+		allo stesso modo si propone l'implementazione di una collisione come una collisione a particella o a muro, due classi distinte, dotate entrambe di una funzione membro solveCollision che risolva la collisione
+
+		la funzione membro che trova e restituisce la collisione successiva potrebbe restituire in questo modo un puntatore alla classe madre delle due collisioni, e trovare la collisione successiva prima trovando la prima collisione a particelle tramite un'apposita funzione, poi trovando la prima collisione a muro tramite un'altra apposita funzione, per poi confrontare le due e restituire un puntatore alla collisione col tempo minore, per poi muovere le particelle del gas usando il tempo della collisione e risolvere la collisione trasferendone i contenuti all'interno di un cluster, a parte per il tempo, per poi utilizzare il metodo solveCluster per risolvere il cluster. Lol. Sarebbe necessario di conseguenza l'utilizzo di gestione dinamica della memoria.
+		Per l'overhead di chiamata per le funzioni virtual, dato che la maggior parte del tempo di computazione sarebbe occupato dal calcolo delle prime collisioni e non della risoluzione delle collisioni, questo non dovrebbe implicare un overtime inaccettabile, anzi forse addirittura trascurabile rispetto al tempo di risoluzione.
+		Chissa
