@@ -56,6 +56,7 @@ Diego physicsEngine, forse main
 
 ## Interface
 
+using https://github.com/jarro2783/cxxopts library to manage command line options
 * Una modalità tutti i parametri inseriti per quello che noi consideriamo standard
 * Opzione --help, opzione di default
 * Opzione --config, che fa partire il configuratore per la scelta dei dati di base
