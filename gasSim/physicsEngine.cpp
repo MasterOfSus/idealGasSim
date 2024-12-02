@@ -228,12 +228,18 @@ void Gas::gasLoop(int nIterations) {
   for (int i{0}; i != nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
-  
+
     Collision* firstColl{nullptr};
 
-    if (pColl.getTime() < wColl.getTime()) {
-      firstColl = &pColl;
-    } else {
+    try {
+      pColl = firstPartCollision();
+
+      if (pColl.getTime() < wColl.getTime()) {
+        firstColl = &pColl;
+      } else {
+        firstColl = &wColl;
+      }
+    } catch (const std::logic_error& e) {
       firstColl = &wColl;
     }
 
