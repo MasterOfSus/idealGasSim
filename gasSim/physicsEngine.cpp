@@ -224,7 +224,6 @@ double Gas::getBoxSide() const { return boxSide_; }
 
 double Gas::getLife() const { return life_; }
 
-
 void Gas::gasLoop(int nIterations) {
   for (int i{0}; i != nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
@@ -244,27 +243,6 @@ void Gas::gasLoop(int nIterations) {
     firstColl->resolve();
   }
 }
-PartCollision Gas::firstPartCollision() {
-  double topTime{INFINITY};
-  Particle* firstPart;
-  Particle* secondPart;
-
-  for_each_couple(particles_.begin(), particles_.end(),
-                  [&](Particle& p1, Particle& p2) {
-                    double time{collisionTime(p1, p2)};
-                    std::cout << time;
-                    if (time < topTime) {
-                      firstPart = &p1;
-                      secondPart = &p2;
-                      topTime = time;
-                    }
-                  });
-
-  if (topTime == INFINITY) {
-    throw std::logic_error("No particle to particle collisions found");
-  }
-  return {topTime, firstPart, secondPart};
-}
 
 WallCollision Gas::firstWallCollision() {
   WallCollision firstColl{INFINITY, nullptr, 'x'};
@@ -280,6 +258,61 @@ WallCollision Gas::firstWallCollision() {
     throw std::logic_error("No particle to wall collisions found");
   }
   return firstColl;
+}
+
+PartCollision Gas::firstPartCollision() {
+  double topTime{INFINITY};
+  Particle* firstPart;
+  Particle* secondPart;
+
+  for_each_couple(particles_.begin(), particles_.end(),
+                  [&](Particle& p1, Particle& p2) {
+                    double time{collisionTime(p1, p2)};
+                    if (time < topTime) {
+                      firstPart = &p1;
+                      secondPart = &p2;
+                      topTime = time;
+                    }
+                  });
+
+  if (topTime == INFINITY) {
+    throw std::logic_error("No particle to particle collisions found");
+  }
+  return {topTime, firstPart, secondPart};
+}
+
+void Gas::updatePositions(double time) {
+  std::for_each(particles_.begin(), particles_.end(),
+                [time](Particle& part) { part.position += part.speed * time; });
+}
+// End of Gas functions
+
+double collisionTime(const Particle& p1, const Particle& p2) {
+  PhysVector relativeSpeed = p1.speed - p2.speed;
+  PhysVector relativePosition = p1.position - p2.position;
+
+  double a = relativeSpeed * relativeSpeed;
+  double b = relativePosition * relativeSpeed;
+  double c =
+      (relativePosition * relativePosition) - 4 * std::pow(Particle::radius, 2);
+
+  double result = INFINITY;
+
+  double discriminant = std::pow(b, 2) - a * c;
+
+  if (discriminant > 0) {
+    double sqrtDiscriminant = std::sqrt(discriminant);
+
+    double t1 = (-b - sqrtDiscriminant) / a;
+    double t2 = (-b + sqrtDiscriminant) / a;
+
+    if (t1 > 0) {
+      result = t1;
+    } else if (t2 > 0) {
+      result = t2;
+    }
+  }
+  return result;
 }
 
 WallCollision calculateWallColl(Particle& p, double squareSide) {
@@ -317,39 +350,4 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
 
   return {minTime, &p, wall};
 }
-
-double collisionTime(const Particle& p1, const Particle& p2) {
-  PhysVector relativeSpeed = p1.speed - p2.speed;
-  PhysVector relativePosition = p1.position - p2.position;
-
-  double a = relativeSpeed * relativeSpeed;
-  double b = relativePosition * relativeSpeed;
-  double c =
-      (relativePosition * relativePosition) - 4 * std::pow(Particle::radius, 2);
-
-  double result = INFINITY;
-
-  double discriminant = std::pow(b, 2) - a * c;
-
-  if (discriminant > 0) {
-    double sqrtDiscriminant = std::sqrt(discriminant);
-
-    double t1 = (-b - sqrtDiscriminant) / a;
-    double t2 = (-b + sqrtDiscriminant) / a;
-
-    if (t1 > 0) {
-      result = t1;
-    } else if (t2 > 0) {
-      result = t2;
-    }
-  }
-  std::cout << "dentro collisionTime" << result << '\n';
-  return result;
-}
-void Gas::updatePositions(double time) {
-  std::for_each(particles_.begin(), particles_.end(),
-                [time](Particle& part) { part.position += part.speed * time; });
-}
-
-// End of Gas functions
 }  // namespace gasSim

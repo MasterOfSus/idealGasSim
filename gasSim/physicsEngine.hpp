@@ -140,13 +140,13 @@ class Gas {
   std::vector<Particle> particles_;
   double boxSide_;  // side of the cubical container
   double life_{0};
-  Hit* getNextHit();
 
-  void solveNextEvent();
-  void updatePositions(double time);
-  void updateGasState(Collision fisrtCollision);
   WallCollision firstWallCollision();
   PartCollision firstPartCollision();
+  void updatePositions(double time);
+
+  Hit* getNextHit();
+  void solveNextEvent();
 };
 
 double collisionTime(const Particle& p1, const Particle& p2);
