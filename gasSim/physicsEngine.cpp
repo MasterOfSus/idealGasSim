@@ -222,22 +222,29 @@ const std::vector<Particle>& Gas::getParticles() const { return particles_; }
 
 double Gas::getBoxSide() const { return boxSide_; }
 
+double Gas::getLife() const { return life_; }
+
 void Gas::gasLoop(int nIterations) {
-  PartCollision pColl{firstPartCollision()};
-  WallCollision wColl{firstWallCollision()};
+  for (int i{0}; i != nIterations; ++i) {
+    PartCollision pColl{firstPartCollision()};
+    WallCollision wColl{firstWallCollision()};
 
-  Collision* firstColl{nullptr};
+    Collision* firstColl{nullptr};
 
-  if (pColl.getTime() < wColl.getTime()) {
-    firstColl = &pColl;
-  } else {
-    firstColl = &wColl;
+    if (pColl.getTime() < wColl.getTime()) {
+      std::cout << "235 \n";
+
+      firstColl = &pColl;
+    } else {
+      firstColl = &wColl;
+    }
+
+    std::cout << "il fottutissimo tempo è questo" << firstColl->getTime();
+    updatePositions(firstColl->getTime());
+    life_ += firstColl->getTime();
+
+    firstColl->resolve();
   }
-
-  updatePositions(firstColl->getTime());
-  life_ += firstColl->getTime();
-
-  firstColl->resolve();
 }
 PartCollision Gas::firstPartCollision() {
   double topTime{INFINITY};
@@ -247,6 +254,7 @@ PartCollision Gas::firstPartCollision() {
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
                     double time{collisionTime(p1, p2)};
+                    std::cout << time;
                     if (time < topTime) {
                       firstPart = &p1;
                       secondPart = &p2;
@@ -337,6 +345,7 @@ double collisionTime(const Particle& p1, const Particle& p2) {
       result = t2;
     }
   }
+  std::cout << "dentro collisionTime" << result << '\n';
   return result;
 }
 void Gas::updatePositions(double time) {

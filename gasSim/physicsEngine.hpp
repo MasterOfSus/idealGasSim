@@ -132,6 +132,7 @@ class Gas {
 
   const std::vector<Particle>& getParticles() const;
   double getBoxSide() const;
+  double getLife() const;
 
   void gasLoop(int nIterations);
 

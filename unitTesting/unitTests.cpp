@@ -156,7 +156,28 @@ TEST_CASE("Testing Particle") {
   }
 }
 TEST_CASE("Testing WallCollision") {
-  // Appena sappiamo cos'è un muro
+  double time{4};
+
+  gasSim::PhysVector vec1{10, 10, 0};
+  gasSim::PhysVector vec2{0, 0, 10};
+  gasSim::Particle part1{vec1, vec2};
+
+  gasSim::WallCollision coll{time, &part1, 'u'};
+  SUBCASE("Constructor") {
+    CHECK(coll.getFirstParticle()->position == vec1);
+    CHECK(coll.getFirstParticle()->speed == vec2);
+    CHECK(coll.getWall() == 'u');
+  }
+  SUBCASE("Change the particles") {
+    gasSim::PhysVector actualPosition{4, 0, 4};
+    gasSim::PhysVector actualSpeed{1.34, 0.04, 9.3924};
+    coll.getFirstParticle()->position.x = 4;
+    coll.getFirstParticle()->position.y = 0;
+    coll.getFirstParticle()->position.z = 4;
+    coll.getFirstParticle()->speed = actualSpeed;
+    CHECK(part1.position == actualPosition);
+    CHECK(part1.speed == actualSpeed);
+  }
 }
 TEST_CASE("Testing PartCollision") {
   double time{4};
@@ -170,7 +191,7 @@ TEST_CASE("Testing PartCollision") {
   gasSim::Particle part2{vec3, vec4};
 
   gasSim::PartCollision coll{time, &part1, &part2};
-  SUBCASE("Constructor Particle2Particle") {
+  SUBCASE("Constructor") {
     CHECK(coll.getFirstParticle()->position == vec1);
     CHECK(coll.getFirstParticle()->speed == vec2);
     CHECK(coll.getSecondParticle()->position == vec3);
@@ -265,7 +286,7 @@ TEST_CASE("Testing Gas constructor") {
    }
    SUBCASE("Resolve Collision") { Gas.gasLoop(1); }*/
 }
-/*
+
 TEST_CASE("Testing Gas, find first collision") {
   SUBCASE("Simple collision") {
     double side{1E3};
@@ -273,25 +294,33 @@ TEST_CASE("Testing Gas, find first collision") {
     gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
     std::vector<gasSim::Particle> vec{part1, part2};
     gasSim::Gas gas{vec, side};
+    gas.gasLoop(1);
 
-    gasSim::PartCollision partColl{gas.firstPartCollision()};
+    auto newVec{gas.getParticles()};
+    double life{gas.getLife()};
 
-    auto first = partColl.getFirstParticle();
-    auto second = partColl.getSecondParticle();
+    gasSim::Particle part1F{{2.84529, 2.84529, 2.84529}, {0, 0, 0}};
+    gasSim::Particle part2F{{4, 4, 4}, {1, 1, 1}};
 
-    // Verifica che le due particelle siano part1 e part2 indipendentemente
-    // dall'ordine
-    bool condition1 =
-        (first->position == part1.position && first->speed == part1.speed &&
-         second->position == part2.position && second->speed == part2.speed);
-    bool condition2 =
-        (first->position == part2.position && first->speed == part2.speed &&
-         second->position == part1.position && second->speed == part1.speed);
+    CHECK(doctest::Approx(life) == 2.84529);
+    
+    CHECK(doctest::Approx(newVec[0].position.x) == part1F.position.x);
+    CHECK(doctest::Approx(newVec[0].position.y) == part1F.position.y);
+    CHECK(doctest::Approx(newVec[0].position.z) == part1F.position.z);
 
-    bool result = condition1 || condition2;
+    CHECK(doctest::Approx(newVec[0].speed.x) == part1F.speed.x);
+    CHECK(doctest::Approx(newVec[0].speed.y) == part1F.speed.y);
+    CHECK(doctest::Approx(newVec[0].speed.z) == part1F.speed.z);
 
-    CHECK(result);
+    CHECK(doctest::Approx(newVec[1].position.x) == part2F.position.x);
+    CHECK(doctest::Approx(newVec[1].position.y) == part2F.position.y);
+    CHECK(doctest::Approx(newVec[1].position.z) == part2F.position.z);
+
+    CHECK(doctest::Approx(newVec[1].speed.x) == part2F.speed.x);
+    CHECK(doctest::Approx(newVec[1].speed.y) == part2F.speed.y);
+    CHECK(doctest::Approx(newVec[1].speed.z) == part2F.speed.z);
   }
+  /*
   SUBCASE("None collision") {
     gasSim::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};
     gasSim::Particle part2{{3.43, 7.54, 6.04}, {7.05, 8.86, -9.04}};
@@ -299,9 +328,9 @@ TEST_CASE("Testing Gas, find first collision") {
     gasSim::Gas gas{vec, 40};
 
     CHECK_THROWS_AS(gas.firstPartCollision(), std::logic_error);
-  }
+  }*/
 }
-*/
+
 TEST_CASE("Testing Gas 2") {
   // gasSim::randomVector(-1);
   /*
