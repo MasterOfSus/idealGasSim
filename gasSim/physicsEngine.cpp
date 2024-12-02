@@ -224,17 +224,12 @@ double Gas::getBoxSide() const { return boxSide_; }
 
 double Gas::getLife() const { return life_; }
 
-double Gas::getLife() const { return life_; }
 
 void Gas::gasLoop(int nIterations) {
   for (int i{0}; i != nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
-  for (int i{0}; i != nIterations; ++i) {
-    PartCollision pColl{firstPartCollision()};
-    WallCollision wColl{firstWallCollision()};
-
-    Collision* firstColl{nullptr};
+  
     Collision* firstColl{nullptr};
 
     if (pColl.getTime() < wColl.getTime()) {
@@ -246,8 +241,6 @@ void Gas::gasLoop(int nIterations) {
     updatePositions(firstColl->getTime());
     life_ += firstColl->getTime();
 
-    firstColl->resolve();
-  }
     firstColl->resolve();
   }
 }
