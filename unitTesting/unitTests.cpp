@@ -322,18 +322,27 @@ TEST_CASE("Testing Gas, find first collision") {
   }
   SUBCASE("Simple collision particle to wall") {
     double side{1E3};
-    gasSim::Particle part1{{1, 500, 500}, {35.9, 0, 0}};
-    std::vector<gasSim::Particle> vec{part1};
+    gasSim::Particle part{{1, 500, 500}, {35.9, 0, 0}};
+    std::vector<gasSim::Particle> vec{part};
 
     gasSim::Gas gas{vec, side};
     gas.gasLoop(1);
 
     auto newVec{gas.getParticles()};
     double life{gas.getLife()};
+    gasSim::Particle partF{{1E3 - 1, 500, 500}, {-35.9, 0, 0}};
 
     CHECK(doctest::Approx(life) == 27.7994429);
+
+    CHECK(doctest::Approx(newVec[0].position.x) == partF.position.x);
+    CHECK(doctest::Approx(newVec[0].position.y) == partF.position.y);
+    CHECK(doctest::Approx(newVec[0].position.z) == partF.position.z);
+
+    CHECK(doctest::Approx(newVec[0].speed.x) == partF.speed.x);
+    CHECK(doctest::Approx(newVec[0].speed.y) == partF.speed.y);
+    CHECK(doctest::Approx(newVec[0].speed.z) == partF.speed.z);
   }
-  
+
   /*
   SUBCASE("None collision") {
     gasSim::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};

@@ -250,6 +250,7 @@ void Gas::gasLoop(int nIterations) {
     updatePositions(firstColl->getTime());
     life_ += firstColl->getTime();
 
+    assert(life_ != INFINITY);
     firstColl->resolve();
   }
 }

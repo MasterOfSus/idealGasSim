@@ -18,18 +18,18 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Exception handling
     - [ ] Throw quando c'è qualcosa che non va e fare il catch nel main
     - [x] std::invalid_argument per gli argomenti delle funzioni
-- [ ] Sistemare i test del costruttore del gas
+- [x] Sistemare i test del costruttore del gas
 - [x] Finire il secondo test carta e penna di collisionTime
 - [x] Togliere i namespace extra
 - [x] Implementare il gas loop con gli if
-- [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer)
-- [ ] Provare a implementare la const reference nella class collision che poi si copia l'indirizzo per metterlo nel puntatore
 - [x] Scrivere firstWallCollision()
     * Implementare collisionTime con una sola particella
     * Implementare dei metodi getter delle coordinate dei muri e una funzione sempliche collisionTime che calcola, più bella ma da ottimizzzare di più
     * Implementare una funzione collisionTime che prende solo la lunghezza della scatola e trova i muri con una lambda
-- [ ] Scrivere test di firstWallCollision()
+- [x] Scrivere test di firstWallCollision()
 - [ ] Cambiare i wall char con degli enum
+- [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer)
+- [ ] Aggiungere uno sborobotto di test
 
 ## Da discutere nella prossima call
 
