@@ -178,6 +178,11 @@ TEST_CASE("Testing WallCollision") {
     CHECK(part1.position == actualPosition);
     CHECK(part1.speed == actualSpeed);
   }
+  SUBCASE("Resolve Collision") {
+    coll.resolve();
+    CHECK(coll.getTime() == 0);
+    // Da aggiungere il check del risolutore corretto
+  }
 }
 TEST_CASE("Testing PartCollision") {
   double time{4};

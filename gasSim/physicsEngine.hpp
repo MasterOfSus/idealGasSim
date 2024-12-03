@@ -58,10 +58,10 @@ class Collision {
   Particle* getFirstParticle() const;
 
   virtual std::string getCollisionType() const = 0;
-  virtual void resolve() = 0;
+  virtual void resolve();
 
  private:
-  double time;
+  double time_;
   Particle* firstParticle_;
 };
 

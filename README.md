@@ -28,7 +28,7 @@ In alternative just a loose function "coordinates" that does roughly the same th
     * Implementare una funzione collisionTime che prende solo la lunghezza della scatola e trova i muri con una lambda
 - [x] Scrivere test di firstWallCollision()
 - [ ] Cambiare i wall char con degli enum
-- [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer)
+- [x] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer) -> viene male
 - [ ] Aggiungere uno sborobotto di test
 
 ## Da discutere nella prossima call

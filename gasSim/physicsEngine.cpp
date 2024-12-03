@@ -97,13 +97,17 @@ bool particleInBox(const Particle& part, double boxSide) {
 // End of Particle functions
 
 // Definition of Collision functions
-Collision::Collision(double t, Particle* p1) : time(t), firstParticle_(p1) {}
+Collision::Collision(double t, Particle* p1) : time_(t), firstParticle_(p1) {
+  assert(t > 0);
+}
 
-double Collision::getTime() const { return time; }
+double Collision::getTime() const { return time_; }
 
 Particle* Collision::getFirstParticle() const {
   return firstParticle_;
 }  // ATTENZIONE QUA COI PUNTATORI CHE PUNTANO
+
+void Collision::resolve() { time_ = 0; }
 // End of Collision functions
 
 // Definition of WallCollision functions
@@ -132,6 +136,7 @@ void WallCollision::resolve() {
       part->speed.z = -part->speed.z;
       break;
   }
+  Collision::resolve();
 }
 // End of WallCollision functions
 
@@ -158,6 +163,7 @@ void PartCollision::resolve() {
 
   part1->speed -= centerDist * projection;
   part2->speed += centerDist * projection;
+  Collision::resolve();
 }
 // End of PartCollision functions
 
