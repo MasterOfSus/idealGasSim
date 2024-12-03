@@ -82,6 +82,18 @@ bool particleOverlap(const Particle& p1, const Particle& p2) {
     return false;
   }
 }
+
+bool particleInBox(const Particle& part, double boxSide) {
+  const double radius = Particle::radius;
+  const auto& pos = part.position;
+
+  if (pos.x < radius || pos.x > boxSide - radius || pos.y < radius ||
+      pos.y > boxSide - radius || pos.z < radius || pos.z > boxSide - radius) {
+    return false;
+  }
+
+  return true;
+}
 // End of Particle functions
 
 // Definition of Collision functions
@@ -163,9 +175,7 @@ Gas::Gas(std::vector<Particle> particles, double boxSide)
   }
 
   std::for_each(particles_.begin(), particles_.end(), [&](const Particle& p) {
-    if (p.position.x < 0 || p.position.y < 0 || p.position.z < 0 ||
-        p.position.x > boxSide_ || p.position.y > boxSide_ ||
-        p.position.z > boxSide_) {
+    if (particleInBox(p, boxSide_) == false) {
       throw std::invalid_argument("particles must be in the box");
     }
   });
@@ -231,15 +241,9 @@ void Gas::gasLoop(int nIterations) {
 
     Collision* firstColl{nullptr};
 
-    try {
-      pColl = firstPartCollision();
-
-      if (pColl.getTime() < wColl.getTime()) {
-        firstColl = &pColl;
-      } else {
-        firstColl = &wColl;
-      }
-    } catch (const std::logic_error& e) {
+    if (pColl.getTime() < wColl.getTime()) {
+      firstColl = &pColl;
+    } else {
       firstColl = &wColl;
     }
 
@@ -251,7 +255,7 @@ void Gas::gasLoop(int nIterations) {
 }
 
 WallCollision Gas::firstWallCollision() {
-  WallCollision firstColl{INFINITY, nullptr, 'x'};
+  WallCollision firstColl{INFINITY, nullptr, 'l'};
 
   std::for_each(particles_.begin(), particles_.end(), [&](Particle& p) {
     WallCollision coll{calculateWallColl(p, boxSide_)};
@@ -259,17 +263,13 @@ WallCollision Gas::firstWallCollision() {
       firstColl = coll;
     }
   });
-
-  if (firstColl.getTime() == INFINITY) {
-    throw std::logic_error("No particle to wall collisions found");
-  }
   return firstColl;
 }
 
 PartCollision Gas::firstPartCollision() {
   double topTime{INFINITY};
-  Particle* firstPart;
-  Particle* secondPart;
+  Particle* firstPart{nullptr};
+  Particle* secondPart{nullptr};
 
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
@@ -280,10 +280,6 @@ PartCollision Gas::firstPartCollision() {
                       topTime = time;
                     }
                   });
-
-  if (topTime == INFINITY) {
-    throw std::logic_error("No particle to particle collisions found");
-  }
   return {topTime, firstPart, secondPart};
 }
 

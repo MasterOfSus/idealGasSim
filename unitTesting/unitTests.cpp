@@ -255,8 +255,8 @@ TEST_CASE("Testing Gas constructor") {
   }
   SUBCASE("Constructor from parameters") {
     gasSim::Particle part1{{8.10, 2.36, 4.75}, {3.83, 3.23, 5.76}};
-    gasSim::Particle part2{{4.26, 0.24, 0.22}, {5.92, 5.98, 7.65}};
-    gasSim::Particle part3{{2.10, 8.50, 0.32}, {8.92, 7.55, 5.48}};
+    gasSim::Particle part2{{4.26, 1.24, 1.22}, {5.92, 5.98, 7.65}};
+    gasSim::Particle part3{{2.10, 8.50, 4.32}, {8.92, 7.55, 5.48}};
 
     gasSim::Particle overlapPart{{7.87, 2.39, 5.00}, {5, 6, 7}};
     std::vector<gasSim::Particle> badParts1{
@@ -288,9 +288,9 @@ TEST_CASE("Testing Gas constructor") {
 }
 
 TEST_CASE("Testing Gas, find first collision") {
-  SUBCASE("Simple collision") {
+  SUBCASE("Simple collision 2 particles") {
     double side{1E3};
-    gasSim::Particle part1{{0, 0, 0}, {1, 1, 1}};
+    gasSim::Particle part1{{1, 1, 1}, {1, 1, 1}};
     gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
     std::vector<gasSim::Particle> vec{part1, part2};
     gasSim::Gas gas{vec, side};
@@ -302,8 +302,8 @@ TEST_CASE("Testing Gas, find first collision") {
     gasSim::Particle part1F{{2.84529, 2.84529, 2.84529}, {0, 0, 0}};
     gasSim::Particle part2F{{4, 4, 4}, {1, 1, 1}};
 
-    CHECK(doctest::Approx(life) == 2.84529);
-    
+    CHECK(doctest::Approx(life) == 1.8452995);
+
     CHECK(doctest::Approx(newVec[0].position.x) == part1F.position.x);
     CHECK(doctest::Approx(newVec[0].position.y) == part1F.position.y);
     CHECK(doctest::Approx(newVec[0].position.z) == part1F.position.z);
@@ -320,6 +320,20 @@ TEST_CASE("Testing Gas, find first collision") {
     CHECK(doctest::Approx(newVec[1].speed.y) == part2F.speed.y);
     CHECK(doctest::Approx(newVec[1].speed.z) == part2F.speed.z);
   }
+  SUBCASE("Simple collision particle to wall") {
+    double side{1E3};
+    gasSim::Particle part1{{1, 500, 500}, {35.9, 0, 0}};
+    std::vector<gasSim::Particle> vec{part1};
+
+    gasSim::Gas gas{vec, side};
+    gas.gasLoop(1);
+
+    auto newVec{gas.getParticles()};
+    double life{gas.getLife()};
+
+    CHECK(doctest::Approx(life) == 27.7994429);
+  }
+  
   /*
   SUBCASE("None collision") {
     gasSim::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};

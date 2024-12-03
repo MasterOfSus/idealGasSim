@@ -47,6 +47,7 @@ struct Particle {
 };
 
 bool particleOverlap(const Particle& p1, const Particle& p2);
+bool particleInBox(const Particle& part, double boxSide);
 
 class Collision {
  public:
