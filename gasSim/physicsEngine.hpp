@@ -1,9 +1,9 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
+#include <SFML/Graphics.hpp>
 #include <set>
 #include <string>
-#include <SFML/Graphics.hpp>
 #include <variant>
 #include <vector>
 
@@ -53,39 +53,31 @@ class Collision {
  public:
   Collision(double t, Particle* p1);
 
-  double getTime() const;
-
-  Particle* getFirstParticle() const;
-
   virtual std::string getCollisionType() const = 0;
   virtual void resolve() = 0;
 
- private:
-  double time;
-  Particle* firstParticle_;
+  const double time;
+  Particle* const firstParticle;
 };
 
 class WallCollision : public Collision {
  public:
   WallCollision(double t, Particle* p1, char wall);
-  char getWall() const;
+
   std::string getCollisionType() const override;
   void resolve() override;
 
- private:
-  char wall_;
+  const char wall;
 };
 
 class PartCollision : public Collision {
  public:
   PartCollision(double t, Particle* p1, Particle* p2);
-  Particle* getSecondParticle() const;
+
   std::string getCollisionType() const override;
   void resolve() override;
 
- private:
-  Particle* secondParticle_;
-
+  Particle* const secondParticle;
 };
 
 class Gas {

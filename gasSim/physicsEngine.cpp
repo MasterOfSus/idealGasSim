@@ -97,39 +97,30 @@ bool particleInBox(const Particle& part, double boxSide) {
 // End of Particle functions
 
 // Definition of Collision functions
-Collision::Collision(double t, Particle* p1) : time(t), firstParticle_(p1) {}
-
-double Collision::getTime() const { return time; }
-
-Particle* Collision::getFirstParticle() const {
-  return firstParticle_;
-}  // ATTENZIONE QUA COI PUNTATORI CHE PUNTANO
+Collision::Collision(double t, Particle* p1) : time(t), firstParticle(p1) {}
 // End of Collision functions
 
 // Definition of WallCollision functions
-WallCollision::WallCollision(double t, Particle* p1, char wall)
-    : Collision(t, p1), wall_(wall) {}
+WallCollision::WallCollision(double t, Particle* p1, char inputWall)
+    : Collision(t, p1), wall(inputWall) {}
 
-char WallCollision::getWall() const { return wall_; }
 std::string WallCollision::getCollisionType() const {
   return "Particle to Wall Collision";
 }
 
 void WallCollision::resolve() {
-  Particle* part{getFirstParticle()};
-
-  switch (wall_) {
+  switch (wall) {
     case 'l':
     case 'r':
-      part->speed.x = -part->speed.x;
+      firstParticle->speed.x = -firstParticle->speed.x;
       break;
     case 'f':
     case 'b':
-      part->speed.y = -part->speed.y;
+      firstParticle->speed.y = -firstParticle->speed.y;
       break;
     case 'u':
     case 'd':
-      part->speed.z = -part->speed.z;
+      firstParticle->speed.z = -firstParticle->speed.z;
       break;
   }
 }
@@ -137,27 +128,22 @@ void WallCollision::resolve() {
 
 // Definition of PartCollision functions
 PartCollision::PartCollision(double t, Particle* p1, Particle* p2)
-    : Collision(t, p1), secondParticle_(p2) {}
-
-Particle* PartCollision::getSecondParticle() const { return secondParticle_; }
+    : Collision(t, p1), secondParticle(p2) {}
 
 std::string PartCollision::getCollisionType() const {
   return "Particle to Particle Collision";
 }
 
 void PartCollision::resolve() {
-  Particle* part1{getFirstParticle()};
-  Particle* part2{secondParticle_};
-
-  PhysVector centerDist{part1->position - part2->position};
+  PhysVector centerDist{firstParticle->position - secondParticle->position};
   centerDist.normalize();
 
-  PhysVector speedDiff{part1->speed - part2->speed};
+  PhysVector speedDiff{firstParticle->speed - secondParticle->speed};
 
   double projection = centerDist * speedDiff;
 
-  part1->speed -= centerDist * projection;
-  part2->speed += centerDist * projection;
+  firstParticle->speed -= centerDist * projection;
+  secondParticle->speed += centerDist * projection;
 }
 // End of PartCollision functions
 
@@ -241,14 +227,14 @@ void Gas::gasLoop(int nIterations) {
 
     Collision* firstColl{nullptr};
 
-    if (pColl.getTime() < wColl.getTime()) {
+    if (pColl.time < wColl.time) {
       firstColl = &pColl;
     } else {
       firstColl = &wColl;
     }
 
-    updatePositions(firstColl->getTime());
-    life_ += firstColl->getTime();
+    updatePositions(firstColl->time);
+    life_ += firstColl->time;
 
     assert(life_ != INFINITY);
     firstColl->resolve();
@@ -260,7 +246,7 @@ WallCollision Gas::firstWallCollision() {
 
   std::for_each(particles_.begin(), particles_.end(), [&](Particle& p) {
     WallCollision coll{calculateWallColl(p, boxSide_)};
-    if (coll.getTime() < firstColl.getTime()) {
+    if (coll.time < firstColl.time) {
       firstColl = coll;
     }
   });
