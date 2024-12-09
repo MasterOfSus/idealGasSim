@@ -35,7 +35,7 @@ struct PhysVector {
 
 PhysVector operator*(const double c, const PhysVector v);
 
-PhysVector unifRandoVector(const double maxNorm);
+PhysVector unifRandVector(const double maxNorm);
 PhysVector gausRandVector(const double standardDev);
 
 struct Particle {
@@ -51,7 +51,7 @@ bool particleInBox(const Particle& part, double boxSide);
 
 class Collision {
  public:
-  Collision(double t, Particle* p1);
+  Collision(double t, Particle* p);
 
   double getTime() const;
 
@@ -67,7 +67,7 @@ class Collision {
 
 class WallCollision : public Collision {
  public:
-  WallCollision(double t, Particle* p1, char wall);
+  WallCollision(double t, Particle* p, char wall);
   char getWall() const;
   std::string getCollisionType() const override;
   void resolve() override;

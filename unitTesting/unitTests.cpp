@@ -56,7 +56,7 @@ TEST_CASE("Testing PhysVector") {
   gasSim::PhysVector vec2{12.3, 0.12, -6.3};
   // gasSim::PhysVector weirdFloatVector{-5.5f, 100000.f, 4.3f};
   // gasSim::PhysVector weirdIntVector{-5, 6, 3};
-  gasSim::PhysVector randVec{gasSim::unifRandoVector(5)};
+  gasSim::PhysVector randVec{gasSim::unifRandVector(5)};
   // gasSim::PhysVector randomvec2(67.);
   SUBCASE("Constructor") {
     CHECK(vec1.x == 1.1);
@@ -71,7 +71,7 @@ TEST_CASE("Testing PhysVector") {
     CHECK(vec2 == vec2);
   }
   SUBCASE("Random constructor") {
-    gasSim::PhysVector randVec2{gasSim::unifRandoVector(5)};
+    gasSim::PhysVector randVec2{gasSim::unifRandVector(5)};
     CHECK(randVec.norm() <= 5);
     CHECK(randVec2 != randVec);
   }
