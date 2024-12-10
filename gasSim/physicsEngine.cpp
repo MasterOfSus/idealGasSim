@@ -174,13 +174,16 @@ void PartCollision::resolve() {
 Gas::Gas(const Gas& gas)
     : particles_(gas.getParticles()), boxSide_(gas.getBoxSide()) {}
 
-Gas::Gas(std::vector<Particle> particles, double boxSide)
-    : particles_(particles), boxSide_(boxSide) {
+Gas::Gas(std::vector<Particle> particles, double boxSide, double life)
+    : particles_(particles), boxSide_(boxSide), life_(life) {
   if (particles_.size() == 0) {
     throw std::invalid_argument("particles must have at least 1 element");
   }
   if (boxSide_ <= 0) {
     throw std::invalid_argument("boxSide must be greater than 0");
+  }
+  if (life_ < 0) {
+    throw std::invalid_argument("life must be greater than or equal to zero");
   }
 
   std::for_each(particles_.begin(), particles_.end(), [&](const Particle& p) {

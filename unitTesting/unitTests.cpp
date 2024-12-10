@@ -252,9 +252,14 @@ TEST_CASE("Testing Gas constructor") {
   double temp{1.};
   int partNum{100};
 
-  gasSim::Gas Gas{partNum, temp, side};
+  gasSim::Gas gas{partNum, temp, side};
+  SUBCASE("Random constructor") {
+    CHECK(gas.getBoxSide() == side);
+    CHECK(gas.getLife() == 0);
+    CHECK(gas.getParticles().size() == partNum);
+  }
   SUBCASE("Constructor from gas") {
-    gasSim::Gas copyGas{Gas};
+    gasSim::Gas copyGas{gas};
     CHECK(copyGas.getBoxSide() == side);
     CHECK(copyGas.getParticles().size() == partNum);
   }
@@ -276,6 +281,7 @@ TEST_CASE("Testing Gas constructor") {
     std::vector<gasSim::Particle> goodParts{part1, part2, part3};
     CHECK_NOTHROW(gasSim::Gas goodGas{goodParts, side});
   }
+
   /*
    SUBCASE("Speed check") {
      double maxSpeed = 4. / 3. * temp;
@@ -292,7 +298,7 @@ TEST_CASE("Testing Gas constructor") {
    SUBCASE("Resolve Collision") { Gas.gasLoop(1); }*/
 }
 
-TEST_CASE("Testing Gas, find first collision") {
+TEST_CASE("Testing Gas, 1 iteration") {
   SUBCASE("Simple collision 2 particles") {
     double side{1E3};
     gasSim::Particle part1{{1, 1, 1}, {1, 1, 1}};
@@ -347,18 +353,7 @@ TEST_CASE("Testing Gas, find first collision") {
     CHECK(doctest::Approx(newVec[0].speed.y) == partF.speed.y);
     CHECK(doctest::Approx(newVec[0].speed.z) == partF.speed.z);
   }
-
-  /*
-  SUBCASE("None collision") {
-    gasSim::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};
-    gasSim::Particle part2{{3.43, 7.54, 6.04}, {7.05, 8.86, -9.04}};
-    std::vector<gasSim::Particle> vec{part1, part2};
-    gasSim::Gas gas{vec, 40};
-
-    CHECK_THROWS_AS(gas.firstPartCollision(), std::logic_error);
-  }*/
 }
-
 TEST_CASE("Testing Gas 2") {
   // gasSim::randomVector(-1);
   /*

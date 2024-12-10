@@ -1,9 +1,9 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
+#include <SFML/Graphics.hpp>
 #include <set>
 #include <string>
-#include <SFML/Graphics.hpp>
 #include <variant>
 #include <vector>
 
@@ -85,13 +85,12 @@ class PartCollision : public Collision {
 
  private:
   Particle* secondParticle_;
-
 };
 
 class Gas {
  public:
   Gas(const Gas& gas);
-  Gas(std::vector<Particle> particles, double boxSide);
+  Gas(std::vector<Particle> particles, double boxSide, double life = 0.);
   Gas(int nParticles, double temperature, double boxSide);
 
   const std::vector<Particle>& getParticles() const;
@@ -103,7 +102,7 @@ class Gas {
  private:
   std::vector<Particle> particles_;
   double boxSide_;  // side of the cubical container
-  double life_{0};
+  double life_{0.};
 
   WallCollision firstWallCollision();
   PartCollision firstPartCollision();
