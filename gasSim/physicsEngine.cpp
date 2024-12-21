@@ -213,11 +213,11 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
     throw std::invalid_argument("boxSide must be greater than 0");
   }
 
-  double minDst{2 * Particle::radius};
-  int elementPerSide{static_cast<int>(std::ceil(std::cbrt(nParticles)))};
-  double particleDst = boxSide / elementPerSide;
+  int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
+  double particleDistance{boxSide / elementPerSide};
+  double radius{Particle::radius};
 
-  if (particleDst <= minDst) {
+  if (particleDistance <= 2 * radius) {
     throw std::runtime_error(
         "particles are too large/too many, they don't fit in the box");
   }
@@ -226,10 +226,15 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   // riesco faccio il calcolo
 
   auto gridVector = [=](int i) {
-    int x{i % elementPerSide};
-    int y{(i / elementPerSide) % elementPerSide};
-    int z{i / (elementPerSide * elementPerSide)};
-    return PhysVector{x * particleDst, y * particleDst, z * particleDst};
+    int pX{i % elementPerSide};
+    int pY{(i / elementPerSide) % elementPerSide};
+    int pZ{i / (elementPerSide * elementPerSide)};
+    // Posizione nella griglia con numeri interi
+
+    double x{(pX * particleDistance) + radius};
+    double y{(pY * particleDistance) + radius};
+    double z{(pZ * particleDistance) + radius};
+    return PhysVector{x, y, z};
   };
 
   int index{0};
