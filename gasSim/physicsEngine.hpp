@@ -8,6 +8,10 @@
 #include <vector>
 
 namespace gasSim {
+struct Statistics {
+  double pressure;
+  double temperature;
+};
 struct PhysVector {
   double x;
   double y;
