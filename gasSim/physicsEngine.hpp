@@ -2,52 +2,68 @@
 #define PHYSICS_ENGINE_HPP
 
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <set>
 #include <string>
 #include <variant>
 #include <vector>
 
 namespace gasSim {
+
 struct Statistics {
   double pressure;
   double temperature;
 };
+
+template <typename FP>
 struct PhysVector {
-  double x;
-  double y;
-  double z;
+  static_assert(std::is_floating_point_v<FP>);
+  FP x;
+  FP y;
+  FP z;
 
-  PhysVector operator-() const;
+  PhysVector operator-() const { return {-x, -y, -z}; }
+  PhysVector operator+(const PhysVector& v) const {
+    return {x + v.x, y + v.y, z + v.z};
+  }
+  PhysVector operator-(const PhysVector& v) const {
+    return {x - v.x, y - v.y, z - v.z};
+  }
 
-  PhysVector operator+(const PhysVector& v) const;
-  PhysVector operator-(const PhysVector& v) const;
-  void operator+=(const PhysVector& v);
-  void operator-=(const PhysVector& v);
+  void operator+=(const PhysVector& v) { *this = *this + v; }
+  void operator-=(const PhysVector& v) { *this = *this - v; }
 
-  PhysVector operator*(const double c) const;
-  PhysVector operator/(const double c) const;
+  PhysVector operator*(FP c) const { return {x * c, y * c, z * c}; }
+  PhysVector operator/(double c) const { return {x / c, y / c, z / c}; }
 
-  double operator*(const PhysVector& v) const;
+  FP operator*(const PhysVector& v) const {
+    return x * v.x + y * v.y + z * v.z;
+  }
 
-  bool operator==(const PhysVector& v) const;
-  bool operator!=(const PhysVector& v) const;
+  bool operator==(const PhysVector<FP>& v) const {
+    return (x == v.x && y == v.y && z == v.z);
+  }
+  bool operator!=(const PhysVector<FP>& v) const { return !(*this == v); }
 
-  double norm() const;
-
-  void normalize();
+  double norm() const { return std::sqrt(x * x + y * y + z * z); }
+  void normalize() { *this = *this / this->norm(); }
 };
 
-PhysVector operator*(const double c, const PhysVector v);
+template <typename FP>
+PhysVector<FP> operator*(double c, const PhysVector<FP> v) { return v * c; };
 
-PhysVector unifRandVector(const double maxNorm);
-PhysVector gausRandVector(const double standardDev);
+using PhysVectorF = PhysVector<float>;
+using PhysVectorD = PhysVector<double>;
+
+PhysVectorD unifRandVector(const double maxNorm);
+PhysVectorD gausRandVector(const double standardDev);
 
 struct Particle {
   static double mass;
   static double radius;
 
-  PhysVector position = {};
-  PhysVector speed = {};
+  PhysVectorD position = {};
+  PhysVectorD speed = {};
 };
 
 bool particleOverlap(const Particle& p1, const Particle& p2);
@@ -120,6 +136,7 @@ double collisionTime(const Particle& p1, const Particle& p2);
 WallCollision calculateWallColl(Particle& p, double squareSide);
 
 double collisionTime(double wallDistance, double speed);
+
 }  // namespace gasSim
 
 #endif

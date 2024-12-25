@@ -1,13 +1,8 @@
-#include <algorithm>
-#include <array>
 #include <cmath>
-#include <exception>
-#include <iostream>
 #include <stdexcept>
 #include <vector>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
-#include "../gasSim/graphics.hpp"
 #include "doctest.h"
 // #include "input.hpp"
 #include "../gasSim/algorithms.hpp"
@@ -51,13 +46,13 @@ TEST_CASE("Testing for_any_couple") {
   }
 }
 
-TEST_CASE("Testing PhysVector") {
-  gasSim::PhysVector vec1{1.1, -2.11, 56.253};
-  gasSim::PhysVector vec2{12.3, 0.12, -6.3};
-  // gasSim::PhysVector weirdFloatVector{-5.5f, 100000.f, 4.3f};
-  // gasSim::PhysVector weirdIntVector{-5, 6, 3};
-  gasSim::PhysVector randVec{gasSim::unifRandVector(5)};
-  // gasSim::PhysVector randomvec2(67.);
+TEST_CASE("Testing PhysVectorD") {
+  gasSim::PhysVectorD vec1{1.1, -2.11, 56.253};
+  gasSim::PhysVectorD vec2{12.3, 0.12, -6.3};
+  // gasSim::PhysVectorD weirdFloatVector{-5.5f, 100000.f, 4.3f};
+  // gasSim::PhysVectorD weirdIntVector{-5, 6, 3};
+  gasSim::PhysVectorD randVec{gasSim::unifRandVector(5)};
+  // gasSim::PhysVectorD randomvec2(67.);
   SUBCASE("Constructor") {
     CHECK(vec1.x == 1.1);
     CHECK(vec1.y == -2.11);
@@ -71,29 +66,29 @@ TEST_CASE("Testing PhysVector") {
     CHECK(vec2 == vec2);
   }
   SUBCASE("Random constructor") {
-    gasSim::PhysVector randVec2{gasSim::unifRandVector(5)};
+    gasSim::PhysVectorD randVec2{gasSim::unifRandVector(5)};
     CHECK(randVec.norm() <= 5);
     CHECK(randVec2 != randVec);
   }
   SUBCASE("Sum") {
-    gasSim::PhysVector sum{vec1 + vec2};
-    gasSim::PhysVector actualSum{13.4, -1.99, 49.953};
+    gasSim::PhysVectorD sum{vec1 + vec2};
+    gasSim::PhysVectorD actualSum{13.4, -1.99, 49.953};
     CHECK(doctest::Approx(sum.x) == actualSum.x);
     CHECK(doctest::Approx(sum.y) == actualSum.y);
     CHECK(doctest::Approx(sum.z) == actualSum.z);
   }
   SUBCASE("Subtraction") {
-    gasSim::PhysVector subtraction{vec2 - vec1};
-    gasSim::PhysVector actualSubtraction{11.2, 2.23, -62.553};
+    gasSim::PhysVectorD subtraction{vec2 - vec1};
+    gasSim::PhysVectorD actualSubtraction{11.2, 2.23, -62.553};
     CHECK(doctest::Approx(subtraction.x) == actualSubtraction.x);
     CHECK(doctest::Approx(subtraction.y) == actualSubtraction.y);
     CHECK(doctest::Approx(subtraction.z) == actualSubtraction.z);
   }
   SUBCASE("Product") {
     double l{0.25};
-    gasSim::PhysVector product1{vec1 * l};
-    gasSim::PhysVector product2{l * vec1};
-    gasSim::PhysVector actualProduct{0.275, -0.5275, 14.06325};
+    gasSim::PhysVectorD product1{vec1 * l};
+    gasSim::PhysVectorD product2{l * vec1};
+    gasSim::PhysVectorD actualProduct{0.275, -0.5275, 14.06325};
 
     CHECK(doctest::Approx(product1.x) == actualProduct.x);
     CHECK(doctest::Approx(product1.y) == actualProduct.y);
@@ -102,16 +97,16 @@ TEST_CASE("Testing PhysVector") {
   }
   SUBCASE("Division") {
     double l{10};
-    gasSim::PhysVector division{vec1 / l};
-    gasSim::PhysVector actualDivision{0.11, -0.211, 5.6253};
+    gasSim::PhysVectorD division{vec1 / l};
+    gasSim::PhysVectorD actualDivision{0.11, -0.211, 5.6253};
     CHECK(doctest::Approx(division.x) == actualDivision.x);
     CHECK(doctest::Approx(division.y) == actualDivision.y);
     CHECK(doctest::Approx(division.z) == actualDivision.z);
   }
   SUBCASE("Division by zero") {
     double l{0};
-    gasSim::PhysVector division{vec1 / l};
-    gasSim::PhysVector actualDivision{INFINITY, -INFINITY, INFINITY};
+    gasSim::PhysVectorD division{vec1 / l};
+    gasSim::PhysVectorD actualDivision{INFINITY, -INFINITY, INFINITY};
 
     CHECK(division == actualDivision);
   }
@@ -126,7 +121,7 @@ TEST_CASE("Testing PhysVector") {
   SUBCASE("Norm") { CHECK(vec1.norm() == doctest::Approx(56.3033)); }
   SUBCASE("Normalize") {
     vec1.normalize();
-    gasSim::PhysVector normalizeVec1{0.019537, -0.0374756, 0.999107};
+    gasSim::PhysVectorD normalizeVec1{0.019537, -0.0374756, 0.999107};
     CHECK(doctest::Approx(vec1.x) == normalizeVec1.x);
     CHECK(doctest::Approx(vec1.y) == normalizeVec1.y);
     CHECK(doctest::Approx(vec1.z) == normalizeVec1.z);
@@ -135,9 +130,9 @@ TEST_CASE("Testing PhysVector") {
 
 TEST_CASE("Testing Particle") {
   SUBCASE("Default constructor") {
-    gasSim::PhysVector zeroVec{0, 0, 0};
-    gasSim::PhysVector vec1{7.94, 3.60, 4.27};
-    gasSim::PhysVector vec2{4.85, 8.94, 5.71};
+    gasSim::PhysVectorD zeroVec{0, 0, 0};
+    gasSim::PhysVectorD vec1{7.94, 3.60, 4.27};
+    gasSim::PhysVectorD vec2{4.85, 8.94, 5.71};
 
     gasSim::Particle part1;
     gasSim::Particle part2{vec1, vec2};
@@ -158,8 +153,8 @@ TEST_CASE("Testing Particle") {
 TEST_CASE("Testing WallCollision") {
   double time{4};
 
-  gasSim::PhysVector vec1{10, 10, 0};
-  gasSim::PhysVector vec2{0, 0, 10};
+  gasSim::PhysVectorD vec1{10, 10, 0};
+  gasSim::PhysVectorD vec2{0, 0, 10};
   gasSim::Particle part1{vec1, vec2};
 
   gasSim::WallCollision coll{time, &part1, 'u'};
@@ -169,8 +164,8 @@ TEST_CASE("Testing WallCollision") {
     CHECK(coll.getWall() == 'u');
   }
   SUBCASE("Change the particles") {
-    gasSim::PhysVector actualPosition{4, 0, 4};
-    gasSim::PhysVector actualSpeed{1.34, 0.04, 9.3924};
+    gasSim::PhysVectorD actualPosition{4, 0, 4};
+    gasSim::PhysVectorD actualSpeed{1.34, 0.04, 9.3924};
     coll.getFirstParticle()->position.x = 4;
     coll.getFirstParticle()->position.y = 0;
     coll.getFirstParticle()->position.z = 4;
@@ -187,12 +182,12 @@ TEST_CASE("Testing WallCollision") {
 TEST_CASE("Testing PartCollision") {
   double time{4};
 
-  gasSim::PhysVector vec1{4.23, -5.34, 6.45};
-  gasSim::PhysVector vec2{5.46, -4.35, 3.24};
+  gasSim::PhysVectorD vec1{4.23, -5.34, 6.45};
+  gasSim::PhysVectorD vec2{5.46, -4.35, 3.24};
   gasSim::Particle part1{vec1, vec2};
 
-  gasSim::PhysVector vec3{13.4, -1.99, 49.953};
-  gasSim::PhysVector vec4{0.11, 0.211, 5.6253};
+  gasSim::PhysVectorD vec3{13.4, -1.99, 49.953};
+  gasSim::PhysVectorD vec4{0.11, 0.211, 5.6253};
   gasSim::Particle part2{vec3, vec4};
 
   gasSim::PartCollision coll{time, &part1, &part2};
@@ -203,8 +198,8 @@ TEST_CASE("Testing PartCollision") {
     CHECK(coll.getSecondParticle()->speed == vec4);
   }
   SUBCASE("Change the particles") {
-    gasSim::PhysVector actualPosition{4, 0, 4};
-    gasSim::PhysVector actualSpeed{1.34, 0.04, 9.3924};
+    gasSim::PhysVectorD actualPosition{4, 0, 4};
+    gasSim::PhysVectorD actualSpeed{1.34, 0.04, 9.3924};
     coll.getFirstParticle()->position.x = 4;
     coll.getFirstParticle()->position.y = 0;
     coll.getFirstParticle()->position.z = 4;
@@ -220,13 +215,13 @@ TEST_CASE("Testing collisionTime") {
     CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 2.84529);
   }
   SUBCASE("2") {
-    gasSim::PhysVector pos1{20992.06862014, -19664.47218241, 6281.158218151};
-    gasSim::PhysVector speed1{-2.098936862014, 1.966557218241,
+    gasSim::PhysVectorD pos1{20992.06862014, -19664.47218241, 6281.158218151};
+    gasSim::PhysVectorD speed1{-2.098936862014, 1.966557218241,
                               -0.6282474445917};
     speed1 = speed1 * 1E4;
 
-    gasSim::PhysVector pos2{3.299915613847, 2.900102791466, -0.6838802535057};
-    gasSim::PhysVector speed2{0.8438615274498, -1.027914662675, 1.080195225286};
+    gasSim::PhysVectorD pos2{3.299915613847, 2.900102791466, -0.6838802535057};
+    gasSim::PhysVectorD speed2{0.8438615274498, -1.027914662675, 1.080195225286};
     speed2 = speed2 * 1E-4;
     gasSim::Particle part1{pos1, speed1};
     gasSim::Particle part2{pos2, speed2};

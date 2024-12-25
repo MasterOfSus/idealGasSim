@@ -19,45 +19,7 @@
 namespace gasSim {
 
 // Definition of vector functions
-PhysVector PhysVector::operator-() const { return {-x, -y, -z}; }
-
-PhysVector PhysVector::operator+(const PhysVector& v) const {
-  return {x + v.x, y + v.y, z + v.z};
-}
-
-PhysVector PhysVector::operator-(const PhysVector& v) const {
-  return {x - v.x, y - v.y, z - v.z};
-}
-
-void PhysVector::operator+=(const PhysVector& v) { *this = *this + v; }
-
-void PhysVector::operator-=(const PhysVector& v) { *this = *this - v; }
-
-PhysVector PhysVector::operator*(const double c) const {
-  return {x * c, y * c, z * c};
-}
-
-PhysVector PhysVector::operator/(const double c) const {
-  return {x / c, y / c, z / c};
-}
-
-double PhysVector::operator*(const PhysVector& v) const {
-  return x * v.x + y * v.y + z * v.z;
-}
-
-bool PhysVector::operator==(const PhysVector& v) const {
-  return (x == v.x && y == v.y && z == v.z);
-}
-
-PhysVector operator*(const double c, const PhysVector v) { return v * c; }
-
-bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
-
-double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
-
-void PhysVector::normalize() { *this = *this / this->norm(); }
-
-PhysVector unifRandVector(const double maxNorm) {
+PhysVectorD unifRandVector(const double maxNorm) {
   if (maxNorm <= 0) {
     throw std::invalid_argument("maxNorm must be greater than 0");
   }
@@ -65,7 +27,7 @@ PhysVector unifRandVector(const double maxNorm) {
   std::uniform_real_distribution<double> dist(0., std::sqrt(maxNorm / 3));
   return {dist(eng), dist(eng), dist(eng)};
 }
-PhysVector gausRandVector(const double standardDev) {
+PhysVectorD gausRandVector(const double standardDev) {
   if (standardDev <= 0) {
     throw std::invalid_argument("standardDev must be greater than 0");
   }
@@ -234,7 +196,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
     double x{(pX * particleDistance) + radius};
     double y{(pY * particleDistance) + radius};
     double z{(pZ * particleDistance) + radius};
-    return PhysVector{x, y, z};
+    return PhysVectorD{x, y, z};
   };
 
   int index{0};
