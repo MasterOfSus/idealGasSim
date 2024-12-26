@@ -157,11 +157,11 @@ TEST_CASE("Testing WallCollision") {
   gasSim::PhysVectorD vec2{0, 0, 10};
   gasSim::Particle part1{vec1, vec2};
 
-  gasSim::WallCollision coll{time, &part1, 'u'};
+  gasSim::WallCollision coll{time, &part1, gasSim::Wall::Top};
   SUBCASE("Constructor") {
     CHECK(coll.getFirstParticle()->position == vec1);
     CHECK(coll.getFirstParticle()->speed == vec2);
-    CHECK(coll.getWall() == 'u');
+    CHECK(coll.getWall() == gasSim::Wall::Top);
   }
   SUBCASE("Change the particles") {
     gasSim::PhysVectorD actualPosition{4, 0, 4};
@@ -174,8 +174,8 @@ TEST_CASE("Testing WallCollision") {
     CHECK(part1.speed == actualSpeed);
   }
   SUBCASE("Resolve Collision") {
-    coll.resolve();
-    CHECK(coll.getTime() == 0);
+    gasSim::Statistic stat{0};
+    coll.resolve(stat);
     // Da aggiungere il check del risolutore corretto
   }
 }

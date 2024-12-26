@@ -71,37 +71,35 @@ double Collision::getTime() const { return time_; }
 Particle* Collision::getFirstParticle() const {
   return firstParticle_;
 }  // ATTENZIONE QUA COI PUNTATORI CHE PUNTANO
-
-void Collision::resolve() { time_ = 0; }
 // End of Collision functions
 
 // Definition of WallCollision functions
-WallCollision::WallCollision(double t, Particle* p, char wall)
+WallCollision::WallCollision(double t, Particle* p, Wall wall)
     : Collision(t, p), wall_(wall) {}
 
-char WallCollision::getWall() const { return wall_; }
+Wall WallCollision::getWall() const { return wall_; }
 std::string WallCollision::getCollisionType() const {
   return "Particle to Wall Collision";
 }
 
-void WallCollision::resolve() {
+Statistic WallCollision::resolve(const Statistic& oldStat) {
   Particle* part{getFirstParticle()};
 
   switch (wall_) {
-    case 'l':
-    case 'r':
+    case Wall::Left:
+    case Wall::Right:
       part->speed.x = -part->speed.x;
       break;
-    case 'f':
-    case 'b':
+    case Wall::Front:
+    case Wall::Back:
       part->speed.y = -part->speed.y;
       break;
-    case 'u':
-    case 'd':
+    case Wall::Top:
+    case Wall::Bottom:
       part->speed.z = -part->speed.z;
       break;
   }
-  Collision::resolve();
+  return oldStat;
 }
 // End of WallCollision functions
 
@@ -115,7 +113,7 @@ std::string PartCollision::getCollisionType() const {
   return "Particle to Particle Collision";
 }
 
-void PartCollision::resolve() {
+Statistic PartCollision::resolve(const Statistic& oldStat) {
   Particle* part1{getFirstParticle()};
   Particle* part2{secondParticle_};
 
@@ -128,7 +126,7 @@ void PartCollision::resolve() {
 
   part1->speed -= centerDist * projection;
   part2->speed += centerDist * projection;
-  Collision::resolve();
+  return oldStat;
 }
 // End of PartCollision functions
 
@@ -214,6 +212,8 @@ double Gas::getBoxSide() const { return boxSide_; }
 double Gas::getLife() const { return life_; }
 
 void Gas::gasLoop(int nIterations) {
+  Statistic stat;
+
   for (int i{0}; i != nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
@@ -230,12 +230,12 @@ void Gas::gasLoop(int nIterations) {
     life_ += firstColl->getTime();
 
     assert(life_ != INFINITY);
-    firstColl->resolve();
+    stat = firstColl->resolve(stat);
   }
 }
 
 WallCollision Gas::firstWallCollision() {
-  WallCollision firstColl{INFINITY, nullptr, 'l'};
+  WallCollision firstColl{INFINITY, nullptr, Wall::Back};
 
   std::for_each(particles_.begin(), particles_.end(), [&](Particle& p) {
     WallCollision coll{calculateWallColl(p, boxSide_)};
@@ -299,7 +299,40 @@ double collisionTime(const Particle& p1, const Particle& p2) {
   return result;
 }
 
+
 WallCollision calculateWallColl(Particle& p, double squareSide) {
+  auto calculate = [&, squareSide](double position, double speed, Wall negWall,
+                                   Wall posWall) -> WallCollision {
+    double time = (speed < 0)
+                      ? (-Particle::radius - position) / speed
+                      : (squareSide - Particle::radius - position) / speed;
+    Wall wall = (speed < 0) ? negWall : posWall;
+    return {time, &p, wall};
+  };
+
+  WallCollision collX =
+      calculate(p.position.x, p.speed.x, Wall::Left, Wall::Right);
+  WallCollision collY =
+      calculate(p.position.y, p.speed.y, Wall::Front, Wall::Back);
+  WallCollision collZ =
+      calculate(p.position.z, p.speed.z, Wall::Top, Wall::Bottom);
+
+  WallCollision minColl = collX;
+
+  if (collY.getTime() < minColl.getTime()) {
+    minColl = collY;
+  }
+  if (collZ.getTime() < minColl.getTime()) {
+    minColl = collZ;
+  }
+
+  assert(minColl.getTime() > 0);
+
+  return minColl;
+}
+
+// Alternativa 1 a WallCollsion
+/*WallCollision calculateWallColl(Particle& p, double squareSide) {
   auto wallDistance = [&](double pos, double spd) -> double {
     if (spd < 0) {
       return -Particle::radius - pos;
@@ -333,11 +366,9 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
   assert(minTime > 0);
 
   return {minTime, &p, wall};
-}
-
-// Alternativa a WallCollsion
-/*
-WallCollision calculateWallColl(Particle& p, double squareSide) {
+}*/
+// Alternativa 2 a WallCollsion
+/*WallCollision calculateWallColl(Particle& p, double squareSide) {
     struct AxisData {
         double position;
         double speed;

@@ -30,6 +30,8 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [x] fix generazione particelle random
 - [x] trasformare physvector in un template
 - [ ] aggiungere una struct statistics che mi venga resistuita quando lancio il gasLoop
+- [ ] implementare il calcolo della pressione su ogni lato
+- [ ] cambiare il modo in cui memoriziamo i muri enum class
 - [x] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer) -> viene male
 - [ ] Aggiungere uno sborobotto di test
 - [ ] Pressione variazione quantità di moto su ogni muro

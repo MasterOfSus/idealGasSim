@@ -6,7 +6,7 @@
 double gasSim::Particle::mass = 10;
 double gasSim::Particle::radius = 0.1;
 
-std::ostream &operator<<(std::ostream &os, const gasSim::PhysVector &vec) {
+std::ostream &operator<<(std::ostream &os, const gasSim::PhysVectorD &vec) {
   os << "PhysVector(" << vec.x << ", " << vec.y << ", " << vec.z << ")   ";
   return os;
 }
@@ -35,4 +35,12 @@ int main() {
   }
   media = media / 100;
   std::cout << "media: " << media << '\n';
+
+  std::cout <<"\n\n\n\n";
+  std::cout << static_cast<int>(gasSim::Wall::Front)<<'\n';
+  std::cout << static_cast<int>(gasSim::Wall::Back)<<'\n';
+  std::cout << static_cast<int>(gasSim::Wall::Left)<<'\n';
+  std::cout << static_cast<int>(gasSim::Wall::Right)<<'\n';
+  std::cout << static_cast<int>(gasSim::Wall::Top)<<'\n';
+  std::cout << static_cast<int>(gasSim::Wall::Bottom)<<'\n';
 }

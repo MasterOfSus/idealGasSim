@@ -2,6 +2,7 @@
 #define PHYSICS_ENGINE_HPP
 
 #include <SFML/Graphics.hpp>
+#include <array>
 #include <cmath>
 #include <set>
 #include <string>
@@ -10,9 +11,8 @@
 
 namespace gasSim {
 
-struct Statistics {
-  double pressure;
-  double temperature;
+struct Statistic {
+  std::array<double, 6> pressure;
 };
 
 template <typename FP>
@@ -50,13 +50,17 @@ struct PhysVector {
 };
 
 template <typename FP>
-PhysVector<FP> operator*(double c, const PhysVector<FP> v) { return v * c; };
+PhysVector<FP> operator*(double c, const PhysVector<FP> v) {
+  return v * c;
+};
 
 using PhysVectorF = PhysVector<float>;
 using PhysVectorD = PhysVector<double>;
 
 PhysVectorD unifRandVector(const double maxNorm);
 PhysVectorD gausRandVector(const double standardDev);
+
+enum class Wall { Front, Back, Left, Right, Top, Bottom };
 
 struct Particle {
   static double mass;
@@ -78,7 +82,7 @@ class Collision {
   Particle* getFirstParticle() const;
 
   virtual std::string getCollisionType() const = 0;
-  virtual void resolve();
+  virtual Statistic resolve(const Statistic& oldStat) = 0;
 
  private:
   double time_;
@@ -87,13 +91,13 @@ class Collision {
 
 class WallCollision : public Collision {
  public:
-  WallCollision(double t, Particle* p, char wall);
-  char getWall() const;
+  WallCollision(double t, Particle* p, Wall wall);
+  Wall getWall() const;
   std::string getCollisionType() const override;
-  void resolve() override;
+  Statistic resolve(const Statistic& oldStat) override;
 
  private:
-  char wall_;
+  Wall wall_;
 };
 
 class PartCollision : public Collision {
@@ -101,7 +105,7 @@ class PartCollision : public Collision {
   PartCollision(double t, Particle* p1, Particle* p2);
   Particle* getSecondParticle() const;
   std::string getCollisionType() const override;
-  void resolve() override;
+  Statistic resolve(const Statistic& oldStat) override;
 
  private:
   Particle* secondParticle_;
@@ -121,7 +125,7 @@ class Gas {
 
  private:
   std::vector<Particle> particles_;
-  double boxSide_;  // side of the cubical container
+  double boxSide_;
   double life_{0.};
 
   WallCollision firstWallCollision();
