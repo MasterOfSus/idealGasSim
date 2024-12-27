@@ -23,7 +23,8 @@ PhysVectorD unifRandVector(const double maxNorm) {
     throw std::invalid_argument("maxNorm must be greater than 0");
   }
   static std::default_random_engine eng(std::random_device{}());
-  std::uniform_real_distribution<double> dist(0., std::sqrt(maxNorm / 3));
+  std::uniform_real_distribution<double> dist(-std::sqrt(maxNorm / 3),
+                                              std::sqrt(maxNorm / 3));
   return {dist(eng), dist(eng), dist(eng)};
 }
 PhysVectorD gausRandVector(const double standardDev) {
@@ -36,7 +37,7 @@ PhysVectorD gausRandVector(const double standardDev) {
 }
 // End of PhysVector functions
 
-// Definitio of Particle functions
+// Definition of Particle functions
 bool particleOverlap(const Particle& p1, const Particle& p2) {
   const double minDst = 2 * Particle::radius;
   const double centerDst{(p1.position - p2.position).norm()};
@@ -60,9 +61,17 @@ bool particleInBox(const Particle& part, double boxSide) {
 }
 // End of Particle functions
 
+// Definition of Statistic functions
+void Statistic::addImpulseOnWall(double speed, Wall wall) {
+  deltaImpulse[wall] += speed * Particle::mass;
+}
+// End of Statistic functions
+
 // Definition of Collision functions
 Collision::Collision(double t, Particle* p) : time_(t), firstParticle_(p) {
-  assert(t > 0);
+  if (time_ < 0) {
+    throw std::invalid_argument("time must be a positive number");
+  }
 }
 
 double Collision::getTime() const { return time_; }
@@ -80,25 +89,55 @@ Wall WallCollision::getWall() const { return wall_; }
 std::string WallCollision::getCollisionType() const {
   return "Particle to Wall Collision";
 }
-
-Statistic WallCollision::resolve(const Statistic& oldStat) {
+/*
+Statistic WallCollision::resolve(Statistic& stat) {
   Particle* part{getFirstParticle()};
 
+  double memSpd;
   switch (wall_) {
     case Wall::Left:
     case Wall::Right:
+      memSpd = part->speed.x;
       part->speed.x = -part->speed.x;
       break;
     case Wall::Front:
     case Wall::Back:
+      memSpd = part->speed.y;
       part->speed.y = -part->speed.y;
       break;
     case Wall::Top:
     case Wall::Bottom:
+      memSpd = part->speed.x;
       part->speed.z = -part->speed.z;
       break;
   }
-  return oldStat;
+  stat.addImpulseOnWall(memSpd, wall_);
+
+  return stat;
+}*/
+Statistic WallCollision::resolve(Statistic& stat) {
+  Particle* part = getFirstParticle();
+  double& speedComponent = [&]() -> double& {
+    switch (wall_) {
+      case Wall::Left:
+      case Wall::Right:
+        return part->speed.x;
+      case Wall::Front:
+      case Wall::Back:
+        return part->speed.y;
+      case Wall::Top:
+      case Wall::Bottom:
+        return part->speed.z;
+      default:
+        throw std::logic_error("Unknown wall type");
+    }
+  }();
+
+  stat.addImpulseOnWall(std::abs(speedComponent), wall_);
+
+  speedComponent = -speedComponent;
+
+  return stat;
 }
 // End of WallCollision functions
 
@@ -112,7 +151,7 @@ std::string PartCollision::getCollisionType() const {
   return "Particle to Particle Collision";
 }
 
-Statistic PartCollision::resolve(const Statistic& oldStat) {
+Statistic PartCollision::resolve(Statistic& stat) {
   Particle* part1{getFirstParticle()};
   Particle* part2{secondParticle_};
 
@@ -125,7 +164,7 @@ Statistic PartCollision::resolve(const Statistic& oldStat) {
 
   part1->speed -= centerDist * projection;
   part2->speed += centerDist * projection;
-  return oldStat;
+  return stat;
 }
 // End of PartCollision functions
 
@@ -216,7 +255,6 @@ void Gas::gasLoop(int nIterations) {
   for (int i{0}; i != nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
-
     Collision* firstColl{nullptr};
 
     if (pColl.getTime() < wColl.getTime()) {
@@ -297,7 +335,6 @@ double collisionTime(const Particle& p1, const Particle& p2) {
   }
   return result;
 }
-
 
 WallCollision calculateWallColl(Particle& p, double squareSide) {
   auto calculate = [&, squareSide](double position, double speed, Wall negWall,

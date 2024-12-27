@@ -6,14 +6,11 @@
 #include <cmath>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
 namespace gasSim {
-
-struct Statistic {
-  std::array<double, 6> pressure;
-};
 
 template <typename FP>
 struct PhysVector {
@@ -73,6 +70,14 @@ struct Particle {
 bool particleOverlap(const Particle& p1, const Particle& p2);
 bool particleInBox(const Particle& part, double boxSide);
 
+struct Statistic {
+  std::unordered_map<Wall, double> pressure;
+  std::unordered_map<Wall, double> deltaImpulse;
+  
+  void addImpulseOnWall(double speed, Wall wall);
+  void calculate();
+};
+
 class Collision {
  public:
   Collision(double t, Particle* p);
@@ -82,7 +87,7 @@ class Collision {
   Particle* getFirstParticle() const;
 
   virtual std::string getCollisionType() const = 0;
-  virtual Statistic resolve(const Statistic& oldStat) = 0;
+  virtual Statistic resolve(Statistic& oldStat) = 0;
 
  private:
   double time_;
@@ -94,7 +99,7 @@ class WallCollision : public Collision {
   WallCollision(double t, Particle* p, Wall wall);
   Wall getWall() const;
   std::string getCollisionType() const override;
-  Statistic resolve(const Statistic& oldStat) override;
+  Statistic resolve(Statistic& oldStat) override;
 
  private:
   Wall wall_;
@@ -105,7 +110,7 @@ class PartCollision : public Collision {
   PartCollision(double t, Particle* p1, Particle* p2);
   Particle* getSecondParticle() const;
   std::string getCollisionType() const override;
-  Statistic resolve(const Statistic& oldStat) override;
+  Statistic resolve(Statistic& oldStat) override;
 
  private:
   Particle* secondParticle_;
