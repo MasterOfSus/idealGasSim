@@ -75,8 +75,8 @@ class RenderStyle {
 class Camera {
  public:
   // setters and getters
-  void setFocus(const PhysVector& focusPoint) { focusPoint_ = focusPoint; };
-  void setSightVector(const PhysVector& sightVector) {
+  void setFocus(const PhysVectorD& focusPoint) { focusPoint_ = focusPoint; };
+  void setSightVector(const PhysVectorD& sightVector) {
     sightVector_ = sightVector / sightVector.norm();
   };
   void setAspectRatio(const double ratio);
@@ -84,8 +84,8 @@ class Camera {
 	void setFOV(const double FOV); // field of view setting in degrees
   void setResolution(const int height, const int width);
 
-  PhysVector const& getFocus() const { return focusPoint_; };
-  PhysVector const& getSight() const { return sightVector_; };
+  PhysVectorD const& getFocus() const { return focusPoint_; };
+  PhysVectorD const& getSight() const { return sightVector_; };
   double getAspectRatio() const {
     return static_cast<float>(width_) / static_cast<float>(height_);
   };
@@ -95,12 +95,12 @@ class Camera {
   int getWidth() const { return width_; };
 
   // parametric constructor
-  Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
+  Camera(const PhysVectorD& focusPosition, const PhysVectorD& sightVector,
          double planeDistance, double fov, int width, int height);
 
  private:
-  PhysVector focusPoint_;
-  PhysVector sightVector_;
+  PhysVectorD focusPoint_;
+  PhysVectorD sightVector_;
   double planeDistance_;
   double fov_;
   int width_;
@@ -113,19 +113,19 @@ double getPixelSide(const Camera& camera);
 
 int getNPixels(double lenght, const Camera& camera);
 
-PhysVector getPointProjection(const PhysVector& point, const Camera& camera);
-double getSegmentScale(const PhysVector& point, const Camera& camera);
+PhysVectorD getPointProjection(const PhysVectorD& point, const Camera& camera);
+double getSegmentScale(const PhysVectorD& point, const Camera& camera);
 
 /*
 struct ParticleProjection {
   static sf::CircleShape circle;
-  PhysVector position;
+  PhysVectorD position;
 };
 */
 
-PhysVector projectParticle(const Particle& particle, const Camera& camera);
+PhysVectorD projectParticle(const Particle& particle, const Camera& camera);
 
-std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles);
+std::vector<PhysVectorD> projectParticles (const std::vector<Particle>& particles);
 
 void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
