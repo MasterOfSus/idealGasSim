@@ -18,6 +18,8 @@
 
 namespace gasSim {
 
+double Particle::radius = 1.;
+
 // Definition of vector functions
 PhysVectorD unifRandVector(const double maxNorm) {
   if (maxNorm <= 0) {
