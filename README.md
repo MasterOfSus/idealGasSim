@@ -29,7 +29,7 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [x] Scrivere test di firstWallCollision()
 - [x] fix generazione particelle random
 - [x] trasformare physvector in un template
-- [ ] aggiungere una struct statistics che mi venga resistuita quando lancio il gasLoop
+- [x] aggiungere una struct statistics che mi venga resistuita quando lancio il gasLoop
 - [ ] Pressione variazione quantità di moto su ogni muro
 - [ ] implementare il calcolo della pressione su ogni lato
 - [x] cambiare il modo in cui memoriziamo i muri enum class
@@ -38,7 +38,7 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Temperatura per il controllo
 - [ ] CONTROLLA CHE L'ORDINE NON CAMBI se così tieni in memoria di gasLoop un vettore di lastPositions e calcola il libero cammino medio
 - [ ] Aggiungere un gasLoop con un int tempo
-- [ ] Aggiungere un gasLoop con un int tempo
+- [ ] Decidere cosa fare con i metodi set, se per esempio mettere un setBoxSide in statistic o lasciarlo solo nel costruttore
 
 
 ## Da discutere nella prossima call

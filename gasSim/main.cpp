@@ -1,16 +1,15 @@
 #include <unistd.h>
-#include <SFML/System/Sleep.hpp>
-#include <iostream>
-#include <set>
 
-#include "physicsEngine.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/System/Sleep.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/WindowStyle.hpp>
 #include <iostream>
+#include <set>
 
 #include "graphics.hpp"
+#include "physicsEngine.hpp"
 
 double gasSim::Particle::mass = 10;
 double gasSim::Particle::radius = 1.;
@@ -21,9 +20,10 @@ std::ostream &operator<<(std::ostream &os, const gasSim::PhysVectorD &vec) {
 }
 
 std::ostream &operator<<(std::ostream &os, const gasSim::Particle &part) {
-  os << "Partcle(" << part.position << ", " << part.speed << ")\n";
+  os << "Partcle(" << part.position << ", " << part.speed << ")";
   return os;
 }
+/*
 int main() {
   gasSim::Gas scureggione{1, 25, 10};
   gasSim::PhysVectorD focus{-23., 31., 12.};
@@ -32,7 +32,7 @@ int main() {
   sf::RenderTexture photo;
   photo.create(1200, 900);
   gasSim::RenderStyle style{};
-  
+
   style.setWallsOpts("udfblr");
   gasSim::drawGas(scureggione, camera, photo, style);
   sf::Sprite picture;
@@ -66,4 +66,19 @@ int main() {
   }
 
 
+}
+*/
+int main() {
+  gasSim::Gas scureggione{1, 25, 10};
+  for (int i{0}; i != 10; ++i) {
+    gasSim::Statistic prova = scureggione.gasLoop(1);
+    std::cout << scureggione.getLife() << '\n'
+              << scureggione.getParticles()[0] << '\n'
+              << prova.getPressure(gasSim::Wall::Back) << "  "
+              << prova.getPressure(gasSim::Wall::Front) << "  "
+              << prova.getPressure(gasSim::Wall::Left) << "  "
+              << prova.getPressure(gasSim::Wall::Right) << "  "
+              << prova.getPressure(gasSim::Wall::Bottom) << "  "
+              << prova.getPressure(gasSim::Wall::Top) << "\n\n";
+  }
 }

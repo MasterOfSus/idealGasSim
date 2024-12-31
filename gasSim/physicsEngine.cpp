@@ -62,8 +62,24 @@ bool particleInBox(const Particle& part, double boxSide) {
 // End of Particle functions
 
 // Definition of Statistic functions
+Statistic::Statistic(double boxSide) : boxSide_(boxSide) {
+  if (boxSide_ <= 0) {
+    throw std::invalid_argument("boxSide must be a positive number");
+  }
+}
+void Statistic::setDeltaTime(double deltaTime) {
+  deltaTime_ = deltaTime;
+  if (deltaTime_ <= 0) {
+    throw std::invalid_argument("deltaTime must be a positive number");
+  }
+}
 void Statistic::addImpulseOnWall(double speed, Wall wall) {
-  deltaImpulse[wall] += speed * Particle::mass;
+  deltaImpulse_[wall] += std::abs(speed) * Particle::mass;
+}
+
+double Statistic::getPressure(Wall wall) {
+  double area{std::pow(boxSide_, 2)};
+  return deltaImpulse_[wall] / (area * deltaTime_);
 }
 // End of Statistic functions
 
@@ -115,7 +131,7 @@ Statistic WallCollision::resolve(Statistic& stat) {
 
   return stat;
 }*/
-Statistic WallCollision::resolve(Statistic& stat) {
+void WallCollision::resolve(Statistic& stat) {
   Particle* part = getFirstParticle();
   double& speedComponent = [&]() -> double& {
     switch (wall_) {
@@ -133,11 +149,8 @@ Statistic WallCollision::resolve(Statistic& stat) {
     }
   }();
 
-  stat.addImpulseOnWall(std::abs(speedComponent), wall_);
-
+  stat.addImpulseOnWall(speedComponent, wall_);
   speedComponent = -speedComponent;
-
-  return stat;
 }
 // End of WallCollision functions
 
@@ -151,7 +164,7 @@ std::string PartCollision::getCollisionType() const {
   return "Particle to Particle Collision";
 }
 
-Statistic PartCollision::resolve(Statistic& stat) {
+void PartCollision::resolve(Statistic& stat) {
   Particle* part1{getFirstParticle()};
   Particle* part2{secondParticle_};
 
@@ -164,7 +177,6 @@ Statistic PartCollision::resolve(Statistic& stat) {
 
   part1->speed -= centerDist * projection;
   part2->speed += centerDist * projection;
-  return stat;
 }
 // End of PartCollision functions
 
@@ -249,8 +261,9 @@ double Gas::getBoxSide() const { return boxSide_; }
 
 double Gas::getLife() const { return life_; }
 
-void Gas::gasLoop(int nIterations) {
-  Statistic stat;
+Statistic Gas::gasLoop(int nIterations) {
+  Statistic stat{boxSide_};
+  double deltaTime{0};
 
   for (int i{0}; i != nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
@@ -264,11 +277,15 @@ void Gas::gasLoop(int nIterations) {
     }
 
     updatePositions(firstColl->getTime());
-    life_ += firstColl->getTime();
+    deltaTime += firstColl->getTime();
 
     assert(life_ != INFINITY);
-    stat = firstColl->resolve(stat);
+    firstColl->resolve(stat);
   }
+
+  life_ += deltaTime;
+  stat.setDeltaTime(deltaTime);
+  return stat;
 }
 
 WallCollision Gas::firstWallCollision() {

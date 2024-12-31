@@ -174,7 +174,7 @@ TEST_CASE("Testing WallCollision") {
     CHECK(part1.speed == actualSpeed);
   }
   SUBCASE("Resolve Collision") {
-    gasSim::Statistic stat{};
+    gasSim::Statistic stat{1};
     coll.resolve(stat);
     // Da aggiungere il check del risolutore corretto
   }
