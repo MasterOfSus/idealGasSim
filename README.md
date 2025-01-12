@@ -31,6 +31,21 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Scrivere test di firstWallCollision()
 - [ ] Cambiare i wall char con degli enum
 
+Liam deve fare:
+
+-    Tests:
+     -    Unit tests per RenderStyle
+     -    Unit tests per Camera
+     -    Unit tests per le funzioni di rendering
+     -    Unit tests per le funzioni di drawing
+-    Implementazioni:
+     -    Sistemare il disegno dei muri
+     -    Aggiungere gli assi
+     -    Aggiungere la griglia (?)
+     -    Statistica e misure
+     -    Disegnare una finestra grafica
+         
+
 ## Da discutere nella prossima call
 
 * Quando usare i const
