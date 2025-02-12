@@ -40,15 +40,14 @@ class RenderStyle {
 	const sf::CircleShape& getPartProj() const { return partProj_; };
 	void setPartProj(const sf::CircleShape& circle) { partProj_ = circle; };
 
-	const sf::Color& getBackgroundColor() const { return background_; };
-	void setBackgroundColor(const sf::Color& color) { background_ = color; };
+	const sf::Color& getBGColor() const { return background_; };
+	void setBGColor(const sf::Color& color) { background_ = color; };
 
 	RenderStyle() {
 		partProj_.setFillColor(partColor_);
 	};
 	RenderStyle(const sf::CircleShape& defPartProj) : partProj_(defPartProj) {
-		partProj_.setFillColor(partColor_);
-	}
+	};
 
 	private:
 
@@ -64,12 +63,12 @@ class RenderStyle {
 																		 // as seen standing on the xy plane and
 																		 // looking along (0., 1., 0.)
 	sf::Color wallsColor_ {0, 0, 0, 64};
-	sf::Color wOutlineColor_ {0, 0, 0};
+	sf::Color wOutlineColor_ {sf::Color::Black};
 
 	sf::CircleShape partProj_ {1.f, 20};
-	sf::Color partColor_ {240, 0, 0, 255};
+	sf::Color partColor_ {sf::Color::Red};
 
-	sf::Color background_ {0, 255, 255, 255};
+	sf::Color background_ {sf::Color::White};
 };
 
 class Camera {

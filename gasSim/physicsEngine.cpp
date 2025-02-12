@@ -16,7 +16,7 @@
 
 namespace gasSim {
 
-double Particle::radius = 1.;
+// double Particle::radius = 1.;
 
 // Definition of vector functions
 PhysVector PhysVector::operator-() const { return {-x, -y, -z}; }

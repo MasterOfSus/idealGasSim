@@ -37,7 +37,7 @@ TEST_CASE("Testing for_any_couple") {
 
     gasSim::for_each_couple(emptyNum.begin(), emptyNum.end(),
                             [&](int a, int b) { couples.push_back({a, b}); });
-
+ 
     CHECK(couples.empty());
   }
   SUBCASE("Single element vector") {
@@ -338,4 +338,38 @@ TEST_CASE("Testing Gas 2") {
   gasSim::Particle p2{{0,0,0.09}, {5,6,7}};
   std::vector<gasSim::Particle> badParticles{p1,p2};
   gasSim::Gas badGas{badParticles, 5}; */
+}
+
+// GRAPHICS TESTING
+
+TEST_CASE("Testing the RenderStyle class") {
+	gasSim::RenderStyle defStyle {};
+	sf::Texture pImage;
+	pImage.create(200, 200);
+	pImage.loadFromFile("./resources/ball.jpg");
+	sf::CircleShape pProj {1., 20};
+	pProj.setTexture(&pImage);
+	gasSim::RenderStyle realStyle {pProj};
+	SUBCASE("Constructor") {
+		CHECK(defStyle.getBGColor() == sf::Color::White);
+		CHECK(defStyle.getWallsOpts() == "udlrfb");
+		CHECK(defStyle.getWallsColor() == sf::Color(0, 0, 0, 64));
+		CHECK(defStyle.getWOutlineColor() == sf::Color::Black);
+		CHECK(defStyle.getPartProj().getFillColor() == sf::Color::Red);
+		CHECK(realStyle.getPartProj().getTexture() == &pImage);
+	}
+	defStyle.setBGColor(sf::Color::Transparent);
+	defStyle.setWallsOpts("fb");
+	defStyle.setWOutlineColor(sf::Color::Blue);
+	defStyle.setWallsColor(sf::Color::Cyan);
+	defStyle.setPartProj(pProj);
+	SUBCASE("Setters") {
+		CHECK_THROWS(defStyle.setWallsOpts("amogus"));
+
+		CHECK(defStyle.getBGColor() == sf::Color::Transparent);
+		CHECK(defStyle.getWallsOpts() == "fb");
+		CHECK(defStyle.getWOutlineColor() == sf::Color::Blue);
+		CHECK(defStyle.getWallsColor() == sf::Color::Cyan);
+		CHECK(defStyle.getPartProj().getTexture() == pProj.getTexture());
+	}
 }
