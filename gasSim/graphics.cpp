@@ -105,16 +105,16 @@ Camera::Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
 				setResolution(height, width);
 }
 
-double getCamTopSide(const Camera& camera) {
-  return 2 * camera.getPlaneDistance() * tan(camera.getFOV() * (M_PI / 180.) / 2.);
+double Camera::getTopSide() const {
+  return 2 * getPlaneDistance() * tan(getFOV() * (M_PI / 180.) / 2.);
 };
 
-double getPixelSide(const Camera& camera) {
-	return getCamTopSide(camera)/camera.getWidth();
+double Camera::getPixelSide() const {
+	return getTopSide()/getWidth();
 }
 
-int getNPixels(double length, const Camera& camera) {
-  return length / getPixelSide(camera);
+float Camera::getNPixels(double length) const {
+  return length / getPixelSide();
 }
 
 PhysVector crossProd(const PhysVector& v1, const PhysVector& v2) {
@@ -139,19 +139,15 @@ PhysVector getPointProjection(const PhysVector& point, const Camera& camera) {
   m = {sight.y, - sight.x, 0.};
   m = m / m.norm();
   PhysVector o{crossProd(m, sight)};
-	m = m / getPixelSide(camera);
-	o = o / getPixelSide(camera);
+	m = m / camera.getPixelSide();
+	o = o / camera.getPixelSide();
   // returning base-changed vector with scaling factor, with sign for positional information
 	// as the third coordinate
 	return {
 		m * b + camera.getWidth()/2.,
 		o * b + camera.getHeight()/2.,
-		(a - camera.getFocus()).norm() / 								// distance of projection
-		(point - camera.getFocus()).norm() *						// distance of point 
-		copysign(1., (point - camera.getFocus()
-								- sight * camera.getPlaneDistance())
-						 		* sight)	// in front of the persp. plane -> +
-		};										// behind the persp. plane -> -
+		(b-focus)*(b-focus) / ((b-focus)*(point - focus)) // scaling factor, degen. if > 1 V < 0
+		};
 }
 
 std::vector<PhysVector> projectParticles(const std::vector<Particle>& particles,
@@ -160,7 +156,7 @@ std::vector<PhysVector> projectParticles(const std::vector<Particle>& particles,
   PhysVector proj{};
 	for (const Particle& particle : particles) {
 		proj = getPointProjection(particle.position, camera);
-		if (proj.z > 0) {
+		if (proj.z <= 1 && proj.z > 0) {
     	projections.emplace_back(proj);
 		}
   }
@@ -169,7 +165,7 @@ std::vector<PhysVector> projectParticles(const std::vector<Particle>& particles,
 
 void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
 	static sf::CircleShape partProj = style.getPartProj();
-	float r {static_cast<float>(getNPixels(gas.getParticles().begin()->radius, camera))};
+	float r {camera.getNPixels(gas.getParticles().begin()->radius)};
 	partProj.setRadius(r);
 	partProj.setOrigin(r, -r);
 	std::vector<PhysVector> projections = projectParticles(gas.getParticles(), camera);

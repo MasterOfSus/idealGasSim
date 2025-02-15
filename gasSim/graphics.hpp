@@ -73,7 +73,12 @@ class RenderStyle {
 
 class Camera {
  public:
-  // setters and getters
+
+   // parametric constructor
+  Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
+         double planeDistance, double fov, int width, int height);
+
+	 // setters and getters
   void setFocus(const PhysVector& focusPoint) { focusPoint_ = focusPoint; };
   void setSightVector(const PhysVector& sightVector) {
     sightVector_ = sightVector / sightVector.norm();
@@ -93,27 +98,27 @@ class Camera {
   int getHeight() const { return height_; };
   int getWidth() const { return width_; };
 
-  // parametric constructor
-  Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
-         double planeDistance, double fov, int width, int height);
+	// useful functions
+	PhysVector getPointProjection(const PhysVector& point) const;
+	// double getSegmentScale(const PhysVector& point) const;
+	// PhysVector projectParticle(const Particle& particle) const;
+	std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles) const;
+
+	// auxiliary member functions
+	double getTopSide() const;
+	double getPixelSide() const;
+	float getNPixels(double length) const;
 
  private:
+
   PhysVector focusPoint_;
   PhysVector sightVector_;
   double planeDistance_;
   double fov_;
   int width_;
   int height_;
-};	
 
-double getCamTopSide(const Camera& camera);
-
-double getPixelSide(const Camera& camera);
-
-int getNPixels(double lenght, const Camera& camera);
-
-PhysVector getPointProjection(const PhysVector& point, const Camera& camera);
-double getSegmentScale(const PhysVector& point, const Camera& camera);
+};
 
 /*
 struct ParticleProjection {
@@ -121,10 +126,6 @@ struct ParticleProjection {
   PhysVector position;
 };
 */
-
-PhysVector projectParticle(const Particle& particle, const Camera& camera);
-
-std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles);
 
 void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
