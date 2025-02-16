@@ -67,9 +67,13 @@ Diego physicsEngine, forse main
 ## Interface
 
 using https://github.com/jarro2783/cxxopts library to manage command line options
+follow https://github.com/jarro2783/cxxopts/wiki to implement
 * Una modalità tutti i parametri inseriti per quello che noi consideriamo standard
-* Opzione --help, opzione di default
-* Opzione --config, che fa partire il configuratore per la scelta dei dati di base
-* Opzione --gui=false|true, per vedere tutta la roba di Liam
-* Opzione --print, per printare in terminal con i valori
-* Opzione --save=graphics,data , per salvare grafici e video?
+* Opzione -h|--help, mostra il messaggio di help
+* (Opzione --usage, mostra il messaggio di usage)
+* Opzione -c|--config, che fa partire il configuratore per la scelta dei dati di base   def OFF
+* Opzione -g|--graphics, per vedere tutta la roba di Liam                               def OFF
+* Opzione -p|--print, per printare in terminal con i valori                             def ON
+* Opzione -s|--save=graphics,data , per salvare grafici e video?                        def OFF
+
+launching with no options runs --help option
