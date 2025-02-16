@@ -41,6 +41,21 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Decidere cosa fare con i metodi set, se per esempio mettere un setBoxSide in statistic o lasciarlo solo nel costruttore
 
 
+Liam deve fare:
+
+- [] Tests:
+     - [] Unit tests per RenderStyle
+     - [] Unit tests per Camera
+     - [] Unit tests per le funzioni di rendering
+     - [] Unit tests per le funzioni di drawing
+- [] Implementazioni:
+     - [] Sistemare il disegno dei muri
+     - [] Aggiungere gli assi
+     - [] Aggiungere la griglia (?)
+     - [] Statistica e misure
+     - [] Disegnare una finestra grafica
+         
+
 ## Da discutere nella prossima call
 
 * Quando usare i const

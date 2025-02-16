@@ -1,6 +1,9 @@
 #include <cmath>
 #include <stdexcept>
 #include <vector>
+
+#include "SFML/Graphics.hpp"
+
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "doctest.h"
@@ -32,7 +35,7 @@ TEST_CASE("Testing for_any_couple") {
 
     gasSim::for_each_couple(emptyNum.begin(), emptyNum.end(),
                             [&](int a, int b) { couples.push_back({a, b}); });
-
+ 
     CHECK(couples.empty());
   }
   SUBCASE("Single element vector") {
@@ -357,3 +360,148 @@ TEST_CASE("Testing Gas 2") {
   std::vector<gasSim::Particle> badParticles{p1,p2};
   gasSim::Gas badGas{badParticles, 5}; */
 }
+
+// GRAPHICS TESTING
+
+TEST_CASE("Testing the RenderStyle class") {
+	gasSim::RenderStyle defStyle {};
+	sf::Texture pImage;
+	pImage.loadFromFile("./resources/ball.jpg");
+	sf::CircleShape pProj {1., 20};
+	pProj.setTexture(&pImage);
+	gasSim::RenderStyle realStyle {pProj};
+	SUBCASE("Constructor") {
+		CHECK(defStyle.getBGColor() == sf::Color::White);
+		CHECK(defStyle.getWallsOpts() == "udlrfb");
+		CHECK(defStyle.getWallsColor() == sf::Color(0, 0, 0, 64));
+		CHECK(defStyle.getWOutlineColor() == sf::Color::Black);
+		CHECK(defStyle.getPartProj().getFillColor() == sf::Color::Red);
+		CHECK(realStyle.getPartProj().getTexture() == &pImage);
+	}
+	defStyle.setBGColor(sf::Color::Transparent);
+	defStyle.setWallsOpts("fb");
+	defStyle.setWOutlineColor(sf::Color::Blue);
+	defStyle.setWallsColor(sf::Color::Cyan);
+	defStyle.setPartProj(pProj);
+	SUBCASE("Setters") {
+		CHECK_THROWS(defStyle.setWallsOpts("amogus"));
+
+		CHECK(defStyle.getBGColor() == sf::Color::Transparent);
+		CHECK(defStyle.getWallsOpts() == "fb");
+		CHECK(defStyle.getWOutlineColor() == sf::Color::Blue);
+		CHECK(defStyle.getWallsColor() == sf::Color::Cyan);
+		CHECK(defStyle.getPartProj().getTexture() == pProj.getTexture());
+	}
+}
+
+TEST_CASE("Testing the camera class") {
+	gasSim::PhysVector focus {0., 0., 0.};
+	gasSim::PhysVector sightVector {1., 0., 0.};
+	double distance {1.};
+	double fov {90.};
+	int width {200};
+	int height {200};
+	gasSim::Camera camera {focus, sightVector, distance, fov, width, height};
+	gasSim::Camera camera2 {camera};
+	SUBCASE("Constructor") {
+		CHECK(camera.getFocus() == focus);
+		CHECK(camera.getSight() == sightVector);
+		CHECK(camera.getPlaneDistance() == distance);
+		CHECK(camera.getWidth() == width);
+		CHECK(camera.getHeight() == height);
+		CHECK(camera.getFOV() == fov);
+		CHECK(camera.getAspectRatio() == 1.);
+	}
+	gasSim::PhysVector newFocus {-1., -1., 1.};
+	gasSim::PhysVector newSight {1., 1., 0.5};
+	double newDistance {1.5};
+	double newFov {70.};
+	int newWidth {1000};
+	int newHeight {1600};
+	double newRatio {16./9.};
+	camera.setFocus(newFocus);
+	camera.setSightVector(newSight);
+	camera.setPlaneDistance(newDistance);
+	camera.setFOV(newFov);
+	camera.setResolution(newWidth, newHeight);
+	SUBCASE("Setters") {
+		// check for throws
+		CHECK_THROWS(camera.setFOV(-10.));
+		CHECK_THROWS(camera.setFOV(0.));
+		CHECK_THROWS(camera.setPlaneDistance(-15.));
+		CHECK_THROWS(camera.setPlaneDistance(0.));
+		CHECK_THROWS(camera.setResolution(-1, 10));
+		CHECK_THROWS(camera.setResolution(0., -1));
+		CHECK_THROWS(camera.setSightVector({0., 0., 0.}));
+		CHECK_THROWS(camera.setAspectRatio(-15.));
+		CHECK_THROWS(camera.setAspectRatio(0.));
+
+		// check for setters correct effect and exception safety
+		CHECK(camera.getFocus() == newFocus);
+		CHECK(camera.getSight() == newSight);
+		CHECK(camera.getPlaneDistance() == newDistance);
+		CHECK(camera.getWidth() == newWidth);
+		CHECK(camera.getHeight() == newHeight);
+		camera.setAspectRatio(newRatio);
+		CHECK(camera.getAspectRatio() == newRatio);
+		CHECK(camera.getWidth() == newWidth);
+	}
+
+	SUBCASE("Auxiliary functions") {
+		CHECK(camera2.getTopSide() == doctest::Approx(std::sqrt(2.)));
+		CHECK(camera.getTopSide() == doctest::Approx(2.1006));
+		CHECK(camera2.getPixelSide() == doctest::Approx(0.007071));
+		CHECK(camera.getPixelSide() == doctest::Approx(0.002101));
+		CHECK(camera2.getNPixels(2.) == doctest::Approx(2./0.007071));
+		CHECK(camera2.getNPixels(-0.5) == doctest::Approx(0.5/0.007071));
+		CHECK(camera.getNPixels(2.) == doctest::Approx(2./0.002101));
+	}
+
+	gasSim::PhysVector p1 {2., 1., 0.};
+	gasSim::PhysVector p2 {-2., 3., -3.};
+	gasSim::PhysVector p3 {100., 12., 30.};
+	gasSim::PhysVector p4 {2., 2., 2.5};
+
+	gasSim::PhysVector speed {0., 0., 0.};
+
+	gasSim::Particle part1 {p1, speed};
+	gasSim::Particle part2 {p2, speed};
+	gasSim::Particle part3 {p3, speed};
+	gasSim::Particle part4 {p4, speed};
+	std::vector<gasSim::Particle> particles {
+		part1, part2, part3, part4
+	};
+
+	std::vector<gasSim::PhysVector> projections {};
+
+	gasSim::PhysVector projection {};
+
+	SUBCASE("Projection functions") {
+		projection = camera.getPointProjection(p1);
+		projections.emplace_back(projection);
+		CHECK(projection.x == doctest::Approx(168.309));
+		CHECK(projection.y == doctest::Approx(-504.927));
+		CHECK(projection.z == doctest::Approx(0.5));
+		projection = camera.getPointProjection(p2);
+		// projections.emplace_back(projection);
+		CHECK(projection.x == doctest::Approx(-3786.95));
+		CHECK(projection.y == doctest::Approx(-4798.80));
+		CHECK(projection.z == doctest::Approx(2.25));
+		projection = camera.getPointProjection(p3);
+		// projections.emplace_back(projection);
+		CHECK(projection.x == doctest::Approx(1186.401));
+		CHECK(projection.y == doctest::Approx(-713.2529));
+		CHECK(projection.z == doctest::Approx(-0.031469));
+		projection = camera.getPointProjection(p4);
+		projections.emplace_back(projection);
+		CHECK(projection.x == doctest::Approx(0.));
+		CHECK(projection.y == doctest::Approx(0.));
+		CHECK(projection.z == doctest::Approx(1./3.));
+		std::vector<gasSim::PhysVector> realProjs {camera.projectParticles(particles)};
+		for (int i {0}; i < 2; ++i) {
+			CHECK(projections[i] == realProjs[i]);
+		}
+	}
+}
+
+// ciucciami le Particelle

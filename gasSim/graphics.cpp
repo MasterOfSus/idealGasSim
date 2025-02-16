@@ -35,7 +35,7 @@ void RenderStyle::setAxesOpts(const std::string& opts) {
 	if (opts.find('z') != std::string::npos) axesOpts_.push_back('z');
 }
 
-void RenderStyle::setAxesLength(const double length) {
+void RenderStyle::setAxesLength(const float length) {
 	if (length < 0.) throw std::invalid_argument("Invalid axis length.");
 	axesLength_ = length;
 }
@@ -60,7 +60,7 @@ void RenderStyle::setWallsOpts(const std::string& opts) {
 // Camera member functions
 // Getters and setters
 
-void Camera::setPlaneDistance(const double distance) {
+void Camera::setPlaneDistance(const float distance) {
   if (distance >= 0.) {
     planeDistance_ = distance;
   } else {
@@ -68,7 +68,7 @@ void Camera::setPlaneDistance(const double distance) {
   }
 }
 
-void Camera::setFOV(const double FOV) { // in degrees
+void Camera::setFOV(const float FOV) { // in degrees
   if (FOV > 0. && FOV < 180.) {
     fov_ = FOV;
   } else {
@@ -87,7 +87,7 @@ void Camera::setResolution(const int height, const int width) {
   }
 }
 
-void Camera::setAspectRatio(const double ratio) { // ratio set by keeping the image width
+void Camera::setAspectRatio(const float ratio) { // ratio set by keeping the image width
   if (ratio > 0.) {
     height_ = static_cast<int>(width_ / ratio);
   } else {
@@ -95,9 +95,9 @@ void Camera::setAspectRatio(const double ratio) { // ratio set by keeping the im
   }
 }
 
-Camera::Camera(const PhysVectorD& focusPosition, const PhysVectorD& sightVector,
-               double planeDistance = 1.,
-               double FOV = 90, int width = 1920, int height = 1080)
+Camera::Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
+               float planeDistance = 1.,
+               float FOV = 90, int width = 1920, int height = 1080)
     : focusPoint_(focusPosition),
       sightVector_(sightVector / sightVector.norm()) {
 				setPlaneDistance(planeDistance);
@@ -105,16 +105,16 @@ Camera::Camera(const PhysVectorD& focusPosition, const PhysVectorD& sightVector,
 				setResolution(height, width);
 }
 
-double getCamTopSide(const Camera& camera) {
-  return 2 * camera.getPlaneDistance() * tan(camera.getFOV() * (M_PI / 180.) / 2.);
+float Camera::getTopSide() const {
+  return 2 * getPlaneDistance() * tan(getFOV() * (M_PI / 180.) / 2.);
 };
 
-double getPixelSide(const Camera& camera) {
-	return getCamTopSide(camera)/camera.getWidth();
+float Camera::getPixelSide() const {
+	return getTopSide()/getWidth();
 }
 
-int getNPixels(double length, const Camera& camera) {
-  return length / getPixelSide(camera);
+float Camera::getNPixels(float length) const {
+  return length / getPixelSide();
 }
 
 PhysVectorD crossProd(const PhysVectorD& v1, const PhysVectorD& v2) {
@@ -138,29 +138,27 @@ PhysVectorD getPointProjection(const PhysVectorD& point, const Camera& camera) {
   PhysVectorD m;
   m = {sight.y, - sight.x, 0.};
   m = m / m.norm();
-  PhysVectorD o{crossProd(m, sight)};
-	m = m / getPixelSide(camera);
-	o = o / getPixelSide(camera);
+  PhysVector o{crossProd(m, sight)};
+	m = m / camera.getPixelSide();
+	o = o / camera.getPixelSide();
+
   // returning base-changed vector with scaling factor, with sign for positional information
 	// as the third coordinate
 	return {
 		m * b + camera.getWidth()/2.,
 		o * b + camera.getHeight()/2.,
-		(a - camera.getFocus()).norm() / 								// distance of projection
-		(point - camera.getFocus()).norm() *						// distance of point 
-		copysign(1., (point - camera.getFocus()
-								- sight * camera.getPlaneDistance())
-						 		* sight)	// in front of the persp. plane -> +
-		};										// behind the persp. plane -> -
+		(b-focus)*(b-focus) / ((b-focus)*(point - focus)) // scaling factor, degen. if > 1 V < 0
+		};
 }
 
 std::vector<PhysVectorD> projectParticles(const std::vector<Particle>& particles,
                                          const Camera& camera) {
-  std::vector<PhysVectorD> projections{};
-  PhysVectorD proj{};
+  std::vector<PhysVector> projections {};
+  PhysVector proj{};
+
 	for (const Particle& particle : particles) {
 		proj = getPointProjection(particle.position, camera);
-		if (proj.z > 0) {
+		if (proj.z <= 1 && proj.z > 0) {
     	projections.emplace_back(proj);
 		}
   }
@@ -169,16 +167,18 @@ std::vector<PhysVectorD> projectParticles(const std::vector<Particle>& particles
 
 void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
 	static sf::CircleShape partProj = style.getPartProj();
-	float r {static_cast<float>(getNPixels(gas.getParticles().begin()->radius, camera))};
+	float r {camera.getNPixels(gas.getParticles().begin()->radius)};
 	partProj.setRadius(r);
-	partProj.setOrigin(r, -r);
-	std::vector<PhysVectorD> projections = projectParticles(gas.getParticles(), camera);
+	partProj.setOrigin({r, -r});
+	std::vector<PhysVector> projections = projectParticles(gas.getParticles(), camera);
+
 	std::sort(projections.begin(), projections.end(), 
 						[](const PhysVectorD& a, const PhysVectorD& b) {
 							return a.z > b.z;});
-	for (const PhysVectorD& proj: projections) {
-		partProj.setPosition(proj.x, proj.y);
-		partProj.setScale(proj.z, proj.z);
+	for (const PhysVector& proj: projections) {
+		partProj.setPosition({proj.x, proj.y});
+		partProj.setScale({proj.z, proj.z});
+
 		texture.draw(partProj);
 	}
 }
@@ -373,8 +373,8 @@ void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture,
 	} // all good up to here?
 	
 	sf::Sprite auxSprite;
-	auxSprite.setScale(1., -1.);
-	auxSprite.setPosition(0., backWalls.getSize().y);
+	auxSprite.setScale({1., -1.});
+	auxSprite.setPosition({0., backWalls.getSize().y});
 
 	auxSprite.setTexture(texture.getTexture(), true);
 	backWalls.draw(auxSprite);
