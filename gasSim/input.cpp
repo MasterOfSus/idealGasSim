@@ -26,15 +26,18 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
   auto result = options.parse(argc, argv);
 
   // implementing no options case as "display help message"
-  if (argc ==
-      1) {  // CHECK here for possible problems while building with cmake
+  if (argc == 1) {  // CHECK here for possible problems while building with
+                    // cmake, could be because argc is not always ==1 if the
+                    // program is launched w-out options
     std::vector<std::string> helpOpt{"base", "gas", "results", "graphics"};
     std::cout << options.help(helpOpt) << std::endl;
   } else if (result.count("help")) {
     std::cout << options.help(result["help"].as<std::vector<std::string>>(),
                               bool{false})
               << std::endl;
-  } else if (result.count("usage")) {
+  } else if (result.count("usage")) {  // check cxxopts.hpp line 2009 if you
+                                       // want to implement --usage as only
+                                       // options w-out the help message
     std::cout << options.help(result["usage"].as<std::vector<std::string>>())
               << std::endl;
   }
