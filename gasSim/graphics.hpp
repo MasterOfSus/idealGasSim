@@ -34,6 +34,8 @@ class RenderStyle {
 	void setWallsOpts(const std::string& opts);
 	const sf::Color& getWallsColor() const { return wallsColor_; };
 	void setWallsColor(const sf::Color& color) { wallsColor_ = color; };
+	const sf::Color& getWOutlineColor() const { return wOutlineColor_; };
+	void setWOutlineColor(const sf::Color& color) { wOutlineColor_ = color; };
 
 	const sf::CircleShape& getPartProj() const { return partProj_; };
 	void setPartProj(const sf::CircleShape& circle) { partProj_ = circle; };
@@ -41,8 +43,12 @@ class RenderStyle {
 	const sf::Color& getBackgroundColor() const { return background_; };
 	void setBackgroundColor(const sf::Color& color) { background_ = color; };
 
-	RenderStyle() {};
-	RenderStyle(const sf::CircleShape& defPartProj) : partProj_(defPartProj) {}
+	RenderStyle() {
+		partProj_.setFillColor(partColor_);
+	};
+	RenderStyle(const sf::CircleShape& defPartProj) : partProj_(defPartProj) {
+		partProj_.setFillColor(partColor_);
+	}
 
 	private:
 
@@ -54,20 +60,23 @@ class RenderStyle {
 	sf::Color axesColor_ {0, 0, 0, 255};
 	double axesLength_ {10.};
 
-	std::string wallsOpts_ {"udlrfb"}; // top, down, left, right, front, back
+	std::string wallsOpts_ {"udlrfb"}; // up, down, left, right, front, back
+																		 // as seen standing on the xy plane and
+																		 // looking along (0., 1., 0.)
 	sf::Color wallsColor_ {0, 0, 0, 64};
+	sf::Color wOutlineColor_ {0, 0, 0};
 
 	sf::CircleShape partProj_ {1.f, 20};
 	sf::Color partColor_ {240, 0, 0, 255};
 
-	sf::Color background_ {255, 255, 255, 255};
+	sf::Color background_ {0, 255, 255, 255};
 };
 
 class Camera {
  public:
   // setters and getters
-  void setFocus(const PhysVector& focusPoint) { focusPoint_ = focusPoint; };
-  void setSightVector(const PhysVector& sightVector) {
+  void setFocus(const PhysVectorD& focusPoint) { focusPoint_ = focusPoint; };
+  void setSightVector(const PhysVectorD& sightVector) {
     sightVector_ = sightVector / sightVector.norm();
   };
   void setAspectRatio(const double ratio);
@@ -75,8 +84,8 @@ class Camera {
 	void setFOV(const double FOV); // field of view setting in degrees
   void setResolution(const int height, const int width);
 
-  PhysVector const& getFocus() const { return focusPoint_; };
-  PhysVector const& getSight() const { return sightVector_; };
+  PhysVectorD const& getFocus() const { return focusPoint_; };
+  PhysVectorD const& getSight() const { return sightVector_; };
   double getAspectRatio() const {
     return static_cast<float>(width_) / static_cast<float>(height_);
   };
@@ -86,12 +95,12 @@ class Camera {
   int getWidth() const { return width_; };
 
   // parametric constructor
-  Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
+  Camera(const PhysVectorD& focusPosition, const PhysVectorD& sightVector,
          double planeDistance, double fov, int width, int height);
 
  private:
-  PhysVector focusPoint_;
-  PhysVector sightVector_;
+  PhysVectorD focusPoint_;
+  PhysVectorD sightVector_;
   double planeDistance_;
   double fov_;
   int width_;
@@ -100,29 +109,31 @@ class Camera {
 
 double getCamTopSide(const Camera& camera);
 
+double getPixelSide(const Camera& camera);
+
 int getNPixels(double lenght, const Camera& camera);
 
-PhysVector getPointProjection(const PhysVector& point, const Camera& camera);
-double getSegmentScale(const PhysVector& point, const Camera& camera);
+PhysVectorD getPointProjection(const PhysVectorD& point, const Camera& camera);
+double getSegmentScale(const PhysVectorD& point, const Camera& camera);
 
 /*
 struct ParticleProjection {
   static sf::CircleShape circle;
-  PhysVector position;
+  PhysVectorD position;
 };
 */
 
-PhysVector projectParticle(const Particle& particle, const Camera& camera);
+PhysVectorD projectParticle(const Particle& particle, const Camera& camera);
 
-std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles);
+std::vector<PhysVectorD> projectParticles (const std::vector<Particle>& particles);
 
 void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 
-void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture);
+void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 
-sf::RenderTexture drawGas(const Gas& gas);
+void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style);
 
 }  // namespace gasSim
 

@@ -3,8 +3,12 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
+#include <cassert>
+#include <iostream>
 
 namespace gasSim {
 
@@ -37,7 +41,7 @@ void RenderStyle::setAxesLength(const double length) {
 }
 
 void RenderStyle::setWallsOpts(const std::string& opts) {
-	if (opts.length() > 3) throw std::invalid_argument("Too many walls options.");
+	if (opts.length() > 6) throw std::invalid_argument("Too many walls options.");
 	for (char opt: opts) {
 		if (opt != 'u' && opt != 'd' &&
 				opt != 'l' && opt != 'r' &&
@@ -91,7 +95,7 @@ void Camera::setAspectRatio(const double ratio) { // ratio set by keeping the im
   }
 }
 
-Camera::Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
+Camera::Camera(const PhysVectorD& focusPosition, const PhysVectorD& sightVector,
                double planeDistance = 1.,
                double FOV = 90, int width = 1920, int height = 1080)
     : focusPoint_(focusPosition),
@@ -102,89 +106,84 @@ Camera::Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
 }
 
 double getCamTopSide(const Camera& camera) {
-  return 2 * camera.getPlaneDistance() * tan(camera.getFOV() / 2);
+  return 2 * camera.getPlaneDistance() * tan(camera.getFOV() * (M_PI / 180.) / 2.);
 };
+
+double getPixelSide(const Camera& camera) {
+	return getCamTopSide(camera)/camera.getWidth();
+}
 
 int getNPixels(double length, const Camera& camera) {
-  return static_cast<int>(camera.getWidth() * length / getCamTopSide(camera));
+  return length / getPixelSide(camera);
 }
 
-/*
-struct Matrix3x3 {
-        PhysVector col1;
-        PhysVector col2;
-        PhysVector col3;
-};
-
-PhysVector operator*(PhysVector vector, Matrix3x3 matrix) {
-        return {vector * matrix.col1, vector * matrix.col2, vector *
-matrix.col3};
-}
-*/
-
-PhysVector crossProd(const PhysVector& v1, const PhysVector& v2) {
+PhysVectorD crossProd(const PhysVectorD& v1, const PhysVectorD& v2) {
   return {v1.y * v2.z - v1.z * v2.y,
 					v1.z * v2.x - v1.x * v2.z,
           v1.x * v2.y - v1.y * v2.x};
 }
 
-PhysVector getPointProjection(const PhysVector& point, const Camera& camera) {
-  PhysVector a{(point - camera.getFocus() /
-               ((point - camera.getFocus()) * camera.getSight())) *
-               camera.getPlaneDistance() +
-               camera.getFocus()};
+PhysVectorD getPointProjection(const PhysVectorD& point, const Camera& camera) {
+	PhysVectorD focus {camera.getFocus()};
+	PhysVectorD sight {camera.getSight()};
+	PhysVectorD a{focus + 
+							 (focus - point) /
+               ((focus - point) * sight) *
+               camera.getPlaneDistance()};
+
+	PhysVectorD b {a - (focus + sight*camera.getPlaneDistance())};
 
   // making an orthonormal base for the camera, m and o lying on the persp.
-  // plane, n for the normal vector
-  PhysVector m;
-  PhysVector sight{camera.getSight()};
+  // plane, sight for the normal vector
+  PhysVectorD m;
   m = {sight.y, - sight.x, 0.};
   m = m / m.norm();
-  PhysVector o{crossProd(m, sight)};
-  // returning base-changed vector with scaling factor as the third coordinate
-  return {
-		m * a,
-		o * a, 
-		(camera.getFocus() - a).norm() /
-		(point - camera.getFocus()).norm()
-		};
+  PhysVectorD o{crossProd(m, sight)};
+	m = m / getPixelSide(camera);
+	o = o / getPixelSide(camera);
+  // returning base-changed vector with scaling factor, with sign for positional information
+	// as the third coordinate
+	return {
+		m * b + camera.getWidth()/2.,
+		o * b + camera.getHeight()/2.,
+		(a - camera.getFocus()).norm() / 								// distance of projection
+		(point - camera.getFocus()).norm() *						// distance of point 
+		copysign(1., (point - camera.getFocus()
+								- sight * camera.getPlaneDistance())
+						 		* sight)	// in front of the persp. plane -> +
+		};										// behind the persp. plane -> -
 }
 
-/*
-double getSegmentScale(const PhysVector& point, const Camera& camera) {
-  return (camera.getFocus() - point).norm() /
-         (camera.getFocus() - getPointProjection(point, camera)).norm();
-} // wrong retard retard retard
-*/
-/*
-PhysVector projectParticle(const Particle& particle, const Camera& camera) {
-  return {getPointProjection(particle.position, camera)};
-}
-*/
-
-std::vector<PhysVector> projectParticles(const std::vector<Particle>& particles,
+std::vector<PhysVectorD> projectParticles(const std::vector<Particle>& particles,
                                          const Camera& camera) {
-  std::vector<PhysVector> projections{};
-  for (const Particle& particle : particles) {
-    projections.emplace_back(getPointProjection(particle.position, camera));
+  std::vector<PhysVectorD> projections{};
+  PhysVectorD proj{};
+	for (const Particle& particle : particles) {
+		proj = getPointProjection(particle.position, camera);
+		if (proj.z > 0) {
+    	projections.emplace_back(proj);
+		}
   }
   return projections;
 }
 
 void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
 	static sf::CircleShape partProj = style.getPartProj();
-	partProj.setRadius(getNPixels(gas.getParticles().begin()->radius, camera));
-	std::vector<PhysVector> projections = projectParticles(gas.getParticles());
+	float r {static_cast<float>(getNPixels(gas.getParticles().begin()->radius, camera))};
+	partProj.setRadius(r);
+	partProj.setOrigin(r, -r);
+	std::vector<PhysVectorD> projections = projectParticles(gas.getParticles(), camera);
 	std::sort(projections.begin(), projections.end(), 
-						[](const PhysVector& a, const PhysVector& b) {
+						[](const PhysVectorD& a, const PhysVectorD& b) {
 							return a.z > b.z;});
-	for (const PhysVector& projection: projections) {
-		partProj.setPosition(projection.x, projection.y); // wrong, but heart's in the righ place
-		partProj.setScale(projection.z, projection.z);
+	for (const PhysVectorD& proj: projections) {
+		partProj.setPosition(proj.x, proj.y);
+		partProj.setScale(proj.z, proj.z);
 		texture.draw(partProj);
 	}
 }
 
+/*
 void drawAxes(const Camera& camera, sf::RenderTexture texture, const RenderStyle& style = {}) {
 // imagine there was a functioning arrow here
 	sf::CircleShape arrow {1.f, 3};
@@ -194,36 +193,54 @@ void drawAxes(const Camera& camera, sf::RenderTexture texture, const RenderStyle
 		switch (opt) {
 			case 'x':
 				{
-					PhysVector proj = getPointProjection({axesLength, 0., 0.}, camera);
+					PhysVectorD proj = getPointProjection({axesLength, 0., 0.}, camera);
 					arrow.setPosition(proj.x, proj.y);
 					texture.draw(arrow);
 					break;
 				}
 			case 'y':
 				{
-					PhysVector proj = getPointProjection({0., axesLength, 0.}, camera);
+					PhysVectorD proj = getPointProjection({0., axesLength, 0.}, camera);
 					arrow.setPosition(proj.x, proj.y);
 					texture.draw(arrow);
 					break;
 				}
 			case 'z':
 				{
-					PhysVector proj = getPointProjection({0., 0., axesLength}, camera);
+					PhysVectorD proj = getPointProjection({0., 0., axesLength}, camera);
 					arrow.setPosition(proj.x, proj.y);
 					texture.draw(arrow);
 					break;
 				}
 		}
 	}
+}
+*/
+/*
+void project(PhysVectorD& origin, PhysVectorD& direction, const Camera& camera) {
+	origin = getPointProjection(origin, camera);
+	direction = getPointProjection(origin + direction, camera);
 }
 
 void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
 	sf::Vertex line[2];
 	line[0].color = style.getGridColor();
 	line[1].color = style.getGridColor();
+	double spacing = style.getGridSpacing();
+	PhysVectorD p1 {};
+	PhysVectorD p2 {};
+	sf::VertexArray line{sf::Line};
 	for (char opt: style.getGridOpts()) {
 		switch (opt) {
 			case 'x':
+double spacing = style.getGridSpacing();
+p2 = {1., 0., 0.};
+for (double i {0}; true; ++i) {
+	p1 = {0, i, 0};
+	p1 = getPointProjection(p1, camera);
+	p2 = getPointProjection(p1 + p2, camera);
+	
+}
 				break;
 			case 'y':
 				break;
@@ -232,11 +249,149 @@ void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyl
 		}
 	}
 }
+*/
 
-void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& = {}) {
+std::vector<PhysVectorD> gasWallVerts(const Gas& gas, char wall) {
+	double side {gas.getBoxSide()};
+	switch (wall) {
+		case 'u':
+			return {
+				{0., 0., side},
+				{side, 0., side},
+				{side, side, side},
+				{0., side, side}
+			}; // ok
+			break;
+		case 'd':
+			return {
+				{0., 0., 0.},
+				{side, 0., 0.},
+				{side, side, 0.},
+				{0., side, 0.}
+			}; // ok
+			break;
+		case 'l':
+			return {
+				{0., 0., 0.},
+				{0., side, 0.},
+				{0., side, side},
+				{0., 0., side}
+			}; // ok
+			break;
+		case 'r':
+			return {
+				{side, 0., 0.},
+				{side, side, 0.},
+				{side, side, side},
+				{side, 0., side}
+			}; // ok
+			break;
+		case 'f':
+			return {
+				{0., 0., 0.},
+				{side, 0., 0.},
+				{side, 0., side},
+				{0., 0., side}
+			}; // ok
+			break;
+		case 'b':
+			return {
+				{0., side, 0.},
+				{side, side, 0.},
+				{side, side, side},
+				{0., side, side}
+			}; // ok
+			break;
+	};
+	return {};
+}; // is good
 
+void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
+	PhysVectorD wallN {};
+	PhysVectorD wallCenter {};
+	double side {gas.getBoxSide()};
+	
+	std::vector<PhysVectorD> wallVerts {};
+	sf::ConvexShape wallProj;
+	wallProj.setPointCount(4);
+	wallProj.setFillColor(style.getWallsColor());
+	wallProj.setOutlineThickness(1);
+	wallProj.setOutlineColor(style.getWOutlineColor());
+	std::vector<sf::ConvexShape> frontWallPrjs {};
+	std::vector<sf::ConvexShape> backWallPrjs {};
+	for (char wall: style.getWallsOpts()) {
+		switch (wall) {
+			case 'u':
+				wallN = {0., 0., 1.};
+				wallCenter = {side/2., side/2., side};
+				break;
+			case 'd':
+				wallN = {0., 0., -1.};
+				wallCenter = {side/2., side/2., 0.};
+				break;
+			case 'l':
+				wallN = {-1., 0., 0.};
+				wallCenter = {0., side/2., side/2.};
+				break;
+			case 'r':
+				wallN = {1., 0., 0.};
+				wallCenter = {side, side/2., side/2.};
+				break;
+			case 'f':
+				wallN = {0., -1., 0.};
+				wallCenter = {side/2., 0., side/2.};
+				break;
+			case 'b':
+				wallN = {0., 1., 0.};
+				wallCenter = {side/2., side, side/2.};
+				break;
+		} // is good
+		wallVerts = gasWallVerts(gas, wall); // should be good
+		int i {};
+		for (const PhysVectorD& vertex: wallVerts) {
+			PhysVectorD proj = getPointProjection(vertex, camera);
+			wallProj.setPoint(i, {static_cast<float>(proj.x), static_cast<float>(proj.y)});
+			++i;
+		} // all good
+		if (wallN * (wallCenter - camera.getFocus()) < 0.) {
+			frontWallPrjs.emplace_back(wallProj);
+		}
+		else {
+			backWallPrjs.emplace_back(wallProj);
+		}
+	} // all seems to be good except for emplace_back?
+	sf::RenderTexture backWalls;
+	backWalls.create(camera.getWidth(), camera.getHeight());
+	backWalls.clear(sf::Color::White);
+	sf::RenderTexture frontWalls;
+	frontWalls.create(camera.getWidth(), camera.getHeight());
+	for (const sf::ConvexShape& wallPrj: backWallPrjs) {
+		backWalls.draw(wallPrj);
+	}
+	for (const sf::ConvexShape& wallPrj: frontWallPrjs) {
+		frontWalls.draw(wallPrj);
+	} // all good up to here?
+	
+	sf::Sprite auxSprite;
+	auxSprite.setScale(1., -1.);
+	auxSprite.setPosition(0., backWalls.getSize().y);
+
+	auxSprite.setTexture(texture.getTexture(), true);
+	backWalls.draw(auxSprite);
+
+	auxSprite.setTexture(frontWalls.getTexture(), true);
+	backWalls.draw(auxSprite);
+
+	auxSprite.setTexture(backWalls.getTexture(), true);
+	texture.clear(sf::Color::Transparent);
+	texture.draw(auxSprite);
 }
 
-sf::RenderTexture drawGas(const Gas& gas);
+void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style) {
+	picture.create(camera.getWidth(), camera.getHeight());
+	picture.clear(sf::Color::Transparent);
+	drawParticles(gas, camera, picture, style);
+	drawWalls(gas, camera, picture, style);
+};
 
 }  // namespace gasSim
