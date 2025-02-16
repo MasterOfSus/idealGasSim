@@ -20,15 +20,15 @@ class RenderStyle {
 	void setGridOpts(const std::string& opts);
 	const sf::Color& getGridColor() const { return gridColor_; };
 	void setGridColor(const sf::Color& color) { gridColor_ = color; };
-	double getGridSpacing() const { return gridSpacing_; };
-	void setGridSpacing(const double spacing);
+	float getGridSpacing() const { return gridSpacing_; };
+	void setGridSpacing(const float spacing);
 
 	const std::string& getAxesOpts() const { return axesOpts_; };
 	void setAxesOpts(const std::string& opts);
 	const sf::Color& getAxesColor() const { return axesColor_; };
 	void setAxesColor(const sf::Color& color) { axesColor_ = color; };
-	double getAxesLength() const { return axesLength_; };
-	void setAxesLength(const double length);
+	float getAxesLength() const { return axesLength_; };
+	void setAxesLength(const float length);
 
 	const std::string& getWallsOpts() const { return wallsOpts_; };
 	void setWallsOpts(const std::string& opts);
@@ -53,11 +53,11 @@ class RenderStyle {
 
 	std::string gridOpts_ {"x"}; // x -> xy plane, y -> yz plane, z -> zx plane
 	sf::Color gridColor_ {0, 0, 0, 128};
-	double gridSpacing_ {1.};
+	float gridSpacing_ {1.};
 
 	std::string axesOpts_ {"xyz"};
 	sf::Color axesColor_ {0, 0, 0, 255};
-	double axesLength_ {10.};
+	float axesLength_ {10.};
 
 	std::string wallsOpts_ {"udlrfb"}; // up, down, left, right, front, back
 																		 // as seen standing on the xy plane and
@@ -76,45 +76,45 @@ class Camera {
 
    // parametric constructor
   Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
-         double planeDistance, double fov, int width, int height);
+         float planeDistance, float fov, int width, int height);
 
 	 // setters and getters
   void setFocus(const PhysVector& focusPoint) { focusPoint_ = focusPoint; };
   void setSightVector(const PhysVector& sightVector) {
     sightVector_ = sightVector / sightVector.norm();
   };
-  void setAspectRatio(const double ratio);
-  void setPlaneDistance(const double distance);
-	void setFOV(const double FOV); // field of view setting in degrees
+  void setAspectRatio(const float ratio);
+  void setPlaneDistance(const float distance);
+	void setFOV(const float FOV); // field of view setting in degrees
   void setResolution(const int height, const int width);
 
   PhysVector const& getFocus() const { return focusPoint_; };
   PhysVector const& getSight() const { return sightVector_; };
-  double getAspectRatio() const {
+	float getAspectRatio() const {
     return static_cast<float>(width_) / static_cast<float>(height_);
   };
-  double getPlaneDistance() const { return planeDistance_; };
-  double getFOV() const { return fov_; };
+  float getPlaneDistance() const { return planeDistance_; };
+  float getFOV() const { return fov_; };
   int getHeight() const { return height_; };
   int getWidth() const { return width_; };
 
 	// useful functions
 	PhysVector getPointProjection(const PhysVector& point) const;
-	// double getSegmentScale(const PhysVector& point) const;
+	// float getSegmentScale(const PhysVector& point) const;
 	// PhysVector projectParticle(const Particle& particle) const;
 	std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles) const;
 
 	// auxiliary member functions
-	double getTopSide() const;
-	double getPixelSide() const;
-	float getNPixels(double length) const;
+	float getTopSide() const;
+	float getPixelSide() const;
+	float getNPixels(float length) const;
 
  private:
 
   PhysVector focusPoint_;
   PhysVector sightVector_;
-  double planeDistance_;
-  double fov_;
+  float planeDistance_;
+  float fov_;
   int width_;
   int height_;
 
