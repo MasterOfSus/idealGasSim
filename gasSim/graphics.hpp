@@ -81,6 +81,7 @@ class Camera {
 	 // setters and getters
   void setFocus(const PhysVector& focusPoint) { focusPoint_ = focusPoint; };
   void setSightVector(const PhysVector& sightVector) {
+
     sightVector_ = sightVector / sightVector.norm();
   };
   void setAspectRatio(const float ratio);
@@ -91,6 +92,7 @@ class Camera {
   PhysVector const& getFocus() const { return focusPoint_; };
   PhysVector const& getSight() const { return sightVector_; };
 	float getAspectRatio() const {
+
     return static_cast<float>(width_) / static_cast<float>(height_);
   };
   float getPlaneDistance() const { return planeDistance_; };
@@ -115,17 +117,20 @@ class Camera {
   PhysVector sightVector_;
   float planeDistance_;
   float fov_;
+
   int width_;
   int height_;
 
 };
 
+
 /*
 struct ParticleProjection {
   static sf::CircleShape circle;
-  PhysVector position;
+  PhysVectorD position;
 };
 */
+
 
 void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);

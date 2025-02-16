@@ -1,11 +1,13 @@
-#include "gasSim/physicsEngine.hpp"
-#include "gasSim/graphics.hpp"
-
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/WindowStyle.hpp>
 #include <iostream>
+
+#include "gasSim/graphics.hpp"
+#include "gasSim/physicsEngine.hpp"
+
+double gasSim::Particle::radius = 1.;
 
 int main() {
 	gasSim::Gas amogus(5, 1., 10.);
@@ -41,8 +43,8 @@ int main() {
 	window.clear(sf::Color::White);
 	window.draw(picture);
 	window.display();
+
   }
 
   return 0;
 }
-

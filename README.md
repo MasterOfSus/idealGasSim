@@ -18,18 +18,28 @@ In alternative just a loose function "coordinates" that does roughly the same th
 - [ ] Exception handling
     - [ ] Throw quando c'è qualcosa che non va e fare il catch nel main
     - [x] std::invalid_argument per gli argomenti delle funzioni
-- [ ] Sistemare i test del costruttore del gas
+- [x] Sistemare i test del costruttore del gas
 - [x] Finire il secondo test carta e penna di collisionTime
 - [x] Togliere i namespace extra
 - [x] Implementare il gas loop con gli if
-- [ ] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer)
-- [ ] Provare a implementare la const reference nella class collision che poi si copia l'indirizzo per metterlo nel puntatore
 - [x] Scrivere firstWallCollision()
     * Implementare collisionTime con una sola particella
     * Implementare dei metodi getter delle coordinate dei muri e una funzione sempliche collisionTime che calcola, più bella ma da ottimizzzare di più
     * Implementare una funzione collisionTime che prende solo la lunghezza della scatola e trova i muri con una lambda
-- [ ] Scrivere test di firstWallCollision()
-- [ ] Cambiare i wall char con degli enum
+- [x] Scrivere test di firstWallCollision()
+- [x] fix generazione particelle random
+- [x] trasformare physvector in un template
+- [x] aggiungere una struct statistics che mi venga resistuita quando lancio il gasLoop
+- [ ] Pressione variazione quantità di moto su ogni muro
+- [ ] implementare il calcolo della pressione su ogni lato
+- [x] cambiare il modo in cui memoriziamo i muri enum class
+- [x] Valutare (e nel caso implementare) i membri pubblic const nella classe collision (const pointer) -> viene male
+- [ ] Aggiungere uno sborobotto di test
+- [ ] Temperatura per il controllo
+- [ ] CONTROLLA CHE L'ORDINE NON CAMBI se così tieni in memoria di gasLoop un vettore di lastPositions e calcola il libero cammino medio
+- [ ] Aggiungere un gasLoop con un int tempo
+- [ ] Decidere cosa fare con i metodi set, se per esempio mettere un setBoxSide in statistic o lasciarlo solo nel costruttore
+
 
 Liam deve fare:
 
@@ -72,9 +82,13 @@ Diego physicsEngine, forse main
 ## Interface
 
 using https://github.com/jarro2783/cxxopts library to manage command line options
+follow https://github.com/jarro2783/cxxopts/wiki to implement
 * Una modalità tutti i parametri inseriti per quello che noi consideriamo standard
-* Opzione --help, opzione di default
-* Opzione --config, che fa partire il configuratore per la scelta dei dati di base
-* Opzione --gui=false|true, per vedere tutta la roba di Liam
-* Opzione --print, per printare in terminal con i valori
-* Opzione --save=graphics,data , per salvare grafici e video?
+* Opzione -h|--help, mostra il messaggio di help
+* (Opzione --usage, mostra il messaggio di usage)
+* Opzione -c|--config, che fa partire il configuratore per la scelta dei dati di base   def OFF
+* Opzione -g|--graphics, per vedere tutta la roba di Liam                               def OFF
+* Opzione -p|--print, per printare in terminal con i valori                             def ON
+* Opzione -s|--save=graphics,data , per salvare grafici e video?                        def OFF
+
+launching with no options runs --help option

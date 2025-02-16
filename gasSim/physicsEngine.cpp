@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+// #include <execution> //Se decidiamo di fare qualche operazione in parallelo:
+// Sddfqoinp
 
 #include "algorithms.hpp"
 
@@ -18,54 +20,18 @@ namespace gasSim {
 
 // double Particle::radius = 1.;
 
+
 // Definition of vector functions
-PhysVector PhysVector::operator-() const { return {-x, -y, -z}; }
-
-PhysVector PhysVector::operator+(const PhysVector& v) const {
-  return {x + v.x, y + v.y, z + v.z};
-}
-
-PhysVector PhysVector::operator-(const PhysVector& v) const {
-  return {x - v.x, y - v.y, z - v.z};
-}
-
-void PhysVector::operator+=(const PhysVector& v) { *this = *this + v; }
-
-void PhysVector::operator-=(const PhysVector& v) { *this = *this - v; }
-
-PhysVector PhysVector::operator*(const double c) const {
-  return {x * c, y * c, z * c};
-}
-
-PhysVector PhysVector::operator/(const double c) const {
-  return {x / c, y / c, z / c};
-}
-
-double PhysVector::operator*(const PhysVector& v) const {
-  return x * v.x + y * v.y + z * v.z;
-}
-
-bool PhysVector::operator==(const PhysVector& v) const {
-  return (x == v.x && y == v.y && z == v.z);
-}
-
-PhysVector operator*(const double c, const PhysVector v) { return v * c; }
-
-bool PhysVector::operator!=(const PhysVector& v) const { return !(*this == v); }
-
-double PhysVector::norm() const { return std::sqrt(x * x + y * y + z * z); }
-
-void PhysVector::normalize() { *this = *this / this->norm(); }
-
-PhysVector unifRandoVector(const double maxNorm) {
+PhysVectorD unifRandVector(const double maxNorm) {
   if (maxNorm <= 0) {
     throw std::invalid_argument("maxNorm must be greater than 0");
   }
   static std::default_random_engine eng(std::random_device{}());
-  std::uniform_real_distribution<double> dist(0., pow(maxNorm / 3, 1. / 2.));
+  std::uniform_real_distribution<double> dist(-std::sqrt(maxNorm / 3),
+                                              std::sqrt(maxNorm / 3));
   return {dist(eng), dist(eng), dist(eng)};
 }
-PhysVector gausRandVector(const double standardDev) {
+PhysVectorD gausRandVector(const double standardDev) {
   if (standardDev <= 0) {
     throw std::invalid_argument("standardDev must be greater than 0");
   }
@@ -75,21 +41,60 @@ PhysVector gausRandVector(const double standardDev) {
 }
 // End of PhysVector functions
 
-// Definitio of Particle functions
+// Definition of Particle functions
 bool particleOverlap(const Particle& p1, const Particle& p2) {
-  double centerDistance{(p1.position - p2.position).norm()};
-  if (centerDistance < (p1.radius + p2.radius)) {
+  const double minDst = 2 * Particle::radius;
+  const double centerDst{(p1.position - p2.position).norm()};
+  if (centerDst < minDst) {
     return true;
   } else {
     return false;
   }
 }
+
+bool particleInBox(const Particle& part, double boxSide) {
+  const double radius = Particle::radius;
+  const auto& pos = part.position;
+
+  if (pos.x < radius || pos.x > boxSide - radius || pos.y < radius ||
+      pos.y > boxSide - radius || pos.z < radius || pos.z > boxSide - radius) {
+    return false;
+  }
+
+  return true;
+}
 // End of Particle functions
 
-// Definition of Collision functions
-Collision::Collision(double t, Particle* p1) : time(t), firstParticle_(p1) {}
+// Definition of Statistic functions
+Statistic::Statistic(double boxSide) : boxSide_(boxSide) {
+  if (boxSide_ <= 0) {
+    throw std::invalid_argument("boxSide must be a positive number");
+  }
+}
+void Statistic::setDeltaTime(double deltaTime) {
+  deltaTime_ = deltaTime;
+  if (deltaTime_ <= 0) {
+    throw std::invalid_argument("deltaTime must be a positive number");
+  }
+}
+void Statistic::addImpulseOnWall(double speed, Wall wall) {
+  deltaImpulse_[wall] += std::abs(speed) * Particle::mass;
+}
 
-double Collision::getTime() const { return time; }
+double Statistic::getPressure(Wall wall) {
+  double area{std::pow(boxSide_, 2)};
+  return deltaImpulse_[wall] / (area * deltaTime_);
+}
+// End of Statistic functions
+
+// Definition of Collision functions
+Collision::Collision(double t, Particle* p) : time_(t), firstParticle_(p) {
+  if (time_ < 0) {
+    throw std::invalid_argument("time must be a positive number");
+  }
+}
+
+double Collision::getTime() const { return time_; }
 
 Particle* Collision::getFirstParticle() const {
   return firstParticle_;
@@ -97,31 +102,59 @@ Particle* Collision::getFirstParticle() const {
 // End of Collision functions
 
 // Definition of WallCollision functions
-WallCollision::WallCollision(double t, Particle* p1, char wall)
-    : Collision(t, p1), wall_(wall) {}
+WallCollision::WallCollision(double t, Particle* p, Wall wall)
+    : Collision(t, p), wall_(wall) {}
 
-char WallCollision::getWall() const { return wall_; }
+Wall WallCollision::getWall() const { return wall_; }
 std::string WallCollision::getCollisionType() const {
   return "Particle to Wall Collision";
 }
-
-void WallCollision::resolve() {
+/*
+Statistic WallCollision::resolve(Statistic& stat) {
   Particle* part{getFirstParticle()};
 
+  double memSpd;
   switch (wall_) {
-    case 'l':
-    case 'r':
+    case Wall::Left:
+    case Wall::Right:
+      memSpd = part->speed.x;
       part->speed.x = -part->speed.x;
       break;
-    case 'f':
-    case 'b':
+    case Wall::Front:
+    case Wall::Back:
+      memSpd = part->speed.y;
       part->speed.y = -part->speed.y;
       break;
-    case 'u':
-    case 'd':
+    case Wall::Top:
+    case Wall::Bottom:
+      memSpd = part->speed.x;
       part->speed.z = -part->speed.z;
       break;
   }
+  stat.addImpulseOnWall(memSpd, wall_);
+
+  return stat;
+}*/
+void WallCollision::resolve(Statistic& stat) {
+  Particle* part = getFirstParticle();
+  double& speedComponent = [&]() -> double& {
+    switch (wall_) {
+      case Wall::Left:
+      case Wall::Right:
+        return part->speed.x;
+      case Wall::Front:
+      case Wall::Back:
+        return part->speed.y;
+      case Wall::Top:
+      case Wall::Bottom:
+        return part->speed.z;
+      default:
+        throw std::logic_error("Unknown wall type");
+    }
+  }();
+
+  stat.addImpulseOnWall(speedComponent, wall_);
+  speedComponent = -speedComponent;
 }
 // End of WallCollision functions
 
@@ -135,7 +168,7 @@ std::string PartCollision::getCollisionType() const {
   return "Particle to Particle Collision";
 }
 
-void PartCollision::resolve() {
+void PartCollision::resolve(Statistic& stat) {
   Particle* part1{getFirstParticle()};
   Particle* part2{secondParticle_};
 
@@ -155,25 +188,26 @@ void PartCollision::resolve() {
 Gas::Gas(const Gas& gas)
     : particles_(gas.getParticles()), boxSide_(gas.getBoxSide()) {}
 
-Gas::Gas(std::vector<Particle> particles, double boxSide)
-    : particles_(particles), boxSide_(boxSide) {
+Gas::Gas(std::vector<Particle> particles, double boxSide, double life)
+    : particles_(particles), boxSide_(boxSide), life_(life) {
   if (particles_.size() == 0) {
     throw std::invalid_argument("particles must have at least 1 element");
   }
   if (boxSide_ <= 0) {
     throw std::invalid_argument("boxSide must be greater than 0");
   }
+  if (life_ < 0) {
+    throw std::invalid_argument("life must be greater than or equal to zero");
+  }
 
   std::for_each(particles_.begin(), particles_.end(), [&](const Particle& p) {
-    if (p.position.x < 0 || p.position.y < 0 || p.position.z < 0 ||
-        p.position.x > boxSide_ || p.position.y > boxSide_ ||
-        p.position.z > boxSide_) {
+    if (particleInBox(p, boxSide_) == false) {
       throw std::invalid_argument("particles must be in the box");
     }
   });
 
   for_each_couple(
-      particles.begin(), particles.end(),
+      particles_.begin(), particles_.end(),
       [](const Particle& p1, const Particle& p2) {
         if (particleOverlap(p1, p2) == true) {
           throw std::invalid_argument("particles cannot penetrate each other");
@@ -194,9 +228,10 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   }
 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
-  double particleDistance = boxSide / elementPerSide;
+  double particleDistance{boxSide / elementPerSide};
+  double radius{Particle::radius};
 
-  if (particleDistance <= 2 * Particle::radius) {
+  if (particleDistance <= 2 * radius) {
     throw std::runtime_error(
         "particles are too large/too many, they don't fit in the box");
   }
@@ -205,16 +240,20 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   // riesco faccio il calcolo
 
   auto gridVector = [=](int i) {
-    int x{i % elementPerSide};
-    int y{(i / elementPerSide) % elementPerSide};
-    int z{i / (elementPerSide * elementPerSide)};
-    return PhysVector{x * particleDistance, y * particleDistance,
-                      z * particleDistance};
+    int pX{i % elementPerSide};
+    int pY{(i / elementPerSide) % elementPerSide};
+    int pZ{i / (elementPerSide * elementPerSide)};
+    // Posizione nella griglia con numeri interi
+
+    double x{(pX * particleDistance) + radius};
+    double y{(pY * particleDistance) + radius};
+    double z{(pZ * particleDistance) + radius};
+    return PhysVectorD{x, y, z};
   };
 
   int index{0};
   std::generate_n(std::back_inserter(particles_), nParticles, [=, &index]() {
-    Particle p{{gridVector(index)}, unifRandoVector(maxSpeed)};
+    Particle p{{gridVector(index)}, unifRandVector(maxSpeed)};
     ++index;
     return p;
   });
@@ -226,34 +265,35 @@ double Gas::getBoxSide() const { return boxSide_; }
 
 double Gas::getLife() const { return life_; }
 
-void Gas::gasLoop(int nIterations) {
+Statistic Gas::gasLoop(int nIterations) {
+  Statistic stat{boxSide_};
+  double deltaTime{0};
+
   for (int i{0}; i != nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
-
     Collision* firstColl{nullptr};
 
-    try {
-      pColl = firstPartCollision();
-
-      if (pColl.getTime() < wColl.getTime()) {
-        firstColl = &pColl;
-      } else {
-        firstColl = &wColl;
-      }
-    } catch (const std::logic_error& e) {
+    if (pColl.getTime() < wColl.getTime()) {
+      firstColl = &pColl;
+    } else {
       firstColl = &wColl;
     }
 
     updatePositions(firstColl->getTime());
-    life_ += firstColl->getTime();
+    deltaTime += firstColl->getTime();
 
-    firstColl->resolve();
+    assert(life_ != INFINITY);
+    firstColl->resolve(stat);
   }
+
+  life_ += deltaTime;
+  stat.setDeltaTime(deltaTime);
+  return stat;
 }
 
 WallCollision Gas::firstWallCollision() {
-  WallCollision firstColl{INFINITY, nullptr, 'x'};
+  WallCollision firstColl{INFINITY, nullptr, Wall::Back};
 
   std::for_each(particles_.begin(), particles_.end(), [&](Particle& p) {
     WallCollision coll{calculateWallColl(p, boxSide_)};
@@ -261,17 +301,13 @@ WallCollision Gas::firstWallCollision() {
       firstColl = coll;
     }
   });
-
-  if (firstColl.getTime() == INFINITY) {
-    throw std::logic_error("No particle to wall collisions found");
-  }
   return firstColl;
 }
 
 PartCollision Gas::firstPartCollision() {
   double topTime{INFINITY};
-  Particle* firstPart;
-  Particle* secondPart;
+  Particle* firstPart{nullptr};
+  Particle* secondPart{nullptr};
 
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
@@ -282,27 +318,25 @@ PartCollision Gas::firstPartCollision() {
                       topTime = time;
                     }
                   });
-
-  if (topTime == INFINITY) {
-    throw std::logic_error("No particle to particle collisions found");
-  }
   return {topTime, firstPart, secondPart};
 }
 
 void Gas::updatePositions(double time) {
   std::for_each(particles_.begin(), particles_.end(),
                 [time](Particle& part) { part.position += part.speed * time; });
+  // Sddfqoinp
+  /*std::for_each(std::execution::par, particles_.begin(), particles_.end(),
+              [time](Particle& part) { part.position += part.speed * time; });*/
 }
 // End of Gas functions
 
 double collisionTime(const Particle& p1, const Particle& p2) {
-  PhysVector relativeSpeed = p1.speed - p2.speed;
-  PhysVector relativePosition = p1.position - p2.position;
+  PhysVector relativeSpd = p1.speed - p2.speed;
+  PhysVector relativePos = p1.position - p2.position;
 
-  double a = relativeSpeed * relativeSpeed;
-  double b = relativePosition * relativeSpeed;
-  double c =
-      (relativePosition * relativePosition) - 4 * std::pow(Particle::radius, 2);
+  double a = relativeSpd * relativeSpd;
+  double b = relativePos * relativeSpd;
+  double c = (relativePos * relativePos) - 4 * std::pow(Particle::radius, 2);
 
   double result = INFINITY;
 
@@ -324,11 +358,43 @@ double collisionTime(const Particle& p1, const Particle& p2) {
 }
 
 WallCollision calculateWallColl(Particle& p, double squareSide) {
-  auto wallDistance = [&](double position, double speed) -> double {
-    if (speed < 0) {
-      return -Particle::radius - position;
+  auto calculate = [&, squareSide](double position, double speed, Wall negWall,
+                                   Wall posWall) -> WallCollision {
+    double time = (speed < 0)
+                      ? (-Particle::radius - position) / speed
+                      : (squareSide - Particle::radius - position) / speed;
+    Wall wall = (speed < 0) ? negWall : posWall;
+    return {time, &p, wall};
+  };
+
+  WallCollision collX =
+      calculate(p.position.x, p.speed.x, Wall::Left, Wall::Right);
+  WallCollision collY =
+      calculate(p.position.y, p.speed.y, Wall::Front, Wall::Back);
+  WallCollision collZ =
+      calculate(p.position.z, p.speed.z, Wall::Top, Wall::Bottom);
+
+  WallCollision minColl = collX;
+
+  if (collY.getTime() < minColl.getTime()) {
+    minColl = collY;
+  }
+  if (collZ.getTime() < minColl.getTime()) {
+    minColl = collZ;
+  }
+
+  assert(minColl.getTime() > 0);
+
+  return minColl;
+}
+
+// Alternativa 1 a WallCollsion
+/*WallCollision calculateWallColl(Particle& p, double squareSide) {
+  auto wallDistance = [&](double pos, double spd) -> double {
+    if (spd < 0) {
+      return -Particle::radius - pos;
     } else {
-      return squareSide - Particle::radius - position;
+      return squareSide - Particle::radius - pos;
     }
   };
 
@@ -357,5 +423,50 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
   assert(minTime > 0);
 
   return {minTime, &p, wall};
-}
+}*/
+// Alternativa 2 a WallCollsion
+/*WallCollision calculateWallColl(Particle& p, double squareSide) {
+    struct AxisData {
+        double position;
+        double speed;
+        char negWall;
+        char posWall;
+    };
+
+    AxisData axes[3] = {
+        { p.position.x, p.speed.x, 'l', 'r' },
+        { p.position.y, p.speed.y, 'f', 'b' },
+        { p.position.z, p.speed.z, 'd', 'u' }
+    };
+
+    auto wallDistance = [&](double pos, double spd) {
+        if (spd < 0.0) {
+            return -Particle::radius - pos;
+        } else {
+            return squareSide - Particle::radius - pos;
+        }
+    };
+
+    double minTime = INFINITY;
+    char wall = '?';
+
+    for (auto& axis : axes) {
+        if (axis.speed == 0.0) {
+            continue;
+        }
+
+        double distance = wallDistance(axis.position, axis.speed);
+        double t = distance / axis.speed;
+
+        // Consideriamo solo tempi positivi (collisioni future)
+        if (t > 0.0 && t < minTime) {
+            minTime = t;
+            wall = (axis.speed < 0.0) ? axis.negWall : axis.posWall;
+        }
+    }
+
+    assert(std::isfinite(minTime) && minTime > 0.0);
+
+    return {minTime, &p, wall};
+}*/
 }  // namespace gasSim
