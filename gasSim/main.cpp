@@ -1,3 +1,10 @@
+#include <unistd.h>
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/System/Sleep.hpp>
+#include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Window/WindowStyle.hpp>
 #include <iostream>
 // #include <set>
 
