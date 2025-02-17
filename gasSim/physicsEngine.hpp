@@ -19,6 +19,14 @@ struct PhysVector {
   FP y;
   FP z;
 
+	// default constructor
+	PhysVector(FP vx = 0., FP vy = 0., FP vz = 0.): x {vx}, y {vy}, z {vz} {};
+
+	// conversion constructor
+	template <typename FP1>
+	explicit PhysVector(const PhysVector<FP1>& v):
+	x {static_cast<FP>(v.x)}, y {static_cast<FP>(v.y)}, z {static_cast<FP>(v.z)} {};
+
   PhysVector operator-() const { return {-x, -y, -z}; }
   PhysVector operator+(const PhysVector& v) const {
     return {x + v.x, y + v.y, z + v.z};
@@ -31,7 +39,7 @@ struct PhysVector {
   void operator-=(const PhysVector& v) { *this = *this - v; }
 
   PhysVector operator*(FP c) const { return {x * c, y * c, z * c}; }
-  PhysVector operator/(double c) const { return {x / c, y / c, z / c}; }
+  PhysVector operator/(FP c) const { return {x / c, y / c, z / c}; }
 
   FP operator*(const PhysVector& v) const {
     return x * v.x + y * v.y + z * v.z;

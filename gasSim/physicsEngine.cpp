@@ -39,6 +39,7 @@ PhysVectorD gausRandVector(const double standardDev) {
   std::normal_distribution<double> dist(0., standardDev);
   return {dist(eng), dist(eng), dist(eng)};
 }
+
 // End of PhysVector functions
 
 // Definition of Particle functions

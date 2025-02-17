@@ -75,22 +75,19 @@ class Camera {
  public:
 
    // parametric constructor
-  Camera(const PhysVector& focusPosition, const PhysVector& sightVector,
+  Camera(const PhysVectorF& focusPosition, const PhysVectorF& sightVector,
          float planeDistance, float fov, int width, int height);
 
 	 // setters and getters
-  void setFocus(const PhysVector& focusPoint) { focusPoint_ = focusPoint; };
-  void setSightVector(const PhysVector& sightVector) {
-
-    sightVector_ = sightVector / sightVector.norm();
-  };
+  void setFocus(const PhysVectorF& focusPoint) { focusPoint_ = focusPoint; };
+  void setSightVector(const PhysVectorF& sightVector);
   void setAspectRatio(const float ratio);
   void setPlaneDistance(const float distance);
 	void setFOV(const float FOV); // field of view setting in degrees
   void setResolution(const int height, const int width);
 
-  PhysVector const& getFocus() const { return focusPoint_; };
-  PhysVector const& getSight() const { return sightVector_; };
+  PhysVectorF const& getFocus() const { return focusPoint_; };
+  PhysVectorF const& getSight() const { return sightVector_; };
 	float getAspectRatio() const {
 
     return static_cast<float>(width_) / static_cast<float>(height_);
@@ -101,10 +98,10 @@ class Camera {
   int getWidth() const { return width_; };
 
 	// useful functions
-	PhysVector getPointProjection(const PhysVector& point) const;
+	PhysVectorF getPointProjection(const PhysVectorF& point) const;
 	// float getSegmentScale(const PhysVector& point) const;
 	// PhysVector projectParticle(const Particle& particle) const;
-	std::vector<PhysVector> projectParticles (const std::vector<Particle>& particles) const;
+	std::vector<PhysVectorF> projectParticles (const std::vector<Particle>& particles) const;
 
 	// auxiliary member functions
 	float getTopSide() const;
@@ -113,8 +110,8 @@ class Camera {
 
  private:
 
-  PhysVector focusPoint_;
-  PhysVector sightVector_;
+  PhysVectorF focusPoint_;
+  PhysVectorF sightVector_;
   float planeDistance_;
   float fov_;
 
@@ -127,7 +124,7 @@ class Camera {
 /*
 struct ParticleProjection {
   static sf::CircleShape circle;
-  PhysVectorD position;
+  PhysVectorF position;
 };
 */
 

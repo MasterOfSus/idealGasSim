@@ -7,6 +7,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include "doctest.h"
+#include "../gasSim/graphics.hpp"
 // #include "input.hpp"
 #include "../gasSim/algorithms.hpp"
 #include "../gasSim/output.hpp"
@@ -395,10 +396,10 @@ TEST_CASE("Testing the RenderStyle class") {
 }
 
 TEST_CASE("Testing the camera class") {
-	gasSim::PhysVector focus {0., 0., 0.};
-	gasSim::PhysVector sightVector {1., 0., 0.};
-	double distance {1.};
-	double fov {90.};
+	gasSim::PhysVectorF focus {0., 0., 0.};
+	gasSim::PhysVectorF sightVector {1., 0., 0.};
+	float distance {1.};
+	float fov {90.};
 	int width {200};
 	int height {200};
 	gasSim::Camera camera {focus, sightVector, distance, fov, width, height};
@@ -412,13 +413,13 @@ TEST_CASE("Testing the camera class") {
 		CHECK(camera.getFOV() == fov);
 		CHECK(camera.getAspectRatio() == 1.);
 	}
-	gasSim::PhysVector newFocus {-1., -1., 1.};
-	gasSim::PhysVector newSight {1., 1., 0.5};
-	double newDistance {1.5};
-	double newFov {70.};
+	gasSim::PhysVectorF newFocus {-1., -1., 1.};
+	gasSim::PhysVectorF newSight {1., 1., 0.5};
+	float newDistance {1.5};
+	float newFov {70.};
 	int newWidth {1000};
 	int newHeight {1600};
-	double newRatio {16./9.};
+	float newRatio {16./9.};
 	camera.setFocus(newFocus);
 	camera.setSightVector(newSight);
 	camera.setPlaneDistance(newDistance);
@@ -438,7 +439,7 @@ TEST_CASE("Testing the camera class") {
 
 		// check for setters correct effect and exception safety
 		CHECK(camera.getFocus() == newFocus);
-		CHECK(camera.getSight() == newSight);
+		CHECK(camera.getSight() == newSight / newSight.norm());
 		CHECK(camera.getPlaneDistance() == newDistance);
 		CHECK(camera.getWidth() == newWidth);
 		CHECK(camera.getHeight() == newHeight);
@@ -457,12 +458,12 @@ TEST_CASE("Testing the camera class") {
 		CHECK(camera.getNPixels(2.) == doctest::Approx(2./0.002101));
 	}
 
-	gasSim::PhysVector p1 {2., 1., 0.};
-	gasSim::PhysVector p2 {-2., 3., -3.};
-	gasSim::PhysVector p3 {100., 12., 30.};
-	gasSim::PhysVector p4 {2., 2., 2.5};
+	gasSim::PhysVectorD p1 {2., 1., 0.};
+	gasSim::PhysVectorD p2 {-2., 3., -3.};
+	gasSim::PhysVectorD p3 {100., 12., 30.};
+	gasSim::PhysVectorD p4 {2., 2., 2.5};
 
-	gasSim::PhysVector speed {0., 0., 0.};
+	gasSim::PhysVectorD speed {0., 0., 0.};
 
 	gasSim::Particle part1 {p1, speed};
 	gasSim::Particle part2 {p2, speed};
@@ -472,32 +473,32 @@ TEST_CASE("Testing the camera class") {
 		part1, part2, part3, part4
 	};
 
-	std::vector<gasSim::PhysVector> projections {};
+	std::vector<gasSim::PhysVectorF> projections {};
 
-	gasSim::PhysVector projection {};
+	gasSim::PhysVectorF projection {};
 
 	SUBCASE("Projection functions") {
-		projection = camera.getPointProjection(p1);
+		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p1));
 		projections.emplace_back(projection);
 		CHECK(projection.x == doctest::Approx(168.309));
 		CHECK(projection.y == doctest::Approx(-504.927));
 		CHECK(projection.z == doctest::Approx(0.5));
-		projection = camera.getPointProjection(p2);
+		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p2));
 		// projections.emplace_back(projection);
 		CHECK(projection.x == doctest::Approx(-3786.95));
 		CHECK(projection.y == doctest::Approx(-4798.80));
 		CHECK(projection.z == doctest::Approx(2.25));
-		projection = camera.getPointProjection(p3);
+		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p3));
 		// projections.emplace_back(projection);
 		CHECK(projection.x == doctest::Approx(1186.401));
 		CHECK(projection.y == doctest::Approx(-713.2529));
 		CHECK(projection.z == doctest::Approx(-0.031469));
-		projection = camera.getPointProjection(p4);
+		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p4));
 		projections.emplace_back(projection);
 		CHECK(projection.x == doctest::Approx(0.));
 		CHECK(projection.y == doctest::Approx(0.));
 		CHECK(projection.z == doctest::Approx(1./3.));
-		std::vector<gasSim::PhysVector> realProjs {camera.projectParticles(particles)};
+		std::vector<gasSim::PhysVectorF> realProjs {camera.projectParticles(particles)};
 		for (int i {0}; i < 2; ++i) {
 			CHECK(projections[i] == realProjs[i]);
 		}
