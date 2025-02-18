@@ -460,7 +460,7 @@ TEST_CASE("Testing the camera class") {
 
 	gasSim::PhysVectorD p1 {2., 1., 0.};
 	gasSim::PhysVectorD p2 {-2., 3., -3.};
-	gasSim::PhysVectorD p3 {100., 12., 30.};
+	gasSim::PhysVectorD p3 {-100., 12., -30.};
 	gasSim::PhysVectorD p4 {2., 2., 2.5};
 
 	gasSim::PhysVectorD speed {0., 0., 0.};
@@ -486,13 +486,13 @@ TEST_CASE("Testing the camera class") {
 		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p2));
 		// projections.emplace_back(projection);
 		CHECK(projection.x == doctest::Approx(-3786.95f + 500.f));
-		CHECK(projection.y == doctest::Approx(-4798.80f + 800.f));
+		CHECK(projection.y == doctest::Approx(-4796.80f + 800.f));
 		CHECK(projection.z == doctest::Approx(2.25f));
 		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p3));
 		// projections.emplace_back(projection);
-		CHECK(projection.x == doctest::Approx(1186.401f + 500.f));
-		CHECK(projection.y == doctest::Approx(-713.2529f + 800.f));
-		CHECK(projection.z == doctest::Approx(-0.031469f));
+		CHECK(projection.x == doctest::Approx(835.74f + 500.f));
+		CHECK(projection.y == doctest::Approx(94.51f + 800.f));
+		CHECK(projection.z == doctest::Approx(-0.022167f));
 		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p4));
 		projections.emplace_back(projection);
 		CHECK(projection.x == doctest::Approx(0. + 500.f));
