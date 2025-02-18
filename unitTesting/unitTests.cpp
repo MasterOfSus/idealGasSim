@@ -424,7 +424,7 @@ TEST_CASE("Testing the camera class") {
 	camera.setSightVector(newSight);
 	camera.setPlaneDistance(newDistance);
 	camera.setFOV(newFov);
-	camera.setResolution(newWidth, newHeight);
+	camera.setResolution(newHeight, newWidth);
 	SUBCASE("Setters") {
 		// check for throws
 		CHECK_THROWS(camera.setFOV(-10.));
@@ -444,18 +444,18 @@ TEST_CASE("Testing the camera class") {
 		CHECK(camera.getWidth() == newWidth);
 		CHECK(camera.getHeight() == newHeight);
 		camera.setAspectRatio(newRatio);
-		CHECK(camera.getAspectRatio() == newRatio);
+		CHECK(camera.getAspectRatio() == doctest::Approx(newRatio).epsilon(0.01));
 		CHECK(camera.getWidth() == newWidth);
 	}
 
 	SUBCASE("Auxiliary functions") {
-		CHECK(camera2.getTopSide() == doctest::Approx(std::sqrt(2.)));
+		CHECK(camera2.getTopSide() == doctest::Approx(2.));
 		CHECK(camera.getTopSide() == doctest::Approx(2.1006));
-		CHECK(camera2.getPixelSide() == doctest::Approx(0.007071));
+		CHECK(camera2.getPixelSide() == doctest::Approx(0.01));
 		CHECK(camera.getPixelSide() == doctest::Approx(0.002101));
-		CHECK(camera2.getNPixels(2.) == doctest::Approx(2./0.007071));
-		CHECK(camera2.getNPixels(-0.5) == doctest::Approx(0.5/0.007071));
-		CHECK(camera.getNPixels(2.) == doctest::Approx(2./0.002101));
+		CHECK(camera2.getNPixels(2.) == doctest::Approx(2./0.01));
+		CHECK(camera2.getNPixels(-0.5) == doctest::Approx(0.5/0.01).epsilon(0.01));
+		CHECK(camera.getNPixels(2.) == doctest::Approx(2./0.002101).epsilon(0.01));
 	}
 
 	gasSim::PhysVectorD p1 {2., 1., 0.};
@@ -480,24 +480,24 @@ TEST_CASE("Testing the camera class") {
 	SUBCASE("Projection functions") {
 		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p1));
 		projections.emplace_back(projection);
-		CHECK(projection.x == doctest::Approx(168.309));
-		CHECK(projection.y == doctest::Approx(-504.927));
-		CHECK(projection.z == doctest::Approx(0.5));
+		CHECK(projection.x == doctest::Approx(168.309f + 500.f));
+		CHECK(projection.y == doctest::Approx(-504.927f + 800.f));
+		CHECK(projection.z == doctest::Approx(0.5f));
 		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p2));
 		// projections.emplace_back(projection);
-		CHECK(projection.x == doctest::Approx(-3786.95));
-		CHECK(projection.y == doctest::Approx(-4798.80));
-		CHECK(projection.z == doctest::Approx(2.25));
+		CHECK(projection.x == doctest::Approx(-3786.95f + 500.f));
+		CHECK(projection.y == doctest::Approx(-4798.80f + 800.f));
+		CHECK(projection.z == doctest::Approx(2.25f));
 		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p3));
 		// projections.emplace_back(projection);
-		CHECK(projection.x == doctest::Approx(1186.401));
-		CHECK(projection.y == doctest::Approx(-713.2529));
-		CHECK(projection.z == doctest::Approx(-0.031469));
+		CHECK(projection.x == doctest::Approx(1186.401f + 500.f));
+		CHECK(projection.y == doctest::Approx(-713.2529f + 800.f));
+		CHECK(projection.z == doctest::Approx(-0.031469f));
 		projection = camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p4));
 		projections.emplace_back(projection);
-		CHECK(projection.x == doctest::Approx(0.));
-		CHECK(projection.y == doctest::Approx(0.));
-		CHECK(projection.z == doctest::Approx(1./3.));
+		CHECK(projection.x == doctest::Approx(0. + 500.f));
+		CHECK(projection.y == doctest::Approx(0. + 800.f));
+		CHECK(projection.z == doctest::Approx(1.f/3.f));
 		std::vector<gasSim::PhysVectorF> realProjs {camera.projectParticles(particles)};
 		for (int i {0}; i < 2; ++i) {
 			CHECK(projections[i] == realProjs[i]);

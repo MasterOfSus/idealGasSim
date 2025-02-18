@@ -6,6 +6,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <stdexcept>
 #include <cassert>
 #include <iostream>
@@ -83,14 +84,12 @@ void Camera::setFOV(const float FOV) { // in degrees
 }
 
 void Camera::setResolution(const int height, const int width) {
-  if (height <= 0) {
-    throw std::invalid_argument("Bad height.");
-  } else if (width <= 0) {
-    throw std::invalid_argument("Bad width.");
-  } else {
+  if (height > 0. && width > 0.) {
     height_ = height;
     width_ = width;
-  }
+  } else {
+		throw std::invalid_argument("Bad resolution");
+	}
 }
 
 void Camera::setAspectRatio(const float ratio) { // ratio set by keeping the image width
@@ -120,7 +119,7 @@ float Camera::getPixelSide() const {
 }
 
 float Camera::getNPixels(float length) const {
-  return length / getPixelSide();
+  return std::abs(length) / getPixelSide();
 }
 
 PhysVectorF crossProd(const PhysVectorF& v1, const PhysVectorF& v2) {
@@ -153,7 +152,7 @@ PhysVectorF Camera::getPointProjection(const PhysVectorF& point) const {
 	return {
 		m * b + getWidth()/2.f,
 		o * b + getHeight()/2.f,
-		(b-focus)*(b-focus) / ((b-focus)*(point - focus)) // scaling factor, degen. if > 1 V < 0
+		(a - focus)*(a - focus) / ((a - focus)*(point - focus)) // scaling factor, degen. if > 1 V < 0
 		};
 }
 
