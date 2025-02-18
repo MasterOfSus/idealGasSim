@@ -505,4 +505,7 @@ TEST_CASE("Testing the camera class") {
 	}
 }
 
+TEST_CASE("Testing wall projections") {
+
+}
 // ciucciami le Particelle

@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <cassert>
 #include <iostream>
+#include "physicsEngine.hpp"
 
 namespace gasSim {
 
@@ -255,23 +256,28 @@ for (double i {0}; true; ++i) {
 }
 */
 
-std::vector<PhysVectorF> gasWallVerts(const Gas& gas, char wall) {
+std::array<PhysVectorF, 7> gasWallVerts(const Gas& gas, char wall) {
 	float side {static_cast<float>(gas.getBoxSide())};
 	switch (wall) {
 		case 'u':
-			return {
-				{0., 0., side},
-				{side, 0., side},
+			return std::array<PhysVectorF, 7>{
+				PhysVectorF(0.f, 0.f, side),
+				{side, 0.f, side},
 				{side, side, side},
-				{0., side, side}
+				{0., side, side},
+				{0., 0., 1.},
+				{side/2.f, side/2.f, side}
 			}; // ok
 			break;
 		case 'd':
 			return {
-				{0., 0., 0.},
+				PhysVectorF(0., 0., 0.),
 				{side, 0., 0.},
 				{side, side, 0.},
-				{0., side, 0.}
+				{0., side, 0.},
+				{0., 0., -1.},
+				{side/2.f, side/2.f, 0.}
+
 			}; // ok
 			break;
 		case 'l':
@@ -280,6 +286,7 @@ std::vector<PhysVectorF> gasWallVerts(const Gas& gas, char wall) {
 				{0., side, 0.},
 				{0., side, side},
 				{0., 0., side}
+
 			}; // ok
 			break;
 		case 'r':
@@ -288,6 +295,7 @@ std::vector<PhysVectorF> gasWallVerts(const Gas& gas, char wall) {
 				{side, side, 0.},
 				{side, side, side},
 				{side, 0., side}
+
 			}; // ok
 			break;
 		case 'f':
@@ -296,6 +304,7 @@ std::vector<PhysVectorF> gasWallVerts(const Gas& gas, char wall) {
 				{side, 0., 0.},
 				{side, 0., side},
 				{0., 0., side}
+
 			}; // ok
 			break;
 		case 'b':
