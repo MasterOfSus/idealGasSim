@@ -48,7 +48,7 @@ struct PhysVector {
 	PhysVector cross(const PhysVector& v) const {
 		return {
 			y * v.z - z * v.y,
-			z * v.x - v * v.z,
+			z * v.x - x * v.z,
 			x * v.y - y * v.x
 		};
 	}
