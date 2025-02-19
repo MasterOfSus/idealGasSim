@@ -11,8 +11,8 @@ double gasSim::Particle::radius = 1.;
 
 int main() {
 	gasSim::Gas amogus(5, 1., 10.);
-	gasSim::PhysVector focus {-23., 31., 12.};
-	gasSim::PhysVector center {4.5, 4.5, 4.5};
+	gasSim::PhysVectorF focus {-23., 31., 12.};
+	gasSim::PhysVectorF center {4.5, 4.5, 4.5};
 	gasSim::Camera camera(focus, center - focus, 2., 90., 1200, 900);
 
 	sf::RenderTexture photo;

@@ -45,6 +45,14 @@ struct PhysVector {
     return x * v.x + y * v.y + z * v.z;
   }
 
+	PhysVector cross(const PhysVector& v) const {
+		return {
+			y * v.z - z * v.y,
+			z * v.x - v * v.z,
+			x * v.y - y * v.x
+		};
+	}
+
   bool operator==(const PhysVector<FP>& v) const {
     return (x == v.x && y == v.y && z == v.z);
   }
