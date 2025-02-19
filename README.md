@@ -43,17 +43,17 @@ In alternative just a loose function "coordinates" that does roughly the same th
 
 Liam deve fare:
 
-- [] Tests:
-     - [] Unit tests per RenderStyle
-     - [] Unit tests per Camera
-     - [] Unit tests per le funzioni di rendering
-     - [] Unit tests per le funzioni di drawing
-- [] Implementazioni:
-     - [] Sistemare il disegno dei muri
-     - [] Aggiungere gli assi
-     - [] Aggiungere la griglia (?)
-     - [] Statistica e misure
-     - [] Disegnare una finestra grafica
+- [ ] Tests:
+     - [x] Unit tests per RenderStyle
+     - [x] Unit tests per Camera
+     - [x] Unit tests per le funzioni di rendering
+     - [ ] Unit tests per le funzioni di drawing - forse non fattibili ne' necessari
+- [ ] Implementazioni:
+     - [ ] Sistemare il disegno dei muri
+     - [ ] Aggiungere gli assi (?)
+     - [ ] Aggiungere la griglia (?)
+     - [ ] Statistica e misure
+     - [ ] Disegnare una finestra grafica
          
 
 ## Da discutere nella prossima call
