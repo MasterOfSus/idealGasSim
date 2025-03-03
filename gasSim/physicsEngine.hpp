@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <array>
 #include <cmath>
+#include <iterator>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -75,6 +76,8 @@ PhysVectorD gausRandVector(const double standardDev);
 
 enum class Wall { Front, Back, Left, Right, Top, Bottom };
 
+class Gas;
+
 struct Particle {
   static double mass;
   static double radius;
@@ -83,27 +86,8 @@ struct Particle {
   PhysVectorD speed = {};
 };
 
-bool particleOverlap(const Particle& p1, const Particle& p2);
-bool particleInBox(const Particle& part, double boxSide);
-
-class Statistic {
- public:
-  Statistic(double boxSide);
-  void setDeltaTime(double deltaTime);
-  // void setBoxSide();
-
-  void addImpulseOnWall(double speed, Wall wall);
-  double getPressure(Wall wall);
-
-  void calculate();
-
- private:
-  std::unordered_map<Wall, double> pressure;
-  std::unordered_map<Wall, double> deltaImpulse_;
-
-  double boxSide_;
-  double deltaTime_;
-};
+bool overlap(const Particle& p1, const Particle& p2);
+bool isInBox(const Particle& part, const Gas& gas);
 
 class Collision {
  public:
@@ -113,8 +97,8 @@ class Collision {
 
   Particle* getFirstParticle() const;
 
-  virtual std::string getCollisionType() const = 0;
-  virtual void resolve(Statistic& oldStat) = 0;
+  virtual std::string getType() const = 0;
+  virtual void solve() = 0;
 
  private:
   double time_;
@@ -125,8 +109,8 @@ class WallCollision : public Collision {
  public:
   WallCollision(double t, Particle* p, Wall wall);
   Wall getWall() const;
-  std::string getCollisionType() const override;
-  void resolve(Statistic& oldStat) override;
+  std::string getType() const override;
+  void solve() override;
 
  private:
   Wall wall_;
@@ -135,34 +119,37 @@ class WallCollision : public Collision {
 class PartCollision : public Collision {
  public:
   PartCollision(double t, Particle* p1, Particle* p2);
-  Particle* getSecondParticle() const;
-  std::string getCollisionType() const override;
-  void resolve(Statistic& oldStat) override;
+  const Particle* getSecondParticle() const;
+  std::string getType() const override;
+  void solve() override;
 
  private:
   Particle* secondParticle_;
 };
 
+class TdStats;
+
 class Gas {
  public:
   Gas(const Gas& gas);
-  Gas(std::vector<Particle> particles, double boxSide, double life = 0.);
+  Gas(std::vector<Particle> particles, double boxSide, double time = 0.);
   Gas(int nParticles, double temperature, double boxSide);
 
   const std::vector<Particle>& getParticles() const;
   double getBoxSide() const;
-  double getLife() const;
+  double getTime() const;
 
-  Statistic gasLoop(int nIterations);
+  TdStats simulate(int nIterations);
 
  private:
   std::vector<Particle> particles_;
+	std::vector<double> lastCollTimes_;
   double boxSide_;
-  double life_{0.};
+  double time_ {0.};
 
   WallCollision firstWallCollision();
   PartCollision firstPartCollision();
-  void updatePositions(double time);
+  void move(double time);
 
   void solveNextEvent();
 };

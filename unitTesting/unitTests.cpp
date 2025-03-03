@@ -12,6 +12,7 @@
 #include "../gasSim/algorithms.hpp"
 #include "../gasSim/output.hpp"
 #include "../gasSim/physicsEngine.hpp"
+#include "../gasSim/statistics.hpp"
 
 double gasSim::Particle::mass = 10;
 double gasSim::Particle::radius = 1;
@@ -150,8 +151,8 @@ TEST_CASE("Testing Particle") {
     gasSim::Particle part2{{6.94, 3.50, 7.18}, {0.16, 9.38, 4.57}};
     gasSim::Particle overlapPart{{5.30, 9.05, 0.37}, {1.29, 7.03, 8.45}};
 
-    CHECK(gasSim::particleOverlap(part1, part2) == false);
-    CHECK(gasSim::particleOverlap(part1, overlapPart) == true);
+    CHECK(gasSim::overlap(part1, part2) == false);
+    CHECK(gasSim::overlap(part1, overlapPart) == true);
   }
 }
 TEST_CASE("Testing WallCollision") {
@@ -178,8 +179,8 @@ TEST_CASE("Testing WallCollision") {
     CHECK(part1.speed == actualSpeed);
   }
   SUBCASE("Resolve Collision") {
-    gasSim::Statistic stat{1};
-    coll.resolve(stat);
+    gasSim::TdStats stat{1};
+    coll.solve(stat);
     // Da aggiungere il check del risolutore corretto
   }
 }
@@ -207,8 +208,12 @@ TEST_CASE("Testing PartCollision") {
     coll.getFirstParticle()->position.x = 4;
     coll.getFirstParticle()->position.y = 0;
     coll.getFirstParticle()->position.z = 4;
-    coll.getSecondParticle()->speed = actualSpeed;
-    CHECK(coll.getFirstParticle()->position == actualPosition);
+    /* why are we accessing a private member through its pointer to change its value?
+		coll.getSecondParticle()->speed.x = actualSpeed.x;
+		coll.getSecondParticle()->speed.y = actualSpeed.y;
+		coll.getSecondParticle()->speed.z = actualSpeed.z;
+    */
+		CHECK(coll.getFirstParticle()->position == actualPosition);
     CHECK(coll.getSecondParticle()->speed == actualSpeed);
   }
 }
@@ -254,7 +259,7 @@ TEST_CASE("Testing Gas constructor") {
   gasSim::Gas gas{partNum, temp, side};
   SUBCASE("Random constructor") {
     CHECK(gas.getBoxSide() == side);
-    CHECK(gas.getLife() == 0);
+    CHECK(gas.getTime() == 0);
     CHECK(gas.getParticles().size() == partNum);
   }
   SUBCASE("Constructor from gas") {
@@ -304,10 +309,10 @@ TEST_CASE("Testing Gas, 1 iteration") {
     gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
     std::vector<gasSim::Particle> vec{part1, part2};
     gasSim::Gas gas{vec, side};
-    gas.gasLoop(1);
+    gas.simulate(1);
 
     auto newVec{gas.getParticles()};
-    double life{gas.getLife()};
+    double life{gas.getTime()};
 
     gasSim::Particle part1F{{2.84529, 2.84529, 2.84529}, {0, 0, 0}};
     gasSim::Particle part2F{{4, 4, 4}, {1, 1, 1}};
@@ -336,10 +341,10 @@ TEST_CASE("Testing Gas, 1 iteration") {
     std::vector<gasSim::Particle> vec{part};
 
     gasSim::Gas gas{vec, side};
-    gas.gasLoop(1);
+    gas.simulate(1);
 
     auto newVec{gas.getParticles()};
-    double life{gas.getLife()};
+    double life{gas.getTime()};
     gasSim::Particle partF{{1E3 - 1, 500, 500}, {-35.9, 0, 0}};
 
     CHECK(doctest::Approx(life) == 27.7994429);
@@ -360,6 +365,70 @@ TEST_CASE("Testing Gas 2") {
   gasSim::Particle p2{{0,0,0.09}, {5,6,7}};
   std::vector<gasSim::Particle> badParticles{p1,p2};
   gasSim::Gas badGas{badParticles, 5}; */
+}
+
+// STATISTICS TESTING
+
+TEST_CASE("Testing the TdStats class") {
+	std::vector<gasSim::Particle> particles {
+		{{2., 2., 2.}, {2., 3., 0.5}}
+	};
+	std::vector<gasSim::Particle> moreParticles {
+		{{2., 3., 4.}, {-1., 0., 0.}},
+		{{5., 3., 7.}, {0., 0., 0.}},
+		{{5., 6., 7.}, {0., -1., 0.}},
+	};
+	gasSim::Gas gas {particles, 4.};
+	gasSim::Gas moreGas {moreParticles, 12.};
+	SUBCASE("Testing the constructor") {
+		gasSim::TdStats stats {moreGas};
+		CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>
+				{
+					{-1., -2., 1.},
+					{1., 0., 0.},
+					{0., 1., 1.},
+				});
+		CHECK(stats.getBoxSide() == 6.);
+		CHECK(stats.getVolume() == 216.);
+		CHECK(stats.getDeltaT() == 0.);
+		CHECK(stats.getNParticles() == 4);
+	}
+	SUBCASE("Testing getters") {
+		gasSim::TdStats stats {gas.simulate(5)};
+		CHECK(stats.getTemp() == 14.);
+		CHECK(stats.getPressure(gasSim::Wall::Front) == 3./16.);
+		CHECK(stats.getPressure(gasSim::Wall::Back) == 3./16.);
+		CHECK(stats.getPressure(gasSim::Wall::Right) == 1./8.);
+		CHECK(stats.getPressure(gasSim::Wall::Left) == 1./8.);
+		CHECK(stats.getPressure(gasSim::Wall::Top) == 1./32.);
+		CHECK(stats.getPressure(gasSim::Wall::Top) == 0.);
+		CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>
+				{{2., 3., -0.5}});
+		CHECK(stats.getDeltaT() == 2.);
+		CHECK(stats.getMeanFreePath() == 2.);
+		stats = gasSim::TdStats(gas);
+		CHECK_THROWS(stats.getPressure(gasSim::Wall::Front));
+		CHECK_THROWS(stats.getMeanFreePath());
+		gasSim::TdStats moreStats {moreGas.simulate(5)};
+		CHECK(moreStats.getTemp() == 2);
+		CHECK(moreStats.getPressure(gasSim::Wall::Front) == 1./18.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Left) == 1./18.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Back) == 0.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Right) == 1./18.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Top) == 0.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Bottom) == 0.);
+		CHECK(moreStats.getSpeeds() == std::vector<gasSim::PhysVectorD>
+			{
+				{-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
+				{1., 0., 0.},  {0., 0., 0.},  {0., -1., 0.},
+				{1., 0., 0.},  {0., -1., 0.}, {0., 0., 0.},
+				{1., 0., 0.},  {0., 1., 0.},  {0., 0., 0.},
+				{1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},
+				{-1., 0., 0.}, {0., 0., 0.}, {0., 1., 0.}
+			}
+		);
+		CHECK(moreStats.getMeanFreePath() == 4.);
+	}
 }
 
 // GRAPHICS TESTING

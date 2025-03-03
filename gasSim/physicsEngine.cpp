@@ -15,6 +15,7 @@
 // Sddfqoinp
 
 #include "algorithms.hpp"
+#include "statistics.hpp"
 
 namespace gasSim {
 
@@ -67,7 +68,7 @@ bool particleInBox(const Particle& part, double boxSide) {
 // End of Particle functions
 
 // Definition of Statistic functions
-Statistic::Statistic(double boxSide) : boxSide_(boxSide) {
+/* Statistic::Statistic(double boxSide) : boxSide_(boxSide) {
   if (boxSide_ <= 0) {
     throw std::invalid_argument("boxSide must be a positive number");
   }
@@ -87,7 +88,7 @@ double Statistic::getPressure(Wall wall) {
   return deltaImpulse_[wall] / (area * deltaTime_);
 }
 // End of Statistic functions
-
+*/
 // Definition of Collision functions
 Collision::Collision(double t, Particle* p) : time_(t), firstParticle_(p) {
   if (time_ < 0) {
@@ -107,11 +108,11 @@ WallCollision::WallCollision(double t, Particle* p, Wall wall)
     : Collision(t, p), wall_(wall) {}
 
 Wall WallCollision::getWall() const { return wall_; }
-std::string WallCollision::getCollisionType() const {
+std::string WallCollision::getType() const {
   return "Particle to Wall Collision";
 }
 /*
-Statistic WallCollision::resolve(Statistic& stat) {
+Statistic WallCollision::solve(Statistic& stat) {
   Particle* part{getFirstParticle()};
 
   double memSpd;
@@ -136,26 +137,24 @@ Statistic WallCollision::resolve(Statistic& stat) {
 
   return stat;
 }*/
-void WallCollision::resolve(Statistic& stat) {
-  Particle* part = getFirstParticle();
-  double& speedComponent = [&]() -> double& {
-    switch (wall_) {
-      case Wall::Left:
-      case Wall::Right:
-        return part->speed.x;
-      case Wall::Front:
-      case Wall::Back:
-        return part->speed.y;
-      case Wall::Top:
-      case Wall::Bottom:
-        return part->speed.z;
-      default:
-        throw std::logic_error("Unknown wall type");
-    }
-  }();
-
-  stat.addImpulseOnWall(speedComponent, wall_);
-  speedComponent = -speedComponent;
+void WallCollision::solve() {
+  Particle& part = *getFirstParticle();
+	switch(wall_) {
+		case Wall::Left:
+		case Wall::Right:
+			part.speed.x = -part.speed.x;
+			break;
+		case Wall::Front:
+		case Wall::Back:
+			part.speed.y = -part.speed.y;
+			break;
+		case Wall::Top:
+		case Wall::Bottom:
+			part.speed.z = -part.speed.z;
+			break;
+		default:
+			throw std::logic_error("Unknown wall type.");
+	}
 }
 // End of WallCollision functions
 
@@ -163,13 +162,13 @@ void WallCollision::resolve(Statistic& stat) {
 PartCollision::PartCollision(double t, Particle* p1, Particle* p2)
     : Collision(t, p1), secondParticle_(p2) {}
 
-Particle* PartCollision::getSecondParticle() const { return secondParticle_; }
+const Particle* PartCollision::getSecondParticle() const { return secondParticle_; }
 
-std::string PartCollision::getCollisionType() const {
+std::string PartCollision::getType() const {
   return "Particle to Particle Collision";
 }
 
-void PartCollision::resolve(Statistic& stat) {
+void PartCollision::solve() {
   Particle* part1{getFirstParticle()};
   Particle* part2{secondParticle_};
 
@@ -189,21 +188,21 @@ void PartCollision::resolve(Statistic& stat) {
 Gas::Gas(const Gas& gas)
     : particles_(gas.getParticles()), boxSide_(gas.getBoxSide()) {}
 
-Gas::Gas(std::vector<Particle> particles, double boxSide, double life)
-    : particles_(particles), boxSide_(boxSide), life_(life) {
+Gas::Gas(std::vector<Particle> particles, double boxSide, double time)
+    : particles_(particles), boxSide_(boxSide), time_(time) {
   if (particles_.size() == 0) {
-    throw std::invalid_argument("particles must have at least 1 element");
+    throw std::invalid_argument("Empty particle vector.");
   }
   if (boxSide_ <= 0) {
-    throw std::invalid_argument("boxSide must be greater than 0");
+    throw std::invalid_argument("Non positive box side.");
   }
-  if (life_ < 0) {
-    throw std::invalid_argument("life must be greater than or equal to zero");
+  if (time_ < 0) {
+    throw std::invalid_argument("Negative time.");
   }
 
   std::for_each(particles_.begin(), particles_.end(), [&](const Particle& p) {
     if (particleInBox(p, boxSide_) == false) {
-      throw std::invalid_argument("particles must be in the box");
+      throw std::invalid_argument("Particles outside of the box.");
     }
   });
 
@@ -211,7 +210,7 @@ Gas::Gas(std::vector<Particle> particles, double boxSide, double life)
       particles_.begin(), particles_.end(),
       [](const Particle& p1, const Particle& p2) {
         if (particleOverlap(p1, p2) == true) {
-          throw std::invalid_argument("particles cannot penetrate each other");
+          throw std::invalid_argument("Overlapping particles.");
         }
       });
 }
@@ -219,13 +218,13 @@ Gas::Gas(std::vector<Particle> particles, double boxSide, double life)
 Gas::Gas(int nParticles, double temperature, double boxSide)
     : boxSide_(boxSide) {
   if (nParticles <= 0) {
-    throw std::invalid_argument("nParticles must be greater than 0");
+    throw std::invalid_argument("Non positive particle number.");
   }
   if (temperature <= 0) {
-    throw std::invalid_argument("temperature must be greater than 0");
+    throw std::invalid_argument("Non positive temperature.");
   }
   if (boxSide_ <= 0) {
-    throw std::invalid_argument("boxSide must be greater than 0");
+    throw std::invalid_argument("Non positive box side.");
   }
 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
@@ -234,7 +233,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
 
   if (particleDistance <= 2 * radius) {
     throw std::runtime_error(
-        "particles are too large/too many, they don't fit in the box");
+        "Can't fit all particles in the box.");
   }
 
   double maxSpeed = 4. / 3. * temperature;  // espressione sbagliata appena
@@ -264,13 +263,13 @@ const std::vector<Particle>& Gas::getParticles() const { return particles_; }
 
 double Gas::getBoxSide() const { return boxSide_; }
 
-double Gas::getLife() const { return life_; }
+double Gas::getTime() const { return time_; }
 
-Statistic Gas::gasLoop(int nIterations) {
-  Statistic stat{boxSide_};
-  double deltaTime{0};
+TdStats Gas::simulate(int nIterations) {
+  TdStats stat{*this};
+  double deltaT{0};
 
-  for (int i{0}; i != nIterations; ++i) {
+  for (int i{0}; i < nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
     Collision* firstColl{nullptr};
@@ -281,15 +280,16 @@ Statistic Gas::gasLoop(int nIterations) {
       firstColl = &wColl;
     }
 
-    updatePositions(firstColl->getTime());
-    deltaTime += firstColl->getTime();
+    move(firstColl->getTime());
+		time_ += firstColl->getTime();
+    deltaT += firstColl->getTime();
 
-    assert(life_ != INFINITY);
-    firstColl->resolve(stat);
+    assert(time_ != INFINITY);
+		firstColl->solve();
+		stat.addData(*this, firstColl);
   }
 
-  life_ += deltaTime;
-  stat.setDeltaTime(deltaTime);
+  stat.setDeltaT(deltaT);
   return stat;
 }
 
@@ -322,7 +322,7 @@ PartCollision Gas::firstPartCollision() {
   return {topTime, firstPart, secondPart};
 }
 
-void Gas::updatePositions(double time) {
+void Gas::move(double time) {
   std::for_each(particles_.begin(), particles_.end(),
                 [time](Particle& part) { part.position += part.speed * time; });
   // Sddfqoinp
