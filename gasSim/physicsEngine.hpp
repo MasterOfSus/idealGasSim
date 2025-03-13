@@ -141,6 +141,8 @@ class Gas {
 
   TdStats simulate(int nIterations);
 
+	int getPIndex(const Particle* particle) const;
+
  private:
   std::vector<Particle> particles_;
 	std::vector<double> lastCollTimes_;

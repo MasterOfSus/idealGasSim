@@ -109,7 +109,7 @@ WallCollision::WallCollision(double t, Particle* p, Wall wall)
 
 Wall WallCollision::getWall() const { return wall_; }
 std::string WallCollision::getType() const {
-  return "Particle to Wall Collision";
+  return "Wall";
 }
 /*
 Statistic WallCollision::solve(Statistic& stat) {
@@ -165,7 +165,7 @@ PartCollision::PartCollision(double t, Particle* p1, Particle* p2)
 const Particle* PartCollision::getSecondParticle() const { return secondParticle_; }
 
 std::string PartCollision::getType() const {
-  return "Particle to Particle Collision";
+  return "Particle Collision";
 }
 
 void PartCollision::solve() {
@@ -289,8 +289,11 @@ TdStats Gas::simulate(int nIterations) {
 		stat.addData(*this, firstColl);
   }
 
-  stat.setDeltaT(deltaT);
   return stat;
+}
+
+int Gas::getPIndex(const Particle* p) {
+	return p - particles_.data();
 }
 
 WallCollision Gas::firstWallCollision() {

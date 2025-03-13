@@ -8,7 +8,7 @@ namespace gasSim {
 class TdStats {
  public:
   TdStats(const Gas& firstState);
-	TdStats(const TdStats& stats): t0_(0.), nParticles_(stats.getNParticles()) {};
+	TdStats(const Gas& firstState, const TdStats& prevStats);
   // void setDeltaT(double time);
   // void setBoxSide();
 	void addData(const Gas& gas, const Collision* collision);
@@ -17,12 +17,12 @@ class TdStats {
 
   double getPressure(Wall wall) const;
 	double getTemp() const;
-	int getNParticles() const;
-	double getVolume() const;
-	double getBoxSide() const;
-	double getDeltaT() const;
+	int getNParticles() const { return lastCollTimes_.size(); };
+	double getVolume() const { return std::pow(boxSide_, 3); };
+	double getBoxSide() const { return boxSide_; };
+	double getDeltaT() const {return time_ - t0_; };
 	double getMeanFreePath() const;
-	const std::vector<PhysVectorD>& getSpeeds() const;
+	const std::vector<PhysVectorD>& getSpeeds() const { return speeds_; };
 
  private:
 	std::array<double, 6> wallPulses_ {}; // cumulated pulse for each wall
@@ -30,13 +30,13 @@ class TdStats {
 	std::vector<double> lastCollTimes_ {}; // last collision times for each particle
 	std::vector<PhysVectorD> speeds_ {}; // all speed values for each iteration
 
-	double meanFreePath_;
+	std::vector<double> freePaths_ {};
 
   double boxSide_;
-	const double t0_;
+	double t0_;
   double time_;
 
-	const int nParticles_;
+	int nParticles_;
 };
 
 }
