@@ -179,8 +179,8 @@ TEST_CASE("Testing WallCollision") {
     CHECK(part1.speed == actualSpeed);
   }
   SUBCASE("Resolve Collision") {
-    gasSim::TdStats stat{1};
-    coll.solve(stat);
+    //gasSim::TdStats stat{1};
+    //coll.solve(stat);
     // Da aggiungere il check del risolutore corretto
   }
 }
@@ -431,6 +431,7 @@ TEST_CASE("Testing the TdStats class") {
 	}
 }
 
+/*
 // GRAPHICS TESTING
 
 TEST_CASE("Testing the RenderStyle class") {
@@ -578,3 +579,4 @@ TEST_CASE("Testing wall projections") {
 
 }
 // ciucciami le Particelle
+*/

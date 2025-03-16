@@ -292,7 +292,7 @@ TdStats Gas::simulate(int nIterations) {
   return stat;
 }
 
-int Gas::getPIndex(const Particle* p) {
+int Gas::getPIndex(const Particle* p) const {
 	return p - particles_.data();
 }
 

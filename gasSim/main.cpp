@@ -12,5 +12,7 @@
 // #include "physicsEngine.hpp"
 
 int main(int argc, const char* argv[]) {
-  auto opts{gasSim::input::optParse(argc, argv)};
+  //auto opts{gasSim::input::optParse(argc, argv)};
+
+  std::cout << "fanculo";
 }
