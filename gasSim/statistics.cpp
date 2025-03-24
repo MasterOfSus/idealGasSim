@@ -8,11 +8,12 @@ namespace gasSim {
 
 // TdStats class
 // Constructors
-TdStats::TdStats(const Gas& firstState):
+TdStats::TdStats(const Gas* gas):
+	gas_ (gas),
 	wallPulses_ {},
-	nParticles_(firstState.getParticles().size()),
+	nParticles_(gas_->getParticles().size()),
 	freePaths_ {},
-	t0_(firstState.getTime()),
+	t0_(gas_->getTime()),
 	time_(firstState.getTime()),
 	boxSide_(firstState.getBoxSide())
 	{

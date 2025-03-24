@@ -7,11 +7,11 @@ namespace gasSim {
 
 class TdStats {
  public:
-  TdStats(const Gas& firstState);
-	TdStats(const Gas& firstState, const TdStats& prevStats);
+  TdStats(const Gas* gas);
+	TdStats(const Gas* gas, const TdStats& prevStats);
   // void setDeltaT(double time);
   // void setBoxSide();
-	void addData(const Gas& gas, const Collision* collision);
+	void addData(const Collision* collision);
 
 	// void reset();
 
@@ -25,6 +25,8 @@ class TdStats {
 	const std::vector<PhysVectorD>& getSpeeds() const { return speeds_; };
 
  private:
+	const Gas* const gas_;
+
 	std::array<double, 6> wallPulses_ {}; // cumulated pulse for each wall
 
 	std::vector<double> lastCollTimes_ {}; // last collision times for each particle
