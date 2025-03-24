@@ -3,39 +3,45 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <stdexcept>
 
 namespace gasSim {
 
 // TdStats class
 // Constructors
-TdStats::TdStats(const Gas* gas):
-	gas_ (gas),
+TdStats::TdStats(const Gas& firstState):
 	wallPulses_ {},
-	nParticles_(gas_->getParticles().size()),
 	freePaths_ {},
-	t0_(gas_->getTime()),
-	time_(firstState.getTime()),
-	boxSide_(firstState.getBoxSide())
-	{
-		lastCollTimes_ = std::vector<double>(nParticles_, -INFINITY);
-		std::transform(firstState.getParticles().begin(), firstState.getParticles().end(), std::back_inserter(speeds_), [](const Particle& p) { return p.speed; });
-}
-
-TdStats::TdStats(const Gas& firstState, const TdStats& prevStats):
-	wallPulses_ {},
-	nParticles_(firstState.getParticles().size()),
-	freePaths_(prevStats.freePaths_),
 	t0_(firstState.getTime()),
 	time_(firstState.getTime()),
 	boxSide_(firstState.getBoxSide())
 	{
-		lastCollTimes_ = prevStats.lastCollTimes_;
 		std::transform(firstState.getParticles().begin(), firstState.getParticles().end(), std::back_inserter(speeds_), [](const Particle& p) { return p.speed; });
+		lastPositions_ = std::vector<PhysVectorD>(getNParticles(), {0., 0., 0.});
+}
+
+TdStats::TdStats(const Gas& firstState, const TdStats& prevStats):
+	wallPulses_ {},
+	freePaths_ {},
+	t0_(firstState.getTime()),
+	time_(firstState.getTime()),
+	boxSide_(firstState.getBoxSide())
+	{
+		if (firstState.getParticles().size() != prevStats.getNParticles())
+			throw std::invalid_argument("Non-matching particle numbers in arguments.");
+		else if (firstState.getBoxSide() != prevStats.getBoxSide())
+			throw std::invalid_argument("Non-matching box sides.");
+		else if (firstState.getTime() > prevStats.getTime())
+			throw std::invalid_argument("Stats time is less than gas time.");
+		else {
+			lastPositions_ = prevStats.lastPositions_;
+			std::transform(firstState.getParticles().begin(), firstState.getParticles().end(), std::back_inserter(speeds_), [](const Particle& p) { return p.speed; });
+		}
 }
 
 void TdStats::addData(const Gas& gas, const Collision* collision) {
-	if (gas.getParticles().size() != nParticles_) {
-		throw std::invalid_argument("Wrong gas particles number.");
+	if (gas.getParticles().size() != getNParticles()) {
+		throw std::invalid_argument("Non-matching gas particles number.");
 	} else if (gas.getTime() <= time_) {
 		throw std::invalid_argument("Gas time is less than or equal to internal time.");
 	} else if (collision->getTime() <= time_) {
@@ -67,35 +73,57 @@ void TdStats::addData(const Gas& gas, const Collision* collision) {
 					break;
 			}
 
-			if (lastCollTimes_[gas.getPIndex(wallColl->getFirstParticle())] != -INFINITY) {
-				double t = lastCollTimes_[gas.getPIndex(wallColl->getFirstParticle())];
-				freePaths_.emplace_back(wallColl->getFirstParticle()->speed.norm() * (time_ - t));
+			if (lastPositions_[gas.getPIndex(wallColl->getFirstParticle())] != PhysVectorD({0., 0., 0.})) {
+				PhysVectorD lastPos = lastPositions_[gas.getPIndex(wallColl->getFirstParticle())];
+				freePaths_.emplace_back((wallColl->getFirstParticle()->position - lastPos).norm());
 			}
-			lastCollTimes_[gas.getPIndex(wallColl->getFirstParticle())] = time_;
+			lastPositions_[gas.getPIndex(wallColl->getFirstParticle())] = wallColl->getFirstParticle()->position;
+			speeds_[gas.getPIndex(wallColl->getFirstParticle())] = wallColl->getFirstParticle()->position;
 		} else {
 			const PartCollision* partColl = static_cast<const PartCollision*>(collision);
-			if (lastCollTimes_[gas.getPIndex(partColl->getFirstParticle())] != -INFINITY) {
-				double lastCollTime {lastCollTimes_[gas.getPIndex(partColl->getFirstParticle())]};
+			if (lastPositions_[gas.getPIndex(partColl->getFirstParticle())] != PhysVectorD({0., 0., 0.})) {
+				PhysVectorD lastPos {lastPositions_[gas.getPIndex(partColl->getFirstParticle())]};
 				freePaths_.emplace_back(
-						partColl->getFirstParticle()->speed.norm() * (time_ - lastCollTime)
+						(partColl->getFirstParticle()->position - lastPos).norm()
 						);
 			}
-			if (lastCollTimes_[gas.getPIndex(partColl->getSecondParticle())] != -INFINITY) {
-				double lastCollTime = lastCollTimes_[gas.getPIndex(partColl->getSecondParticle())];
+			if (lastPositions_[gas.getPIndex(partColl->getSecondParticle())] != PhysVectorD({0., 0., 0.})) {
+				PhysVectorD lastPos = lastPositions_[gas.getPIndex(partColl->getSecondParticle())];
 				freePaths_.emplace_back(
-						partColl->getSecondParticle()->speed.norm() * (time_ - lastCollTime)
+						(partColl->getSecondParticle()->position - lastPos).norm()
 						);
 			}
-			lastCollTimes_[
+			lastPositions_[
 				gas.getPIndex(partColl->getFirstParticle())
-			] = time_;
-			lastCollTimes_[
+			] = partColl->getFirstParticle()->position;
+			lastPositions_[
 				gas.getPIndex(partColl->getSecondParticle())
-			] = time_;
+			] = partColl->getSecondParticle()->position;
+			speeds_[
+				gas.getPIndex(partColl->getFirstParticle())
+			] = partColl->getFirstParticle()->speed;
+			speeds_[
+				gas.getPIndex(partColl->getSecondParticle())
+			] = partColl->getSecondParticle()->speed;
 		}
-		std::transform(gas.getParticles().begin(), gas.getParticles().end(), std::back_inserter(speeds_),
-[](const Particle& p) { return p.speed; });
 	}
 }
+
+double TdStats::getPressure(Wall wall) const {
+	return wallPulses_[int(wall)] / getBoxSide()*getBoxSide();
+}
+
+double TdStats::getPressure() const {
+	double totPulses {};
+	int i {0};
+	for (; i < 6; ++i) {
+		totPulses += wallPulses_[i];
+	}
+	return totPulses / (getBoxSide() * getBoxSide() * 6);
+}
+
+/*double TdStats::getTemp() const {
+	return [] ()
+}*/
 
 } // namespace gasSim
