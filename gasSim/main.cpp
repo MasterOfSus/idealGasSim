@@ -13,4 +13,7 @@
 
 int main(int argc, const char* argv[]) {
   auto opts{gasSim::input::optParse(argc, argv)};
+  if (argc == 1 || opts.count("help") || opts.count("usage")) {
+    return 0;
+  };
 }
