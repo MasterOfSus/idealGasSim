@@ -115,15 +115,28 @@ double TdStats::getPressure(Wall wall) const {
 
 double TdStats::getPressure() const {
 	double totPulses {};
-	int i {0};
-	for (; i < 6; ++i) {
-		totPulses += wallPulses_[i];
+	for (double wallPulse: wallPulses_) {
+		totPulses += wallPulse;
 	}
 	return totPulses / (getBoxSide() * getBoxSide() * 6);
 }
 
-/*double TdStats::getTemp() const {
-	return [] ()
-}*/
+double TdStats::getTemp() const {
+	double temp {0};
+	for (PhysVectorD speed: speeds_) {
+		temp += speed*speed;
+	}
+	return temp / speeds_.size();
+}
+
+double TdStats::getMeanFreePath() const {
+	double mfp {0};
+	int i {0};
+	for (double fp: freePaths_) {
+		mfp += fp;
+		++i;
+	}
+	return mfp / freePaths_.size();
+}
 
 } // namespace gasSim

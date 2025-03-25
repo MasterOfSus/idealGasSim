@@ -44,7 +44,7 @@ PhysVectorD gausRandVector(const double standardDev) {
 // End of PhysVector functions
 
 // Definition of Particle functions
-bool particleOverlap(const Particle& p1, const Particle& p2) {
+bool overlap(const Particle& p1, const Particle& p2) {
   const double minDst = 2 * Particle::radius;
   const double centerDst{(p1.position - p2.position).norm()};
   if (centerDst < minDst) {
@@ -209,7 +209,7 @@ Gas::Gas(std::vector<Particle> particles, double boxSide, double time)
   for_each_couple(
       particles_.begin(), particles_.end(),
       [](const Particle& p1, const Particle& p2) {
-        if (particleOverlap(p1, p2) == true) {
+        if (overlap(p1, p2) == true) {
           throw std::invalid_argument("Overlapping particles.");
         }
       });

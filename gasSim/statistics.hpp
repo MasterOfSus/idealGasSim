@@ -17,7 +17,7 @@ class TdStats {
   double getPressure(Wall wall) const;
 	double getPressure() const;
 	double getTemp() const;
-	int getNParticles() const { return speeds_.size(); };
+	unsigned int getNParticles() const { return speeds_.size(); };
 	double getVolume() const { return std::pow(boxSide_, 3); };
 	double getBoxSide() const { return boxSide_; };
 	double getTime() const { return time_; };
@@ -34,9 +34,9 @@ class TdStats {
 
 	std::vector<double> freePaths_ {};
 
-  double boxSide_;
 	double t0_;
   double time_;
+	double boxSide_;
 };
 
 }
