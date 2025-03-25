@@ -316,16 +316,23 @@ PartCollision Gas::firstPartCollision() {
   double topTime{INFINITY};
   Particle* firstPart{nullptr};
   Particle* secondPart{nullptr};
-  std::cout << "size: " << particles_.size() << '\n';
+  /*std::cout << "size: " << particles_.size() << '\n';
   std::cout << particles_[0];
-  std::cout << particles_[1];
+  std::cout << particles_[1];*/
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
-                    double time{collisionTime(p1, p2)};
-                    if (time < topTime) {
-                      firstPart = &p1;
-                      secondPart = &p2;
-                      topTime = time;
+                    PhysVectorD posRel{p1.position - p2.position};
+                    // Ottimmizzazione e evita gli errori delle approssimazioni
+                    // per l'approssimazione dei double delle particelle
+                    // compenetrate
+                    PhysVectorD spdRel{p1.speed - p2.speed};
+                    if (posRel * spdRel <= 0) {
+                      double time{collisionTime(p1, p2)};
+                      if (time < topTime) {
+                        firstPart = &p1;
+                        secondPart = &p2;
+                        topTime = time;
+                      }
                     }
                   });
   return {topTime, firstPart, secondPart};
