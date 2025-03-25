@@ -1,0 +1,1 @@
+g++ -Wall -Wextra gasSim/graphics.cpp gasSim/physicsEngine.cpp gasSim/statistics.cpp graphicsTest.cpp -o graphicsTests -lsfml-graphics -lsfml-window -lsfml-system
