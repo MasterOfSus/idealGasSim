@@ -13,6 +13,7 @@
 
 int main(int argc, const char* argv[]) {
   auto opts{gasSim::input::optParse(argc, argv)};
+<<<<<<< HEAD
   /*std::cout << "bombardini goosini" << std::endl << std::endl;
   std::cout << "opts arguments" << std::endl
             << opts.arguments_string() << std::endl;
@@ -24,4 +25,9 @@ int main(int argc, const char* argv[]) {
     throw std::invalid_argument(
         "Options --demo and --config are mutually exclusive.");
   }
+=======
+  if (argc == 1 || opts.count("help") || opts.count("usage")) {
+    return 0;
+  };
+>>>>>>> 2f357739908d770d22fb96b5058254c5400c5ef5
 }
