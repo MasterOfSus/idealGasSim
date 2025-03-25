@@ -400,14 +400,9 @@ TEST_CASE("Testing the TdStats class") {
     CHECK(stats.getSpeeds() ==
           std::vector<gasSim::PhysVectorD>{{2., 3., -0.75}});
     CHECK(stats.getTime0() == 0.);
-    CHECK(stats.getTime() == 1.5);  // Non è assurdo che il conto torni senza
-                                    // mettere nemmeno il doctest approx??
-    CHECK(stats.getDeltaT() ==
-          5. / 3.);  // Perchè 5 diviso 3 che numeri sonoo?, non dovrebbe essere
-                     // semplicemente lo stesso tempo che c'è sopra?
-    CHECK(stats.getMeanFreePath() == doctest::Approx(5.62408 / 1.5));
-    // Questo è giusto se voglia fare il conto del libero cammino medio sin
-    // dall'inizio senno c'è da togliere 1.22758 dal primo numero
+    CHECK(stats.getTime() == 1.5);
+    CHECK(stats.getDeltaT() == 1.5 );
+    CHECK(stats.getMeanFreePath() == doctest::Approx(4.3965 / 4.));
     stats = gasSim::TdStats(gas);
     CHECK_THROWS(stats.getMeanFreePath());
     gasSim::TdStats moreStats{moreGas.simulate(5)};
@@ -428,7 +423,7 @@ TEST_CASE("Testing the TdStats class") {
               {-1., 0., 0.},
               {0., 0., 0.},
               {0., 1., 0.}});
-    CHECK(moreStats.getMeanFreePath() == 4.);
+    CHECK(moreStats.getMeanFreePath() == 3.333333);
     // Qua mi devi dire come hai fatto i conti perchè io non mi rimetto a fare
     // il fottuto geogebra con 3 particelle
   }
