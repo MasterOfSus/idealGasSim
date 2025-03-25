@@ -24,9 +24,13 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
   options.add_options(
       "gas")  // options concerning the gas and the physics engine
       ("particleNum", "Sets the number of particles to a user defined value",
-       cxxopts::value<int>())("temperature",
-                              "Sets the temperature to a user defined value",
+       cxxopts::value<int>())("pMass",
+                              "Sets the particle mass to a user defined value",
                               cxxopts::value<double>())(
+          "pRadius", "Sets the particle radius to a user defined value",
+          cxxopts::value<double>())(
+          "temperature", "Sets the temperature to a user defined value",
+          cxxopts::value<double>())(
           "boxSide",
           "Sets the side of the container lenght to a user defined value",
           cxxopts::value<double>())(
