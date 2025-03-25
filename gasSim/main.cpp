@@ -7,9 +7,9 @@
 #include <SFML/Window/WindowStyle.hpp>
 #include <iostream>
 // #include <set>
-
+#include "INIReader.h"
 #include "input.hpp"
-// #include "physicsEngine.hpp"
+#include "physicsEngine.hpp"
 
 int main(int argc, const char* argv[]) {
   auto opts{gasSim::input::optParse(argc, argv)};
@@ -24,8 +24,9 @@ int main(int argc, const char* argv[]) {
              opts.count("pdfSpeed") == 0 && opts.count("freePath") == 0 &&
              opts.count("collNeg") == 0) {
     throw std::invalid_argument(
-        "At least one of the base options (except --help & --usage) has to be "
+        "At least one of the base options (-t,-k,-p,-f,n) has to be "
         "called.");
   }  // maybe this option control can be implemented as a separate function
-  std::cout << "bombardini goosini" << std::endl << std::endl;
+
+  // std::cout << "bombardini goosini" << std::endl << std::endl;
 }
