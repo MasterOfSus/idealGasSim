@@ -18,12 +18,14 @@
 #include "statistics.hpp"
 
 // PER TEST
-std::ostream& operator<<(std::ostream& os, const gasSim::PhysVectorD& vec) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const gasSim::PhysVectorD& vec) {
   os << "PhysVector(" << vec.x << ", " << vec.y << ", " << vec.z << ")   ";
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const gasSim::Particle& part) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const gasSim::Particle& part) {
   os << "Partcle(" << part.position << ", " << part.speed << ")\n";
   return os;
 }
@@ -237,7 +239,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   }
 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
-  double particleDistance{boxSide / elementPerSide};
+  double particleDistance{boxSide * 0.9 / elementPerSide};
   double radius{Particle::radius};
 
   if (particleDistance <= 2 * radius) {
@@ -253,9 +255,9 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
     int pZ{i / (elementPerSide * elementPerSide)};
     // Posizione nella griglia con numeri interi
 
-    double x{(pX * particleDistance) + radius};
-    double y{(pY * particleDistance) + radius};
-    double z{(pZ * particleDistance) + radius};
+    double x{(pX * particleDistance) + radius + boxSide * 0.05};
+    double y{(pY * particleDistance) + radius + boxSide * 0.05};
+    double z{(pZ * particleDistance) + radius + boxSide * 0.05};
     return PhysVectorD{x, y, z};
   };
 
