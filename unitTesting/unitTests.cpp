@@ -399,7 +399,7 @@ TEST_CASE("Testing the TdStats class") {
 		CHECK(stats.getPressure(gasSim::Wall::Back) == 30./8.);
 		CHECK(stats.getPressure(gasSim::Wall::Right) == 10./4.);
 		CHECK(stats.getPressure(gasSim::Wall::Left) == 10./4.);
-		CHECK(stats.getPressure(gasSim::Wall::Bottom) == 10./16.);
+		CHECK(stats.getPressure(gasSim::Wall::Bottom) == 15./16.);
 		CHECK(stats.getPressure(gasSim::Wall::Top) == 0.);
 		CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>
 				{{2., 3., -0.75}});
