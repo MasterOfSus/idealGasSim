@@ -10,7 +10,14 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
       "idealGasSim",
       "Physics simulation of a particle gas determined only by kinetik energy");
   options.add_options("base")("h,help", "Print the list of commands")(
-      "usage", "Prints the list of commands and their description");
+      "usage", "Prints the list of commands and their description")(
+      "t,tCoords", "Measures thermodynamic coordinates of the simulated gas")(
+      "k,kBoltz", "Measures Boltzman's constant from the simulated gas")(
+      "p,pdfSpeed", "Generates a PDF of the speed that each particle has")(
+      "f,freePath", "Measures the mean free path of the particles")(
+      "n,collNeg",
+      "Generates another gas without collisions between particles to show "
+      "their negligibility");
 
   options.add_options(
       "gas")(  // options concerning the gas and the physics engine
@@ -25,6 +32,9 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
       "boxSide",
       "Sets the side of the container lenght to a user defined value",
       cxxopts::value<double>())(
+      "iterationNum",
+      "Sets the number of iterations simulated to a user defined value",
+      cxxopts::value<int>())(
       "simultaneous",
       "Enables check for possible multi-particle/contemporary "
       "collisions");
@@ -33,14 +43,14 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
       "results")(  // options concerning values/graphs related to the gas state
       "g,graphs",
       "Enables production and display of histograms on a new window")(
-      "p,photo",
-      "Enables production and display of a gas photo on a new window")(
+      "r,reder",
+      "Enables production and display of a gas render on a new window")(
       "s,save",
       "Saves produced data (including possible images) as file with user "
       "defined name",
       cxxopts::value<std::string>());  // value type needs to be changed
                                        // according to file generation handling
-  options.add_options("graphics")(  // options concerning the visualization of
+  options.add_options("render")(  // options concerning the visualization of
                                     // the gas using SFML
       "a,ale", "print ale", cxxopts::value<int>());
 
