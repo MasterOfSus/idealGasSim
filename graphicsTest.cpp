@@ -15,16 +15,6 @@
 double gasSim::Particle::radius = 1.;
 double gasSim::Particle::mass = 10;
 
-std::ostream &operator<<(std::ostream &os, const gasSim::PhysVectorD &vec) {
-  os << "PhysVector(" << vec.x << ", " << vec.y << ", " << vec.z << ")   ";
-  return os;
-}
-
-std::ostream &operator<<(std::ostream &os, const gasSim::Particle &part) {
-  os << "Partcle(" << part.position << ", " << part.speed << ")\n";
-  return os;
-}
-
 int main() {
   gasSim::Gas amogus(2, 1., 10.);
   gasSim::PhysVectorF focus{-23., 31., 12.};
@@ -36,23 +26,17 @@ int main() {
   gasSim::RenderStyle style{};
   std::string options{"udlrfb"};
   style.setWallsOpts(options);
-  gasSim::drawGas(amogus, camera, photo, style);
   sf::Sprite picture;
   picture.setTexture(photo.getTexture());
 
-  sf::ContextSettings settings;
-  settings.antialiasingLevel = 8;
-
   sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window",
-                          sf::Style::Default, settings);
+                          sf::Style::Default);
 
   // run the program as long as the window is open
   while (window.isOpen()) {
     // check all the window's events that were triggered since the last
     // iteration of the loop
     sf::Event event;
-    std::cout << amogus.getParticles()[0];
-    std::cout << amogus.getParticles()[1];
     gasSim::drawGas(amogus, camera, photo, style);
 
     sleep(1);

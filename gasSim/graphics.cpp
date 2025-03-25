@@ -421,7 +421,7 @@ void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture,
 
 void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style) {
 	picture.create(camera.getWidth(), camera.getHeight());
-	picture.clear(sf::Color::Transparent);
+	picture.clear(sf::Color::White);
 	drawParticles(gas, camera, picture, style);
 	drawWalls(gas, camera, picture, style);
 }
