@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <numeric>
 #include <stdexcept>
 
 #include "physicsEngine.hpp"
@@ -134,18 +135,15 @@ double TdStats::getPressure(Wall wall) const {
 }
 
 double TdStats::getPressure() const {
-  double totPulses{};
-  for (double wallPulse : wallPulses_) {
-    totPulses += wallPulse;
-  }
+  double totPulses{0};
+  totPulses = std::accumulate(wallPulses_.begin(), wallPulses_.end(), 0.);
   return totPulses / (getBoxSide() * getBoxSide() * 6);
 }
 
 double TdStats::getTemp() const {
-  double sqrSpeeds{0};
-  for (PhysVectorD speed : speeds_) {
-    sqrSpeeds += speed * speed;
-  }
+  double sqrSpeeds = std::accumulate(
+      speeds_.begin(), speeds_.end(), 0.0,
+      [](double acc, const PhysVectorD& v) { return acc + v * v; });
   return gasSim::Particle::mass * sqrSpeeds / speeds_.size();
 }
 
@@ -155,11 +153,7 @@ double TdStats::getMeanFreePath() const {
         "Tried to get mean free path from blank free path data.");
   } else {
     double mfp{0};
-    int i{0};
-    for (double fp : freePaths_) {
-      mfp += fp;
-      ++i;
-    }
+    mfp = std::accumulate(freePaths_.begin(), freePaths_.end(), 0.);
     return mfp / freePaths_.size();
   }
 }

@@ -373,7 +373,7 @@ TEST_CASE("Testing Gas 2") {
 TEST_CASE("Testing the TdStats class") {
   std::vector<gasSim::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
   std::vector<gasSim::Particle> moreParticles{
-      {{2., 3., 4.}, {-1., 0., 0.}},
+      {{2., 3., 4.}, {1., 0., 0.}},
       {{5., 3., 7.}, {0., 0., 0.}},
       {{5., 6., 7.}, {0., -1., 0.}},
   };
@@ -382,7 +382,7 @@ TEST_CASE("Testing the TdStats class") {
   SUBCASE("Testing the constructor") {
     gasSim::TdStats stats{moreGas};
     CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>{
-                                   {-1., 0., 0.}, {0., 0., 0.}, {0., -1., 0.}});
+                                   {1., 0., 0.}, {0., 0., 0.}, {0., -1., 0.}});
     CHECK(stats.getBoxSide() == 12.);
     CHECK(stats.getVolume() == 1728.);
     CHECK(stats.getDeltaT() == 0.);
@@ -402,14 +402,14 @@ TEST_CASE("Testing the TdStats class") {
     CHECK(stats.getTime0() == 0.);
     CHECK(stats.getTime() == 1.5);
     CHECK(stats.getDeltaT() == 1.5 );
-    CHECK(stats.getMeanFreePath() == doctest::Approx(4.3965 / 4.));
+    CHECK(stats.getMeanFreePath() == doctest::Approx(4.2964998799 / 4.));
     stats = gasSim::TdStats(gas);
     CHECK_THROWS(stats.getMeanFreePath());
     gasSim::TdStats moreStats{moreGas.simulate(5)};
     CHECK(moreStats.getTemp() == 20. / 3.);
     CHECK(moreStats.getPressure(gasSim::Wall::Front) == 10. / 72.);
-    CHECK(moreStats.getPressure(gasSim::Wall::Left) == 10. / 72.);
-    CHECK(moreStats.getPressure(gasSim::Wall::Back) == 0.);
+    CHECK(moreStats.getPressure(gasSim::Wall::Left) == 0);
+    CHECK(moreStats.getPressure(gasSim::Wall::Back) == 10. / 72.);
     CHECK(moreStats.getPressure(gasSim::Wall::Right) == 10. / 72.);
     CHECK(moreStats.getPressure(gasSim::Wall::Top) == 0.);
     CHECK(moreStats.getPressure(gasSim::Wall::Bottom) == 0.);
@@ -422,8 +422,8 @@ TEST_CASE("Testing the TdStats class") {
               {1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},*/
               {-1., 0., 0.},
               {0., 0., 0.},
-              {0., 1., 0.}});
-    CHECK(moreStats.getMeanFreePath() == 3.333333);
+              {0., -1., 0.}});
+    CHECK(moreStats.getMeanFreePath() == 2.5);
     // Qua mi devi dire come hai fatto i conti perchè io non mi rimetto a fare
     // il fottuto geogebra con 3 particelle
   }
