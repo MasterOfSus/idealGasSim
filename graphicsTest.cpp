@@ -9,11 +9,13 @@
 #include <iostream>
 
 #include "gasSim/graphics.hpp"
+#include "gasSim/output.hpp"
 #include "gasSim/physicsEngine.hpp"
 #include "gasSim/statistics.hpp"
 
-double gasSim::Particle::radius = 1.;
+double gasSim::Particle::radius = 1;
 double gasSim::Particle::mass = 10;
+
 
 int main() {
   gasSim::Gas amogus(2, 1., 10.);
@@ -34,6 +36,7 @@ int main() {
   picture.setTexture(photo.getTexture());
 
   sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window",
+
                           sf::Style::Default);
 	
 	amogus.simulate(8);
@@ -69,6 +72,9 @@ int main() {
 		window.draw(picture);
 		window.display();
   }
+  gasSim::printInitData(1, 2, 3, 4, false);
+  gasSim::printStat(stats);
+  gasSim::printLastShit();
 
   return 0;
 }

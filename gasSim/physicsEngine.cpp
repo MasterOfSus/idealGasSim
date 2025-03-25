@@ -224,7 +224,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   }
 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
-  double particleDistance{boxSide / elementPerSide};
+  double particleDistance{boxSide * 0.9 / elementPerSide};
   double radius{Particle::radius};
 
   if (particleDistance <= 2 * radius) {
@@ -240,9 +240,9 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
     int pZ{i / (elementPerSide * elementPerSide)};
     // Posizione nella griglia con numeri interi
 
-    double x{(pX * particleDistance) + radius};
-    double y{(pY * particleDistance) + radius};
-    double z{(pZ * particleDistance) + radius};
+    double x{(pX * particleDistance) + radius + boxSide * 0.05};
+    double y{(pY * particleDistance) + radius + boxSide * 0.05};
+    double z{(pZ * particleDistance) + radius + boxSide * 0.05};
     return PhysVectorD{x, y, z};
   };
 
@@ -305,11 +305,18 @@ PartCollision Gas::firstPartCollision() {
   Particle* secondPart{nullptr};
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
-                    double time{collisionTime(p1, p2)};
-                    if (time < topTime) {
-                      firstPart = &p1;
-                      secondPart = &p2;
-                      topTime = time;
+                    PhysVectorD posRel{p1.position - p2.position};
+                    // Ottimmizzazione e evita gli errori delle approssimazioni
+                    // per l'approssimazione dei double delle particelle
+                    // compenetrate
+                    PhysVectorD spdRel{p1.speed - p2.speed};
+                    if (posRel * spdRel <= 0) {
+                      double time{collisionTime(p1, p2)};
+                      if (time < topTime) {
+                        firstPart = &p1;
+                        secondPart = &p2;
+                        topTime = time;
+                      }
                     }
                   });
   return {topTime, firstPart, secondPart};
