@@ -47,10 +47,10 @@ TdStats::TdStats(const Gas& firstState, const TdStats& prevStats)
 void TdStats::addData(const Gas& gas, const Collision* collision) {
   if (gas.getParticles().size() != getNParticles()) {
     throw std::invalid_argument("Non-matching gas particles number.");
-  } else if (gas.getTime() <= time_) {
+  } else if (gas.getTime() < time_) {
     throw std::invalid_argument(
         "Gas time is less than or equal to internal time.");
-  } else if (gas.getTime() + collision->getTime() <= time_) {
+  } else if (gas.getTime() + collision->getTime() < time_) {
     throw std::invalid_argument(
         "Collision time is less than or equal to internal time.");
   } else if (std::abs(gas.getTime() - collision->getTime() - time_) > 0.001)

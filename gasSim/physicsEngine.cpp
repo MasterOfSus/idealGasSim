@@ -17,17 +17,6 @@
 #include "algorithms.hpp"
 #include "statistics.hpp"
 
-// PER TEST
-std::ostream& operator<<(std::ostream& os, const gasSim::PhysVectorD& vec) {
-  os << "PhysVector(" << vec.x << ", " << vec.y << ", " << vec.z << ")   ";
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const gasSim::Particle& part) {
-  os << "Partcle(" << part.position << ", " << part.speed << ")\n";
-  return os;
-}
-
 namespace gasSim {
 
 // double Particle::radius = 1.;
@@ -198,8 +187,6 @@ Gas::Gas(const Gas& gas)
 
 Gas::Gas(std::vector<Particle> particles, double boxSide, double time)
     : particles_(particles), boxSide_(boxSide), time_(time) {
-  std::cout << "Sono nel punto giusto\n";
-  std::cout << particles[0];
   if (particles_.size() == 0) {
     throw std::invalid_argument("Empty particle vector.");
   }
@@ -237,7 +224,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   }
 
   int elementPerSide{static_cast<int>(std::ceil(cbrt(nParticles)))};
-  double particleDistance{boxSide / elementPerSide};
+  double particleDistance{boxSide * 0.9 / elementPerSide};
   double radius{Particle::radius};
 
   if (particleDistance <= 2 * radius) {
@@ -253,9 +240,9 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
     int pZ{i / (elementPerSide * elementPerSide)};
     // Posizione nella griglia con numeri interi
 
-    double x{(pX * particleDistance) + radius};
-    double y{(pY * particleDistance) + radius};
-    double z{(pZ * particleDistance) + radius};
+    double x{(pX * particleDistance) + radius + boxSide * 0.05};
+    double y{(pY * particleDistance) + radius + boxSide * 0.05};
+    double z{(pZ * particleDistance) + radius + boxSide * 0.05};
     return PhysVectorD{x, y, z};
   };
 
@@ -316,16 +303,20 @@ PartCollision Gas::firstPartCollision() {
   double topTime{INFINITY};
   Particle* firstPart{nullptr};
   Particle* secondPart{nullptr};
-  std::cout << "size: " << particles_.size() << '\n';
-  std::cout << particles_[0];
-  std::cout << particles_[1];
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
-                    double time{collisionTime(p1, p2)};
-                    if (time < topTime) {
-                      firstPart = &p1;
-                      secondPart = &p2;
-                      topTime = time;
+                    PhysVectorD posRel{p1.position - p2.position};
+                    // Ottimmizzazione e evita gli errori delle approssimazioni
+                    // per l'approssimazione dei double delle particelle
+                    // compenetrate
+                    PhysVectorD spdRel{p1.speed - p2.speed};
+                    if (posRel * spdRel <= 0) {
+                      double time{collisionTime(p1, p2)};
+                      if (time < topTime) {
+                        firstPart = &p1;
+                        secondPart = &p2;
+                        topTime = time;
+                      }
                     }
                   });
   return {topTime, firstPart, secondPart};

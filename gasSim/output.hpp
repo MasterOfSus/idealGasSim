@@ -1,8 +1,12 @@
 #ifndef OUTPUT_HPP
 #define OUTPUT_HPP
 
+#include "statistics.hpp"
 namespace gasSim {
-namespace output {}  // namespace output
+void printInitData(int particleNum, double temperature, double boxSide,
+                   int iterationNum, bool simultaneous);
+void printStat(TdStats stats);
+void printLastShit();
 }  // namespace gasSim
 
 #endif

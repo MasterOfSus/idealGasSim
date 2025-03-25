@@ -197,12 +197,12 @@ void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& text
 	static sf::CircleShape partProj = style.getPartProj();
 	float r {camera.getNPixels(gas.getParticles().begin()->radius)};
 	partProj.setRadius(r);
-	partProj.setOrigin({r, -r});
+	partProj.setOrigin({r, r});
 	std::vector<PhysVectorF> projections = camera.projectParticles(gas.getParticles());
 
 	std::sort(projections.begin(), projections.end(), 
 						[](const PhysVectorF& a, const PhysVectorF& b) {
-							return a.z > b.z;});
+							return a.z < b.z;});
 	// sorted projections so as to draw the closest particles over the farthest
 	for (const PhysVectorF& proj: projections) {
 		partProj.setPosition({proj.x, proj.y});
@@ -396,6 +396,7 @@ void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture,
 	backWalls.clear(sf::Color::White);
 	sf::RenderTexture frontWalls;
 	frontWalls.create(camera.getWidth(), camera.getHeight());
+	frontWalls.clear(sf::Color::Transparent);
 	// draw walls projections
 	for (const sf::ConvexShape& wallPrj: backWallPrjs) {
 		backWalls.draw(wallPrj);

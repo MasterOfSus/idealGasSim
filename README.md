@@ -92,3 +92,9 @@ follow https://github.com/jarro2783/cxxopts/wiki to implement
 * Opzione -s|--save=graphics,data , per salvare grafici e video?                        def OFF
 
 launching with no options runs --help option
+
+## Cose da chiedere al GIACOZ
+
+- [ ] Mettere funzioni libere inline nei cpp da usare come pezzo di codice che sostituisce una espressione che verrebbe utilizzata piu volte per rendere il codice piu leggibile?
+- [ ] Pratica di fare un header separato solo per i test in modo da riuscire a testare con funzioni che non servirebbero all'utente ma che servono a noi?
+- [ ] Vuole uscire con noi a cena?
