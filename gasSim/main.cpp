@@ -13,21 +13,16 @@
 
 int main(int argc, const char* argv[]) {
   auto opts{gasSim::input::optParse(argc, argv)};
-<<<<<<< HEAD
+
   /*std::cout << "bombardini goosini" << std::endl << std::endl;
   std::cout << "opts arguments" << std::endl
             << opts.arguments_string() << std::endl;
   std::cout << "argc = " << argc << std::endl;
   // std::cout << "argv =" << argv << std::endl;*/
-  if (argc == 1 || opts.count("help") || opts.count("usage")) {
+  if (argc == 1 || opts["help"].as<bool>() || opts["usage"].as<bool>()) {
     return 0;
   } else if (opts.count("demo") != 0 && opts.count("config") != 0) {
     throw std::invalid_argument(
         "Options --demo and --config are mutually exclusive.");
-  }
-=======
-  if (argc == 1 || opts.count("help") || opts.count("usage")) {
-    return 0;
-  };
->>>>>>> 2f357739908d770d22fb96b5058254c5400c5ef5
+  }  // maybe this option control can be implemented as a separate function
 }
