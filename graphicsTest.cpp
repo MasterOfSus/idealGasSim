@@ -9,24 +9,27 @@
 #include <iostream>
 
 #include "gasSim/graphics.hpp"
+#include "gasSim/output.hpp"
 #include "gasSim/physicsEngine.hpp"
 #include "gasSim/statistics.hpp"
 
-double gasSim::Particle::radius = 0.1;
+double gasSim::Particle::radius = 1;
 double gasSim::Particle::mass = 10;
 
-inline std::ostream &operator<<(std::ostream &os, const gasSim::PhysVectorD &vec) {
+inline std::ostream &operator<<(std::ostream &os,
+                                const gasSim::PhysVectorD &vec) {
   os << "PhysVector(" << vec.x << ", " << vec.y << ", " << vec.z << ")   ";
   return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const gasSim::Particle &part) {
+inline std::ostream &operator<<(std::ostream &os,
+                                const gasSim::Particle &part) {
   os << "Partcle(" << part.position << ", " << part.speed << ")\n";
   return os;
 }
 
 int main() {
-  gasSim::Gas amogus(8, 1., 10.);
+  gasSim::Gas amogus(3, 1., 10.);
   gasSim::PhysVectorF focus{-23., 31., 12.};
   gasSim::PhysVectorF center{4.5, 4.5, 4.5};
   gasSim::Camera camera(focus, center - focus, 2., 90., 1200, 900);
@@ -45,7 +48,7 @@ int main() {
 
   sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window",
                           sf::Style::Default, settings);
-
+  gasSim::TdStats stats{amogus};
   // run the program as long as the window is open
   while (window.isOpen()) {
     // check all the window's events that were triggered since the last
@@ -54,16 +57,11 @@ int main() {
     std::cout << amogus.getParticles()[0];
     std::cout << amogus.getParticles()[1];
     std::cout << amogus.getParticles()[2];
-    std::cout << amogus.getParticles()[3];
-    std::cout << amogus.getParticles()[4];
-    std::cout << amogus.getParticles()[5];
-    std::cout << amogus.getParticles()[6];
-    std::cout << amogus.getParticles()[7];
-	std::cout << "\n\n";
+    std::cout << "\n\n";
     gasSim::drawGas(amogus, camera, photo, style);
 
     sleep(1);
-    amogus.simulate(1);
+    stats = amogus.simulate(1);
 
     while (window.pollEvent(event)) {
       // "close requested" event: we close the window
@@ -73,6 +71,9 @@ int main() {
     window.draw(picture);
     window.display();
   }
+  gasSim::printInitData(1, 2, 3, 4, false);
+  gasSim::printStat(stats);
+  gasSim::printLastShit();
 
   return 0;
 }
