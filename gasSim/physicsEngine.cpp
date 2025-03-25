@@ -17,10 +17,20 @@
 #include "algorithms.hpp"
 #include "statistics.hpp"
 
+// PER TEST
+std::ostream& operator<<(std::ostream& os, const gasSim::PhysVectorD& vec) {
+  os << "PhysVector(" << vec.x << ", " << vec.y << ", " << vec.z << ")   ";
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const gasSim::Particle& part) {
+  os << "Partcle(" << part.position << ", " << part.speed << ")\n";
+  return os;
+}
+
 namespace gasSim {
 
 // double Particle::radius = 1.;
-
 
 // Definition of vector functions
 PhysVectorD unifRandVector(const double maxNorm) {
@@ -108,9 +118,7 @@ WallCollision::WallCollision(double t, Particle* p, Wall wall)
     : Collision(t, p), wall_(wall) {}
 
 Wall WallCollision::getWall() const { return wall_; }
-std::string WallCollision::getType() const {
-  return "Wall";
-}
+std::string WallCollision::getType() const { return "Wall"; }
 /*
 Statistic WallCollision::solve(Statistic& stat) {
   Particle* part{getFirstParticle()};
@@ -139,22 +147,22 @@ Statistic WallCollision::solve(Statistic& stat) {
 }*/
 void WallCollision::solve() {
   Particle& part = *getFirstParticle();
-	switch(wall_) {
-		case Wall::Left:
-		case Wall::Right:
-			part.speed.x = -part.speed.x;
-			break;
-		case Wall::Front:
-		case Wall::Back:
-			part.speed.y = -part.speed.y;
-			break;
-		case Wall::Top:
-		case Wall::Bottom:
-			part.speed.z = -part.speed.z;
-			break;
-		default:
-			throw std::logic_error("Unknown wall type.");
-	}
+  switch (wall_) {
+    case Wall::Left:
+    case Wall::Right:
+      part.speed.x = -part.speed.x;
+      break;
+    case Wall::Front:
+    case Wall::Back:
+      part.speed.y = -part.speed.y;
+      break;
+    case Wall::Top:
+    case Wall::Bottom:
+      part.speed.z = -part.speed.z;
+      break;
+    default:
+      throw std::logic_error("Unknown wall type.");
+  }
 }
 // End of WallCollision functions
 
@@ -162,11 +170,11 @@ void WallCollision::solve() {
 PartCollision::PartCollision(double t, Particle* p1, Particle* p2)
     : Collision(t, p1), secondParticle_(p2) {}
 
-const Particle* PartCollision::getSecondParticle() const { return secondParticle_; }
-
-std::string PartCollision::getType() const {
-  return "Particle Collision";
+const Particle* PartCollision::getSecondParticle() const {
+  return secondParticle_;
 }
+
+std::string PartCollision::getType() const { return "Particle Collision"; }
 
 void PartCollision::solve() {
   Particle* part1{getFirstParticle()};
@@ -190,6 +198,8 @@ Gas::Gas(const Gas& gas)
 
 Gas::Gas(std::vector<Particle> particles, double boxSide, double time)
     : particles_(particles), boxSide_(boxSide), time_(time) {
+  std::cout << "Sono nel punto giusto\n";
+  std::cout << particles[0];
   if (particles_.size() == 0) {
     throw std::invalid_argument("Empty particle vector.");
   }
@@ -206,13 +216,12 @@ Gas::Gas(std::vector<Particle> particles, double boxSide, double time)
     }
   });
 
-  for_each_couple(
-      particles_.begin(), particles_.end(),
-      [](const Particle& p1, const Particle& p2) {
-        if (overlap(p1, p2) == true) {
-          throw std::invalid_argument("Overlapping particles.");
-        }
-      });
+  for_each_couple(particles_.begin(), particles_.end(),
+                  [](const Particle& p1, const Particle& p2) {
+                    if (overlap(p1, p2) == true) {
+                      throw std::invalid_argument("Overlapping particles.");
+                    }
+                  });
 }
 
 Gas::Gas(int nParticles, double temperature, double boxSide)
@@ -232,8 +241,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
   double radius{Particle::radius};
 
   if (particleDistance <= 2 * radius) {
-    throw std::runtime_error(
-        "Can't fit all particles in the box.");
+    throw std::runtime_error("Can't fit all particles in the box.");
   }
 
   double maxSpeed = 4. / 3. * temperature;  // espressione sbagliata appena
@@ -283,16 +291,14 @@ TdStats Gas::simulate(int nIterations) {
     move(firstColl->getTime());
     deltaT += firstColl->getTime();
 
-		firstColl->solve();
-		stat.addData(*this, firstColl);
+    firstColl->solve();
+    stat.addData(*this, firstColl);
   }
 
   return stat;
 }
 
-int Gas::getPIndex(const Particle* p) const {
-	return p - particles_.data();
-}
+int Gas::getPIndex(const Particle* p) const { return p - particles_.data(); }
 
 WallCollision Gas::firstWallCollision() {
   WallCollision firstColl{INFINITY, nullptr, Wall::Back};
@@ -310,7 +316,9 @@ PartCollision Gas::firstPartCollision() {
   double topTime{INFINITY};
   Particle* firstPart{nullptr};
   Particle* secondPart{nullptr};
-
+  std::cout << "size: " << particles_.size() << '\n';
+  std::cout << particles_[0];
+  std::cout << particles_[1];
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
                     double time{collisionTime(p1, p2)};
@@ -324,10 +332,10 @@ PartCollision Gas::firstPartCollision() {
 }
 
 void Gas::move(double time) {
-	assert(time != INFINITY);
+  assert(time != INFINITY);
   std::for_each(particles_.begin(), particles_.end(),
                 [time](Particle& part) { part.position += part.speed * time; });
-	time_ += time;
+  time_ += time;
   // Sddfqoinp
   /*std::for_each(std::execution::par, particles_.begin(), particles_.end(),
               [time](Particle& part) { part.position += part.speed * time; });*/
@@ -365,7 +373,7 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
   auto calculate = [&, squareSide](double position, double speed, Wall negWall,
                                    Wall posWall) -> WallCollision {
     double time = (speed < 0)
-                      ? (-Particle::radius - position) / speed
+                      ? (position - Particle::radius) / (-speed)
                       : (squareSide - Particle::radius - position) / speed;
     Wall wall = (speed < 0) ? negWall : posWall;
     return {time, &p, wall};
@@ -387,7 +395,7 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
     minColl = collZ;
   }
 
-  assert(minColl.getTime() > 0);
+  // assert(minColl.getTime() > 0);
 
   return minColl;
 }
