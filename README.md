@@ -81,8 +81,9 @@ Diego physicsEngine, forse main
 
 ## Interface
 
-using https://github.com/jarro2783/cxxopts library to manage command line options
+Using https://github.com/jarro2783/cxxopts library to manage command line options
 follow https://github.com/jarro2783/cxxopts/wiki to implement
+Using https://github.com/jtilly/inih/blob/master/test.ini library to manage config file input
 * Una modalità tutti i parametri inseriti per quello che noi consideriamo standard
 * Opzione -h|--help, mostra il messaggio di help
 * (Opzione --usage, mostra il messaggio di usage)

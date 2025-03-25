@@ -21,7 +21,7 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
 
   options.add_options(
       "gas")(  // options concerning the gas and the physics engine
-      "d,demo", "Starts the gas simulation from predefined data")(
+      /*"d,demo", "Starts the gas simulation from predefined data")(*/
       "c,config", "Starts the gas simulation from a configuration file",
       cxxopts::value<std::string>())(  // value type needs to be changed
                                        // according to text file input handling
@@ -43,7 +43,7 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
       "results")(  // options concerning values/graphs related to the gas state
       "g,graphs",
       "Enables production and display of histograms on a new window")(
-      "r,reder",
+      "r,render",
       "Enables production and display of a gas render on a new window")(
       "s,save",
       "Saves produced data (including possible images) as file with user "
@@ -51,7 +51,7 @@ cxxopts::ParseResult optParse(int argc, const char* argv[]) {
       cxxopts::value<std::string>());  // value type needs to be changed
                                        // according to file generation handling
   options.add_options("render")(  // options concerning the visualization of
-                                    // the gas using SFML
+                                  // the gas using SFML
       "a,ale", "print ale", cxxopts::value<int>());
 
   auto result = options.parse(argc, argv);
