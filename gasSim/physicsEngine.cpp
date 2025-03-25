@@ -281,10 +281,8 @@ TdStats Gas::simulate(int nIterations) {
     }
 
     move(firstColl->getTime());
-		time_ += firstColl->getTime();
     deltaT += firstColl->getTime();
 
-    assert(time_ != INFINITY);
 		firstColl->solve();
 		stat.addData(*this, firstColl);
   }
@@ -326,8 +324,10 @@ PartCollision Gas::firstPartCollision() {
 }
 
 void Gas::move(double time) {
+	assert(time != INFINITY);
   std::for_each(particles_.begin(), particles_.end(),
                 [time](Particle& part) { part.position += part.speed * time; });
+	time_ += time;
   // Sddfqoinp
   /*std::for_each(std::execution::par, particles_.begin(), particles_.end(),
               [time](Particle& part) { part.position += part.speed * time; });*/

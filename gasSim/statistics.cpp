@@ -44,32 +44,32 @@ void TdStats::addData(const Gas& gas, const Collision* collision) {
 		throw std::invalid_argument("Non-matching gas particles number.");
 	} else if (gas.getTime() <= time_) {
 		throw std::invalid_argument("Gas time is less than or equal to internal time.");
-	} else if (collision->getTime() <= time_) {
+	} else if (gas.getTime() + collision->getTime() <= time_) {
 		throw std::invalid_argument("Collision time is less than or equal to internal time.");
-	} else if (collision->getTime() != gas.getTime()) {
-		throw std::invalid_argument("Gas time less than collision time.");
-	} else {
-		time_ = gas.getTime();
+	} else if (std::abs(gas.getTime() - collision->getTime() - time_) > 0.001)
+		throw std::invalid_argument("Non matching gas (" + std::to_string(gas.getTime()) + ") collision (" + std::to_string(collision->getTime()) + ") and stats (" + std::to_string(time_) + ") times.");
+	else {
+		time_ += collision->getTime();
 		if (collision->getType() == "Wall") {
 			const WallCollision* wallColl = static_cast<const WallCollision*>(collision);
 			switch (wallColl->getWall()) {
 				case Wall::Front:
-					wallPulses_[0] -= 2. * wallColl->getFirstParticle()->speed.y;
+					wallPulses_[0] += Particle::mass * 2. * wallColl->getFirstParticle()->speed.y;
 					break;
 				case Wall::Back:
-					wallPulses_[1] -= 2. * wallColl->getFirstParticle()->speed.y;
+					wallPulses_[1] -= Particle::mass * 2. * wallColl->getFirstParticle()->speed.y;
 					break;
 				case Wall::Left:
-					wallPulses_[2] -= 2. * wallColl->getFirstParticle()->speed.x;
+					wallPulses_[2] += Particle::mass * 2. * wallColl->getFirstParticle()->speed.x;
 					break;
 				case Wall::Right:
-					wallPulses_[3] -= 2. * wallColl->getFirstParticle()->speed.x;
+					wallPulses_[3] -= Particle::mass * 2. * wallColl->getFirstParticle()->speed.x;
 					break;
 				case Wall::Top:
-					wallPulses_[4] -= 2. * wallColl->getFirstParticle()->speed.z;
+					wallPulses_[4] += Particle::mass * 2. * wallColl->getFirstParticle()->speed.z;
 					break;
-				case Wall::Bottom:
-					wallPulses_[5] -= 2. * wallColl->getFirstParticle()->speed.z;
+				case Wall::Bottom: // ??????????
+					wallPulses_[5] -= Particle::mass * 2. * wallColl->getFirstParticle()->speed.z;
 					break;
 			}
 
@@ -78,7 +78,7 @@ void TdStats::addData(const Gas& gas, const Collision* collision) {
 				freePaths_.emplace_back((wallColl->getFirstParticle()->position - lastPos).norm());
 			}
 			lastPositions_[gas.getPIndex(wallColl->getFirstParticle())] = wallColl->getFirstParticle()->position;
-			speeds_[gas.getPIndex(wallColl->getFirstParticle())] = wallColl->getFirstParticle()->position;
+			speeds_[gas.getPIndex(wallColl->getFirstParticle())] = wallColl->getFirstParticle()->speed;
 		} else {
 			const PartCollision* partColl = static_cast<const PartCollision*>(collision);
 			if (lastPositions_[gas.getPIndex(partColl->getFirstParticle())] != PhysVectorD({0., 0., 0.})) {
@@ -110,7 +110,7 @@ void TdStats::addData(const Gas& gas, const Collision* collision) {
 }
 
 double TdStats::getPressure(Wall wall) const {
-	return wallPulses_[int(wall)] / getBoxSide()*getBoxSide();
+	return wallPulses_[int(wall)] / (getBoxSide()*getBoxSide());
 }
 
 double TdStats::getPressure() const {
@@ -122,21 +122,25 @@ double TdStats::getPressure() const {
 }
 
 double TdStats::getTemp() const {
-	double temp {0};
+	double sqrSpeeds {0};
 	for (PhysVectorD speed: speeds_) {
-		temp += speed*speed;
+		sqrSpeeds += speed*speed;
 	}
-	return temp / speeds_.size();
+	return gasSim::Particle::mass * sqrSpeeds / speeds_.size();
 }
 
 double TdStats::getMeanFreePath() const {
-	double mfp {0};
-	int i {0};
-	for (double fp: freePaths_) {
-		mfp += fp;
-		++i;
+	if (freePaths_.size() == 0) {
+		throw std::logic_error("Tried to get mean free path from blank free path data.");
+	} else {
+		double mfp {0};
+		int i {0};
+		for (double fp: freePaths_) {
+			mfp += fp;
+			++i;
+		}
+		return mfp / freePaths_.size();
 	}
-	return mfp / freePaths_.size();
 }
 
 } // namespace gasSim

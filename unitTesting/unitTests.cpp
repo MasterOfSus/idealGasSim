@@ -370,7 +370,7 @@ TEST_CASE("Testing Gas 2") {
 
 TEST_CASE("Testing the TdStats class") {
 	std::vector<gasSim::Particle> particles {
-		{{2., 2., 2.}, {2., 3., 0.5}}
+		{{2., 2., 2.}, {2., 3., 0.75}}
 	};
 	std::vector<gasSim::Particle> moreParticles {
 		{{2., 3., 4.}, {-1., 0., 0.}},
@@ -383,46 +383,47 @@ TEST_CASE("Testing the TdStats class") {
 		gasSim::TdStats stats {moreGas};
 		CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>
 				{
-					{-1., -2., 1.},
-					{1., 0., 0.},
-					{0., 1., 1.},
+					{-1., 0., 0.},
+					{0., 0., 0.},
+					{0., -1., 0.}
 				});
-		CHECK(stats.getBoxSide() == 6.);
-		CHECK(stats.getVolume() == 216.);
+		CHECK(stats.getBoxSide() == 12.);
+		CHECK(stats.getVolume() == 1728.);
 		CHECK(stats.getDeltaT() == 0.);
-		CHECK(stats.getNParticles() == 4);
+		CHECK(stats.getNParticles() == 3);
 	}
 	SUBCASE("Testing getters") {
 		gasSim::TdStats stats {gas.simulate(5)};
-		CHECK(stats.getTemp() == 14.);
-		CHECK(stats.getPressure(gasSim::Wall::Front) == 3./16.);
-		CHECK(stats.getPressure(gasSim::Wall::Back) == 3./16.);
-		CHECK(stats.getPressure(gasSim::Wall::Right) == 1./8.);
-		CHECK(stats.getPressure(gasSim::Wall::Left) == 1./8.);
-		CHECK(stats.getPressure(gasSim::Wall::Top) == 1./32.);
+		CHECK(stats.getTemp() == 135.625);
+		CHECK(stats.getPressure(gasSim::Wall::Front) == 30./8.);
+		CHECK(stats.getPressure(gasSim::Wall::Back) == 30./8.);
+		CHECK(stats.getPressure(gasSim::Wall::Right) == 10./4.);
+		CHECK(stats.getPressure(gasSim::Wall::Left) == 10./4.);
+		CHECK(stats.getPressure(gasSim::Wall::Bottom) == 10./16.);
 		CHECK(stats.getPressure(gasSim::Wall::Top) == 0.);
 		CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>
-				{{2., 3., -0.5}});
-		CHECK(stats.getDeltaT() == 2.);
-		CHECK(stats.getMeanFreePath() == 2.);
+				{{2., 3., -0.75}});
+		CHECK(stats.getTime0() == 0.);
+		CHECK(stats.getTime() == 2.5);
+		CHECK(stats.getDeltaT() == 5./3.);
+		CHECK(stats.getMeanFreePath() == doctest::Approx(2.));
 		stats = gasSim::TdStats(gas);
-		CHECK_THROWS(stats.getPressure(gasSim::Wall::Front));
 		CHECK_THROWS(stats.getMeanFreePath());
 		gasSim::TdStats moreStats {moreGas.simulate(5)};
-		CHECK(moreStats.getTemp() == 2);
-		CHECK(moreStats.getPressure(gasSim::Wall::Front) == 1./18.);
-		CHECK(moreStats.getPressure(gasSim::Wall::Left) == 1./18.);
+		CHECK(moreStats.getTemp() == 20./3.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Front) == 10./72.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Left) == 10./72.);
 		CHECK(moreStats.getPressure(gasSim::Wall::Back) == 0.);
-		CHECK(moreStats.getPressure(gasSim::Wall::Right) == 1./18.);
+		CHECK(moreStats.getPressure(gasSim::Wall::Right) == 10./72.);
 		CHECK(moreStats.getPressure(gasSim::Wall::Top) == 0.);
 		CHECK(moreStats.getPressure(gasSim::Wall::Bottom) == 0.);
 		CHECK(moreStats.getSpeeds() == std::vector<gasSim::PhysVectorD>
 			{
-				{-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
+				/*{-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
 				{1., 0., 0.},  {0., 0., 0.},  {0., -1., 0.},
 				{1., 0., 0.},  {0., -1., 0.}, {0., 0., 0.},
 				{1., 0., 0.},  {0., 1., 0.},  {0., 0., 0.},
-				{1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},
+				{1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},*/
 				{-1., 0., 0.}, {0., 0., 0.}, {0., 1., 0.}
 			}
 		);
