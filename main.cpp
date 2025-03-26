@@ -56,7 +56,7 @@ int main(int argc, const char* argv[]) {
     gasSim::Gas simulatedGas(pNum, temp, side);
 
     // int nIter = cFile.GetInteger("gas", "iterationNum", -1);
-    //  gasSim::TdStats simProducts = simulatedGas.simulate(nIter);
+    // gasSim::TdStats simProducts = simulatedGas.simulate(nIter);
 
     // render stuff
     gasSim::PhysVectorF focus{20., 7., 12.};
@@ -66,7 +66,7 @@ int main(int argc, const char* argv[]) {
     sf::RenderTexture photo;
     photo.create(camera.getWidth(), camera.getHeight());
     sf::CircleShape shape{1.f};
-    shape.setFillColor(sf::Color::Green);
+    shape.setFillColor(sf::Color::Red);
     shape.setOutlineColor(sf::Color::Black);
     shape.setOutlineThickness(10.);
     gasSim::RenderStyle style{shape};
@@ -75,33 +75,33 @@ int main(int argc, const char* argv[]) {
     sf::Sprite picture;
     picture.setTexture(photo.getTexture());
 
-    sf::RenderWindow window(sf::VideoMode(camera.getWidth(), camera.getHeight()), "SFML Window",
-                            sf::Style::Default);
-		window.setFramerateLimit(60);
+    sf::RenderWindow window(
+        sf::VideoMode(camera.getWidth(), camera.getHeight()), "SFML Window",
+        sf::Style::Default);
+    window.setFramerateLimit(60);
 
     gasSim::drawGas(simulatedGas, camera, photo, style);
     gasSim::TdStats stats(simulatedGas);
 
-		int iteration {0};
+    int iteration{0};
 
-		
     // run the program as long as the window is open
     while (window.isOpen()) {
       // check all the window's events that were triggered since the last
       // iteration of the loop
-			sf::Event event;
+      sf::Event event;
 
       // sf::sleep(sf::milliseconds(90));
-			stats = {simulatedGas.simulate(1000)};
+      stats = {simulatedGas.simulate(100)};
 
       gasSim::drawGas(simulatedGas, camera, photo, style);
-			++iteration;
+      ++iteration;
       std::vector<gasSim::Particle> particles = simulatedGas.getParticles();
 
       // std::cout << "Particles poss and speeds:\n";
 
       /*
-			 * for (const gasSim::Particle& particle : particles) {
+                         * for (const gasSim::Particle& particle : particles) {
         gasSim::PhysVectorD vector = particle.position;
         // std::cout << "(" << vector.x << ", " << vector.y << ", " << vector.z
         //   << "), (";
@@ -109,7 +109,7 @@ int main(int argc, const char* argv[]) {
         // std::cout << vector.x << ", " << vector.y << ", " << vector.z <<
         // ")\n";
       }
-			*/
+                        */
 
       while (window.pollEvent(event)) {
         // "close requested" event: we close the window
@@ -118,10 +118,10 @@ int main(int argc, const char* argv[]) {
       window.clear(sf::Color::Yellow);
       window.draw(picture);
       window.display();
-			std::cout << iteration;
-			if (iteration >= 10) window.close();
+      std::cout << iteration;
+      if (iteration >= 10) window.close();
     }
-		std::cout << "\n";
+    std::cout << "\n";
 
     /*
     std::cout << "pressure: " << simProducts.getPressure() << std::endl;
@@ -139,12 +139,12 @@ int main(int argc, const char* argv[]) {
     std::cout << "RUNTIME ERROR: " << error.what() << std::endl;
     return 1;
   } catch (const std::invalid_argument& error) {
-		std::cout << "INVALID ARGUMENT PROVIDED: " << error.what() << std::endl;
-		return 1;
-	} catch (const std::logic_error& error) {
-		std::cout << "LOGIC ERROR: " << error.what() << std::endl;
-		return 1;
-	}
+    std::cout << "INVALID ARGUMENT PROVIDED: " << error.what() << std::endl;
+    return 1;
+  } catch (const std::logic_error& error) {
+    std::cout << "LOGIC ERROR: " << error.what() << std::endl;
+    return 1;
+  }
 
   // std::cout << "bombardini goosini" << std::endl << std::endl;
 }
