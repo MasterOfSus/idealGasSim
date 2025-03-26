@@ -61,7 +61,7 @@ int main(int argc, const char* argv[]) {
     // render stuff
     gasSim::PhysVectorF focus{20., 7., 12.};
     gasSim::PhysVectorF center{5., 5., 5.};
-    gasSim::Camera camera(focus, center - focus, 2., 90., 1200, 900);
+    gasSim::Camera camera(focus, center - focus, 2., 90., 800, 600);
 
     sf::RenderTexture photo;
     photo.create(camera.getWidth(), camera.getHeight());
@@ -77,6 +77,7 @@ int main(int argc, const char* argv[]) {
 
     sf::RenderWindow window(sf::VideoMode(camera.getWidth(), camera.getHeight()), "SFML Window",
                             sf::Style::Default);
+		window.setFramerateLimit(60);
 
     gasSim::drawGas(simulatedGas, camera, photo, style);
     gasSim::TdStats stats(simulatedGas);
