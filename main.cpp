@@ -82,16 +82,21 @@ int main(int argc, const char* argv[]) {
     gasSim::drawGas(simulatedGas, camera, photo, style);
     gasSim::TdStats stats(simulatedGas);
 
+		int iteration {0};
+
+		
     // run the program as long as the window is open
     while (window.isOpen()) {
       // check all the window's events that were triggered since the last
       // iteration of the loop
-      sf::Event event;
+			sf::Event event;
 
       // sf::sleep(sf::milliseconds(90));
-      simulatedGas.simulate(1);
-      gasSim::drawGas(simulatedGas, camera, photo, style);
+			gasSim::TdStats tempStats {simulatedGas.simulate(1)};
+			stats = gasSim::TdStats(simulatedGas, tempStats);
 
+      gasSim::drawGas(simulatedGas, camera, photo, style);
+			++iteration;
       std::vector<gasSim::Particle> particles = simulatedGas.getParticles();
 
       // std::cout << "Particles poss and speeds:\n";
@@ -107,7 +112,8 @@ int main(int argc, const char* argv[]) {
 
       while (window.pollEvent(event)) {
         // "close requested" event: we close the window
-        if (event.type == sf::Event::Closed) window.close();
+        if (event.type == sf::Event::Closed or iteration >= 1000)
+					window.close();
       }
       window.clear(sf::Color::Yellow);
       window.draw(picture);

@@ -13,7 +13,7 @@ void printInitData(int particleNum, double temperature, double boxSide,
   std::cout << "║   • " << std::left << std::setw(23) << "Particle Count"
             << ": " << std::right << std::setw(6) << particleNum << "\n";
 
-  std::cout << "║   • " << std::left << std::setw(23) << "Temperature (K)"
+  std::cout << "║   • " << std::left << std::setw(23) << "Temperature (alpha)"
             << ": " << std::right << std::setw(6) << temperature << "\n";
 
   std::cout << "║   • " << std::left << std::setw(23) << "Box Side Length (m)"

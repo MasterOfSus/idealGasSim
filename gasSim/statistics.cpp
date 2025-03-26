@@ -131,13 +131,13 @@ void TdStats::addData(const Gas& gas, const Collision* collision) {
 }
 
 double TdStats::getPressure(Wall wall) const {
-  return wallPulses_[int(wall)] / (getBoxSide() * getBoxSide());
+  return wallPulses_[int(wall)] / (getBoxSide() * getBoxSide() * getDeltaT());
 }
 
 double TdStats::getPressure() const {
   double totPulses{0};
   totPulses = std::accumulate(wallPulses_.begin(), wallPulses_.end(), 0.);
-  return totPulses / (getBoxSide() * getBoxSide() * 6);
+  return totPulses / (getBoxSide() * getBoxSide() * 6 * getDeltaT());
 }
 
 double TdStats::getTemp() const {
