@@ -92,8 +92,7 @@ int main(int argc, const char* argv[]) {
 			sf::Event event;
 
       // sf::sleep(sf::milliseconds(90));
-			gasSim::TdStats tempStats {simulatedGas.simulate(1)};
-			stats = gasSim::TdStats(simulatedGas, tempStats);
+			stats = {simulatedGas.simulate(1000)};
 
       gasSim::drawGas(simulatedGas, camera, photo, style);
 			++iteration;
@@ -101,7 +100,8 @@ int main(int argc, const char* argv[]) {
 
       // std::cout << "Particles poss and speeds:\n";
 
-      for (const gasSim::Particle& particle : particles) {
+      /*
+			 * for (const gasSim::Particle& particle : particles) {
         gasSim::PhysVectorD vector = particle.position;
         // std::cout << "(" << vector.x << ", " << vector.y << ", " << vector.z
         //   << "), (";
@@ -109,16 +109,19 @@ int main(int argc, const char* argv[]) {
         // std::cout << vector.x << ", " << vector.y << ", " << vector.z <<
         // ")\n";
       }
+			*/
 
       while (window.pollEvent(event)) {
         // "close requested" event: we close the window
-        if (event.type == sf::Event::Closed or iteration >= 1000)
-					window.close();
+        if (event.type == sf::Event::Closed) window.close();
       }
       window.clear(sf::Color::Yellow);
       window.draw(picture);
       window.display();
+			std::cout << iteration;
+			if (iteration >= 10) window.close();
     }
+		std::cout << "\n";
 
     /*
     std::cout << "pressure: " << simProducts.getPressure() << std::endl;

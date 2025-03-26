@@ -27,6 +27,7 @@ void printInitData(int particleNum, double temperature, double boxSide,
             << (simultaneous ? "true" : "false") << "\n";
 }
 void printStat(TdStats stats) {
+	double pressure = stats.getPressure();
   double pressFront = stats.getPressure(gasSim::Wall::Front);
   double pressBack = stats.getPressure(gasSim::Wall::Back);
   double pressLeft = stats.getPressure(gasSim::Wall::Left);
@@ -35,6 +36,9 @@ void printStat(TdStats stats) {
   double pressBottom = stats.getPressure(gasSim::Wall::Bottom);
 
   std::cout << "║ ▸ Statistics\n";
+	std::cout << "";
+  std::cout << "║   • " << std::left << std::setw(23) << "Pressure "
+						<< ": " << std::right << std::setw(6) << pressure << "\n";
   std::cout << "║   • " << std::left << std::setw(23) << "Pressure on front"
             << ": " << std::right << std::setw(6) << pressFront << "\n";
   std::cout << "║   • " << std::left << std::setw(23) << "Pressure on back"
