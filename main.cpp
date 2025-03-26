@@ -126,10 +126,16 @@ int main(int argc, const char* argv[]) {
 
     return 0;
 
-  } catch (const std::exception& error) {
-    std::cout << "ERROR: " << error.what() << std::endl;
+  } catch (const std::runtime_error& error) {
+    std::cout << "RUNTIME ERROR: " << error.what() << std::endl;
     return 1;
-  }
+  } catch (const std::invalid_argument& error) {
+		std::cout << "INVALID ARGUMENT PROVIDED: " << error.what() << std::endl;
+		return 1;
+	} catch (const std::logic_error& error) {
+		std::cout << "LOGIC ERROR: " << error.what() << std::endl;
+		return 1;
+	}
 
   // std::cout << "bombardini goosini" << std::endl << std::endl;
 }

@@ -262,7 +262,6 @@ double Gas::getTime() const { return time_; }
 
 TdStats Gas::simulate(int nIterations) {
   TdStats stat{*this};
-  double deltaT{0};
 
   for (int i{0}; i < nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
@@ -276,7 +275,6 @@ TdStats Gas::simulate(int nIterations) {
     }
 
     move(firstColl->getTime());
-    deltaT += firstColl->getTime();
 
     firstColl->solve();
     stat.addData(*this, firstColl);
@@ -300,26 +298,26 @@ WallCollision Gas::firstWallCollision() {
 }
 
 PartCollision Gas::firstPartCollision() {
-  double topTime{INFINITY};
+  double lowestTime{INFINITY};
   Particle* firstPart{nullptr};
   Particle* secondPart{nullptr};
   for_each_couple(particles_.begin(), particles_.end(),
                   [&](Particle& p1, Particle& p2) {
-                    PhysVectorD posRel{p1.position - p2.position};
+                    PhysVectorD relPos{p1.position - p2.position};
                     // Ottimmizzazione e evita gli errori delle approssimazioni
                     // per l'approssimazione dei double delle particelle
                     // compenetrate
-                    PhysVectorD spdRel{p1.speed - p2.speed};
-                    if (posRel * spdRel <= 0) {
+                    PhysVectorD relSpd{p1.speed - p2.speed};
+                    if (relPos * relSpd <= 0) {
                       double time{collisionTime(p1, p2)};
-                      if (time < topTime) {
+                      if (time < lowestTime) {
                         firstPart = &p1;
                         secondPart = &p2;
-                        topTime = time;
+                        lowestTime = time;
                       }
                     }
                   });
-  return {topTime, firstPart, secondPart};
+  return {lowestTime, firstPart, secondPart};
 }
 
 void Gas::move(double time) {
@@ -343,13 +341,13 @@ double collisionTime(const Particle& p1, const Particle& p2) {
 
   double result = INFINITY;
 
-  double discriminant = std::pow(b, 2) - a * c;
+  double delta = std::pow(b, 2) - a * c;
 
-  if (discriminant > 0) {
-    double sqrtDiscriminant = std::sqrt(discriminant);
+  if (delta > 0) {
+    double deltaSqrt = std::sqrt(delta);
 
-    double t1 = (-b - sqrtDiscriminant) / a;
-    double t2 = (-b + sqrtDiscriminant) / a;
+    double t1 = (-b - deltaSqrt) / a;
+    double t2 = (-b + deltaSqrt) / a;
 
     if (t1 > 0) {
       result = t1;
