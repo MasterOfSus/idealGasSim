@@ -1,4 +1,0 @@
- g++ -Wall -Wextra graphics.cpp physicsEngine.cpp statistics.cpp main.cpp input.cpp output.cpp -o mainTest -lsfml-graphics -lsfml-window -lsfml-system
-
- //also run program with -t -c gasSim_test-ini option to avoid weird camera/box effects 
- //(also, if you want to tweak variables do it in this ini file)

@@ -9,12 +9,12 @@
 #include <iostream>
 // #include <set>
 
-#include "INIReader.h"
-#include "graphics.hpp"
-#include "input.hpp"
-#include "output.hpp"
-#include "physicsEngine.hpp"
-#include "statistics.hpp"
+#include "gasSim/INIReader.h"
+#include "gasSim/graphics.hpp"
+#include "gasSim/input.hpp"
+#include "gasSim/output.hpp"
+#include "gasSim/physicsEngine.hpp"
+#include "gasSim/statistics.hpp"
 
 double gasSim::Particle::mass;
 double gasSim::Particle::radius;
@@ -39,7 +39,7 @@ int main(int argc, const char* argv[]) {
 
     std::string path = opts.count("config") != 0
                            ? opts["config"].as<std::string>()
-                           : "gasSim_demo.ini";
+                           : "configs/gasSim_demo.ini";
     INIReader cFile(path);
     if (cFile.ParseError() != 0) {
       throw std::runtime_error("Can't load " + path);
@@ -59,9 +59,9 @@ int main(int argc, const char* argv[]) {
     //  gasSim::TdStats simProducts = simulatedGas.simulate(nIter);
 
     // render stuff
-    gasSim::PhysVectorF focus{23., 24., 26.};
+    gasSim::PhysVectorF focus{20., 7., 12.};
     gasSim::PhysVectorF center{5., 5., 5.};
-    gasSim::Camera camera(focus, -focus, 2., 90., 1200, 900);
+    gasSim::Camera camera(focus, center - focus, 2., 90., 1200, 900);
 
     sf::RenderTexture photo;
     photo.create(camera.getWidth(), camera.getHeight());
@@ -77,7 +77,6 @@ int main(int argc, const char* argv[]) {
 
     sf::RenderWindow window(sf::VideoMode(camera.getWidth(), camera.getHeight()), "SFML Window",
                             sf::Style::Default);
-		window.create(sf::VideoMode(camera.getWidth(), camera.getHeight()), "SFML Window", sf::Style::Default);
 
     gasSim::drawGas(simulatedGas, camera, photo, style);
     gasSim::TdStats stats(simulatedGas);
