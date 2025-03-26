@@ -393,7 +393,7 @@ void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture,
 
 	sf::RenderTexture backWalls;
 	backWalls.create(camera.getWidth(), camera.getHeight());
-	backWalls.clear(sf::Color::White);
+	backWalls.clear(style.getBGColor());
 	sf::RenderTexture frontWalls;
 	frontWalls.create(camera.getWidth(), camera.getHeight());
 	frontWalls.clear(sf::Color::Transparent);

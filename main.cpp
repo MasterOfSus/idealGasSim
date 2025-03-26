@@ -66,11 +66,13 @@ int main(int argc, const char* argv[]) {
     sf::RenderTexture photo;
     photo.create(camera.getWidth(), camera.getHeight());
     sf::CircleShape shape{1.f};
-    shape.setFillColor(sf::Color::Red);
-    shape.setOutlineColor(sf::Color::Black);
+    shape.setFillColor({193, 130, 255});
+    shape.setOutlineColor({41, 27, 56});
     shape.setOutlineThickness(10.);
     gasSim::RenderStyle style{shape};
-    std::string options{"udlrfb"};
+		style.setWallsColor(sf::Color(130, 255, 144, 192));
+		style.setBGColor(sf::Color::White);
+    std::string options{"udlfb"};
     style.setWallsOpts(options);
     sf::Sprite picture;
     picture.setTexture(photo.getTexture());
@@ -83,7 +85,7 @@ int main(int argc, const char* argv[]) {
     gasSim::drawGas(simulatedGas, camera, photo, style);
     gasSim::TdStats stats(simulatedGas);
 
-    int iteration{0};
+    // int iteration{0};
 
     // run the program as long as the window is open
     while (window.isOpen()) {
@@ -92,10 +94,10 @@ int main(int argc, const char* argv[]) {
       sf::Event event;
 
       // sf::sleep(sf::milliseconds(90));
-      stats = {simulatedGas.simulate(100)};
+      stats = {simulatedGas.simulate(1)};
 
       gasSim::drawGas(simulatedGas, camera, photo, style);
-      ++iteration;
+      // ++iteration;
       std::vector<gasSim::Particle> particles = simulatedGas.getParticles();
 
       // std::cout << "Particles poss and speeds:\n";
@@ -118,10 +120,10 @@ int main(int argc, const char* argv[]) {
       window.clear(sf::Color::Yellow);
       window.draw(picture);
       window.display();
-      std::cout << iteration;
-      if (iteration >= 10) window.close();
+      // std::cout << iteration;
+      // if (iteration >= 10) window.close();
     }
-    std::cout << "\n";
+    // std::cout << "\n";
 
     /*
     std::cout << "pressure: " << simProducts.getPressure() << std::endl;
