@@ -3,12 +3,16 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/System/Sleep.hpp>
+#include <SFML/System/Time.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 #include <SFML/Window/WindowStyle.hpp>
 #include <iostream>
 // #include <set>
+
 #include "INIReader.h"
+#include "graphics.hpp"
 #include "input.hpp"
+#include "output.hpp"
 #include "physicsEngine.hpp"
 #include "statistics.hpp"
 
@@ -38,9 +42,7 @@ int main(int argc, const char* argv[]) {
                            : "gasSim_demo.ini";
     INIReader cFile(path);
     if (cFile.ParseError() != 0) {
-      throw std::runtime_error("Can't load " +
-                               path);  // will become "Can't load selected file"
-                                       // if + path doesn't work
+      throw std::runtime_error("Can't load " + path);
     }
 
     gasSim::Particle::mass = cFile.GetReal("gas", "particleMass", -1);
@@ -49,20 +51,82 @@ int main(int argc, const char* argv[]) {
     int pNum = cFile.GetInteger("gas", "particleNum", -1);
     double temp = cFile.GetReal("gas", "temperature", -1);
     double side = cFile.GetReal("gas", "boxSide", -1);
-    gasSim::Gas pablo(pNum, temp, side);
+    int iterNum = cFile.GetInteger("gas", "iterationNum", -1);
+    bool simult = cFile.GetBoolean("gas", "simultaneous", false);
+    gasSim::Gas simulatedGas(pNum, temp, side);
 
-    int nIter = cFile.GetInteger("gas", "iterationNum", -1);
-    gasSim::TdStats enrico = pablo.simulate(nIter);
+    // int nIter = cFile.GetInteger("gas", "iterationNum", -1);
+    //  gasSim::TdStats simProducts = simulatedGas.simulate(nIter);
 
-    std::cout << enrico.getPressure() << std::endl;
-    std::cout << enrico.getTemp() << std::endl;
-    std::cout << enrico.getVolume() << std::endl;
-    std::cout << enrico.getNParticles() << std::endl;
+    // render stuff
+    gasSim::PhysVectorF focus{23., 24., 26.};
+    gasSim::PhysVectorF center{5., 5., 5.};
+    gasSim::Camera camera(focus, center - focus, 2., 90., 1200, 900);
+
+    sf::RenderTexture photo;
+    photo.create(1200, 900);
+    sf::CircleShape shape{1.f};
+    shape.setFillColor(sf::Color::Green);
+    shape.setOutlineColor(sf::Color::Black);
+    shape.setOutlineThickness(10.);
+    gasSim::RenderStyle style{shape};
+    std::string options{"udlrfb"};
+    style.setWallsOpts(options);
+    sf::Sprite picture;
+    picture.setTexture(photo.getTexture());
+
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window",
+                            sf::Style::Default);
+
+    gasSim::drawGas(simulatedGas, camera, photo, style);
+    gasSim::TdStats stats(simulatedGas);
+
+    // run the program as long as the window is open
+    while (window.isOpen()) {
+      // check all the window's events that were triggered since the last
+      // iteration of the loop
+      sf::Event event;
+
+      // sf::sleep(sf::milliseconds(90));
+      simulatedGas.simulate(1);
+      gasSim::drawGas(simulatedGas, camera, photo, style);
+
+      std::vector<gasSim::Particle> particles = simulatedGas.getParticles();
+
+      // std::cout << "Particles poss and speeds:\n";
+
+      for (const gasSim::Particle& particle : particles) {
+        gasSim::PhysVectorD vector = particle.position;
+        // std::cout << "(" << vector.x << ", " << vector.y << ", " << vector.z
+        //   << "), (";
+        vector = particle.speed;
+        // std::cout << vector.x << ", " << vector.y << ", " << vector.z <<
+        // ")\n";
+      }
+
+      while (window.pollEvent(event)) {
+        // "close requested" event: we close the window
+        if (event.type == sf::Event::Closed) window.close();
+      }
+      window.clear(sf::Color::Yellow);
+      window.draw(picture);
+      window.display();
+    }
+
+    /*
+    std::cout << "pressure: " << simProducts.getPressure() << std::endl;
+    std::cout << "temperature: " << simProducts.getTemp() << std::endl;
+    std::cout << "volume: " << simProducts.getVolume() << std::endl;
+    std::cout << "n particles: " << simProducts.getNParticles() << std::endl;*/
+    gasSim::printInitData(pNum, temp, side, iterNum, simult);
+    // gasSim::printStat(simProducts);
+    gasSim::printStat(stats);
+    gasSim::printLastShit();
 
     return 0;
 
   } catch (const std::exception& error) {
-    std::cout << error.what() << std::endl;
+    std::cout << "ERROR: " << error.what() << std::endl;
     return 1;
   }
 
