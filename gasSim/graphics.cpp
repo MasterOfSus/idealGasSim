@@ -10,7 +10,10 @@
 #include <stdexcept>
 #include <cassert>
 #include <iostream>
+#include <execution>
+
 #include "physicsEngine.hpp"
+#include "statistics.hpp"
 
 namespace gasSim {
 
@@ -180,12 +183,12 @@ PhysVectorF Camera::getPointProjection(const PhysVectorF& point) const {
 		};
 }
 
-std::vector<PhysVectorF> Camera::projectParticles(const std::vector<Particle>& particles) const {
+std::vector<PhysVectorF> Camera::projectParticles(const std::vector<Particle>& particles, double deltaT) const {
   std::vector<PhysVectorF> projections {};
   PhysVectorF proj{};
 
 	for (const Particle& particle : particles) {
-		proj = getPointProjection(static_cast<PhysVectorF>(particle.position));
+		proj = getPointProjection(static_cast<PhysVectorF>(particle.position + particle.speed*deltaT));
 		if (proj.z <= 1.f && proj.z > 0.f) { // selecting scaling factor so that the particle is in front of the camera
     	projections.emplace_back(proj);
 		}
@@ -193,16 +196,17 @@ std::vector<PhysVectorF> Camera::projectParticles(const std::vector<Particle>& p
   return projections;
 }
 
-void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
+/*
+void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style) {
 	static sf::CircleShape partProj = style.getPartProj();
-	float r {camera.getNPixels(gas.getParticles().begin()->radius)};
+	float r {camera.getNPixels(Particle::radius)};
 	partProj.setRadius(r);
 	partProj.setOrigin({r, r});
 	std::vector<PhysVectorF> projections = camera.projectParticles(gas.getParticles());
 
-	std::sort(projections.begin(), projections.end(), 
+	std::sort(std::execution::par, projections.begin(), projections.end(), 
 						[](const PhysVectorF& a, const PhysVectorF& b) {
-							return a.z < b.z;});
+							return a.z < b.z; });
 	// sorted projections so as to draw the closest particles over the farthest
 	for (const PhysVectorF& proj: projections) {
 		partProj.setPosition({proj.x, proj.y});
@@ -211,6 +215,30 @@ void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& text
 		texture.draw(partProj);
 	}
 }
+*/
+
+template<typename GasLike>
+void drawParticles(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style, double deltaT) {
+	static sf::CircleShape partProj = style.getPartProj();
+	float r {camera.getNPixels(Particle::radius)};
+	partProj.setRadius(r);
+	partProj.setOrigin({r, r});
+	std::vector<PhysVectorF> projections = camera.projectParticles(gasLike.getParticles(), deltaT);
+	
+	std::sort(std::execution::par, projections.begin(), projections.end(),
+						[](const PhysVectorF& a, const PhysVectorF& b){
+						return a.z < b.z; });
+	// sorted projections so as to draw the closest particles over the farthest
+	for (const PhysVectorF& proj: projections) {
+		partProj.setPosition({proj.x, proj.y});
+		partProj.setScale({proj.z, proj.z});
+
+		texture.draw(partProj);
+	}
+}
+
+template void drawParticles<Gas>(const Gas& gas, const Camera &camera, sf::RenderTexture &texture, const RenderStyle& style, double deltaT);
+template void drawParticles(const GasData& data, const Camera &camera, sf::RenderTexture &texture, const RenderStyle& style, double deltaT);
 
 /*
 void drawAxes(const Camera& camera, sf::RenderTexture texture, const RenderStyle& style = {}) {
@@ -280,8 +308,9 @@ for (double i {0}; true; ++i) {
 }
 */
 
-std::array<PhysVectorF, 6> gasWallData(const Gas& gas, char wall) {
-	float side {static_cast<float>(gas.getBoxSide())};
+template<typename GasLike>
+std::array<PhysVectorF, 6> gasWallData(const GasLike& gasLike, char wall) {
+	float side {static_cast<float>(gasLike.getBoxSide())};
 	// brute forcing the cubical gas container face, with its center and normal vector
 	switch (wall) {
 		case 'u':
@@ -348,7 +377,11 @@ std::array<PhysVectorF, 6> gasWallData(const Gas& gas, char wall) {
 	return {};
 }
 
-void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}) {
+template std::array<PhysVectorF, 6> gasWallData<Gas>(const Gas& gas, char wall);
+template std::array<PhysVectorF, 6> gasWallData<GasData>(const GasData& gasData, char wall);
+
+template<typename GasLike>
+void drawWalls(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style) {
 	std::array<PhysVectorF, 6> wallData {};
 	PhysVectorF wallN {};
 	PhysVectorF wallCenter {};
@@ -363,7 +396,7 @@ void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture,
 	std::vector<sf::ConvexShape> backWallPrjs {};
 
 	for (char wall: style.getWallsOpts()) {
-		wallData = gasWallData(gas, wall);
+		wallData = gasWallData(gasLike, wall);
 		wallVerts = {wallData[0], wallData[1], wallData[2], wallData[3]};
 		wallN = wallData[4];
 		wallCenter = wallData[5];
@@ -420,11 +453,16 @@ void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture,
 	texture.draw(auxSprite);
 }
 
-void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style) {
+template void drawGas<Gas>(const Gas& gas, const Camera &camera, sf::RenderTexture &picture, const RenderStyle& style, double deltaT);
+template void drawWalls<GasData>(const GasData& data, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
+
+template<typename GasLike> void drawGas(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style, double deltaT) {
 	picture.create(camera.getWidth(), camera.getHeight());
 	picture.clear(sf::Color::Transparent);
-	drawParticles(gas, camera, picture, style);
-	drawWalls(gas, camera, picture, style);
+	drawParticles(gasLike, camera, picture, style, deltaT);
+	drawWalls(gasLike, camera, picture, style);
 }
+
+template void drawGas<GasData>(const GasData& data, const Camera &camera, sf::RenderTexture &picture, const RenderStyle& style, double deltaT);
 
 }  // namespace gasSim

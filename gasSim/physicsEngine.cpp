@@ -95,8 +95,6 @@ Collision::Collision(double t, Particle* p) : time_(t), firstParticle_(p) {
   }
 }
 
-double Collision::getTime() const { return time_; }
-
 Particle* Collision::getFirstParticle() const {
   return firstParticle_;
 }  // ATTENZIONE QUA COI PUNTATORI CHE PUNTANO
@@ -260,9 +258,10 @@ double Gas::getBoxSide() const { return boxSide_; }
 
 double Gas::getTime() const { return time_; }
 
-TdStats Gas::simulate(int nIterations) {
-  TdStats stat{*this};
+void Gas::simulate(int nIterations, SimOutput& output) {
 
+	// should modify to not insert first gasData into SimOutput
+	
   for (int i{0}; i < nIterations; ++i) {
     PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
@@ -277,10 +276,11 @@ TdStats Gas::simulate(int nIterations) {
     move(firstColl->getTime());
 
     firstColl->solve();
-    stat.addData(*this, firstColl);
-  }
 
-  return stat;
+		GasData data {*this, firstColl};
+    output.addData(data);
+  }
+	output.setDone();
 }
 
 int Gas::getPIndex(const Particle* p) const { return p - particles_.data(); }
@@ -317,6 +317,7 @@ PartCollision Gas::firstPartCollision() {
                       }
                     }
                   });
+	assert(lowestTime >= 0.);
   return {lowestTime, firstPart, secondPart};
 }
 
@@ -329,6 +330,13 @@ void Gas::move(double time) {
   /*std::for_each(std::execution::par, particles_.begin(), particles_.end(),
               [time](Particle& part) { part.position += part.speed * time; });*/
 }
+
+void Gas::operator=(const Gas& gas) {
+	particles_ = gas.particles_;
+	boxSide_ = gas.boxSide_;
+	time_ = gas.time_;
+}
+
 // End of Gas functions
 
 double collisionTime(const Particle& p1, const Particle& p2) {
@@ -373,7 +381,7 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
   WallCollision collY =
       calculate(p.position.y, p.speed.y, Wall::Front, Wall::Back);
   WallCollision collZ =
-      calculate(p.position.z, p.speed.z, Wall::Top, Wall::Bottom);
+      calculate(p.position.z, p.speed.z, Wall::Bottom, Wall::Top);
 
   WallCollision minColl = collX;
 

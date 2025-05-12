@@ -99,9 +99,7 @@ class Camera {
 
 	// useful functions
 	PhysVectorF getPointProjection(const PhysVectorF& point) const;
-	// float getSegmentScale(const PhysVector& point) const;
-	// PhysVector projectParticle(const Particle& particle) const;
-	std::vector<PhysVectorF> projectParticles (const std::vector<Particle>& particles) const;
+	std::vector<PhysVectorF> projectParticles (const std::vector<Particle>& particles, double deltaT = 0.) const;
 
 	// auxiliary member functions
 	float getTopSide() const;
@@ -120,7 +118,6 @@ class Camera {
 
 };
 
-
 /*
 struct ParticleProjection {
   static sf::CircleShape circle;
@@ -128,14 +125,21 @@ struct ParticleProjection {
 };
 */
 
+void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
+void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
 
-void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
-void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
-void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
+template<typename GasLike>
+void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
 
-void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
+// void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
 
-void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style);
+template<typename GasLike>
+void drawParticles(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}, double deltaT = 0.);
+
+//void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style = {});
+
+template<typename GasLike>
+void drawGas(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style = {}, double deltaT = 0.);
 
 }  // namespace gasSim
 

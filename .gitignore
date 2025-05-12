@@ -2,3 +2,4 @@
 unitTesting/unitTests
 build
 .cache
+unitTesting/compileResults.txt

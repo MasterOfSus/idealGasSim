@@ -84,6 +84,8 @@ struct Particle {
 
   PhysVectorD position = {};
   PhysVectorD speed = {};
+
+	bool operator==(const Particle& p) const { return position == p.position && speed == p.speed; };
 };
 
 bool overlap(const Particle& p1, const Particle& p2);
@@ -93,7 +95,7 @@ class Collision {
  public:
   Collision(double t, Particle* p);
 
-  double getTime() const;
+  double getTime() const { return time_; };
 
   Particle* getFirstParticle() const;
 
@@ -127,10 +129,13 @@ class PartCollision : public Collision {
   Particle* secondParticle_;
 };
 
-class TdStats;
+class SimOutput;
 
 class Gas {
  public:
+
+	Gas() {};
+
   Gas(const Gas& gas);
   Gas(std::vector<Particle> particles, double boxSide, double time = 0.);
   Gas(int nParticles, double temperature, double boxSide);
@@ -139,14 +144,16 @@ class Gas {
   double getBoxSide() const;
   double getTime() const;
 
-  TdStats simulate(int nIterations);
+  void simulate(int nIterations, SimOutput& output);
 
 	int getPIndex(const Particle* particle) const;
 
+	void operator=(const Gas& gas);
+
  private:
-  std::vector<Particle> particles_;
-	std::vector<double> lastCollTimes_;
-  double boxSide_;
+  std::vector<Particle> particles_{};
+	// std::vector<double> lastCollTimes_;
+  double boxSide_{1.};
   double time_ {0.};
 
   WallCollision firstWallCollision();

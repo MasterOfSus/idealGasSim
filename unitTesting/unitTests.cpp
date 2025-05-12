@@ -17,6 +17,10 @@
 double gasSim::Particle::mass = 10;
 double gasSim::Particle::radius = 1;
 
+std::ostream &operator<<(std::ostream &os, gasSim::PhysVectorD const& v) {
+	return os << "{" << v.x << ", " << v.y << ", " << v.z << "}";
+}
+
 TEST_CASE("Testing for_any_couple") {
   std::vector<int> num{1, 2, 3, 4};
 
@@ -310,7 +314,8 @@ TEST_CASE("Testing Gas, 1 iteration") {
     gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
     std::vector<gasSim::Particle> vec{part1, part2};
     gasSim::Gas gas{vec, side};
-    gas.simulate(1);
+		gasSim::SimOutput output {1, 1.};
+    gas.simulate(1, output);
 
     auto newVec{gas.getParticles()};
     double life{gas.getTime()};
@@ -342,7 +347,8 @@ TEST_CASE("Testing Gas, 1 iteration") {
     std::vector<gasSim::Particle> vec{part};
 
     gasSim::Gas gas{vec, side};
-    gas.simulate(1);
+		gasSim::SimOutput output {1, 1.};
+    gas.simulate(1, output);
 
     auto newVec{gas.getParticles()};
     double life{gas.getTime()};
@@ -370,6 +376,47 @@ TEST_CASE("Testing Gas 2") {
 
 // STATISTICS TESTING
 
+TEST_CASE("Testing the GasData class") {
+	std::vector<gasSim::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+  std::vector<gasSim::Particle> moreParticles{
+      {{2., 3., 4.}, {1., 0., 0.}},
+      {{5., 3., 7.}, {0., 0., 0.}},
+      {{5., 6., 7.}, {0., -1., 0.}},
+  };
+  gasSim::Gas gas{particles, 4.};
+  gasSim::Gas moreGas{moreParticles, 12.};
+
+	gasSim::SimOutput output {1, 1.};
+	gas.simulate(1, output);
+	gasSim::WallCollision collision {1./3., const_cast<gasSim::Particle*>(gas.getParticles().data()), gasSim::Wall::Back};
+	gasSim::GasData data {gas, &collision};
+
+	gasSim::SimOutput moreOutput {1, 1.};
+	moreGas.simulate(1, moreOutput);
+	gasSim::PartCollision moreCollision {1., const_cast<gasSim::Particle*>(&moreGas.getParticles()[1]), const_cast<gasSim::Particle*>(&moreGas.getParticles()[2])};
+	gasSim::GasData moreData {moreGas, &moreCollision};
+
+	SUBCASE("Testing the constructor and getters") {
+		CHECK(gas.getParticles() == data.getParticles());
+		CHECK(data.getTime() == gas.getTime());
+		CHECK(data.getBoxSide() == gas.getBoxSide());
+		CHECK(data.getP1Index() == 0);
+		// CHECK(gasSim::Particle(data.getP1()) == gasSim::Particle(data.getParticles()[data.getP1Index()]));
+		CHECK(data.getWall() == gasSim::Wall::Back);
+		CHECK(data.getCollType() == 'w');
+		CHECK(moreGas.getParticles() == moreData.getParticles());
+		CHECK(moreData.getTime() == moreGas.getTime());
+		CHECK(moreData.getBoxSide() == moreGas.getBoxSide());
+		CHECK(moreData.getP1Index() == 1);
+		CHECK(moreData.getP2Index() == 2);
+		CHECK(moreData.getCollType() == 'p');
+	}
+	SUBCASE("Testing getter throws") {
+		CHECK_THROWS(data.getP2());
+		CHECK_THROWS(moreData.getWall());
+	}
+}
+
 TEST_CASE("Testing the TdStats class") {
   std::vector<gasSim::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
   std::vector<gasSim::Particle> moreParticles{
@@ -379,54 +426,157 @@ TEST_CASE("Testing the TdStats class") {
   };
   gasSim::Gas gas{particles, 4.};
   gasSim::Gas moreGas{moreParticles, 12.};
+	gasSim::SimOutput output {5, 1.};
+	gas.simulate(5, output);
+	//std::cout << "Started processing data.\n";
+	output.processData();
+	//std::cout << "Finished processing data.\n";
   SUBCASE("Testing the constructor") {
-    gasSim::TdStats stats{moreGas};
-    CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>{
-                                   {1., 0., 0.}, {0., 0., 0.}, {0., -1., 0.}});
-    CHECK(stats.getBoxSide() == 12.);
-    CHECK(stats.getVolume() == 1728.);
-    CHECK(stats.getDeltaT() == 0.);
-    CHECK(stats.getNParticles() == 3);
+    gasSim::TdStats stats{output.getStats()[0]};
+    //CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>{
+    //                               {1., 0., 0.}, {0., 0., 0.}, {0., -1., 0.}});
+    CHECK(stats.getBoxSide() == 4.);
+    CHECK(stats.getVolume() == 64.);
+    CHECK(stats.getDeltaT() == 1.5);
+    CHECK(stats.getNParticles() == 1);
   }
   SUBCASE("Testing getters") {
-    gasSim::TdStats stats{gas.simulate(5)};
+		gasSim::TdStats stats{output.getStats()[0]};
     CHECK(stats.getTemp() == 135.625);
-    CHECK(stats.getPressure(gasSim::Wall::Front) == 30. / 8.);
-    CHECK(stats.getPressure(gasSim::Wall::Back) == 30. / 8.);
-    CHECK(stats.getPressure(gasSim::Wall::Right) == 10. / 4.);
-    CHECK(stats.getPressure(gasSim::Wall::Left) == 10. / 4.);
-    CHECK(stats.getPressure(gasSim::Wall::Bottom) == 15. / 16.);
-    CHECK(stats.getPressure(gasSim::Wall::Top) == 0.);
-    CHECK(stats.getSpeeds() ==
-          std::vector<gasSim::PhysVectorD>{{2., 3., -0.75}});
+    CHECK(stats.getPressure(gasSim::Wall::Front) == 5. / 2.);
+    CHECK(stats.getPressure(gasSim::Wall::Back) == 5. / 2.);
+    CHECK(stats.getPressure(gasSim::Wall::Right) == 10. / 6.);
+    CHECK(stats.getPressure(gasSim::Wall::Left) == 10. / 6.);
+    CHECK(stats.getPressure(gasSim::Wall::Top) == 10. / 16.);
+    CHECK(stats.getPressure(gasSim::Wall::Bottom) == 0.);
+    // CHECK(stats.getSpeeds() ==
+    //      std::vector<gasSim::PhysVectorD>{{2., 3., -0.75}});
     CHECK(stats.getTime0() == 0.);
     CHECK(stats.getTime() == 1.5);
     CHECK(stats.getDeltaT() == 1.5 );
     CHECK(stats.getMeanFreePath() == doctest::Approx(4.2964998799 / 4.));
-    stats = gasSim::TdStats(gas);
-    CHECK_THROWS(stats.getMeanFreePath());
-    gasSim::TdStats moreStats{moreGas.simulate(5)};
+		gasSim::SimOutput moreOutput {5, 1.};
+		moreGas.simulate(5, moreOutput);
+		moreOutput.processData();
+    gasSim::TdStats moreStats{moreOutput.getStats()[0]};
     CHECK(moreStats.getTemp() == 20. / 3.);
-    CHECK(moreStats.getPressure(gasSim::Wall::Front) == 10. / 72.);
+    CHECK(moreStats.getPressure(gasSim::Wall::Front) == 10. / (11. * 72.));
     CHECK(moreStats.getPressure(gasSim::Wall::Left) == 0);
-    CHECK(moreStats.getPressure(gasSim::Wall::Back) == 10. / 72.);
-    CHECK(moreStats.getPressure(gasSim::Wall::Right) == 10. / 72.);
+    CHECK(moreStats.getPressure(gasSim::Wall::Back) == 10. / (11. * 72.));
+    CHECK(moreStats.getPressure(gasSim::Wall::Right) == 10. / (11. * 72.));
     CHECK(moreStats.getPressure(gasSim::Wall::Top) == 0.);
     CHECK(moreStats.getPressure(gasSim::Wall::Bottom) == 0.);
-    CHECK(moreStats.getSpeeds() ==
+    /*CHECK(moreStats.getSpeeds() ==
           std::vector<gasSim::PhysVectorD>{
-              /*{-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
+              {-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
               {1., 0., 0.},  {0., 0., 0.},  {0., -1., 0.},
               {1., 0., 0.},  {0., -1., 0.}, {0., 0., 0.},
               {1., 0., 0.},  {0., 1., 0.},  {0., 0., 0.},
-              {1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},*/
+              {1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},
               {-1., 0., 0.},
               {0., 0., 0.},
-              {0., -1., 0.}});
+              {0., -1., 0.}});*/
     CHECK(moreStats.getMeanFreePath() == 2.5);
-    // Qua mi devi dire come hai fatto i conti perchè io non mi rimetto a fare
-    // il fottuto geogebra con 3 particelle
   }
+}
+
+TEST_CASE("Testing the SimOutput class") {
+	std::vector<gasSim::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+  std::vector<gasSim::Particle> moreParticles{
+      {{2., 3., 4.}, {1., 0., 0.}},
+      {{5., 3., 7.}, {0., 0., 0.}},
+      {{5., 6., 7.}, {0., -1., 0.}},
+  };
+  gasSim::Gas gas{particles, 4.};
+  gasSim::Gas moreGas{moreParticles, 12.};
+
+	gasSim::SimOutput output {1, 1.};
+	gas.simulate(1, output);
+	gasSim::TdStats testStats {output.getData()[0]};
+	gasSim::WallCollision collision {1./3., const_cast<gasSim::Particle*>(gas.getParticles().data()), gasSim::Wall::Back};
+	// make data array, with the first collision as first element
+	std::vector<gasSim::GasData> data {{gas, &collision}};
+	gas.simulate(1, output);
+	// simulate and add two more collision to the data vector
+	collision = {1./6., const_cast<gasSim::Particle*>(gas.getParticles().data()), gasSim::Wall::Left};
+	data.push_back({gas,&collision});
+	gas.simulate(1, output);
+	collision = {1./6., const_cast<gasSim::Particle*>(gas.getParticles().data()), gasSim::Wall::Front};
+	data.push_back({gas, &collision});
+
+	// do the same with moreGas, with a data array
+	gasSim::SimOutput moreOutput {1, 1.};
+	moreGas.simulate(1, moreOutput);
+	gasSim::TdStats moreTestStats {moreOutput.getData()[0]};
+	gasSim::PartCollision moreCollision {1., const_cast<gasSim::Particle*>(&moreGas.getParticles()[1]), const_cast<gasSim::Particle*>(&moreGas.getParticles()[2])};
+	std::vector<gasSim::GasData> moreData {{moreGas, &moreCollision}};
+	moreGas.simulate(1, moreOutput);
+	collision = {2., const_cast<gasSim::Particle*>(&moreGas.getParticles()[1]), gasSim::Wall::Front};
+	moreData.push_back({moreGas, &collision});
+	moreGas.simulate(1, moreOutput);
+  moreCollision = {2., const_cast<gasSim::Particle*>(&moreGas.getParticles()[1]), const_cast<gasSim::Particle*>(&moreGas.getParticles()[2])};
+	moreData.push_back({moreGas, &collision});
+
+	// fill the testOutputs with the data inside of the data array and check that the rawData_ array inside of the class is equal to the array passed
+
+	SUBCASE("Testing the constructor and the addData() method") {
+		gasSim::SimOutput testOutput {3, 1.};
+		testOutput.addData(data[0]);
+		for(int i {1}; i < 3; ++i) {
+			testOutput.addData(data[i]);
+			testStats.addData(data[i]);
+		}
+		testOutput.setDone();
+
+		bool equal {std::equal(data.begin(), data.end(), testOutput.getData().begin(), testOutput.getData().end())};
+		CHECK(equal);
+		CHECK(data.size() == testOutput.getData().size());
+
+		gasSim::SimOutput moreTestOutput {3, 1.};
+		moreTestOutput.addData(moreData[0]);
+		for (int i {1}; i < 3; ++i) {
+			moreTestOutput.addData(moreData[i]);
+			moreTestStats.addData(moreData[i]);
+		}
+		moreTestOutput.setDone();
+
+		equal = std::equal(moreData.begin(), moreData.end(), moreTestOutput.getData().begin(), moreTestOutput.getData().end()) && moreData.size() == moreTestOutput.getData().size();
+		CHECK(equal);
+
+		SUBCASE("Testing the processData() method") {
+			gasSim::Camera camera {{0., 0., 0.}, {1., 0., 0.}, 1, 90., 100, 100};
+			testOutput.processData(camera, true);
+			/*
+			std::cout << "TestOutput stats comparison with TestStats:\n" <<
+			"Count of stats instances in output after processData: " << testOutput.getStats().size() <<
+			"\nTemperature: oT = " << testOutput.getStats()[0].getTemp() << ", tT = " << testStats.getTemp() <<
+			"\nt0: ot0 = " << testOutput.getStats()[0].getTime0() << ", tt0 = " << testStats.getTime0() << 
+			"\nt: ot = " << testOutput.getStats()[0].getTime() << ", tt = " << testStats.getTime() <<
+			"\nmean free paths: oMFP = " << testOutput.getStats()[0].getMeanFreePath() << ", tMFP = " << testStats.getMeanFreePath() <<
+			"\nfront pressure: oPf = " << testStats.getPressure(gasSim::Wall::Front) << ", tPf = " << testStats.getPressure(gasSim::Wall::Front) <<
+			std::endl <<
+			std::endl;
+			*/
+			CHECK(testOutput.getStats()[0] == testStats);
+			CHECK(testOutput.getRenders().size() == testStats.getTime() * testOutput.getFramerate());
+			CHECK(testOutput.getData().size() == 0);
+		
+			moreTestOutput.processData(camera, true);
+			/*
+			std::cout << "moreTestOutput stats comparison with moreTestStats:\n" <<
+			"Count of stats instances in output after processData: " << moreTestOutput.getStats().size() <<
+			"\nTemperature: oT = " << moreTestOutput.getStats()[0].getTemp() << ", tT = " << moreTestStats.getTemp() <<
+			"\nt0: ot0 = " << moreTestOutput.getStats()[0].getTime0() << ", tt0 = " << moreTestStats.getTime0() << 
+			"\nt: ot = " << moreTestOutput.getStats()[0].getTime() << ", tt = " << moreTestStats.getTime() <<
+			"\nmean free paths: oMFP = " << moreTestOutput.getStats()[0].getMeanFreePath() << ", tMFP = " << moreTestStats.getMeanFreePath() <<
+			std::endl <<
+			std::endl;
+			*/
+			CHECK(moreTestOutput.getStats()[0] == moreTestStats);
+			CHECK(moreTestOutput.getRenders().size() == moreTestStats.getTime() * moreTestOutput.getFramerate());
+			CHECK(moreTestOutput.getData().size() == 0);
+		}
+	}
 }
 
 // GRAPHICS TESTING
