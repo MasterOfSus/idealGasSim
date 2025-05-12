@@ -260,6 +260,8 @@ double Gas::getTime() const { return time_; }
 
 void Gas::simulate(int nIterations, SimOutput& output) {
 
+	std::cout << "Started simulation.\n";
+
 	// should modify to not insert first gasData into SimOutput
 	
   for (int i{0}; i < nIterations; ++i) {

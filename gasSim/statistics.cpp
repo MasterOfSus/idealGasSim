@@ -318,10 +318,11 @@ void SimOutput::processData() {
 }
 
 void SimOutput::processData(const Camera& camera, bool stats, const RenderStyle& style) {
+	std::cout << "Started processing data.\n";
 	std::vector<GasData> data;
 	while (true) {
 		std::unique_lock<std::mutex> guard(rawDataMtx_);
-		rawDataCv_.wait_for(guard, std::chrono::milliseconds(10), [this] {
+		rawDataCv_.wait_for(guard, std::chrono::milliseconds(1), [this] {
 			return !rawData_.empty() || done_;
 		});
 		//std::cout << "Done status: " << done_ << ". RawData emptiness: " << rawData_.empty() << std::endl;
@@ -369,6 +370,8 @@ void SimOutput::processData(const Camera& camera, bool stats, const RenderStyle&
 // So alright basically yeah I'm trying to guarantee a constant interval between renders, even across function calls, which means the time variable must be initialized with the same value it was left at at the previous function call. This necessitates a class invariant of providing data sets which are subsequent in time. Lol.
 
 void SimOutput::processGraphics(const std::vector<GasData>& data, const Camera& camera, const RenderStyle& style) {
+	std::cout << "Processing graphics... ";
+	std::cout.flush();
 	std::vector<sf::Texture> renders {};
 	if (!gTime_.has_value()) gTime_ = data[0].getTime() - gDeltaT_;
 	sf::RenderTexture picture;
@@ -376,13 +379,13 @@ void SimOutput::processGraphics(const std::vector<GasData>& data, const Camera& 
 	assert(gDeltaT_ > 0.);
 	assert(*gTime_ <= data[0].getTime());
 
-	renders.reserve((data.end()->getTime() - data.begin()->getTime()) / gDeltaT_ + 1);
+	renders.reserve((data.back().getTime() - data.begin()->getTime()) / gDeltaT_ + 1);
 
 	for (const GasData& dat: data) {
 		while(*gTime_ + gDeltaT_ <= dat.getTime()) {
 			//std::cout << "Drawing gas at time " << *gTime_ + gDeltaT_ << std::endl;
 			gTime_ = *gTime_ + gDeltaT_;
-			drawGas(dat, camera, picture, style, dat.getTime() - *gTime_);
+			drawGas(dat, camera, picture, style, *gTime_ - dat.getTime());
 			renders.emplace_back(std::move(picture.getTexture()));
 		}
 	}
@@ -391,9 +394,11 @@ void SimOutput::processGraphics(const std::vector<GasData>& data, const Camera& 
 	std::move(renders.begin(), renders.end(), std::back_inserter(renders_));
 	rendersMtx_.unlock();
 	renders.clear();
+	std::cout << "done!\n";
 }
 
 void SimOutput::processStats(const std::vector<GasData>& data) {
+	//std::cout << "Started processing stats.\n";
 	static std::vector<TdStats> stats {};
 	
 	assert(!std::div(data.size(), statSize_).rem);
@@ -413,6 +418,7 @@ void SimOutput::processStats(const std::vector<GasData>& data) {
 	std::move(stats.begin(), stats.end(), std::back_inserter(stats_));
 	statsMtx_.unlock();
 	stats.clear();
+	//std::cout << "Finished processing stats.\n";
 }
 
 std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {

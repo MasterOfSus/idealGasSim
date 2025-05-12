@@ -82,10 +82,26 @@ int main(int argc, const char* argv[]) {
         sf::Style::Default);
     window.setFramerateLimit(60);
 
-    gasSim::drawGas(simulatedGas, camera, photo, style);
-    gasSim::TdStats stats(simulatedGas);
+		gasSim::SimOutput output {100, 60.};
 
-    // int iteration{0};
+		simulatedGas.simulate(100, output);
+
+		output.processData(camera, true, style);
+
+		std::vector<sf::Texture> renders {output.getRenders()};
+		std::cout << "Renders count: " << renders.size() << std::endl;
+		std::vector<gasSim::TdStats> stats {output.getStats()};
+		std::cout << "Stats count: " << stats.size() << std::endl;
+
+    int i{0};
+
+		std::vector<sf::Sprite> renderSprites {};
+
+		std::cout << "Started transferring textures to sprites... ";
+		for (const sf::Texture& t: renders) {
+			renderSprites.emplace_back(t);
+		}
+		std::cout << "done!\n";
 
     // run the program as long as the window is open
     while (window.isOpen()) {
@@ -94,11 +110,6 @@ int main(int argc, const char* argv[]) {
       sf::Event event;
 
       // sf::sleep(sf::milliseconds(90));
-      stats = {simulatedGas.simulate(1)};
-
-      gasSim::drawGas(simulatedGas, camera, photo, style);
-      // ++iteration;
-      std::vector<gasSim::Particle> particles = simulatedGas.getParticles();
 
       // std::cout << "Particles poss and speeds:\n";
 
@@ -117,9 +128,12 @@ int main(int argc, const char* argv[]) {
         // "close requested" event: we close the window
         if (event.type == sf::Event::Closed) window.close();
       }
-      window.clear(sf::Color::Yellow);
-      window.draw(picture);
+			if (i >= (int) renderSprites.size() - 1) window.close();
+			window.clear(sf::Color::Yellow);
+      window.draw(renderSprites[i]);
       window.display();
+
+			++i;
       // std::cout << iteration;
       // if (iteration >= 10) window.close();
     }
@@ -132,7 +146,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "n particles: " << simProducts.getNParticles() << std::endl;*/
     gasSim::printInitData(pNum, temp, side, iterNum, simult);
     // gasSim::printStat(simProducts);
-    gasSim::printStat(stats);
+    gasSim::printStat((const gasSim::TdStats&) stats.back());
     gasSim::printLastShit();
 
     return 0;

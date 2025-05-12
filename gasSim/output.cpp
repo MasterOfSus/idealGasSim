@@ -26,6 +26,7 @@ void printInitData(int particleNum, double temperature, double boxSide,
             << ": " << std::right << std::setw(6)
             << (simultaneous ? "true" : "false") << "\n";
 }
+
 void printStat(const TdStats& stats) {
 	double pressure = stats.getPressure();
   double pressFront = stats.getPressure(gasSim::Wall::Front);
@@ -71,6 +72,7 @@ void printStat(const TdStats& stats) {
               << ": " << std::right << std::setw(6)
               << (simultaneous ? "true" : "false") << "                ║\n";*/
 }
+
 void printLastShit() {
   std::cout << "╚═════════════════════════════════════════════════════\n";
 }
