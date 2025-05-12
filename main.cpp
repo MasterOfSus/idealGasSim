@@ -82,13 +82,16 @@ int main(int argc, const char* argv[]) {
         sf::Style::Default);
     window.setFramerateLimit(60);
 
-		gasSim::SimOutput output {100, 60.};
+		gasSim::SimOutput output {(unsigned int) iterNum, 60.};
 
-		simulatedGas.simulate(100, output);
+		simulatedGas.simulate(iterNum, output);
 
 		output.processData(camera, true, style);
 
+		std::cout << "Started transferring renders... ";
+		std::cout.flush();
 		std::vector<sf::Texture> renders {output.getRenders()};
+		std::cout << "done!\n";
 		std::cout << "Renders count: " << renders.size() << std::endl;
 		std::vector<gasSim::TdStats> stats {output.getStats()};
 		std::cout << "Stats count: " << stats.size() << std::endl;
@@ -98,6 +101,7 @@ int main(int argc, const char* argv[]) {
 		std::vector<sf::Sprite> renderSprites {};
 
 		std::cout << "Started transferring textures to sprites... ";
+		std::cout.flush();
 		for (const sf::Texture& t: renders) {
 			renderSprites.emplace_back(t);
 		}
@@ -128,7 +132,15 @@ int main(int argc, const char* argv[]) {
         // "close requested" event: we close the window
         if (event.type == sf::Event::Closed) window.close();
       }
-			if (i >= (int) renderSprites.size() - 1) window.close();
+			if (i >= (int) renderSprites.size() - 1) {
+				std::string replay;
+				std::cout << "Replay? ";
+				std::cout.flush();
+				std::cin >> replay;
+				if (replay == "n")
+					window.close();
+				else i = 0;
+			}
 			window.clear(sf::Color::Yellow);
       window.draw(renderSprites[i]);
       window.display();

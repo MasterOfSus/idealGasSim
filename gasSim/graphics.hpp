@@ -71,6 +71,8 @@ class RenderStyle {
 	sf::Color background_ {sf::Color::White};
 };
 
+class GasData;
+
 class Camera {
  public:
 
@@ -100,6 +102,7 @@ class Camera {
 	// useful functions
 	PhysVectorF getPointProjection(const PhysVectorF& point) const;
 	std::vector<PhysVectorF> projectParticles (const std::vector<Particle>& particles, double deltaT = 0.) const;
+	std::vector<PhysVectorF> projectParticles(const GasData& data, double deltaT) const;
 
 	// auxiliary member functions
 	float getTopSide() const;
@@ -133,9 +136,10 @@ void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture,
 
 // void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
 
-template<typename GasLike>
-void drawParticles(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}, double deltaT = 0.);
 
+void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}, double deltaT = 0.);
+
+void drawParticles(const GasData& data, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}, double deltaT = 0.);
 //void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style = {});
 
 template<typename GasLike>

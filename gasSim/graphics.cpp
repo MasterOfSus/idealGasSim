@@ -196,34 +196,131 @@ std::vector<PhysVectorF> Camera::projectParticles(const std::vector<Particle>& p
   return projections;
 }
 
-/*
-void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style) {
-	static sf::CircleShape partProj = style.getPartProj();
-	float r {camera.getNPixels(Particle::radius)};
-	partProj.setRadius(r);
-	partProj.setOrigin({r, r});
-	std::vector<PhysVectorF> projections = camera.projectParticles(gas.getParticles());
-
-	std::sort(std::execution::par, projections.begin(), projections.end(), 
-						[](const PhysVectorF& a, const PhysVectorF& b) {
-							return a.z < b.z; });
-	// sorted projections so as to draw the closest particles over the farthest
-	for (const PhysVectorF& proj: projections) {
-		partProj.setPosition({proj.x, proj.y});
-		partProj.setScale({proj.z, proj.z});
-
-		texture.draw(partProj);
+inline PhysVectorD& preCollSpeed(PhysVectorD& v, Wall wall) {
+	switch (wall) {
+		case Wall::Left:
+		case Wall::Right:
+			v.x = -v.x;
+			break;
+		case Wall::Front:
+		case Wall::Back:
+			v.y = -v.y;
+			break;
+		case Wall::Top:
+		case Wall::Bottom:
+			v.z = -v.z;
+			break;
 	}
+	return v;
 }
-*/
 
-template<typename GasLike>
-void drawParticles(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style, double deltaT) {
+inline void preCollSpeed(PhysVectorD& v1, PhysVectorD& v2, const PhysVectorD& n) {
+	v1 = v1 - n*(n*(v1-v2));
+	v2 = v2 - n*(n*(v2-v1));
+}
+
+std::vector<PhysVectorF> Camera::projectParticles(const GasData& data, double deltaT) const {
+  std::vector<PhysVectorF> projections {};
+  PhysVectorF proj{};
+
+	const std::vector<gasSim::Particle>& particles {data.getParticles()};
+
+	if (data.getCollType() == 'w') {
+
+		int p1I {data.getP1Index()};
+
+		for (int i {0}; i < p1I; ++i) {
+			proj = getPointProjection(static_cast<PhysVectorF>(particles[i].position + particles[i].speed*deltaT));
+			// selecting scaling factor so that the particle is in front of the camera
+			if (proj.z <= 1.f && proj.z > 0.f)
+    		projections.emplace_back(proj);
+  	}
+
+		{
+
+		PhysVectorD speed {particles[p1I].speed};
+
+		proj = getPointProjection(static_cast<PhysVectorF>(particles[p1I].position + 
+					preCollSpeed(speed, data.getWall())*deltaT
+					));
+		if (proj.z <= 1.f && proj.z > 0.f)
+    	projections.emplace_back(proj);
+
+		}
+
+		for (int i {p1I + 1}; i < (int) particles.size(); ++i) {
+			proj = getPointProjection(static_cast<PhysVectorF>(particles[i].position + particles[i].speed*deltaT));
+			if (proj.z <= 1.f && proj.z > 0.f)
+				projections.emplace_back(proj);
+		}
+
+	} else {
+
+		int p1I {data.getP1Index()};
+		int p2I {data.getP2Index()};
+
+		PhysVectorD v1 {data.getP1().speed};
+		PhysVectorD v2 {data.getP2().speed};
+
+		{
+		PhysVectorD n {data.getP1().position - data.getP2().position};
+		n = n/n.norm();
+		preCollSpeed(v1, v2, n);
+		}
+
+		int pIs[2] {p1I, p2I};
+		PhysVectorD vs[2] {v1, v2};
+
+		if (p2I < p1I) {
+			pIs[0] = p2I;
+			vs[0] = v2;
+			pIs[1] = p1I;
+			vs[1] = v1;
+		}
+
+		for (int i {0}; i < pIs[0]; ++i) {
+			proj = getPointProjection(static_cast<PhysVectorF>(particles[i].position + particles[i].speed*deltaT));
+			// selecting scaling factor so that the particle is in front of the camera
+    	if (proj.z <= 1.f && proj.z > 0.f)
+				projections.emplace_back(proj);
+  	}
+
+		proj = getPointProjection(static_cast<PhysVectorF>(
+					particles[pIs[0]].position + vs[0]*deltaT)
+				);
+		if (proj.z <= 1.f && proj.z > 0.f)
+			projections.emplace_back(proj);
+
+		for (int i {pIs[0] + 1}; i < pIs[1]; ++i) {
+			proj = getPointProjection(static_cast<PhysVectorF>(particles[i].position + particles[i].speed*deltaT));
+			// selecting scaling factor so that the particle is in front of the camera
+    	if (proj.z <= 1.f && proj.z > 0.f)
+				projections.emplace_back(proj);
+  	}
+
+		proj = getPointProjection(static_cast<PhysVectorF>(
+					particles[pIs[1]].position + vs[1]*deltaT)
+				);
+		if (proj.z <= 1.f && proj.z > 0.f)
+			projections.emplace_back(proj);
+
+		for (int i {pIs[1] + 1}; i < (int) particles.size(); ++i) {
+			proj = getPointProjection(static_cast<PhysVectorF>(particles[i].position + particles[i].speed*deltaT));
+			// selecting scaling factor so that the particle is in front of the camera
+    	if (proj.z <= 1.f && proj.z > 0.f) {
+				projections.emplace_back(proj);
+			}
+  	}
+	}
+  return projections;
+}
+
+void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style, double deltaT) {
 	static sf::CircleShape partProj = style.getPartProj();
 	float r {camera.getNPixels(Particle::radius)};
 	partProj.setRadius(r);
 	partProj.setOrigin({r, r});
-	std::vector<PhysVectorF> projections = camera.projectParticles(gasLike.getParticles(), deltaT);
+	std::vector<PhysVectorF> projections = camera.projectParticles(gas.getParticles(), deltaT);
 	
 	std::sort(std::execution::par, projections.begin(), projections.end(),
 						[](const PhysVectorF& a, const PhysVectorF& b){
@@ -237,8 +334,24 @@ void drawParticles(const GasLike& gasLike, const Camera& camera, sf::RenderTextu
 	}
 }
 
-template void drawParticles<Gas>(const Gas& gas, const Camera &camera, sf::RenderTexture &texture, const RenderStyle& style, double deltaT);
-template void drawParticles(const GasData& data, const Camera &camera, sf::RenderTexture &texture, const RenderStyle& style, double deltaT);
+void drawParticles(const GasData& data, const Camera &camera, sf::RenderTexture &texture, const RenderStyle& style, double deltaT) {
+	static sf::CircleShape partProj = style.getPartProj();
+	float r {camera.getNPixels(Particle::radius)};
+	partProj.setRadius(r);
+	partProj.setOrigin({r, r});
+	std::vector<PhysVectorF> projections = camera.projectParticles(data, deltaT);
+	
+	std::sort(std::execution::par, projections.begin(), projections.end(),
+						[](const PhysVectorF& a, const PhysVectorF& b){
+						return a.z < b.z; });
+	// sorted projections so as to draw the closest particles over the farthest
+	for (const PhysVectorF& proj: projections) {
+		partProj.setPosition({proj.x, proj.y});
+		partProj.setScale({proj.z, proj.z});
+
+		texture.draw(partProj);
+	}
+}
 
 /*
 void drawAxes(const Camera& camera, sf::RenderTexture texture, const RenderStyle& style = {}) {
@@ -379,6 +492,8 @@ std::array<PhysVectorF, 6> gasWallData(const GasLike& gasLike, char wall) {
 
 template std::array<PhysVectorF, 6> gasWallData<Gas>(const Gas& gas, char wall);
 template std::array<PhysVectorF, 6> gasWallData<GasData>(const GasData& gasData, char wall);
+
+// the speeds after the collision are reversed, so a particle who just had a collision needs to be drawn with the speed opposite to the one it has in the moment, otherwise it is drawn shifted opposite to what it should have been
 
 template<typename GasLike>
 void drawWalls(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style) {

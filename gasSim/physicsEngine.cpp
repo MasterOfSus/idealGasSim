@@ -283,6 +283,7 @@ void Gas::simulate(int nIterations, SimOutput& output) {
     output.addData(data);
   }
 	output.setDone();
+	std::cout << "Elapsed simulation time: " << output.getData().back().getTime() - output.getData()[0].getTime() << std::endl;
 }
 
 int Gas::getPIndex(const Particle* p) const { return p - particles_.data(); }
