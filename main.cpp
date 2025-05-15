@@ -60,8 +60,8 @@ int main(int argc, const char* argv[]) {
     // gasSim::TdStats simProducts = simulatedGas.simulate(nIter);
 
     // render stuff
-    gasSim::PhysVectorF focus{75., 65., 35.};
-    gasSim::PhysVectorF center{25., 25., 25.};
+    gasSim::PhysVectorF focus{25., 25., -90.};
+    gasSim::PhysVectorF center{static_cast<gasSim::PhysVectorF>(gasSim::PhysVectorD(side/2., side/2., side/2.))};
     gasSim::Camera camera(focus, center - focus, 2., 90., 800, 600);
 
     sf::RenderTexture photo;

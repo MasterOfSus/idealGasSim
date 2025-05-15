@@ -168,8 +168,12 @@ PhysVectorF Camera::getPointProjection(const PhysVectorF& point) const {
   // making an orthonormal base for the camera, m and o lying on the persp.
   // plane, sight for the normal vector
   PhysVectorF m;
-  m = {sight.y, - sight.x, 0.f};
-  m = m / m.norm();
+	if (sight.x == 0. && sight.y == 0.)
+		m = {0., sight.z, 0.};
+	else {
+  	m = {sight.y, - sight.x, 0.f};
+  	m = m / m.norm();
+	}
   PhysVector o {m.cross(sight)};
 	m = m / getPixelSide();
 	o = o / getPixelSide();
