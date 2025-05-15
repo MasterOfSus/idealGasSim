@@ -8,6 +8,7 @@
 #include <SFML/Window/WindowStyle.hpp>
 #include <iostream>
 // #include <set>
+#include <chrono>
 
 #include "gasSim/INIReader.h"
 #include "gasSim/graphics.hpp"
@@ -59,8 +60,8 @@ int main(int argc, const char* argv[]) {
     // gasSim::TdStats simProducts = simulatedGas.simulate(nIter);
 
     // render stuff
-    gasSim::PhysVectorF focus{20., 7., 12.};
-    gasSim::PhysVectorF center{5., 5., 5.};
+    gasSim::PhysVectorF focus{75., 65., 35.};
+    gasSim::PhysVectorF center{25., 25., 25.};
     gasSim::Camera camera(focus, center - focus, 2., 90., 800, 600);
 
     sf::RenderTexture photo;
@@ -72,7 +73,7 @@ int main(int argc, const char* argv[]) {
     gasSim::RenderStyle style{shape};
 		style.setWallsColor(sf::Color(130, 255, 144, 192));
 		style.setBGColor(sf::Color::White);
-    std::string options{"udlfb"};
+    std::string options{"ufdl"};
     style.setWallsOpts(options);
     sf::Sprite picture;
     picture.setTexture(photo.getTexture());
@@ -86,13 +87,17 @@ int main(int argc, const char* argv[]) {
 
 		simulatedGas.simulate(iterNum, output);
 
+		auto start = std::chrono::high_resolution_clock::now();
 		output.processData(camera, true, style);
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> renderTime = stop - start;
 
 		std::cout << "Started transferring renders... ";
 		std::cout.flush();
 		std::vector<sf::Texture> renders {output.getRenders()};
 		std::cout << "done!\n";
 		std::cout << "Renders count: " << renders.size() << std::endl;
+		std::cout << "Rendering time: " << renderTime.count() << " -> top framerate: " << static_cast<double>(renders.size()) / renderTime.count() << std::endl;
 		std::vector<gasSim::TdStats> stats {output.getStats()};
 		std::cout << "Stats count: " << stats.size() << std::endl;
 

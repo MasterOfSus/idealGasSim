@@ -215,8 +215,9 @@ inline PhysVectorD& preCollSpeed(PhysVectorD& v, Wall wall) {
 }
 
 inline void preCollSpeed(PhysVectorD& v1, PhysVectorD& v2, const PhysVectorD& n) {
-	v1 = v1 - n*(n*(v1-v2));
-	v2 = v2 - n*(n*(v2-v1));
+	PhysVectorD v10 {v1};
+	v1 -= n*(n*(v1-v2));
+	v2 -= n*(n*(v2-v10));
 }
 
 std::vector<PhysVectorF> Camera::projectParticles(const GasData& data, double deltaT) const {
