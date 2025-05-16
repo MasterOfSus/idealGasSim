@@ -60,8 +60,9 @@ int main(int argc, const char* argv[]) {
     // gasSim::TdStats simProducts = simulatedGas.simulate(nIter);
 
     // render stuff
-    gasSim::PhysVectorF focus{25., 25., -90.};
-    gasSim::PhysVectorF center{static_cast<gasSim::PhysVectorF>(gasSim::PhysVectorD(side/2., side/2., side/2.))};
+		float halfSide {static_cast<float>(side)/2.f};
+    gasSim::PhysVectorF focus{3.f*halfSide, 2.8f*halfSide, 1.2f*halfSide};
+    gasSim::PhysVectorF center{halfSide, halfSide, halfSide};
     gasSim::Camera camera(focus, center - focus, 2., 90., 800, 600);
 
     sf::RenderTexture photo;
@@ -85,7 +86,17 @@ int main(int argc, const char* argv[]) {
 
 		gasSim::SimOutput output {(unsigned int) iterNum, 60.};
 
+		std::cout << "Simulation calculations are underway... \n";
+		std::cout.flush();
+
+		auto simStart = std::chrono::high_resolution_clock::now();
 		simulatedGas.simulate(iterNum, output);
+		auto simEnd = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> simTime = simEnd - simStart;
+
+		std::cout << "done!\n";
+		std::cout << "Iterations count: " << output.getData().size() << std::endl;
+		std::cout << "Simulation time: " << simTime.count() << " -> iterations per second: " << static_cast<double>(output.getData().size()) / simTime.count() << std::endl;
 
 		auto start = std::chrono::high_resolution_clock::now();
 		output.processData(camera, true, style);

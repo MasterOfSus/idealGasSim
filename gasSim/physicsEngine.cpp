@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <thread>
 // #include <execution> //Se decidiamo di fare qualche operazione in parallelo:
 // Sddfqoinp
 
@@ -260,8 +261,6 @@ double Gas::getTime() const { return time_; }
 
 void Gas::simulate(int nIterations, SimOutput& output) {
 
-	std::cout << "Started simulation.\n";
-
 	// should modify to not insert first gasData into SimOutput
 	
   for (int i{0}; i < nIterations; ++i) {
@@ -301,27 +300,103 @@ WallCollision Gas::firstWallCollision() {
 }
 
 PartCollision Gas::firstPartCollision() {
-  double lowestTime{INFINITY};
-  Particle* firstPart{nullptr};
-  Particle* secondPart{nullptr};
-  for_each_couple(particles_.begin(), particles_.end(),
-                  [&](Particle& p1, Particle& p2) {
-                    PhysVectorD relPos{p1.position - p2.position};
-                    // Ottimmizzazione e evita gli errori delle approssimazioni
-                    // per l'approssimazione dei double delle particelle
-                    // compenetrate
-                    PhysVectorD relSpd{p1.speed - p2.speed};
-                    if (relPos * relSpd <= 0) {
-                      double time{collisionTime(p1, p2)};
-                      if (time < lowestTime) {
-                        firstPart = &p1;
-                        secondPart = &p2;
-                        lowestTime = time;
-                      }
-                    }
-                  });
-	assert(lowestTime >= 0.);
-  return {lowestTime, firstPart, secondPart};
+
+	auto trIndex {
+		[&] (int i, int nEls) {
+			int rowIndex {
+				nEls - 2 - static_cast<int>(std::floor(std::sqrt(-8*i + 4*nEls*(nEls - 1) - 7) / 2. - 0.5))
+			};
+			int colIndex {
+				i + rowIndex + 1 - nEls*(nEls - 1)/2 + (nEls - rowIndex)*((nEls - rowIndex) - 1)/2
+			};
+			return std::pair<int, int>(rowIndex, colIndex);
+		}
+	};
+
+  auto collChecker {
+		[&](Particle& p1, Particle& p2, double& lowestTime, Particle* & firstPart, Particle* & secondPart) {
+  		PhysVectorD relPos{p1.position - p2.position};
+  		// Ottimizzazione e evita gli errori delle approssimazioni
+  		// per l'approssimazione dei double delle particelle
+  		// compenetrate
+ 	 		PhysVectorD relSpd{p1.speed - p2.speed};
+   		if (relPos * relSpd <= 0) {
+     		double time{collisionTime(p1, p2)};
+     			if (time < lowestTime) {
+      			firstPart = &p1;
+      			secondPart = &p2;
+      			lowestTime = time;
+    		}
+  		}
+		}
+	};
+
+	int nP {static_cast<int>(particles_.size())};
+
+	int nChecks {nP*(nP - 1) / 2 };
+	int nThreads {static_cast<int>(std::thread::hardware_concurrency()) - 2};
+	if (std::thread::hardware_concurrency() < 5) {
+		nThreads = 3;
+	}
+	int checksPerThread {nChecks/nThreads};
+	int extraChecks {nChecks%nThreads};
+
+	std::vector<std::thread> threads {};
+	std::vector<PartCollision> bestColls(nThreads, {INFINITY, nullptr, nullptr});
+
+	threads.push_back(
+		std::thread(
+			[&] () {
+			double lowestTime{INFINITY};
+			Particle* firstPart{nullptr};
+			Particle* secondPart{nullptr};
+			int i {0};
+			int endIndex {checksPerThread + extraChecks};
+			for (; i < endIndex; ++i) {
+				std::pair<int, int> trI {trIndex(i, nP)};
+				collChecker(particles_[trI.first], particles_[trI.second],
+				lowestTime, firstPart, secondPart);
+			}
+			PartCollision bestColl {lowestTime, firstPart, secondPart};
+			bestColls[0] = bestColl;
+			}
+		)
+	);
+
+	int threadIndex {1};
+
+	for (; threadIndex < nThreads; ++threadIndex) {
+		int thrI {threadIndex};
+		threads.push_back(
+			std::thread(
+				[&] () {
+					double lowestTime{INFINITY};
+					Particle* firstPart{nullptr};
+					Particle* secondPart{nullptr};
+					int i {thrI * checksPerThread + extraChecks};
+					int endIndex {(thrI + 1) * checksPerThread + extraChecks};
+					for (; i < endIndex; ++i) {
+						std::pair<int, int> trI {trIndex(i, nP)};
+						collChecker(particles_[trI.first], particles_[trI.second],
+						lowestTime, firstPart, secondPart);
+					}
+					PartCollision bestColl {lowestTime, firstPart, secondPart};
+					bestColls[thrI] = bestColl;
+				}
+			)
+		);
+	}
+
+	for (std::thread& t: threads) {
+		if (t.joinable())
+			t.join();
+	}
+
+  return *std::min_element(bestColls.begin(), bestColls.end(), 
+			[] (const PartCollision& c1, const PartCollision& c2) {
+				return c1.getTime() < c2.getTime();
+			}
+			);
 }
 
 void Gas::move(double time) {
