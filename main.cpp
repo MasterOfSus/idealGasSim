@@ -28,15 +28,9 @@ int main(int argc, const char* argv[]) {
               << opts.arguments_string() << std::endl;
     std::cout << "argc = " << argc << std::endl;
     // std::cout << "argv =" << argv << std::endl;*/
-    if (argc == 1 || opts["help"].as<bool>() || opts["usage"].as<bool>()) {
+    if (gasSim::input::optControl(argc, opts)) {
       return 0;
-    } else if (opts.count("tCoords") == 0 && opts.count("kBoltz") == 0 &&
-               opts.count("pdfSpeed") == 0 && opts.count("freePath") == 0 &&
-               opts.count("collNeg") == 0) {
-      throw std::invalid_argument(
-          "At least one of the base options (-t,-k,-p,-f,n) has to be "
-          "called.");
-    }  // maybe this option control can be implemented as a separate function
+    }
 
     std::string path = opts.count("config") != 0
                            ? opts["config"].as<std::string>()
@@ -83,9 +77,9 @@ int main(int argc, const char* argv[]) {
         sf::Style::Default);
     window.setFramerateLimit(60);
 
-		gasSim::SimOutput output {(unsigned int) iterNum, 60.};
+    gasSim::SimOutput output{(unsigned int)iterNum, 60.};
 
-		simulatedGas.simulate(iterNum, output);
+    simulatedGas.simulate(iterNum, output);
 
 		auto start = std::chrono::high_resolution_clock::now();
 		output.processData(camera, true, style);
@@ -103,14 +97,14 @@ int main(int argc, const char* argv[]) {
 
     int i{0};
 
-		std::vector<sf::Sprite> renderSprites {};
+    std::vector<sf::Sprite> renderSprites{};
 
-		std::cout << "Started transferring textures to sprites... ";
-		std::cout.flush();
-		for (const sf::Texture& t: renders) {
-			renderSprites.emplace_back(t);
-		}
-		std::cout << "done!\n";
+    std::cout << "Started transferring textures to sprites... ";
+    std::cout.flush();
+    for (const sf::Texture& t : renders) {
+      renderSprites.emplace_back(t);
+    }
+    std::cout << "done!\n";
 
     // run the program as long as the window is open
     while (window.isOpen()) {
@@ -137,20 +131,21 @@ int main(int argc, const char* argv[]) {
         // "close requested" event: we close the window
         if (event.type == sf::Event::Closed) window.close();
       }
-			if (i >= (int) renderSprites.size() - 1) {
-				std::string replay;
-				std::cout << "Replay? ";
-				std::cout.flush();
-				std::cin >> replay;
-				if (replay == "n")
-					window.close();
-				else i = 0;
-			}
-			window.clear(sf::Color::Yellow);
+      if (i >= (int)renderSprites.size() - 1) {
+        std::string replay;
+        std::cout << "Replay? ";
+        std::cout.flush();
+        std::cin >> replay;
+        if (replay == "n")
+          window.close();
+        else
+          i = 0;
+      }
+      window.clear(sf::Color::Yellow);
       window.draw(renderSprites[i]);
       window.display();
 
-			++i;
+      ++i;
       // std::cout << iteration;
       // if (iteration >= 10) window.close();
     }
@@ -163,7 +158,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "n particles: " << simProducts.getNParticles() << std::endl;*/
     gasSim::printInitData(pNum, temp, side, iterNum, simult);
     // gasSim::printStat(simProducts);
-    gasSim::printStat((const gasSim::TdStats&) stats.back());
+    gasSim::printStat((const gasSim::TdStats&)stats.back());
     gasSim::printLastShit();
 
     return 0;

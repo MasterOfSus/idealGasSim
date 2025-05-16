@@ -1,8 +1,8 @@
- 77compile with:
+ //compile with:
  g++ -Wall -Wextra gasSim/graphics.cpp gasSim/physicsEngine.cpp gasSim/statistics.cpp gasSim/input.cpp gasSim/output.cpp main.cpp -o mainTest -lsfml-graphics -lsfml-window -lsfml-system
 
  //also run program with:
- -t -c configs/gasSim_test-ini
+ -t -c configs/gasSim_test.ini
  //option to avoid weird camera/box effects 
  //(also, if you want to tweak variables do it in this ini file)
 
