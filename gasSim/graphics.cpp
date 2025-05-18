@@ -13,6 +13,7 @@
 #include <iostream>
 #include <execution>
 #include <tuple>
+#include <chrono>
 
 #include "physicsEngine.hpp"
 #include "statistics.hpp"
@@ -324,14 +325,22 @@ std::vector<PhysVectorF> Camera::projectParticles(const GasData& data, double de
 }
 
 void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style, double deltaT) {
-	sf::VertexArray particles(sf::Quads);
+	sf::VertexArray particles(sf::Quads, 4*gas.getParticles().size());
 	sf::Vector2u tSize {style.getPartTexture().getSize()};
+	//auto projStart {std::chrono::high_resolution_clock::now()};
 	std::vector<PhysVectorF> projections = camera.projectParticles(gas.getParticles(), deltaT);
-	
+	//std::chrono::duration<double> projTime {std::chrono::high_resolution_clock::now() - projStart};
+	//std::cout << "Time taken to project particles: " << projTime.count() << std::endl;
+
+	//auto sortStart {std::chrono::high_resolution_clock::now()};
 	std::sort(std::execution::par, projections.begin(), projections.end(),
 						[](const PhysVectorF& a, const PhysVectorF& b){
 						return a.z < b.z; });
+	//std::chrono::duration<double> sortTime {std::chrono::high_resolution_clock::now() - sortStart};
+	//std::cout << "Time taken to sort: " << sortTime.count() << std::endl;
+
 	// sorted projections so as to draw the closest particles over the farthest
+	//auto compStart {std::chrono::high_resolution_clock::now()};
 	for (const PhysVectorF& proj: projections) {
 		float r {camera.getNPixels(Particle::radius) * proj.z};
 		sf::Vector2f vertexes[4] {
@@ -349,18 +358,32 @@ void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& text
 		for (int i {0}; i < 4; ++i)
 			particles.append(sf::Vertex(vertexes[i], texVertexes[i]));
 	}
+	//std::chrono::duration<double> compTime {std::chrono::high_resolution_clock::now() - compStart};
+	//std::cout << "Time taken to compose shapes: " << compTime.count() << std::endl;
+	//auto drawStart {std::chrono::high_resolution_clock::now()};
 	texture.draw(particles, &style.getPartTexture());
+	//std::chrono::duration<double> drawTime {std::chrono::high_resolution_clock::now() - drawStart};
+	//std::cout << "Time taken to call the draw function: " << drawTime.count() << std::endl;
 }
 
 void drawParticles(const GasData& data, const Camera &camera, sf::RenderTexture &texture, const RenderStyle& style, double deltaT) {
-	sf::VertexArray particles(sf::Quads);
+	sf::VertexArray particles(sf::Quads, 4*data.getParticles().size());
 	sf::Vector2u tSize {style.getPartTexture().getSize()};
-	std::vector<PhysVectorF> projections = camera.projectParticles(data, deltaT);
 	
+	//auto projStart {std::chrono::high_resolution_clock::now()};
+	std::vector<PhysVectorF> projections = camera.projectParticles(data, deltaT);
+	//std::chrono::duration<double> projTime {std::chrono::high_resolution_clock::now() - projStart};
+	//std::cout << "Time taken to project particles: " << projTime.count() << std::endl;
+
+	//auto sortStart {std::chrono::high_resolution_clock::now()};
 	std::sort(std::execution::par, projections.begin(), projections.end(),
 						[](const PhysVectorF& a, const PhysVectorF& b){
 						return a.z < b.z; });
+	//std::chrono::duration<double> sortTime {std::chrono::high_resolution_clock::now() - sortStart};
+	//std::cout << "Time taken to sort: " << sortTime.count() << std::endl;
+
 	// sorted projections so as to draw the closest particles over the farthest
+	//auto compStart {std::chrono::high_resolution_clock::now()};
 	for (const PhysVectorF& proj: projections) {
 		float r {camera.getNPixels(Particle::radius) * proj.z};
 		sf::Vector2f vertexes[4] {
@@ -378,7 +401,12 @@ void drawParticles(const GasData& data, const Camera &camera, sf::RenderTexture 
 		for (int i {0}; i < 4; ++i)
 			particles.append(sf::Vertex(vertexes[i], texVertexes[i]));
 	}
+	//std::chrono::duration<double> compTime {std::chrono::high_resolution_clock::now() - compStart};
+	//std::cout << "Time taken to compose shapes: " << compTime.count() << std::endl;
+	//auto drawStart {std::chrono::high_resolution_clock::now()};
 	texture.draw(particles, &style.getPartTexture());
+	//std::chrono::duration<double> drawTime {std::chrono::high_resolution_clock::now() - drawStart};
+	//std::cout << "Time taken to call the draw function: " << drawTime.count() << std::endl;
 }
 
 /*

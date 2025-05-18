@@ -62,7 +62,7 @@ int main(int argc, const char* argv[]) {
     sf::RenderTexture photo;
     photo.create(camera.getWidth(), camera.getHeight());
     sf::Texture texture;
-		texture.loadFromFile("assets/realBall.png");
+		texture.loadFromFile("assets/lightBall.png");
     gasSim::RenderStyle style{texture};
 		style.setWallsColor(sf::Color(130, 255, 144, 192));
 		style.setBGColor(sf::Color::White);
@@ -78,7 +78,7 @@ int main(int argc, const char* argv[]) {
 
     gasSim::SimOutput output{(unsigned int)iterNum, 60.};
 
-		std::cout << "Simulation calculations are underway... \n";
+		std::cout << "Simulation calculations are underway... ";
 		std::cout.flush();
 
 		auto simStart = std::chrono::high_resolution_clock::now();
@@ -87,7 +87,6 @@ int main(int argc, const char* argv[]) {
 		std::chrono::duration<double> simTime = simEnd - simStart;
 
 		std::cout << "done!\n";
-		std::cout << "Iterations count: " << output.getData().size() << std::endl;
 		std::cout << "Simulation time: " << simTime.count() << " -> iterations per second: " << static_cast<double>(output.getData().size()) / simTime.count() << std::endl;
 
 		auto start = std::chrono::high_resolution_clock::now();

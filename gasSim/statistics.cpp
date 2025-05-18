@@ -318,7 +318,7 @@ void SimOutput::processData() {
 }
 
 void SimOutput::processData(const Camera& camera, const RenderStyle& style, bool stats) {
-	std::cout << "Started processing data.\n";
+	//std::cout << "Started processing data.\n";
 	std::vector<GasData> data;
 	while (true) {
 		std::unique_lock<std::mutex> guard(rawDataMtx_);
@@ -370,8 +370,8 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style, bool
 // So alright basically yeah I'm trying to guarantee a constant interval between renders, even across function calls, which means the time variable must be initialized with the same value it was left at at the previous function call. This necessitates a class invariant of providing data sets which are subsequent in time. Lol.
 
 void SimOutput::processGraphics(const std::vector<GasData>& data, const Camera& camera, const RenderStyle& style) {
-	std::cout << "Processing graphics... ";
-	std::cout.flush();
+	//std::cout << "Processing graphics... ";
+	//std::cout.flush();
 	std::vector<sf::Texture> renders {};
 	if (!gTime_.has_value()) gTime_ = data[0].getTime() - gDeltaT_;
 	sf::RenderTexture picture;
@@ -394,7 +394,7 @@ void SimOutput::processGraphics(const std::vector<GasData>& data, const Camera& 
 	std::move(renders.begin(), renders.end(), std::back_inserter(renders_));
 	rendersMtx_.unlock();
 	renders.clear();
-	std::cout << "done!\n";
+	//std::cout << "done!\n";
 }
 
 void SimOutput::processStats(const std::vector<GasData>& data) {
@@ -440,6 +440,7 @@ std::vector<sf::Texture> SimOutput::getRenders(bool emptyQueue) {
 	if (emptyQueue) {
 		rendersMtx_.lock();
 		std::vector<sf::Texture> renders(std::make_move_iterator(renders_.begin()), std::make_move_iterator(renders_.end()));
+		renders.clear();
 		rendersMtx_.unlock();
 		return renders;
 	} else {

@@ -264,7 +264,7 @@ void Gas::simulate(int nIterations, SimOutput& output) {
 	// should modify to not insert first gasData into SimOutput
 	
   for (int i{0}; i < nIterations; ++i) {
-  	std::cout << "Started " << i << "th iteration.\n";
+  	// std::cout << "Started " << i << "th iteration.\n";
 		PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
     Collision* firstColl{nullptr};
@@ -282,7 +282,7 @@ void Gas::simulate(int nIterations, SimOutput& output) {
     output.addData(data);
   }
 	output.setDone();
-	std::cout << "Elapsed simulation time: " << output.getData().back().getTime() - output.getData()[0].getTime() << std::endl;
+	//std::cout << "Elapsed simulation time: " << output.getData().back().getTime() - output.getData()[0].getTime() << std::endl;
 }
 
 int Gas::getPIndex(const Particle* p) const { return p - particles_.data(); }
@@ -301,7 +301,7 @@ WallCollision Gas::firstWallCollision() {
 
 PartCollision Gas::firstPartCollision() {
 
-	std::mutex coutMtx;
+	//std::mutex coutMtx;
 
 	auto trIndex {
 		[&] (int i, int nEls) {
@@ -356,10 +356,10 @@ PartCollision Gas::firstPartCollision() {
 			int endIndex {checksPerThread + extraChecks};
 			for (; i < endIndex; ++i) {
 				std::pair<int, int> trI {trIndex(i, nP)};
-				coutMtx.lock();
-				std::cout << "Checking pair index: " << i << " converted to triangular index: (" << trI.first << ", " << trI.second << ")\n";
-				std::cout.flush();
-				coutMtx.unlock();
+				//coutMtx.lock();
+				//std::cout << "Checking pair index: " << i << " converted to triangular index: (" << trI.first << ", " << trI.second << ")\n";
+				//std::cout.flush();
+				//coutMtx.unlock();
 				collChecker(particles_[trI.first], particles_[trI.second],
 				lowestTime, firstPart, secondPart);
 			}
