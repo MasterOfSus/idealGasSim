@@ -336,8 +336,8 @@ PartCollision Gas::firstPartCollision() {
 	int nP {static_cast<int>(particles_.size())};
 
 	int nChecks {nP*(nP - 1) / 2 };
-	int nThreads {static_cast<int>(std::thread::hardware_concurrency()) - 2};
-	if (std::thread::hardware_concurrency() < 5) {
+	int nThreads {static_cast<int>(std::thread::hardware_concurrency()) - 1};
+	if (std::thread::hardware_concurrency() < 3) {
 		nThreads = 3;
 	}
 	int checksPerThread {nChecks/nThreads};
