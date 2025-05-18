@@ -37,16 +37,13 @@ class RenderStyle {
 	const sf::Color& getWOutlineColor() const { return wOutlineColor_; };
 	void setWOutlineColor(const sf::Color& color) { wOutlineColor_ = color; };
 
-	const sf::CircleShape& getPartProj() const { return partProj_; };
-	void setPartProj(const sf::CircleShape& circle) { partProj_ = circle; };
+	const sf::Texture& getPartTexture() const { return partTexture_; };
+	void setPartTexture(const sf::Texture& texture) { partTexture_ = texture; };
 
 	const sf::Color& getBGColor() const { return background_; };
 	void setBGColor(const sf::Color& color) { background_ = color; };
 
-	RenderStyle() {
-		partProj_.setFillColor(partColor_);
-	};
-	RenderStyle(const sf::CircleShape& defPartProj) : partProj_(defPartProj) {
+	RenderStyle(const sf::Texture& texture) : partTexture_(texture) {
 	};
 
 	private:
@@ -65,8 +62,7 @@ class RenderStyle {
 	sf::Color wallsColor_ {0, 0, 0, 64};
 	sf::Color wOutlineColor_ {sf::Color::Black};
 
-	sf::CircleShape partProj_ {1.f, 20};
-	sf::Color partColor_ {sf::Color::Red};
+	sf::Texture partTexture_;
 
 	sf::Color background_ {sf::Color::White};
 };
@@ -128,22 +124,22 @@ struct ParticleProjection {
 };
 */
 
-void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
-void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
+void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
+void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 
 template<typename GasLike>
-void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
+void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 
 // void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {});
 
 
-void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}, double deltaT = 0.);
+void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style, double deltaT = 0.);
 
-void drawParticles(const GasData& data, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style = {}, double deltaT = 0.);
+void drawParticles(const GasData& data, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style, double deltaT = 0.);
 //void drawGas(const Gas& gas, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style = {});
 
 template<typename GasLike>
-void drawGas(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style = {}, double deltaT = 0.);
+void drawGas(const GasLike& gasLike, const Camera& camera, sf::RenderTexture& picture, const RenderStyle& style, double deltaT = 0.);
 
 }  // namespace gasSim
 

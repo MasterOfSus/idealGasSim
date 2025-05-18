@@ -4,6 +4,7 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -11,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <execution>
+#include <tuple>
 
 #include "physicsEngine.hpp"
 #include "statistics.hpp"
@@ -193,7 +195,8 @@ std::vector<PhysVectorF> Camera::projectParticles(const std::vector<Particle>& p
 
 	for (const Particle& particle : particles) {
 		proj = getPointProjection(static_cast<PhysVectorF>(particle.position + particle.speed*deltaT));
-		if (proj.z <= 1.f && proj.z > 0.f) { // selecting scaling factor so that the particle is in front of the camera
+		// selecting scaling factor so that the particle is in front of the camera
+		if (proj.z <= 1.f && proj.z > 0.f) {
     	projections.emplace_back(proj);
 		}
   }
@@ -321,10 +324,8 @@ std::vector<PhysVectorF> Camera::projectParticles(const GasData& data, double de
 }
 
 void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style, double deltaT) {
-	static sf::CircleShape partProj = style.getPartProj();
-	float r {camera.getNPixels(Particle::radius)};
-	partProj.setRadius(r);
-	partProj.setOrigin({r, r});
+	sf::VertexArray particles(sf::Quads);
+	sf::Vector2u tSize {style.getPartTexture().getSize()};
 	std::vector<PhysVectorF> projections = camera.projectParticles(gas.getParticles(), deltaT);
 	
 	std::sort(std::execution::par, projections.begin(), projections.end(),
@@ -332,18 +333,28 @@ void drawParticles(const Gas& gas, const Camera& camera, sf::RenderTexture& text
 						return a.z < b.z; });
 	// sorted projections so as to draw the closest particles over the farthest
 	for (const PhysVectorF& proj: projections) {
-		partProj.setPosition({proj.x, proj.y});
-		partProj.setScale({proj.z, proj.z});
-
-		texture.draw(partProj);
+		float r {camera.getNPixels(Particle::radius) * proj.z};
+		sf::Vector2f vertexes[4] {
+			{proj.x - r, proj.y + r},
+			{proj.x + r, proj.y + r},
+			{proj.x + r, proj.y - r},
+			{proj.x - r, proj.y - r}
+		};
+		sf::Vector2f texVertexes[4] {
+			{0.f, 0.f},
+			{float(tSize.x), 0.f},
+			{float(tSize.x), float(tSize.y)},
+			{0.f, float(tSize.y)}
+		};
+		for (int i {0}; i < 4; ++i)
+			particles.append(sf::Vertex(vertexes[i], texVertexes[i]));
 	}
+	texture.draw(particles, &style.getPartTexture());
 }
 
 void drawParticles(const GasData& data, const Camera &camera, sf::RenderTexture &texture, const RenderStyle& style, double deltaT) {
-	static sf::CircleShape partProj = style.getPartProj();
-	float r {camera.getNPixels(Particle::radius)};
-	partProj.setRadius(r);
-	partProj.setOrigin({r, r});
+	sf::VertexArray particles(sf::Quads);
+	sf::Vector2u tSize {style.getPartTexture().getSize()};
 	std::vector<PhysVectorF> projections = camera.projectParticles(data, deltaT);
 	
 	std::sort(std::execution::par, projections.begin(), projections.end(),
@@ -351,11 +362,23 @@ void drawParticles(const GasData& data, const Camera &camera, sf::RenderTexture 
 						return a.z < b.z; });
 	// sorted projections so as to draw the closest particles over the farthest
 	for (const PhysVectorF& proj: projections) {
-		partProj.setPosition({proj.x, proj.y});
-		partProj.setScale({proj.z, proj.z});
-
-		texture.draw(partProj);
+		float r {camera.getNPixels(Particle::radius) * proj.z};
+		sf::Vector2f vertexes[4] {
+			{proj.x - r, proj.y + r},
+			{proj.x + r, proj.y + r},
+			{proj.x + r, proj.y - r},
+			{proj.x - r, proj.y - r}
+		};
+		sf::Vector2f texVertexes[4] {
+			{0.f, 0.f},
+			{float(tSize.x), 0.f},
+			{float(tSize.x), float(tSize.y)},
+			{0.f, float(tSize.y)}
+		};
+		for (int i {0}; i < 4; ++i)
+			particles.append(sf::Vertex(vertexes[i], texVertexes[i]));
 	}
+	texture.draw(particles, &style.getPartTexture());
 }
 
 /*

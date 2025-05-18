@@ -317,7 +317,7 @@ void SimOutput::processData() {
 	}
 }
 
-void SimOutput::processData(const Camera& camera, bool stats, const RenderStyle& style) {
+void SimOutput::processData(const Camera& camera, const RenderStyle& style, bool stats) {
 	std::cout << "Started processing data.\n";
 	std::vector<GasData> data;
 	while (true) {

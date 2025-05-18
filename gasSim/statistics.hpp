@@ -88,7 +88,7 @@ public:
 
 	void addData(const GasData& data);
 	void processData();
-	void processData(const Camera& camera, bool stats = false, const RenderStyle& style = {});
+	void processData(const Camera& camera, const RenderStyle& style, bool stats = false);
 
 	const std::deque<GasData>& getData() const { return rawData_; };
 	double getFramerate() const { return 1. / gDeltaT_; };

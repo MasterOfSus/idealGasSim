@@ -264,15 +264,15 @@ void Gas::simulate(int nIterations, SimOutput& output) {
 	// should modify to not insert first gasData into SimOutput
 	
   for (int i{0}; i < nIterations; ++i) {
-    PartCollision pColl{firstPartCollision()};
+  	std::cout << "Started " << i << "th iteration.\n";
+		PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
     Collision* firstColl{nullptr};
 
-    if (pColl.getTime() < wColl.getTime()) {
+    if (pColl.getTime() < wColl.getTime())
       firstColl = &pColl;
-    } else {
+    else
       firstColl = &wColl;
-    }
 
     move(firstColl->getTime());
 
@@ -300,6 +300,8 @@ WallCollision Gas::firstWallCollision() {
 }
 
 PartCollision Gas::firstPartCollision() {
+
+	std::mutex coutMtx;
 
 	auto trIndex {
 		[&] (int i, int nEls) {
@@ -354,6 +356,10 @@ PartCollision Gas::firstPartCollision() {
 			int endIndex {checksPerThread + extraChecks};
 			for (; i < endIndex; ++i) {
 				std::pair<int, int> trI {trIndex(i, nP)};
+				coutMtx.lock();
+				std::cout << "Checking pair index: " << i << " converted to triangular index: (" << trI.first << ", " << trI.second << ")\n";
+				std::cout.flush();
+				coutMtx.unlock();
 				collChecker(particles_[trI.first], particles_[trI.second],
 				lowestTime, firstPart, secondPart);
 			}
@@ -369,7 +375,7 @@ PartCollision Gas::firstPartCollision() {
 		int thrI {threadIndex};
 		threads.push_back(
 			std::thread(
-				[&] () {
+				[&, thrI] () {
 					double lowestTime{INFINITY};
 					Particle* firstPart{nullptr};
 					Particle* secondPart{nullptr};
@@ -377,6 +383,10 @@ PartCollision Gas::firstPartCollision() {
 					int endIndex {(thrI + 1) * checksPerThread + extraChecks};
 					for (; i < endIndex; ++i) {
 						std::pair<int, int> trI {trIndex(i, nP)};
+						//coutMtx.lock();
+						//std::cout << "Checking pair index: " << i << " converted to triangular index: (" << trI.first << ", " << trI.second << ")\n";
+						//std::cout.flush();
+						//coutMtx.unlock();
 						collChecker(particles_[trI.first], particles_[trI.second],
 						lowestTime, firstPart, secondPart);
 					}

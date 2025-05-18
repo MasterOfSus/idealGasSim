@@ -61,11 +61,9 @@ int main(int argc, const char* argv[]) {
 
     sf::RenderTexture photo;
     photo.create(camera.getWidth(), camera.getHeight());
-    sf::CircleShape shape{1.f};
-    shape.setFillColor({193, 130, 255});
-    shape.setOutlineColor({41, 27, 56});
-    shape.setOutlineThickness(10.);
-    gasSim::RenderStyle style{shape};
+    sf::Texture texture;
+		texture.loadFromFile("assets/realBall.png");
+    gasSim::RenderStyle style{texture};
 		style.setWallsColor(sf::Color(130, 255, 144, 192));
 		style.setBGColor(sf::Color::White);
     std::string options{"ufdl"};
@@ -93,7 +91,7 @@ int main(int argc, const char* argv[]) {
 		std::cout << "Simulation time: " << simTime.count() << " -> iterations per second: " << static_cast<double>(output.getData().size()) / simTime.count() << std::endl;
 
 		auto start = std::chrono::high_resolution_clock::now();
-		output.processData(camera, true, style);
+		output.processData(camera, style, true);
 		auto stop = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> renderTime = stop - start;
 
