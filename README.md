@@ -99,3 +99,7 @@ launching with no options runs --help option
 - [ ] Mettere funzioni libere inline nei cpp da usare come pezzo di codice che sostituisce una espressione che verrebbe utilizzata piu volte per rendere il codice piu leggibile?
 - [ ] Pratica di fare un header separato solo per i test in modo da riuscire a testare con funzioni che non servirebbero all'utente ma che servono a noi?
 - [ ] Vuole uscire con noi a cena?
+-     A che linee guida ci dobbiamo rifare? Quelle del nostro anno o di questo?
+-     In che senso cose scritte da intelligenza artificiale?
+-     Amogus
+-     Librerie header only va bene messe li?
