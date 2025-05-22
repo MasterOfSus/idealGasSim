@@ -20,13 +20,15 @@ struct PhysVector {
   FP y;
   FP z;
 
-	// default constructor
-	PhysVector(FP vx = 0., FP vy = 0., FP vz = 0.): x {vx}, y {vy}, z {vz} {};
+  // default constructor
+  PhysVector(FP vx = 0., FP vy = 0., FP vz = 0.) : x{vx}, y{vy}, z{vz} {};
 
-	// conversion constructor
-	template <typename FP1>
-	explicit PhysVector(const PhysVector<FP1>& v):
-	x {static_cast<FP>(v.x)}, y {static_cast<FP>(v.y)}, z {static_cast<FP>(v.z)} {};
+  // conversion constructor
+  template <typename FP1>
+  explicit PhysVector(const PhysVector<FP1>& v)
+      : x{static_cast<FP>(v.x)},
+        y{static_cast<FP>(v.y)},
+        z{static_cast<FP>(v.z)} {};
 
   PhysVector operator-() const { return {-x, -y, -z}; }
   PhysVector operator+(const PhysVector& v) const {
@@ -46,13 +48,9 @@ struct PhysVector {
     return x * v.x + y * v.y + z * v.z;
   }
 
-	PhysVector cross(const PhysVector& v) const {
-		return {
-			y * v.z - z * v.y,
-			z * v.x - x * v.z,
-			x * v.y - y * v.x
-		};
-	}
+  PhysVector cross(const PhysVector& v) const {
+    return {y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x};
+  }
 
   bool operator==(const PhysVector<FP>& v) const {
     return (x == v.x && y == v.y && z == v.z);
@@ -85,7 +83,9 @@ struct Particle {
   PhysVectorD position = {};
   PhysVectorD speed = {};
 
-	bool operator==(const Particle& p) const { return position == p.position && speed == p.speed; };
+  bool operator==(const Particle& p) const {
+    return position == p.position && speed == p.speed;
+  };
 };
 
 bool overlap(const Particle& p1, const Particle& p2);
@@ -133,8 +133,7 @@ class SimOutput;
 
 class Gas {
  public:
-
-	Gas() {};
+  Gas() {};
 
   Gas(const Gas& gas);
   Gas(std::vector<Particle> particles, double boxSide, double time = 0.);
@@ -146,15 +145,15 @@ class Gas {
 
   void simulate(int nIterations, SimOutput& output);
 
-	int getPIndex(const Particle* particle) const;
+  int getPIndex(const Particle* particle) const;
 
-	void operator=(const Gas& gas);
+  void operator=(const Gas& gas);
 
  private:
   std::vector<Particle> particles_{};
-	// std::vector<double> lastCollTimes_;
+  // std::vector<double> lastCollTimes_;
   double boxSide_{1.};
-  double time_ {0.};
+  double time_{0.};
 
   WallCollision firstWallCollision();
   PartCollision firstPartCollision();
