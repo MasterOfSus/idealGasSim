@@ -10,8 +10,8 @@
 #include <random>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <thread>
+#include <vector>
 // #include <execution> //Se decidiamo di fare qualche operazione in parallelo:
 // Sddfqoinp
 
@@ -260,12 +260,11 @@ double Gas::getBoxSide() const { return boxSide_; }
 double Gas::getTime() const { return time_; }
 
 void Gas::simulate(int nIterations, SimOutput& output) {
+  // should modify to not insert first gasData into SimOutput
 
-	// should modify to not insert first gasData into SimOutput
-	
   for (int i{0}; i < nIterations; ++i) {
-  	std::cout << "Started " << i << "th iteration.\n";
-		PartCollision pColl{firstPartCollision()};
+    std::cout << "Started " << i << "th iteration.\n";
+    PartCollision pColl{firstPartCollision()};
     WallCollision wColl{firstWallCollision()};
     Collision* firstColl{nullptr};
 
@@ -278,11 +277,13 @@ void Gas::simulate(int nIterations, SimOutput& output) {
 
     firstColl->solve();
 
-		GasData data {*this, firstColl};
+    GasData data{*this, firstColl};
     output.addData(data);
   }
-	output.setDone();
-	std::cout << "Elapsed simulation time: " << output.getData().back().getTime() - output.getData()[0].getTime() << std::endl;
+  output.setDone();
+  std::cout << "Elapsed simulation time: "
+            << output.getData().back().getTime() - output.getData()[0].getTime()
+            << std::endl;
 }
 
 int Gas::getPIndex(const Particle* p) const { return p - particles_.data(); }
@@ -300,113 +301,103 @@ WallCollision Gas::firstWallCollision() {
 }
 
 PartCollision Gas::firstPartCollision() {
+  std::mutex coutMtx;
 
-	std::mutex coutMtx;
+  auto trIndex{[&](int i, int nEls) {
+    int rowIndex{
+        nEls - 2 -
+        static_cast<int>(std::floor(
+            std::sqrt(-8 * i + 4 * nEls * (nEls - 1) - 7) / 2. - 0.5))};
+    int colIndex{i + rowIndex + 1 - nEls * (nEls - 1) / 2 +
+                 (nEls - rowIndex) * ((nEls - rowIndex) - 1) / 2};
+    return std::pair<int, int>(rowIndex, colIndex);
+  }};
 
-	auto trIndex {
-		[&] (int i, int nEls) {
-			int rowIndex {
-				nEls - 2 - static_cast<int>(std::floor(std::sqrt(-8*i + 4*nEls*(nEls - 1) - 7) / 2. - 0.5))
-			};
-			int colIndex {
-				i + rowIndex + 1 - nEls*(nEls - 1)/2 + (nEls - rowIndex)*((nEls - rowIndex) - 1)/2
-			};
-			return std::pair<int, int>(rowIndex, colIndex);
-		}
-	};
+  auto collChecker{[&](Particle& p1, Particle& p2, double& lowestTime,
+                       Particle*& firstPart, Particle*& secondPart) {
+    PhysVectorD relPos{p1.position - p2.position};
+    // Ottimizzazione e evita gli errori delle approssimazioni
+    // per l'approssimazione dei double delle particelle
+    // compenetrate
+    PhysVectorD relSpd{p1.speed - p2.speed};
+    if (relPos * relSpd <= 0) {
+      double time{collisionTime(p1, p2)};
+      if (time < lowestTime) {
+        firstPart = &p1;
+        secondPart = &p2;
+        lowestTime = time;
+      }
+    }
+  }};   //Non mi piace che sia una lambda, prende una reference a un puntatore 
 
-  auto collChecker {
-		[&](Particle& p1, Particle& p2, double& lowestTime, Particle* & firstPart, Particle* & secondPart) {
-  		PhysVectorD relPos{p1.position - p2.position};
-  		// Ottimizzazione e evita gli errori delle approssimazioni
-  		// per l'approssimazione dei double delle particelle
-  		// compenetrate
- 	 		PhysVectorD relSpd{p1.speed - p2.speed};
-   		if (relPos * relSpd <= 0) {
-     		double time{collisionTime(p1, p2)};
-     			if (time < lowestTime) {
-      			firstPart = &p1;
-      			secondPart = &p2;
-      			lowestTime = time;
-    		}
-  		}
-		}
-	};
+  int nP{static_cast<int>(particles_.size())};  //Potremmo tenere una variabile dentro gas che restituisce il numero delle particelle, potremmo pensare di usare un array non un vector per le particelle
 
-	int nP {static_cast<int>(particles_.size())};
+  int nChecks{nP * (nP - 1) / 2};
+  int nThreads{static_cast<int>(std::thread::hardware_concurrency()) - 2};
+  if (std::thread::hardware_concurrency() < 5) {
+    nThreads = 3;
+  }
+  int checksPerThread{nChecks / nThreads};   //Brutto punto a trovare qualcosa che gestisca lui implicitamente calcoli di questo tipo per lo smistamento del lavoro
+  int extraChecks{nChecks % nThreads};
 
-	int nChecks {nP*(nP - 1) / 2 };
-	int nThreads {static_cast<int>(std::thread::hardware_concurrency()) - 2};
-	if (std::thread::hardware_concurrency() < 5) {
-		nThreads = 3;
-	}
-	int checksPerThread {nChecks/nThreads};
-	int extraChecks {nChecks%nThreads};
+  std::vector<std::thread> threads{};
+  std::vector<PartCollision> bestColls(nThreads, {INFINITY, nullptr, nullptr});
 
-	std::vector<std::thread> threads {};
-	std::vector<PartCollision> bestColls(nThreads, {INFINITY, nullptr, nullptr});
+  threads.push_back(std::thread([&]() {
+    double lowestTime{INFINITY};
+    Particle* firstPart{nullptr};
+    Particle* secondPart{nullptr};
+    int i{0};
+    int endIndex{checksPerThread + extraChecks};
+    for (; i < endIndex; ++i) {
+      std::pair<int, int> trI{trIndex(i, nP)};
+      coutMtx.lock();
+      std::cout << "Checking pair index: " << i
+                << " converted to triangular index: (" << trI.first << ", "
+                << trI.second << ")\n";
+      std::cout.flush();
+      coutMtx.unlock();
+      collChecker(particles_[trI.first], particles_[trI.second], lowestTime,
+                  firstPart, secondPart);
+    }
+    PartCollision bestColl{lowestTime, firstPart, secondPart};
+    bestColls[0] = bestColl;
+  }));
 
-	threads.push_back(
-		std::thread(
-			[&] () {
-			double lowestTime{INFINITY};
-			Particle* firstPart{nullptr};
-			Particle* secondPart{nullptr};
-			int i {0};
-			int endIndex {checksPerThread + extraChecks};
-			for (; i < endIndex; ++i) {
-				std::pair<int, int> trI {trIndex(i, nP)};
-				coutMtx.lock();
-				std::cout << "Checking pair index: " << i << " converted to triangular index: (" << trI.first << ", " << trI.second << ")\n";
-				std::cout.flush();
-				coutMtx.unlock();
-				collChecker(particles_[trI.first], particles_[trI.second],
-				lowestTime, firstPart, secondPart);
-			}
-			PartCollision bestColl {lowestTime, firstPart, secondPart};
-			bestColls[0] = bestColl;
-			}
-		)
-	);
+  int threadIndex{1};
 
-	int threadIndex {1};
+  for (; threadIndex < nThreads; ++threadIndex) {
+    int thrI{threadIndex};
+    threads.push_back(std::thread([&, thrI]() {
+      double lowestTime{INFINITY};
+      Particle* firstPart{nullptr};
+      Particle* secondPart{nullptr};
+      int i{thrI * checksPerThread + extraChecks};
+      int endIndex{(thrI + 1) * checksPerThread + extraChecks};
+      for (; i < endIndex; ++i) {
+        std::pair<int, int> trI{trIndex(i, nP)};
+        // coutMtx.lock();
+        // std::cout << "Checking pair index: " << i << " converted to
+        // triangular index: (" << trI.first << ", " << trI.second << ")\n";
+        // std::cout.flush();
+        // coutMtx.unlock();
+        collChecker(particles_[trI.first], particles_[trI.second], lowestTime,
+                    firstPart, secondPart);
+      }
+      PartCollision bestColl{lowestTime, firstPart, secondPart};
+      bestColls[thrI] = bestColl;
+    }));
+  }
 
-	for (; threadIndex < nThreads; ++threadIndex) {
-		int thrI {threadIndex};
-		threads.push_back(
-			std::thread(
-				[&, thrI] () {
-					double lowestTime{INFINITY};
-					Particle* firstPart{nullptr};
-					Particle* secondPart{nullptr};
-					int i {thrI * checksPerThread + extraChecks};
-					int endIndex {(thrI + 1) * checksPerThread + extraChecks};
-					for (; i < endIndex; ++i) {
-						std::pair<int, int> trI {trIndex(i, nP)};
-						//coutMtx.lock();
-						//std::cout << "Checking pair index: " << i << " converted to triangular index: (" << trI.first << ", " << trI.second << ")\n";
-						//std::cout.flush();
-						//coutMtx.unlock();
-						collChecker(particles_[trI.first], particles_[trI.second],
-						lowestTime, firstPart, secondPart);
-					}
-					PartCollision bestColl {lowestTime, firstPart, secondPart};
-					bestColls[thrI] = bestColl;
-				}
-			)
-		);
-	}
+  for (std::thread& t : threads) {
+    if (t.joinable()) t.join();
+  }
 
-	for (std::thread& t: threads) {
-		if (t.joinable())
-			t.join();
-	}
-
-  return *std::min_element(bestColls.begin(), bestColls.end(), 
-			[] (const PartCollision& c1, const PartCollision& c2) {
-				return c1.getTime() < c2.getTime();
-			}
-			);
+  return *std::min_element(
+      bestColls.begin(), bestColls.end(),
+      [](const PartCollision& c1, const PartCollision& c2) {
+        return c1.getTime() < c2.getTime();
+      });
 }
 
 void Gas::move(double time) {
@@ -420,9 +411,9 @@ void Gas::move(double time) {
 }
 
 void Gas::operator=(const Gas& gas) {
-	particles_ = gas.particles_;
-	boxSide_ = gas.boxSide_;
-	time_ = gas.time_;
+  particles_ = gas.particles_;
+  boxSide_ = gas.boxSide_;
+  time_ = gas.time_;
 }
 
 // End of Gas functions

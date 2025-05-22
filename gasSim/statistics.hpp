@@ -12,7 +12,7 @@
 
 namespace gasSim {
 
-class GasData {
+class GasData { 
 public:
 	GasData(const Gas& gas, const Collision* collision);
 	
