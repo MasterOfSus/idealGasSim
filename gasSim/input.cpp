@@ -69,7 +69,8 @@ regarding how to use them \n")*/
      // cmake, could be because argc is not always ==1 if the
      // program is launched w-out options
 
-  /*else if (result["usage"].as<bool>()) {  // check cxxopts.hpp line 2009 if you
+  /*else if (result["usage"].as<bool>()) {  // check cxxopts.hpp line 2009 if
+  you
                                           // want to implement --usage as only
                                           // options w-out the help message
 
