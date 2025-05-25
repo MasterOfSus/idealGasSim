@@ -305,17 +305,23 @@ void SimOutput::processData() {
       break;
     }
     int nStats{static_cast<int>(rawData_.size() / statSize_)};
-    // std::cout << "nStats for this iteration is " << nStats << std::endl;
+    // std::cout << "nStats for this iteration is " << rawData_.size() << "/" << statSize_ << " = " << nStats << std::endl;
 
-    std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
-              std::back_inserter(data));
-    // std::cout << "GasData count = " << data.size() << std::endl;
-    rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
-    guard.unlock();
+		if (nStats != 0) {
+    	std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
+    	          std::back_inserter(data));
+    	// std::cout << "GasData count = " << data.size() << std::endl;
+    	rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
+    	guard.unlock();
 
-    processStats(data);
-
-    data.clear();
+			//std::cout << "Data size: " << data.size() << "; ";
+    	processStats(data);
+			/*{
+			std::lock_guard<std::mutex> guard {statsMtx_};
+			//std::cout << "Stats size: " << stats_.size() << std::endl;
+			}*/
+    	data.clear();
+		}
   }
 }
 
@@ -406,7 +412,7 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
 
 void SimOutput::processStats(const std::vector<GasData>& data) {
   // std::cout << "Started processing stats.\n";
-  static std::vector<TdStats> stats{};
+  std::vector<TdStats> stats{};
 
   assert(!std::div(data.size(), statSize_).rem);
 
@@ -431,11 +437,12 @@ void SimOutput::processStats(const std::vector<GasData>& data) {
 std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {
   if (emptyQueue) {
     std::deque<TdStats> stats;
-    statsMtx_.lock();
+		{
+		std::lock_guard<std::mutex> guard {statsMtx_};
     stats = {std::exchange(stats_, {})};
-    stats_.clear();
-    statsMtx_.unlock();
-    return std::vector<TdStats>(stats.begin(), stats.end());
+		stats_.clear();
+		}
+		return std::vector<TdStats>(stats.begin(), stats.end());
   } else {
     std::lock_guard<std::mutex> guard(statsMtx_);
     return std::vector<TdStats>(stats_.begin(), stats_.end());

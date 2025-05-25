@@ -13,6 +13,8 @@
 
 namespace gasSim {
 
+// associate a callback to critical points of programs 
+
 class GasData {
  public:
   GasData(const Gas& gas, const Collision* collision);
@@ -51,7 +53,7 @@ class TdStats {
   // void reset();
   double getPressure(Wall wall) const;
   double getPressure() const;
-  double getTemp() const { return T_; };
+  double getTemp() const { return T_; }
   unsigned int getNParticles() const { return lastCollPositions_.size(); };
   double getVolume() const { return std::pow(boxSide_, 3); };
   double getBoxSide() const { return boxSide_; };
@@ -92,6 +94,7 @@ class SimOutput {
   void processData(const Camera& camera, const RenderStyle& style,
                    bool stats = false);
 
+	// horrible, non-thread-safe
   const std::deque<GasData>& getData() const { return rawData_; };
   double getFramerate() const { return 1. / gDeltaT_; };
   int getStatSize() const { return statSize_; };

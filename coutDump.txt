@@ -1,0 +1,24 @@
+Simulation calculations (100) are underway... 
+Leftover rawData_ count: 0
+Leftover stats_ count: 1
+Simulation time: 4.70394 -> iterations per second: 0
+Data processing time: 4.70387
+Stats count: 4
+╔════════════════════════════════════════════════════╗
+║           Ideal Gas Simulation - [idealGasSim]     ║
+╠════════════════════════════════════════════════════╝
+║ ▸ Simulation Parameters
+║   • Particle Count         :   1000
+║   • Temperature (alpha)    :      5
+║   • Box Side Length (m)    :     40
+║   • Number of Iterations   :    100
+║   • Parallel Collisions    :  false
+║ ▸ Statistics
+║   • Pressure               : 0.0249264
+║   • Pressure on front      : 0.0630861
+║   • Pressure on back       :      0
+║   • Pressure on left       : 0.0288699
+║   • Pressure on right      :      0
+║   • Pressure on top        :      0
+║   • Pressure on bottom     : 0.0576027
+╚═════════════════════════════════════════════════════

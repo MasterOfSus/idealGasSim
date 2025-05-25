@@ -36,11 +36,12 @@ int main(int argc, const char* argv[]) {
     double temp = cFile.GetReal("gas", "temperature", -1);
     double side = cFile.GetReal("gas", "boxSide", -1);
     int iterNum = cFile.GetInteger("gas", "iterationNum", -1);
+		int statsN = cFile.GetInteger("results", "statsN", 20);
     bool simult = cFile.GetBoolean("gas", "simultaneous", false);
     gasSim::Gas simulatedGas(pNum, temp, side);
 
-    gasSim::SimOutput output{(unsigned int)iterNum, 60.};
-    std::cout << "Simulation calculations are underway... \n";
+    gasSim::SimOutput output{(unsigned)statsN, 60.};
+    std::cout << "Simulation calculations (" << iterNum << ") are underway... \n";
     std::cout.flush();
 
     auto simLambda{[&simulatedGas, &output, iterNum]() {
@@ -49,17 +50,32 @@ int main(int argc, const char* argv[]) {
     auto simStart = std::chrono::high_resolution_clock::now();
     std::thread simThread{simLambda};
 
-    auto processLambda{[&output]() { output.processData(); }};
+    auto processLambda{	
+			[&output]() {
+				output.processData();
+			}
+		};
     auto start = std::chrono::high_resolution_clock::now();
     std::thread processThread{processLambda};
 
-    simThread.join();
-    processThread.join();
-
     std::vector<gasSim::TdStats> stats;
-    auto statsLambda{[&stats, &output]() { stats = output.getStats(); }};
+    auto statsLambda{[&stats, &output]() {
+			while(true) {
+				std::vector<gasSim::TdStats> tempStats {output.getStats(true)};
+				stats.insert(stats.end(), tempStats.begin(), tempStats.end());
+				if (output.isDone() && output.getData().empty() && output.getStats().empty()) {
+					break;
+				}
+			}
+		}};
     std::thread statsThread{statsLambda};
-    statsThread.join();
+   
+		simThread.join();
+   	processThread.join();
+ 	  statsThread.join();
+
+		std::cout << "Leftover rawData_ count: " << output.getData().size() << std::endl;
+		std::cout << "Leftover stats_ count: " << output.getStats().size() << std::endl;
 
     auto simEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> simTime = simEnd - simStart;
