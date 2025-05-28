@@ -260,6 +260,8 @@ bool GasData::operator==(const GasData& data) const {
 
 // SimOutput methods
 
+// wondering if I should even keep these two setters?
+
 void SimOutput::setFramerate(double framerate) {
   if (framerate <= 0) {
     throw std::invalid_argument("Non-positive framerate provided.");
@@ -280,30 +282,37 @@ void SimOutput::addData(const GasData& data) {
   if (data.getParticles().size() != nParticles_)
     throw std::invalid_argument("Non-matching particle numbers.");
   else {
-    {
-      std::lock_guard<std::mutex> lg(rawDataMtx_);
-      if (rawData_.size() > 0) {
-        if (data.getTime() < rawData_.back().getTime()) {
-          throw std::invalid_argument(
-              "Argument time less than latest raw data piece time");
-        }
+    std::lock_guard<std::mutex> rawDataGuard {rawDataMtx_};
+    if (rawData_.size() > 0) {
+      if (data.getTime() < rawData_.back().getTime()) {
+        throw std::invalid_argument(
+            "Argument time less than latest raw data piece time");
       }
-      rawData_.emplace_back(data);
     }
+    rawData_.emplace_back(data);
+		std::lock_guard<std::mutex> doneGuard {doneMtx_};
     done_ = false;
-    rawDataCv_.notify_all();
+		rawDataCv_.notify_one();
   }
 }
 
 void SimOutput::processData() {
-  std::vector<GasData> data;
+  std::vector<GasData> data {};
+  std::unique_lock<std::mutex> rawDataLock(rawDataMtx_, std::defer_lock);
   while (true) {
-    std::unique_lock<std::mutex> guard(rawDataMtx_);
-    rawDataCv_.wait_for(guard, std::chrono::milliseconds(10),
-                        [this] { return !rawData_.empty() || done_; });
-    if (done_ && rawData_.empty()) {
+		rawDataLock.lock();
+    rawDataCv_.wait_for(rawDataLock, std::chrono::milliseconds(100),
+  		[this] {
+			std::lock_guard<std::mutex> doneGuard(doneMtx_);
+			return !rawData_.empty() || done_;
+			}
+		);
+		{ // doneGuard scope
+		std::lock_guard<std::mutex> doneGuard {doneMtx_};
+		if (done_ && rawData_.empty()) {
       break;
     }
+		} // end of doneGuard scope
     int nStats{static_cast<int>(rawData_.size() / statSize_)};
     // std::cout << "nStats for this iteration is " << rawData_.size() << "/" << statSize_ << " = " << nStats << std::endl;
 
@@ -312,7 +321,7 @@ void SimOutput::processData() {
     	          std::back_inserter(data));
     	// std::cout << "GasData count = " << data.size() << std::endl;
     	rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
-    	guard.unlock();
+    	rawDataLock.unlock();
 
 			//std::cout << "Data size: " << data.size() << "; ";
     	processStats(data);
@@ -320,30 +329,38 @@ void SimOutput::processData() {
 			std::lock_guard<std::mutex> guard {statsMtx_};
 			//std::cout << "Stats size: " << stats_.size() << std::endl;
 			}*/
-    	data.clear();
+		} else {
+			rawDataLock.unlock();
 		}
+		data.clear();
   }
 }
 
 void SimOutput::processData(const Camera& camera, const RenderStyle& style,
                             bool stats) {
   // std::cout << "Started processing data.\n";
-  std::vector<GasData> data;
+  std::vector<GasData> data {};
+	std::unique_lock<std::mutex> rawDataLock {rawDataMtx_, std::defer_lock};
   while (true) {
-    std::unique_lock<std::mutex> guard(rawDataMtx_);
-    rawDataCv_.wait_for(guard, std::chrono::milliseconds(1),
-                        [this] { return !rawData_.empty() || done_; });
+		rawDataLock.lock();
+    rawDataCv_.wait_for(rawDataLock, std::chrono::milliseconds(100),
+		[this] {
+		std::lock_guard<std::mutex> doneGuard {doneMtx_};
+		return !rawData_.empty() || done_; });
     // std::cout << "Done status: " << done_ << ". RawData emptiness: " <<
     // rawData_.empty() << std::endl;
+		{ // doneGuard scope
+		std::lock_guard<std::mutex> doneGuard {doneMtx_};
     if (done_ && rawData_.empty()) {
       break;
     }
+		} // end of doneGuard scope
     int nStats{static_cast<int>(rawData_.size() / statSize_)};
 
     std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
               std::back_inserter(data));
     rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
-    guard.unlock();
+    rawDataLock.unlock();
 
     std::thread sThread;
     std::thread gThread;
@@ -369,7 +386,7 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 
     if (stats && sThread.joinable()) sThread.join();
     if (gThread.joinable()) gThread.join();
-    data.clear();
+		data.clear();
   }
 }
 
@@ -391,7 +408,7 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
   assert(gDeltaT_ > 0.);
   assert(*gTime_ <= data[0].getTime());
 
-  renders.reserve((data.back().getTime() - data.begin()->getTime()) / gDeltaT_ +
+  renders.reserve((data.back().getTime() - data.front().getTime()) / gDeltaT_ +
                   1);
 
   for (const GasData& dat : data) {
@@ -403,10 +420,8 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
     }
   }
 
-  rendersMtx_.lock();
+	std::lock_guard<std::mutex> rendersGuard {rendersMtx_};
   std::move(renders.begin(), renders.end(), std::back_inserter(renders_));
-  rendersMtx_.unlock();
-  renders.clear();
   // std::cout << "done!\n";
 }
 
@@ -427,11 +442,8 @@ void SimOutput::processStats(const std::vector<GasData>& data) {
     stats.emplace_back(stat);
   }
   // std::cout << "Done with loop\n";
-  statsMtx_.lock();
+	std::lock_guard<std::mutex> statsGuard {statsMtx_};
   std::move(stats.begin(), stats.end(), std::back_inserter(stats_));
-  statsMtx_.unlock();
-  stats.clear();
-  // std::cout << "Finished processing stats.\n";
 }
 
 std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {
@@ -451,16 +463,25 @@ std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {
 
 std::vector<sf::Texture> SimOutput::getRenders(bool emptyQueue) {
   if (emptyQueue) {
-    rendersMtx_.lock();
+		std::lock_guard<std::mutex> rendersGuard {rendersMtx_};
     std::vector<sf::Texture> renders(std::make_move_iterator(renders_.begin()),
                                      std::make_move_iterator(renders_.end()));
-    renders.clear();
-    rendersMtx_.unlock();
+    renders_.clear();
     return renders;
   } else {
     std::lock_guard<std::mutex> guard(rendersMtx_);
     return std::vector<sf::Texture>(renders_.begin(), renders_.end());
   }
+}
+
+void SimOutput::setDone() {
+	std::lock_guard<std::mutex> guard {doneMtx_};
+	done_ = true;
+}
+
+bool SimOutput::isDone() {
+	std::lock_guard<std::mutex> guard {doneMtx_};
+	return done_;
 }
 
 }  // namespace gasSim

@@ -102,8 +102,8 @@ class SimOutput {
   std::vector<TdStats> getStats(bool emptyQueue = false);
   std::vector<sf::Texture> getRenders(bool emptyQueue = false);
 
-  bool isDone() { return done_; };
-  void setDone() { done_ = true; };
+  bool isDone();
+  void setDone();
 
  private:
   void processStats(const std::vector<GasData>& data);
@@ -126,6 +126,7 @@ class SimOutput {
   unsigned long nParticles_{0};
 
   bool done_{false};
+	std::mutex doneMtx_;
 };
 
 }  // namespace gasSim

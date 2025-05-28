@@ -16,6 +16,7 @@ double gasSim::Particle::radius;
 
 int main(int argc, const char* argv[]) {
   try {
+		std::cerr << "Started." << std::endl;
     auto opts{gasSim::input::optParse(argc, argv)};
     if (gasSim::input::optControl(argc, opts)) {
       return 0;
@@ -50,6 +51,8 @@ int main(int argc, const char* argv[]) {
     auto simStart = std::chrono::high_resolution_clock::now();
     std::thread simThread{simLambda};
 
+		std::cerr << "Initialized sim thread." << std::endl;
+
     auto processLambda{	
 			[&output]() {
 				output.processData();
@@ -57,6 +60,8 @@ int main(int argc, const char* argv[]) {
 		};
     auto start = std::chrono::high_resolution_clock::now();
     std::thread processThread{processLambda};
+
+		std::cerr << "Initialized processing thread." << std::endl;
 
     std::vector<gasSim::TdStats> stats;
     auto statsLambda{[&stats, &output]() {
@@ -69,10 +74,23 @@ int main(int argc, const char* argv[]) {
 			}
 		}};
     std::thread statsThread{statsLambda};
-   
-		simThread.join();
-   	processThread.join();
- 	  statsThread.join();
+
+		std::cerr << "Initialized stats thread." << std::endl;
+  
+		if (simThread.joinable()) {
+			simThread.join();
+			std::cerr << "Joined simThread." << std::endl;
+		}
+   	if (processThread.joinable()) {
+			processThread.join();
+			std::cerr << "Joined processThread." << std::endl;
+		}
+ 	  if (statsThread.joinable()) {
+			statsThread.join();
+			std::cerr << "Joined statsThread." << std::endl;
+		}
+
+		std::cerr << "Got to threads end of life." << std::endl;
 
 		std::cout << "Leftover rawData_ count: " << output.getData().size() << std::endl;
 		std::cout << "Leftover stats_ count: " << output.getStats().size() << std::endl;
