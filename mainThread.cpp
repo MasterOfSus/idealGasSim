@@ -15,7 +15,8 @@ double gasSim::Particle::mass;
 double gasSim::Particle::radius;
 
 int main(int argc, const char* argv[]) {
-  try {
+  
+	try {
 		std::cerr << "Started." << std::endl;
     auto opts{gasSim::input::optParse(argc, argv)};
     if (gasSim::input::optControl(argc, opts)) {
@@ -68,7 +69,7 @@ int main(int argc, const char* argv[]) {
 			while(true) {
 				std::vector<gasSim::TdStats> tempStats {output.getStats(true)};
 				stats.insert(stats.end(), tempStats.begin(), tempStats.end());
-				if (output.isDone() && output.getData().empty() && output.getStats().empty()) {
+				if (output.isDone() && output.dataEmpty() && output.getStats().empty()) {
 					break;
 				}
 			}

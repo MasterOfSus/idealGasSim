@@ -16,6 +16,7 @@ namespace gasSim {
 
 class RenderStyle {
 	public:
+	/*
 	const std::string& getGridOpts() const { return gridOpts_; };
 	void setGridOpts(const std::string& opts);
 	const sf::Color& getGridColor() const { return gridColor_; };
@@ -29,6 +30,7 @@ class RenderStyle {
 	void setAxesColor(const sf::Color& color) { axesColor_ = color; };
 	float getAxesLength() const { return axesLength_; };
 	void setAxesLength(const float length);
+	*/
 
 	const std::string& getWallsOpts() const { return wallsOpts_; };
 	void setWallsOpts(const std::string& opts);
@@ -48,13 +50,13 @@ class RenderStyle {
 
 	private:
 
-	std::string gridOpts_ {"x"}; // x -> xy plane, y -> yz plane, z -> zx plane
-	sf::Color gridColor_ {0, 0, 0, 128};
-	float gridSpacing_ {1.};
+	// std::string gridOpts_ {"x"}; // x -> xy plane, y -> yz plane, z -> zx plane
+	// sf::Color gridColor_ {0, 0, 0, 128};
+	// float gridSpacing_ {1.};
 
-	std::string axesOpts_ {"xyz"};
-	sf::Color axesColor_ {0, 0, 0, 255};
-	float axesLength_ {10.};
+	// std::string axesOpts_ {"xyz"};
+	// sf::Color axesColor_ {0, 0, 0, 255};
+	// float axesLength_ {10.};
 
 	std::string wallsOpts_ {"udlrfb"}; // up, down, left, right, front, back
 																		 // as seen standing on the xy plane and
@@ -116,17 +118,10 @@ class Camera {
   int height_;
 
 };
-
 /*
-struct ParticleProjection {
-  static sf::CircleShape circle;
-  PhysVectorF position;
-};
-*/
-
 void drawAxes(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 void drawGrid(const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
-
+*/
 template<typename GasLike>
 void drawWalls(const Gas& gas, const Camera& camera, sf::RenderTexture& texture, const RenderStyle& style);
 

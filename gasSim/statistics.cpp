@@ -1,19 +1,37 @@
 #include "statistics.hpp"
 
+#include <SFML/Config.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/VideoMode.hpp>
 #include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
+#include <iomanip>
+#include <ios>
 #include <iostream>
 #include <iterator>
 #include <mutex>
 #include <numeric>
 #include <ratio>
+#include <sstream>
 #include <stdexcept>
+#include <string>
 #include <thread>
 #include <utility>
+
+#include <RtypesCore.h>
+#include <TClass.h>
+#include <TH1D.h>
+#include <TAxis.h>
+#include <TGraph.h>
+#include <TMultiGraph.h>
+#include <TCanvas.h>
+#include <TImage.h>
 
 #include "graphics.hpp"
 #include "physicsEngine.hpp"
@@ -59,7 +77,7 @@ void TdStats::addPulse(const GasData& data) {
 // is minimal anyways, but if the user wishes to have perfectly coherent data he
 // must acknowledge this concept and avoid this behaviour.
 
-TdStats::TdStats(const GasData& firstState)
+TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
     : wallPulses_{},
       lastCollPositions_(std::vector<PhysVectorD>(
           firstState.getParticles().size(), {0., 0., 0.})),
@@ -67,6 +85,10 @@ TdStats::TdStats(const GasData& firstState)
       t0_(firstState.getT0()),
       time_(firstState.getTime()),
       boxSide_(firstState.getBoxSide()) {
+	if (speedsHTemplate.GetEntries() != 0.) {
+		throw std::invalid_argument("Non-empty speedsH template provided.");
+	}
+	speedsH_ = speedsHTemplate;
   T_ = std::accumulate(
            firstState.getParticles().begin(), firstState.getParticles().end(),
            0.,
@@ -80,7 +102,7 @@ TdStats::TdStats(const GasData& firstState)
   lastCollPositions_[firstState.getP1Index()] = firstState.getP1().position;
 }
 
-TdStats::TdStats(const GasData& data, const TdStats& prevStats)
+TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& speedsHTemplate)
     : wallPulses_{},
       freePaths_{},
       t0_(data.getT0()),
@@ -99,6 +121,30 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats)
                              }) != prevStats.getTemp()) {
     throw std::invalid_argument("Non-matching temperatures.");
   } else {
+		{
+		TH1D* defH = new TH1D();
+		if (speedsHTemplate.IsEqual(defH)) {
+			speedsH_ = TH1D();
+			speedsH_.SetBins(
+				prevStats.speedsH_.GetNbinsX(),
+				prevStats.speedsH_.GetXaxis()->GetXmin(),
+				prevStats.speedsH_.GetXaxis()->GetXmax()
+			);
+			speedsH_.SetNameTitle(
+				prevStats.speedsH_.GetName(),
+				prevStats.speedsH_.GetTitle()
+			);
+		} else {
+			if (speedsHTemplate.GetEntries() != 0.) {
+				delete defH;
+				throw std::runtime_error("Non-empty speedsH template provided.");
+			} else {
+				speedsH_ = speedsHTemplate;
+			}
+		}
+		delete defH;
+		}
+
     lastCollPositions_ = prevStats.lastCollPositions_;
     T_ = prevStats.T_;
     if (data.getCollType() == 'w') {
@@ -120,12 +166,10 @@ void TdStats::addData(const GasData& data) {
     if (data.getCollType() == 'w') {
       addPulse(data);
 
-      PhysVectorD lastPos{lastCollPositions_[data.getP1Index()]};
-
       if (lastCollPositions_[data.getP1Index()] != PhysVectorD({0., 0., 0.})) {
         freePaths_.emplace_back(
             (data.getP1().position - lastCollPositions_[data.getP1Index()])
-                .norm());
+            .norm());
       }
 
       lastCollPositions_[data.getP1Index()] = data.getP1().position;
@@ -145,6 +189,13 @@ void TdStats::addData(const GasData& data) {
       lastCollPositions_[data.getP1Index()] = data.getP1().position;
       lastCollPositions_[data.getP2Index()] = data.getP2().position;
     }
+		// VERY inefficient, could be optimized? (only speeds that change are the collided particles')
+		std::for_each(
+				data.getParticles().begin(), data.getParticles().end(),
+				[this] (const Particle& p) {
+					speedsH_.Fill(p.speed.norm());
+				}
+		);
   }
 }
 
@@ -266,13 +317,22 @@ void SimOutput::setFramerate(double framerate) {
   if (framerate <= 0) {
     throw std::invalid_argument("Non-positive framerate provided.");
   } else {
+		std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
     gDeltaT_ = 1. / framerate;
   }
 }
 
-SimOutput::SimOutput(unsigned int statSize, double framerate)
-    : statSize_(statSize) {
+SimOutput::SimOutput(unsigned int statSize, double framerate, const TH1D& speedsHTemplate)
+    : statSize_(statSize), speedsHTemplate_(speedsHTemplate) {
   setFramerate(framerate);
+	if (speedsHTemplate.GetEntries() != 0) {
+		throw std::invalid_argument("Provided non-empty histogram template.");
+	}
+}
+
+bool SimOutput::dataEmpty() {
+	std::lock_guard<std::mutex> dataGuard (rawDataMtx_);
+	return rawData_.empty();
 }
 
 void SimOutput::addData(const GasData& data) {
@@ -390,6 +450,738 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
   }
 }
 
+void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
+	unsigned ww {img.getSize().x};
+	UInt_t argb {};
+	sf::Color pxlClr {};
+	for (unsigned j {0}; j < img.getSize().y; ++j) {
+		for (unsigned i {0}; i < img.getSize().x; ++i) {
+			argb = argbBffr[j*ww + i];
+			pxlClr = {
+				static_cast<sf::Uint8>((argb >> 16) & 0xFF),
+				static_cast<sf::Uint8>((argb >> 8) & 0xFF),
+				static_cast<sf::Uint8>(argb & 0xFF),
+				static_cast<sf::Uint8>((argb >> 24) & 0xFF)
+			};
+			img.setPixel(i, j, pxlClr);
+		}
+	}
+}
+
+std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) {
+
+	if ((opt == VideoOpts::justGas && windowSize.x < 400 && windowSize.y < 400)
+	|| 	(opt == VideoOpts::justStats && windowSize.x < 600 && windowSize.y < 600)
+	||  (windowSize.x < 800 && windowSize.y < 600)) {
+		throw std::invalid_argument("Passed window size is too small.");
+	}
+
+	if (!(prevGraphs.At(0)->IsA() == TMultiGraph::Class() &&
+			prevGraphs.At(1)->IsA() == TGraph::Class() &&
+			prevGraphs.At(2)->IsA() == TGraph::Class())) {
+		throw std::invalid_argument("Passed graphs list with wrong object types.");
+	}
+
+	std::vector<std::pair<sf::Texture, double>> renders {};
+	std::vector<TdStats> stats {};
+	std::optional<double> gTime;
+	double gDeltaT;
+
+
+	auto getRendersT0 = [&] (auto couples) {
+		if (couples.size()) {
+			return couples[0].second;
+		} else if (gTime.has_value()) {
+			return *gTime;
+		} else {
+			throw std::logic_error("Tried to get render time for output with no time set.");
+		}
+	};
+
+	// extraction of renders and/or stats clusters compatible with processing algorithm
+	// fTime_ initialization, either through gTime_ or through stats[0]
+	switch (opt) {
+		case VideoOpts::justGas:
+			{ // lock scope
+			std::lock_guard<std::mutex> rGuard {rendersMtx_};
+			{ // locks scope 2
+			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
+			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
+			gTime = *gTime_;
+			gDeltaT = gDeltaT_;
+			} // end of locks scope 2
+			if (!gTime.has_value()) {
+				return {};
+			}
+			if (renders_.size()) {
+				std::move(renders_.begin(), renders_.end(), renders.begin());
+				renders_.clear();
+			}
+			} // end of lock scope
+			if ((!fTime_.has_value() || std::fmod(*gTime - *fTime_, gDeltaT))) {
+				fTime_ = getRendersT0(renders);
+			}
+			break;
+		case VideoOpts::justStats:
+			{ // lock scope
+			std::lock_guard<std::mutex> sGuard {statsMtx_};
+			{ // locks scope 2
+			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
+			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
+			gTime = *gTime_;
+			gDeltaT = gDeltaT_;
+			} // end of locks scope 2
+			if (stats_.size()) {
+				// setting fTime_
+				if (!fTime_.has_value()) {
+					if (gTime.has_value()) {
+						*fTime_ = *gTime - gDeltaT * std::ceil((*gTime - stats[0].getTime0())/gDeltaT);
+					} else {
+						*fTime_ = stats_.front().getTime0() - gDeltaT;
+					}
+				}
+				if (stats_.back().getTime() >= *fTime_ + gDeltaT) {
+					auto sStartI {
+						std::lower_bound(stats_.begin(), stats_.end(), *fTime_,
+						[](double value, const TdStats& s) { return value < s.getTime(); })
+					};
+					stats = std::vector<TdStats> {sStartI, stats_.end()};
+					if (emptyStats) {
+						stats_.clear();
+					}
+				}
+			} else {
+				return {};
+			}
+			} // end of lock scope
+			break;
+		case VideoOpts::all:
+		case VideoOpts::gasPlusCoords:
+			{ // locks scope
+			std::lock_guard<std::mutex> rGuard {rendersMtx_};
+			std::lock_guard<std::mutex> sGuard {statsMtx_};
+			{ // locks scope 2
+			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
+			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
+			gTime = *gTime_;
+			gDeltaT = gDeltaT_;
+			} // end of locks scope 2
+			if (!gTime.has_value()) {
+				return {};
+			}
+			if (renders_.size() || stats_.size()) {
+				// dealing with fTime_
+				if (!stats_.size()) {
+					if (!fTime_.has_value() || std::fmod(*gTime - *fTime_, gDeltaT)) {
+						*fTime_ = getRendersT0(renders_) - gDeltaT;
+					}
+				} else if (!renders_.size()) {
+					if (!fTime_.has_value() || std::fmod(*gTime - *fTime_, gDeltaT)) {
+						if (*gTime < stats.front().getTime0()) { // would be better to use closest time to time0 in sync with gTime
+							*fTime_ = *gTime;
+						} else {
+							*fTime_ = *gTime - gDeltaT*std::ceil((*gTime - stats.front().getTime0())/gDeltaT);
+						}
+						assert(!std::fmod((*fTime_ - *gTime), gDeltaT));
+					}
+				} else {
+					if (!fTime_.has_value() || std::fmod(*fTime_ - *gTime, gDeltaT)) {
+						if (getRendersT0(renders_) >= stats_.front().getTime0()) {
+							*fTime_ = stats.front().getTime0() - std::fmod(getRendersT0(renders_) - stats_.front().getTime0(), gDeltaT);
+						} else {
+							*fTime_ = getRendersT0(renders_);
+						}
+					}
+				}
+				
+				// extracting algorithm-compatible vector segments
+				if (stats_.size()) {
+					auto sStartI {
+						std::lower_bound(stats_.begin(), stats_.end(), *fTime_,
+						[](double value, const TdStats& s) { return value < s.getTime(); })
+					};
+					if (sStartI != stats_.end()) {
+						auto gStartI {
+							std::lower_bound(
+								renders_.begin(), renders_.end(), *fTime_,
+								[](double value, const auto& render) {
+									return render.second < value;
+								}
+							)
+						};
+						assert(!std::fmod((*gTime - *fTime_), gDeltaT));
+						auto gEndI {
+							std::upper_bound(
+								renders_.begin(), renders_.end(), stats_.back().getTime(),
+								[](double value, const auto& render) {
+									return render.second < value;
+								}
+							)
+						};
+						stats = std::vector(sStartI, stats_.end());
+						if (emptyStats) { stats_.clear(); }
+						assert(gStartI <= gEndI); // fTime_ should be always <= stats.back().getTime, if it is available
+						if (gStartI < renders_.end()) { // is this a necessary check? does the algorithm not work always?
+							renders.insert(
+								renders.begin(),
+								std::make_move_iterator(gStartI),
+								std::make_move_iterator(gEndI)
+							);
+							renders_.erase(gStartI, gEndI);
+						}
+					}
+				} else {
+					auto gStartI {
+						std::lower_bound(
+							renders_.begin(), renders_.end(), *fTime_,
+							[](double value, const auto& render) {
+								return render.second < value;
+							}
+						)
+					};
+					if (gStartI < renders_.end()) { // same as above, is the check redundant?
+						renders.insert(renders.end(),
+							std::make_move_iterator(gStartI),
+							std::make_move_iterator(renders_.end())
+						);
+						renders_.erase(gStartI, renders_.end());
+					}
+				}
+			} else {
+				return {};
+			}
+			} // end of locks scope
+			break;
+		default:
+			throw std::invalid_argument("Invalid video option provided.");
+	}
+
+	// std::cout << "Started variables setup." << std::endl;
+	// recurrent variables setup
+	// declarations
+	// text
+	sf::Font font;
+	font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
+	std::ostringstream Temp {};
+	sf::Text TText;
+	std::ostringstream Vol {};
+	sf::Text VText;
+	std::ostringstream Num {};
+	sf::Text NText;
+	sf::RectangleShape txtBox;
+	// graphs
+	// double t; // I don't think this is necessary, replaced by fTime_
+	TMultiGraph& pGraphs {*(TMultiGraph*)prevGraphs.At(0)};
+	TGraph& mfpGraph {*(TGraph*)prevGraphs.At(1)};
+	TGraph& kBGraph {*(TGraph*)prevGraphs.At(2)};
+	TCanvas cnvs {};
+	// image stuff
+	TImage* trnsfrImg;
+	sf::Image auxImg;
+	sf::Texture auxTxtr;
+	sf::Sprite auxSprt;
+	sf::RenderTexture frame;
+	sf::RectangleShape box;
+	std::vector<sf::Texture> frames {};
+	auto drawObj = [&] (auto& TDrawable, double percPosX, double percPosY) {
+		TDrawable.Draw();
+		cnvs.Update();
+		trnsfrImg->FromPad(&cnvs);
+		argbToSfImage(trnsfrImg->GetArgbArray(), auxImg);
+		auxTxtr.loadFromImage(auxImg);
+		auxSprt.setTexture(auxTxtr);
+		auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
+		frame.draw(auxSprt);
+	};
+
+	// definitions as per available data
+	switch (opt) {
+		case VideoOpts::gasPlusCoords:
+		case VideoOpts::all:
+		case VideoOpts::justStats:
+			if (stats.size()) {
+				Temp << std::fixed << std::setprecision(2) << stats[0].getTemp();
+				TText = {"T = " + Temp.str() + "K", font, 18};
+				TText.setPosition(10.f, 10.f);
+				Vol << std::fixed << std::setprecision(2) << stats[0].getVolume();
+				VText = {"V = " + Vol.str() + "m\u00B3", font, 18};
+				Num << std::fixed << std::setprecision(2) << stats[0].getNParticles();
+				NText = {"N = " + Num.str(), font, 18};
+				trnsfrImg = TImage::Create();
+			}
+			break;
+		case VideoOpts::justGas:
+			break;
+		default:
+			throw std::invalid_argument("Invalid video option provided.");
+	}
+
+	// processing
+	switch (opt) {
+		case VideoOpts::justGas:
+			trnsfrImg->Delete();
+			frame.create(windowSize.x, windowSize.y);
+			assert(!std::fmod(*fTime_ - *gTime, gDeltaT));
+			assert(gTime == renders.back().second);
+			assert(fTime_ <= getRendersT0(renders));
+			box.setSize(static_cast<sf::Vector2f>(windowSize));
+			box.setPosition(0, windowSize.y);
+			while (*fTime_ + gDeltaT <= gTime) {
+				if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+					box.setTexture(&(renders.front().first));
+					frame.draw(box);
+					frame.display();
+					renders.erase(renders.begin());
+				} else {
+					box.setTexture(&placeholder);
+					frame.draw(box);
+					frame.display();
+				}
+				frames.emplace_back(frame);
+				*fTime_ += gDeltaT;
+			}
+		case VideoOpts::justStats:
+			
+			if (stats.size()) {
+				if (*fTime_ + gDeltaT < stats.front().getTime0()) { // insert empty data and use placeholder render
+					auto& stat {stats.front()};
+					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
+						graph->AddPoint(*fTime_, 0.);	
+						graph->AddPoint(stat.getTime0(), 0.);	
+					}
+
+					mfpGraph.AddPoint(*fTime_, 0.);
+					mfpGraph.AddPoint(stat.getTime0(), 0.);
+					kBGraph.AddPoint(*fTime_, 0.);
+					kBGraph.AddPoint(stat.getTime0(), 0.);
+
+					frame.create(windowSize.x, windowSize.y);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
+					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+
+					drawObj(pGraphs, 0., 0.);
+					drawObj(kBGraph, 0., windowSize.y * 6./10.);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+
+					drawObj(mfpGraph, 0.5, 0.5);
+
+					box.setSize(sf::Vector2f(windowSize.x * 0.5, windowSize.y * 0.5));
+					box.setPosition(windowSize.x * 0.5, windowSize.y * 0.5); // hopefully correct
+					box.setTexture(&placeholder);
+					frame.draw(box);
+
+					frame.display(); // whuh? is it to refresh something?
+
+					while (*fTime_ + gDeltaT < stat.getTime0()) {
+						frames.emplace_back(frame.getTexture());
+						*fTime_ += gDeltaT;
+					}
+				}
+
+				for (const TdStats& stat: stats) {
+					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
+						if (!i) {
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));	
+						} else {
+							graph->AddPoint(stat.getTime(), stat.getPressure());
+						}
+					}
+
+					mfpGraph.AddPoint(stat.getTime(), stat.getMeanFreePath());
+					kBGraph.AddPoint(
+						stat.getTime(),
+						stat.getPressure()*stat.getVolume()/(stat.getNParticles()*stat.getTemp())
+					);
+	
+					TH1D speedH {stat.getSpeedH()};
+	
+					frame.create(windowSize.x, windowSize.y);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
+					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+
+					drawObj(pGraphs, 0., 0.);
+					drawObj(kBGraph, 0., windowSize.y * 6./10.);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+
+					drawObj(speedH, 0.5, 0.);
+					drawObj(mfpGraph, 0.5, 0.5);
+
+					frame.display(); // whuh? is it to refresh something?
+
+					while (*fTime_ + gDeltaT < stat.getTime()) { 
+						frames.emplace_back(frame.getTexture());
+						*fTime_ += gDeltaT;
+					}
+				}
+				trnsfrImg->Delete();
+				return frames;
+			} else {
+				return {};
+			}
+			break;
+		case VideoOpts::gasPlusCoords:
+			assert(gTime == renders.back().second);
+			assert(fTime_ <= getRendersT0(renders));
+			if (stats.size()) {
+				if (*fTime_ + gDeltaT < stats.front().getTime0()) {
+					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
+						graph->AddPoint(*fTime_, 0.);
+						graph->AddPoint(stats.front().getTime0(), 0.);	
+					}
+
+					mfpGraph.AddPoint(*fTime_, 0.);
+					mfpGraph.AddPoint(stats.front().getTime0(), 0.);
+					kBGraph.AddPoint(*fTime_, 0.);
+					kBGraph.AddPoint(stats.front().getTime0(), 0.);
+
+					frame.create(windowSize.x, windowSize.y);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					drawObj(pGraphs, 0., 0.);
+					drawObj(kBGraph, 0., 0.5);
+
+					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f/9.f});
+					txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8./9.);
+					VText.setPosition(windowSize.x * 0.5 + 10., windowSize.y * 8./9. + 10.);
+					NText.setPosition(windowSize.x * 0.5 + 35., windowSize.y * 8./9. + 10.);
+					TText.setPosition(windowSize.x * 0.5 + 60., windowSize.y * 8./9. + 10.);
+					frame.draw(txtBox);
+					frame.draw(VText);
+					frame.draw(NText);
+					frame.draw(TText);
+					// insert paired renders or placeholders
+					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 8./9.)});
+					box.setPosition(windowSize.x * 0.5, 0.); // huh?
+					while (*fTime_ + gDeltaT < stats.front().getTime0()) {
+						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
+						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+							box.setTexture(&(renders.front().first));
+							frame.draw(box);
+							frame.display();
+							renders.erase(renders.begin());
+						} else {
+							box.setTexture(&placeholder);
+							frame.draw(box);
+							frame.display();
+						}
+						frames.emplace_back(frame.getTexture());
+						*fTime_ += gDeltaT;
+					}
+				}
+				assert(*fTime_ + gDeltaT >= stats.front().getTime0());
+				while (*fTime_ + gDeltaT < stats.back().getTime()) { // likely skips the first frame here
+					auto s {
+						std::lower_bound(
+							stats.begin(), stats.end(), *fTime_,
+							[](const TdStats& stat, double value) {
+								return stat.getTime0() <= value;
+							}
+						)
+					};
+					assert(s != stats.end());
+					const TdStats& stat {*s};
+					// make the graphs picture
+					for(int k {0}; k < 7; ++k) {
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(k)};
+						if (!k) {
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));	
+						} else {
+							graph->AddPoint(stat.getTime(), stat.getPressure());
+						}
+					}
+					kBGraph.AddPoint(
+						stat.getTime(),
+						stat.getPressure()*stat.getVolume()/(stat.getNParticles()*stat.getTemp())
+					);
+
+					frame.create(windowSize.x, windowSize.y);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					drawObj(pGraphs, 0., 0.);
+					drawObj(kBGraph, 0., 0.5);
+
+					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f/9.f});
+					txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8./9.);
+					VText.setPosition(windowSize.x * 0.5 + 10., windowSize.y * 8./9. + 10.);
+					NText.setPosition(windowSize.x * 0.5 + 35., windowSize.y * 8./9. + 10.);
+					TText.setPosition(windowSize.x * 0.5 + 60., windowSize.y * 8./9. + 10.);
+					frame.draw(txtBox);
+					frame.draw(VText);
+					frame.draw(NText);
+					frame.draw(TText);				
+					// insert paired renders or placeholders
+					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 8./9.)});
+					box.setPosition(windowSize.x * 0.5, 0.); // huh?
+					while (*fTime_ + gDeltaT < stat.getTime()) {
+						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
+						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+							box.setTexture(&(renders.front().first));
+							frame.draw(box);
+							frame.display();
+							renders.erase(renders.begin());
+						} else {
+							box.setTexture(&placeholder);
+							frame.draw(box);
+							frame.display();
+						}
+						frames.emplace_back(frame.getTexture());
+						*fTime_ += gDeltaT;
+					}
+				} // while (fTime_ + gDeltaT_ < stats.back().getTime())
+			}	else if (renders.size()) {
+				assert(renders.back().second == gTime);
+				if (*fTime_ + gDeltaT <= gTime) {
+					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
+						graph->AddPoint(*fTime_, 0.);	
+						graph->AddPoint(*gTime, 0.);	
+					}
+
+					mfpGraph.AddPoint(*fTime_, 0.);
+					mfpGraph.AddPoint(*gTime, 0.);
+					kBGraph.AddPoint(
+						*fTime_,
+						0.
+					);
+					kBGraph.AddPoint(
+						*gTime,
+						0.
+					);
+
+					frame.create(windowSize.x, windowSize.y);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					drawObj(pGraphs, 0., 0.);
+					drawObj(kBGraph, 0., 0.5);
+
+					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f/9.f});
+					txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8./9.);
+					VText.setPosition(windowSize.x * 0.5 + 10., windowSize.y * 8./9. + 10.);
+					NText.setPosition(windowSize.x * 0.5 + 35., windowSize.y * 8./9. + 10.);
+					TText.setPosition(windowSize.x * 0.5 + 60., windowSize.y * 8./9. + 10.);
+					frame.draw(txtBox);
+					frame.draw(VText);
+					frame.draw(NText);
+					frame.draw(TText);
+					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 8./9.)});
+					box.setPosition(windowSize.x * 0.5, 0.); // huh?
+					while (*fTime_ + gDeltaT <= gTime) {
+						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
+						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+							box.setTexture(&(renders.front().first));
+							frame.draw(box);
+							frame.display();
+							renders.erase(renders.begin());
+						} else {
+							box.setTexture(&placeholder);
+							frame.draw(box);
+							frame.display();
+						}
+						frames.emplace_back(frame.getTexture());
+						*fTime_ += gDeltaT;
+					}
+				}
+			} // else if renders.size()
+			break;
+		case VideoOpts::all: // AMOGUS
+			assert(gTime == renders.back().second);
+			assert(fTime_ <= getRendersT0(renders));
+			if (stats.size()) {
+				if (*fTime_ + gDeltaT_ < stats.front().getTime0()) {
+					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
+						graph->AddPoint(*fTime_, 0.);
+						graph->AddPoint(stats.front().getTime0(), 0.);
+					}
+
+					mfpGraph.AddPoint(*fTime_, 0.);
+					mfpGraph.AddPoint(stats.front().getTime0(), 0.);
+					kBGraph.AddPoint(
+						*fTime_,
+						0.
+					);
+					kBGraph.AddPoint(
+						stats.front().getTime0(),
+						0.
+					);
+					TH1D speedH {};
+
+					frame.create(windowSize.x, windowSize.y);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+					drawObj(pGraphs, 0., 0.);
+					drawObj(kBGraph, 0., 0.5);
+					drawObj(speedH, 0.75, 0.);
+					drawObj(mfpGraph, 0.75, 0.5);
+
+					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+					txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+					VText.setPosition(windowSize.x * 0.25 + 10., windowSize.y * 0.9 + 10.);
+					NText.setPosition(windowSize.x * 0.25 + 35., windowSize.y * 0.9 + 10.);
+					TText.setPosition(windowSize.x * 0.25 + 60., windowSize.y * 0.9 + 10.);
+					frame.draw(txtBox);
+					frame.draw(VText);
+					frame.draw(NText);
+					frame.draw(TText);
+
+					// insert paired renders or placeholders
+					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 9./10.)});
+					box.setPosition(windowSize.x * 0.25, 0.);
+					while (*fTime_ + gDeltaT_ < stats.front().getTime0()) { // same, need to vary implementation for fTime_
+						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
+						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+							box.setTexture(&(renders.front().first));
+							frame.draw(box);
+							frame.display();
+							renders.erase(renders.begin());
+						} else {
+							box.setTexture(&placeholder);
+							frame.draw(box);
+							frame.display();
+						}
+						frames.emplace_back(frame.getTexture());
+						*fTime_ += gDeltaT;
+					}
+				}
+				while (*fTime_ + gDeltaT_ < stats.back().getTime()) { // likely skips the first frame here
+					assert(*fTime_ + gDeltaT_ >= stats.front().getTime0());
+					auto s {
+						std::lower_bound(
+							stats.begin(), stats.end(), *fTime_,
+							[](const TdStats& stat, double value) {
+								return stat.getTime0() <= value;
+							}
+						)
+					};
+					assert(s != stats.end());
+					const TdStats& stat {*s};
+					// make the graphs picture
+					for(int k {0}; k < 7; ++k) {
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(k)};
+						if (!k) {
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));	
+						} else {
+							graph->AddPoint(stat.getTime(), stat.getPressure());
+						}
+					}
+					mfpGraph.AddPoint(stat.getTime(), stat.getMeanFreePath());
+					kBGraph.AddPoint(
+						stat.getTime(),
+						stat.getPressure()*stat.getVolume()/(stat.getNParticles()*stat.getTemp())
+					);
+					TH1D speedH {stat.getSpeedH()};
+
+					frame.create(windowSize.x, windowSize.y);
+
+					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+					drawObj(pGraphs, 0., 0.);
+					drawObj(kBGraph, 0., 0.5);
+					drawObj(speedH, 0.75, 0.);
+					drawObj(mfpGraph, 0.75, 0.5);
+
+					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+					txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+					VText.setPosition(windowSize.x * 0.25 + 10., windowSize.y * 0.9 + 10.);
+					NText.setPosition(windowSize.x * 0.25 + 35., windowSize.y * 0.9 + 10.);
+					TText.setPosition(windowSize.x * 0.25 + 60., windowSize.y * 0.9 + 10.);
+					frame.draw(txtBox);
+					frame.draw(VText);
+					frame.draw(NText);
+					frame.draw(TText);
+
+					// insert paired renders or placeholders
+					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 9./10.)});
+					box.setPosition(windowSize.x * 0.25, 0.);
+					while (*fTime_ + gDeltaT_ < stat.getTime()) { // same, need to vary implementation for fTime_
+						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
+						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+							box.setTexture(&(renders.front().first));
+							frame.draw(box);
+							frame.display();
+							renders.erase(renders.begin());
+						} else {
+							box.setTexture(&placeholder);
+							frame.draw(box);
+							frame.display();
+						}
+						frames.emplace_back(frame.getTexture());
+						*fTime_ += gDeltaT;
+					}
+				} // while (fTime_ + gDeltaT_ < stats.back().getTime())
+			} else if (renders.size()) {
+				for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+					TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
+					graph->AddPoint(*fTime_, 0.);
+					graph->AddPoint(*gTime, 0.);
+				}
+
+				mfpGraph.AddPoint(*fTime_, 0.);
+				mfpGraph.AddPoint(*gTime, 0.);
+				kBGraph.AddPoint(
+					*fTime_,
+					0.
+				);
+				kBGraph.AddPoint(
+					*gTime,
+					0.
+				);
+				TH1D speedH {};
+
+				frame.create(windowSize.x, windowSize.y);
+
+				cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+				drawObj(pGraphs, 0., 0.);
+				drawObj(kBGraph, 0., 0.5);
+				drawObj(speedH, 0.75, 0.);
+				drawObj(mfpGraph, 0.75, 0.5);
+
+				txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+				txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+				VText.setPosition(windowSize.x * 0.25 + 10., windowSize.y * 0.9 + 10.);
+				NText.setPosition(windowSize.x * 0.25 + 35., windowSize.y * 0.9 + 10.);
+				TText.setPosition(windowSize.x * 0.25 + 60., windowSize.y * 0.9 + 10.);
+				frame.draw(txtBox);
+				frame.draw(VText);
+				frame.draw(NText);
+				frame.draw(TText);
+				box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 9./10.)});
+				box.setPosition(windowSize.x * 0.25, 0.);
+				while (*fTime_ + gDeltaT <= gTime) {
+					assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
+					if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+						box.setTexture(&(renders.front().first));
+						frame.draw(box);
+						frame.display();
+						renders.erase(renders.begin());
+					} else {
+						box.setTexture(&placeholder);
+						frame.draw(box);
+						frame.display();
+					}
+					frames.emplace_back(frame.getTexture());
+					*fTime_ += gDeltaT;
+				}
+			} // else if renders.size()
+			trnsfrImg->Delete();
+			return frames;
+			break;
+		default:
+			throw std::invalid_argument("Invalid video option provided.");
+	}
+
+	return frames;
+
+}
+
 // So alright basically yeah I'm trying to guarantee a constant interval between
 // renders, even across function calls, which means the time variable must be
 // initialized with the same value it was left at at the previous function call.
@@ -401,27 +1193,41 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
                                 const RenderStyle& style) {
   // std::cout << "Processing graphics... ";
   // std::cout.flush();
-  std::vector<sf::Texture> renders{};
+  std::vector<std::pair<sf::Texture, double>> renders{};
+
+	double gTime;
+	double gDeltaT;
+	{ // guard scope
+	std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
+	std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
   if (!gTime_.has_value()) gTime_ = data[0].getTime() - gDeltaT_;
-  sf::RenderTexture picture;
-
   assert(gDeltaT_ > 0.);
-  assert(*gTime_ <= data[0].getTime());
+  assert(gTime_ <= data[0].getTime());
+	gTime = *gTime_;
+	gDeltaT = gDeltaT_;
+	} // guard scope
+	sf::RenderTexture picture;
 
-  renders.reserve((data.back().getTime() - data.front().getTime()) / gDeltaT_ +
+  renders.reserve((data.back().getTime() - data.front().getTime()) / gDeltaT +
                   1);
 
+	while (gTime + gDeltaT < data[0].getT0()) {
+		gTime += gDeltaT;
+	}
+
   for (const GasData& dat : data) {
-    while (*gTime_ + gDeltaT_ <= dat.getTime()) {
+    while (gTime + gDeltaT <= dat.getTime()) {
       // std::cout << "Drawing gas at time " << *gTime_ + gDeltaT_ << std::endl;
-      gTime_ = *gTime_ + gDeltaT_;
-      drawGas(dat, camera, picture, style, *gTime_ - dat.getTime());
-      renders.emplace_back(std::move(picture.getTexture()));
+      gTime += gDeltaT;
+      drawGas(dat, camera, picture, style, gTime - dat.getTime());
+      renders.emplace_back(std::move(picture.getTexture()), gTime);
     }
   }
 
 	std::lock_guard<std::mutex> rendersGuard {rendersMtx_};
   std::move(renders.begin(), renders.end(), std::back_inserter(renders_));
+	std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
+	gTime_ = gTime;
   // std::cout << "done!\n";
 }
 
@@ -435,7 +1241,7 @@ void SimOutput::processStats(const std::vector<GasData>& data) {
 
   // std::cout << "Reached pre-loop\n";
   for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {
-    TdStats stat{data[i * statSize_]};
+    TdStats stat{data[i * statSize_], speedsHTemplate_};
     for (int j{1}; j < statSize_; ++j) {
       stat.addData(data[i * statSize_ + j]);
     }
@@ -462,16 +1268,22 @@ std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {
 }
 
 std::vector<sf::Texture> SimOutput::getRenders(bool emptyQueue) {
+  std::vector<sf::Texture> renders {};
   if (emptyQueue) {
 		std::lock_guard<std::mutex> rendersGuard {rendersMtx_};
-    std::vector<sf::Texture> renders(std::make_move_iterator(renders_.begin()),
-                                     std::make_move_iterator(renders_.end()));
+		renders.reserve(renders_.size());
+		for (auto& r: renders_) {
+			renders.emplace_back(std::move(r.first));
+		}
     renders_.clear();
-    return renders;
   } else {
     std::lock_guard<std::mutex> guard(rendersMtx_);
-    return std::vector<sf::Texture>(renders_.begin(), renders_.end());
+		renders.reserve(renders_.size());
+		for (auto& r: renders_) {
+			renders.emplace_back(r.first);
+		}
   }
+  return renders;
 }
 
 void SimOutput::setDone() {

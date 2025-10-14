@@ -3,3 +3,6 @@ unitTesting/unitTests
 build
 .cache
 unitTesting/compileResults.txt
+root
+envSetupKillMe.sh
+gptResponseROOTSFMLBridge.txt

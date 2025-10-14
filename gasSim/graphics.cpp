@@ -21,6 +21,7 @@
 namespace gasSim {
 
 // renderStyle member functions
+/*
 void RenderStyle::setGridOpts(const std::string& opts) {
 	bool isGood {true};
 	if (opts.length() > 3) {
@@ -65,7 +66,7 @@ void RenderStyle::setAxesLength(const float length) {
 	if (length < 0.) throw std::invalid_argument("Invalid axes length.");
 	else axesLength_ = length;
 }
-
+*/
 void RenderStyle::setWallsOpts(const std::string& opts) {
 	bool isGood {true};
 	if (opts.length() > 6) {
