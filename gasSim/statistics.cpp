@@ -475,7 +475,7 @@ bool isIntMultOf(double x, double dt) {
 	return isNegligible(x/dt - std::round(x/dt), dt);
 }
 
-std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) { // AMOGUS, do meth check
+std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) {
 
 	if ((opt == VideoOpts::justGas && windowSize.x < 400 && windowSize.y < 400)
 	|| 	(opt == VideoOpts::justStats && windowSize.x < 600 && windowSize.y < 600)
@@ -767,7 +767,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., windowSize.y * 0.6);
+					drawObj(kBGraph, 0., windowSize.y * 0.55);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
@@ -775,20 +775,20 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					drawObj(mfpGraph, 0.5, 0.5);
 
 					box.setSize(sf::Vector2f(windowSize.x * 0.5, windowSize.y * 0.5));
-					box.setPosition(windowSize.x * 0.5, windowSize.y * 0.5); // hopefully correct
+					box.setPosition(windowSize.x * 0.5, windowSize.y);
 					box.setTexture(&placeholder);
 					frame.draw(box);
 
-					frame.display(); // whuh? is it to refresh something?
+					frame.display();
 
 					while (*fTime_ + gDeltaT < stat.getTime0()) {
-						frames.emplace_back(frame.getTexture());
 						*fTime_ += gDeltaT;
+						frames.emplace_back(frame.getTexture());
 					}
 				}
 
-				for (const TdStats& stat: stats) {
-					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+				for (const TdStats& stat: stats) { // AMOGUS
+					for(int i {0}; i < 7; ++i) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
 						if (!i) {
 							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));	
