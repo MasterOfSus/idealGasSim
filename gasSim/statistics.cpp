@@ -468,7 +468,14 @@ void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
 	}
 }
 
-std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) {
+bool isNegligible(double epsilon, double x) {
+	return fabs(epsilon/x) < 1E-6*x;
+}
+bool isIntMultOf(double x, double dt) {
+	return isNegligible(x/dt - std::round(x/dt), dt);
+}
+
+std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) { // AMOGUS, do meth check
 
 	if ((opt == VideoOpts::justGas && windowSize.x < 400 && windowSize.y < 400)
 	|| 	(opt == VideoOpts::justStats && windowSize.x < 600 && windowSize.y < 600)
@@ -481,6 +488,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			prevGraphs.At(2)->IsA() == TGraph::Class())) {
 		throw std::invalid_argument("Passed graphs list with wrong object types.");
 	}
+	if (((TMultiGraph*) prevGraphs.At(0))->GetListOfGraphs()->GetSize() != 7) {
+		throw std::invalid_argument("Number of graphs in pressure multigraph != 7.");
+	}
 
 	std::vector<std::pair<sf::Texture, double>> renders {};
 	std::vector<TdStats> stats {};
@@ -488,8 +498,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	double gDeltaT;
 
 
-	auto getRendersT0 = [&] (auto couples) {
+	auto getRendersT0 = [&] (const auto& couples) {
 		if (couples.size()) {
+			assert(gTime.has_value());
 			return couples[0].second;
 		} else if (gTime.has_value()) {
 			return *gTime;
@@ -507,7 +518,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			{ // locks scope 2
 			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
 			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
-			gTime = *gTime_;
+			gTime = gTime_;
 			gDeltaT = gDeltaT_;
 			} // end of locks scope 2
 			if (!gTime.has_value()) {
@@ -518,8 +529,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				renders_.clear();
 			}
 			} // end of lock scope
-			if ((!fTime_.has_value() || std::fmod(*gTime - *fTime_, gDeltaT))) {
-				fTime_ = getRendersT0(renders);
+			if ((!fTime_.has_value() || !isIntMultOf(*gTime - *fTime_, gDeltaT))) {
+				fTime_ = getRendersT0(renders) - gDeltaT;
 			}
 			break;
 		case VideoOpts::justStats:
@@ -528,22 +539,22 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			{ // locks scope 2
 			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
 			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
-			gTime = *gTime_;
+			gTime = gTime_;
 			gDeltaT = gDeltaT_;
 			} // end of locks scope 2
 			if (stats_.size()) {
 				// setting fTime_
 				if (!fTime_.has_value()) {
 					if (gTime.has_value()) {
-						*fTime_ = *gTime - gDeltaT * std::ceil((*gTime - stats[0].getTime0())/gDeltaT);
+						*fTime_ = *gTime + gDeltaT * std::floor((stats[0].getTime0() - *gTime)/gDeltaT);
 					} else {
 						*fTime_ = stats_.front().getTime0() - gDeltaT;
 					}
 				}
 				if (stats_.back().getTime() >= *fTime_ + gDeltaT) {
 					auto sStartI {
-						std::lower_bound(stats_.begin(), stats_.end(), *fTime_,
-						[](double value, const TdStats& s) { return value < s.getTime(); })
+						std::lower_bound(stats_.begin(), stats_.end(), *fTime_ + gDeltaT,
+						[](const TdStats& s, double value) { return value <= s.getTime0(); })
 					};
 					stats = std::vector<TdStats> {sStartI, stats_.end()};
 					if (emptyStats) {
@@ -563,7 +574,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			{ // locks scope 2
 			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
 			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
-			gTime = *gTime_;
+			gTime = gTime_;
 			gDeltaT = gDeltaT_;
 			} // end of locks scope 2
 			if (!gTime.has_value()) {
@@ -571,23 +582,17 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			}
 			if (renders_.size() || stats_.size()) {
 				// dealing with fTime_
-				if (!stats_.size()) {
-					if (!fTime_.has_value() || std::fmod(*gTime - *fTime_, gDeltaT)) {
+				if (!fTime_.has_value() || !isIntMultOf(*gTime - *fTime_, gDeltaT)) {
+					if (!stats_.size()) {
 						*fTime_ = getRendersT0(renders_) - gDeltaT;
-					}
-				} else if (!renders_.size()) {
-					if (!fTime_.has_value() || std::fmod(*gTime - *fTime_, gDeltaT)) {
-						if (*gTime < stats.front().getTime0()) { // would be better to use closest time to time0 in sync with gTime
-							*fTime_ = *gTime;
-						} else {
-							*fTime_ = *gTime - gDeltaT*std::ceil((*gTime - stats.front().getTime0())/gDeltaT);
-						}
-						assert(!std::fmod((*fTime_ - *gTime), gDeltaT));
-					}
-				} else {
-					if (!fTime_.has_value() || std::fmod(*fTime_ - *gTime, gDeltaT)) {
+					} else if (!renders_.size()) {
+						*fTime_ = *gTime + gDeltaT*std::floor((stats.front().getTime0() - *gTime)/gDeltaT);
+						assert(isIntMultOf(*fTime_ - *gTime, gDeltaT));
+					} else {
 						if (getRendersT0(renders_) >= stats_.front().getTime0()) {
-							*fTime_ = stats.front().getTime0() - std::fmod(getRendersT0(renders_) - stats_.front().getTime0(), gDeltaT);
+							*fTime_ = getRendersT0(renders_) + gDeltaT * std::floor(
+								(stats[0].getTime0() - getRendersT0(renders_))/gDeltaT
+							);
 						} else {
 							*fTime_ = getRendersT0(renders_);
 						}
@@ -597,14 +602,14 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				// extracting algorithm-compatible vector segments
 				if (stats_.size()) {
 					auto sStartI {
-						std::lower_bound(stats_.begin(), stats_.end(), *fTime_,
-						[](double value, const TdStats& s) { return value < s.getTime(); })
+						std::lower_bound(stats_.begin(), stats_.end(), *fTime_ + gDeltaT,
+						[](const TdStats& s, double value) { return value <= s.getTime0(); })
 					};
 					if (sStartI != stats_.end()) {
 						auto gStartI {
 							std::lower_bound(
 								renders_.begin(), renders_.end(), *fTime_,
-								[](double value, const auto& render) {
+								[](const auto& render, double value) {
 									return render.second < value;
 								}
 							)
@@ -613,39 +618,40 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						auto gEndI {
 							std::upper_bound(
 								renders_.begin(), renders_.end(), stats_.back().getTime(),
-								[](double value, const auto& render) {
+								[](const auto& render, double value) {
 									return render.second < value;
 								}
 							)
 						};
 						stats = std::vector(sStartI, stats_.end());
-						if (emptyStats) { stats_.clear(); }
-						assert(gStartI <= gEndI); // fTime_ should be always <= stats.back().getTime, if it is available
-						if (gStartI < renders_.end()) { // is this a necessary check? does the algorithm not work always?
-							renders.insert(
-								renders.begin(),
-								std::make_move_iterator(gStartI),
-								std::make_move_iterator(gEndI)
-							);
-							renders_.erase(gStartI, gEndI);
+						if (emptyStats) {
+							stats_.clear();
 						}
+						assert(gStartI <= gEndI); // fTime_ should be always <= stats.back().getTime, if it is available
+						// used to have a check for gStartI != renders_.end(), if fuckup check here first
+						renders.insert(
+							renders.begin(),
+							std::make_move_iterator(gStartI),
+							std::make_move_iterator(gEndI)
+						);
+						renders_.erase(gStartI, gEndI);
 					}
 				} else {
 					auto gStartI {
 						std::lower_bound(
 							renders_.begin(), renders_.end(), *fTime_,
-							[](double value, const auto& render) {
+							[](const auto& render, double value) {
 								return render.second < value;
 							}
 						)
 					};
-					if (gStartI < renders_.end()) { // same as above, is the check redundant?
-						renders.insert(renders.end(),
-							std::make_move_iterator(gStartI),
-							std::make_move_iterator(renders_.end())
-						);
-						renders_.erase(gStartI, renders_.end());
-					}
+					// same as above
+					renders.insert(
+						renders.begin(),
+						std::make_move_iterator(gStartI),
+						std::make_move_iterator(renders_.end())
+					);
+					renders_.erase(gStartI, renders_.end());
 				}
 			} else {
 				return {};
@@ -721,31 +727,30 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		case VideoOpts::justGas:
 			trnsfrImg->Delete();
 			frame.create(windowSize.x, windowSize.y);
-			assert(!std::fmod(*fTime_ - *gTime, gDeltaT));
+			assert(isIntMultOf(*fTime_ - *gTime, gDeltaT));
 			assert(gTime == renders.back().second);
 			assert(fTime_ <= getRendersT0(renders));
 			box.setSize(static_cast<sf::Vector2f>(windowSize));
 			box.setPosition(0, windowSize.y);
 			while (*fTime_ + gDeltaT <= gTime) {
-				if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+				*fTime_ += gDeltaT;
+				if (renders.size() && isNegligible(*fTime_ - renders[0].second, gDeltaT)) {
 					box.setTexture(&(renders.front().first));
-					frame.draw(box);
 					frame.display();
+					frame.draw(box);
 					renders.erase(renders.begin());
 				} else {
 					box.setTexture(&placeholder);
-					frame.draw(box);
 					frame.display();
+					frame.draw(box);
 				}
-				frames.emplace_back(frame);
-				*fTime_ += gDeltaT;
+				frames.emplace_back(std::move(frame));
 			}
 		case VideoOpts::justStats:
-			
 			if (stats.size()) {
 				if (*fTime_ + gDeltaT < stats.front().getTime0()) { // insert empty data and use placeholder render
 					auto& stat {stats.front()};
-					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
+					for(int i {0}; i < 7; ++i) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
 						graph->AddPoint(*fTime_, 0.);	
 						graph->AddPoint(stat.getTime0(), 0.);	
@@ -762,7 +767,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., windowSize.y * 6./10.);
+					drawObj(kBGraph, 0., windowSize.y * 0.6);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
@@ -992,7 +997,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				}
 			} // else if renders.size()
 			break;
-		case VideoOpts::all: // AMOGUS
+		case VideoOpts::all:
 			assert(gTime == renders.back().second);
 			assert(fTime_ <= getRendersT0(renders));
 			if (stats.size()) {
