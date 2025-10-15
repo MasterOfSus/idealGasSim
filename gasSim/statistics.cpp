@@ -736,13 +736,13 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				*fTime_ += gDeltaT;
 				if (renders.size() && isNegligible(*fTime_ - renders[0].second, gDeltaT)) {
 					box.setTexture(&(renders.front().first));
-					frame.display();
 					frame.draw(box);
+					frame.display();
 					renders.erase(renders.begin());
 				} else {
 					box.setTexture(&placeholder);
-					frame.display();
 					frame.draw(box);
+					frame.display();
 				}
 				frames.emplace_back(std::move(frame));
 			}
@@ -790,10 +790,10 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				for (const TdStats& stat: stats) { // AMOGUS
 					for(int i {0}; i < 7; ++i) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
-						if (!i) {
-							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));	
-						} else {
+						if (i) {
 							graph->AddPoint(stat.getTime(), stat.getPressure());
+						} else {
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i - 1)));	
 						}
 					}
 
@@ -822,8 +822,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.display(); // whuh? is it to refresh something?
 
 					while (*fTime_ + gDeltaT < stat.getTime()) { 
-						frames.emplace_back(frame.getTexture());
 						*fTime_ += gDeltaT;
+						frames.emplace_back(frame.getTexture());
 					}
 				}
 				trnsfrImg->Delete();
@@ -835,6 +835,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		case VideoOpts::gasPlusCoords:
 			assert(gTime == renders.back().second);
 			assert(fTime_ <= getRendersT0(renders));
+			{ // case scope
+			sf::Vector2f gasSize {static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 8./9.)};
 			if (stats.size()) {
 				if (*fTime_ + gDeltaT < stats.front().getTime0()) {
 					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
@@ -851,6 +853,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.create(windowSize.x, windowSize.y);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					// !!! likely drawing in wrong position everywhere, assumed bottom left corner instead of top left !!!
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., 0.5);
 
@@ -864,11 +867,12 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.draw(NText);
 					frame.draw(TText);
 					// insert paired renders or placeholders
-					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 8./9.)});
+					box.setSize(gasSize);
 					box.setPosition(windowSize.x * 0.5, 0.); // huh?
 					while (*fTime_ + gDeltaT < stats.front().getTime0()) {
-						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
-						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+						*fTime_ += gDeltaT;
+						assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
+						if (renders.size() && isNegligible(*fTime_ - renders[0].second, gDeltaT)) {
 							box.setTexture(&(renders.front().first));
 							frame.draw(box);
 							frame.display();
@@ -879,28 +883,27 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 							frame.display();
 						}
 						frames.emplace_back(frame.getTexture());
-						*fTime_ += gDeltaT;
 					}
 				}
 				assert(*fTime_ + gDeltaT >= stats.front().getTime0());
-				while (*fTime_ + gDeltaT < stats.back().getTime()) { // likely skips the first frame here
+				while (*fTime_ + gDeltaT < stats.back().getTime()) {
 					auto s {
 						std::lower_bound(
-							stats.begin(), stats.end(), *fTime_,
+							stats.begin(), stats.end(), *fTime_ + gDeltaT,
 							[](const TdStats& stat, double value) {
-								return stat.getTime0() <= value;
+								return value <= stat.getTime0();
 							}
 						)
 					};
 					assert(s != stats.end());
 					const TdStats& stat {*s};
 					// make the graphs picture
-					for(int k {0}; k < 7; ++k) {
-						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(k)};
-						if (!k) {
-							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));	
-						} else {
+					for(int i {0}; i < 7; ++i) {
+						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
+						if (!i) {
 							graph->AddPoint(stat.getTime(), stat.getPressure());
+						} else {
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i - 1)));	
 						}
 					}
 					kBGraph.AddPoint(
@@ -924,11 +927,12 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.draw(NText);
 					frame.draw(TText);				
 					// insert paired renders or placeholders
-					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 8./9.)});
+					box.setSize(gasSize);
 					box.setPosition(windowSize.x * 0.5, 0.); // huh?
 					while (*fTime_ + gDeltaT < stat.getTime()) {
-						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
-						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+						*fTime_ += gDeltaT;
+						assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
+						if (renders.size() && isNegligible(*fTime_ + gDeltaT - renders[0].second, gDeltaT)) {
 							box.setTexture(&(renders.front().first));
 							frame.draw(box);
 							frame.display();
@@ -939,12 +943,11 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 							frame.display();
 						}
 						frames.emplace_back(frame.getTexture());
-						*fTime_ += gDeltaT;
 					}
 				} // while (fTime_ + gDeltaT_ < stats.back().getTime())
 			}	else if (renders.size()) {
 				assert(renders.back().second == gTime);
-				if (*fTime_ + gDeltaT <= gTime) {
+				if (*fTime_ + gDeltaT < gTime || isNegligible(*fTime_ + gDeltaT - *gTime, gDeltaT)) {
 					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
 						graph->AddPoint(*fTime_, 0.);	
@@ -977,11 +980,12 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.draw(VText);
 					frame.draw(NText);
 					frame.draw(TText);
-					box.setSize({static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 8./9.)});
-					box.setPosition(windowSize.x * 0.5, 0.); // huh?
-					while (*fTime_ + gDeltaT <= gTime) {
-						assert(std::fmod(*gTime - *fTime_, gDeltaT) == 0.);
-						if (renders.size() && *fTime_ + gDeltaT == renders[0].second) {
+					box.setSize(gasSize);
+					box.setPosition(windowSize.x * 0.5, 0.); // huh, again, seems like I was thinking bottom left corner
+					while (*fTime_ + gDeltaT < gTime || isNegligible(*fTime_ + gDeltaT - *gTime, gDeltaT)) {
+						*fTime_ += gDeltaT;
+						assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
+						if (renders.size() && isNegligible(*fTime_ + gDeltaT - renders[0].second, gDeltaT)) {
 							box.setTexture(&(renders.front().first));
 							frame.draw(box);
 							frame.display();
@@ -992,14 +996,15 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 							frame.display();
 						}
 						frames.emplace_back(frame.getTexture());
-						*fTime_ += gDeltaT;
 					}
 				}
 			} // else if renders.size()
+			} // case scope end
 			break;
-		case VideoOpts::all:
+		case VideoOpts::all: // AMOGUS
 			assert(gTime == renders.back().second);
 			assert(fTime_ <= getRendersT0(renders));
+			{ // case scope
 			if (stats.size()) {
 				if (*fTime_ + gDeltaT_ < stats.front().getTime0()) {
 					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
@@ -1176,6 +1181,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					*fTime_ += gDeltaT;
 				}
 			} // else if renders.size()
+			} // case scope end
 			trnsfrImg->Delete();
 			return frames;
 			break;
