@@ -469,10 +469,10 @@ void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
 }
 
 bool isNegligible(double epsilon, double x) {
-	return fabs(epsilon/x) < 1E-6*x;
+	return fabs(epsilon/x) < 1E-6;
 }
 bool isIntMultOf(double x, double dt) {
-	return isNegligible(x/dt - std::round(x/dt), dt);
+	return isNegligible(x - dt*std::round(x/dt), dt);
 }
 
 std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) {
@@ -525,7 +525,12 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				return {};
 			}
 			if (renders_.size()) {
-				std::move(renders_.begin(), renders_.end(), renders.begin());
+				renders.reserve(renders_.size());
+				std::move(
+					std::make_move_iterator(renders_.begin()),
+					std::make_move_iterator(renders_.end()),
+					std::back_inserter(renders)
+				);
 				renders_.clear();
 			}
 			} // end of lock scope
@@ -618,7 +623,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						auto gEndI {
 							std::upper_bound(
 								renders_.begin(), renders_.end(), stats_.back().getTime(),
-								[](const auto& render, double value) {
+								[](double value, auto& render) {
 									return render.second < value;
 								}
 							)
@@ -678,8 +683,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	// graphs
 	// double t; // I don't think this is necessary, replaced by fTime_
 	TMultiGraph& pGraphs {*(TMultiGraph*)prevGraphs.At(0)};
-	TGraph& mfpGraph {*(TGraph*)prevGraphs.At(1)};
-	TGraph& kBGraph {*(TGraph*)prevGraphs.At(2)};
+	TGraph& kBGraph {*(TGraph*)prevGraphs.At(1)};
+	TGraph& mfpGraph {*(TGraph*)prevGraphs.At(2)};
 	TCanvas cnvs {};
 	// image stuff
 	TImage* trnsfrImg;
@@ -724,10 +729,10 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	}
 
 	// processing
+	frame.create(windowSize.x, windowSize.y);
 	switch (opt) {
 		case VideoOpts::justGas:
 			trnsfrImg->Delete();
-			frame.create(windowSize.x, windowSize.y);
 			assert(isIntMultOf(*fTime_ - *gTime, gDeltaT));
 			assert(gTime == renders.back().second);
 			assert(fTime_ <= getRendersT0(renders));
@@ -735,6 +740,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			box.setPosition(0, windowSize.y);
 			while (*fTime_ + gDeltaT <= gTime) {
 				*fTime_ += gDeltaT;
+				frame.clear();
 				if (renders.size() && isNegligible(*fTime_ - renders[0].second, gDeltaT)) {
 					box.setTexture(&(renders.front().first));
 					frame.draw(box);
@@ -745,8 +751,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.draw(box);
 					frame.display();
 				}
-				frames.emplace_back(std::move(frame));
+				frames.emplace_back(frame.getTexture());
 			}
+			break;
 		case VideoOpts::justStats:
 			if (stats.size()) {
 				if (*fTime_ + gDeltaT < stats.front().getTime0()) { // insert empty data and use placeholder render
@@ -762,7 +769,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					kBGraph.AddPoint(*fTime_, 0.);
 					kBGraph.AddPoint(stat.getTime0(), 0.);
 
-					frame.create(windowSize.x, windowSize.y);
+					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
 					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
@@ -806,7 +813,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	
 					TH1D speedH {stat.getSpeedH()};
 	
-					frame.create(windowSize.x, windowSize.y);
+					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
 					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
@@ -851,7 +858,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					kBGraph.AddPoint(*fTime_, 0.);
 					kBGraph.AddPoint(stats.front().getTime0(), 0.);
 
-					frame.create(windowSize.x, windowSize.y);
+					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					// !!! likely drawing in wrong position everywhere, assumed bottom left corner instead of top left !!!
@@ -912,7 +919,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						stat.getPressure()*stat.getVolume()/(stat.getNParticles()*stat.getTemp())
 					);
 
-					frame.create(windowSize.x, windowSize.y);
+					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
@@ -966,7 +973,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						0.
 					);
 
-					frame.create(windowSize.x, windowSize.y);
+					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
@@ -1027,7 +1034,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					);
 					TH1D speedH {};
 
-					frame.create(windowSize.x, windowSize.y);
+					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
@@ -1092,7 +1099,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					);
 					TH1D speedH {stat.getSpeedH()};
 
-					frame.create(windowSize.x, windowSize.y);
+					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
@@ -1148,7 +1155,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				);
 				TH1D speedH {};
 
-				frame.create(windowSize.x, windowSize.y);
+				frame.clear();
 
 				cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
 				drawObj(pGraphs, 0., 0.);
@@ -1233,7 +1240,7 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
       // std::cout << "Drawing gas at time " << *gTime_ + gDeltaT_ << std::endl;
       gTime += gDeltaT;
       drawGas(dat, camera, picture, style, gTime - dat.getTime());
-      renders.emplace_back(std::move(picture.getTexture()), gTime);
+      renders.emplace_back(picture.getTexture(), gTime);
     }
   }
 

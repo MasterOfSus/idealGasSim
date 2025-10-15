@@ -3,6 +3,8 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <TMultiGraph.h>
+#include <TGraph.h>
 
 #include "gasSim/INIReader.h"
 #include "gasSim/graphics.hpp"
@@ -88,9 +90,28 @@ int main(int argc, const char* argv[]) {
 		std::cerr << "Initialized processing thread." << std::endl;
 
     std::vector<sf::Texture> stats;
-    auto displayLambda{[&stats, &output]() {
+		
+		TList graphs;
+		TMultiGraph pGraphs;
+		pGraphs.SetTitle("Pressure graphs.");
+		for(int i {0}; i < 7; ++i) {
+			pGraphs.Add(new TGraph());
+		}
+		TGraph kBGraph {};
+		TGraph mfpGraph {};
+		graphs.Add(&pGraphs);
+		graphs.Add(&kBGraph);
+		graphs.Add(&mfpGraph);
+		sf::Texture placeholder;
+		placeholder.loadFromFile("assets/placeholder.png");
+
+    auto displayLambda{[&stats, &output, &graphs, &placeholder]() {
 			while(true) {
-				std::vector<sf::Texture> tempRndrs {output.getVideo(gasSim::VideoOpts::all, {1600, 600 * 10 / 9}, true)};
+				std::vector<sf::Texture> tempRndrs {
+					output.getVideo(gasSim::VideoOpts::all,
+					{1600, 600 * 10 / 9},
+					placeholder, graphs, true)};
+
 				stats.insert(stats.end(), tempRndrs.begin(), tempRndrs.end());
 				if (output.isDone() && output.dataEmpty() && output.getStats().empty()) {
 					break;
