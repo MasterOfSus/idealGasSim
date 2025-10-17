@@ -44,6 +44,7 @@ int main(int argc, const char* argv[]) {
     bool simult = cFile.GetBoolean("gas", "simultaneous", false);
     gasSim::Gas myGas(pNum, temp, side);
 
+		std::cout << "statsN = " << statsN << std::endl;
     gasSim::SimOutput output{(unsigned)statsN, 60.};
     std::cout << "Simulation calculations (" << iterNum << ") are underway... \n";
     std::cout.flush();

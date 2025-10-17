@@ -379,6 +379,7 @@ void SimOutput::processData() {
 		if (nStats != 0) {
     	std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
     	          std::back_inserter(data));
+			assert(data.size());
     	// std::cout << "GasData count = " << data.size() << std::endl;
     	rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
     	rawDataLock.unlock();
@@ -417,37 +418,41 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 		} // end of doneGuard scope
     int nStats{static_cast<int>(rawData_.size() / statSize_)};
 
-    std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
-              std::back_inserter(data));
-    rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
-    rawDataLock.unlock();
+		if (nStats) {
+			std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
+								std::back_inserter(data));
+			rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
+			rawDataLock.unlock();
 
-    std::thread sThread;
-    std::thread gThread;
+			std::thread sThread;
+			std::thread gThread;
 
-    if (stats)
-      sThread = std::thread([this, &data]() {
-        try {
-          processStats(data);
-        } catch (const std::exception& e) {
-          std::cerr << "Error in stats thread: " << e.what() << std::endl;
-          std::terminate();
-        }
-      });
+			if (stats)
+				sThread = std::thread([this, &data]() {
+					try {
+						processStats(data);
+					} catch (const std::exception& e) {
+						std::cerr << "Error in stats thread: " << e.what() << std::endl;
+						std::terminate();
+					}
+				});
 
-    gThread = std::thread([this, &data, &camera, &style]() {
-      try {
-        processGraphics(data, camera, style);
-      } catch (const std::exception& e) {
-        std::cerr << "Error in graphics thread: " << e.what() << std::endl;
-        std::terminate();
-      }
-    });
+			gThread = std::thread([this, &data, &camera, &style]() {
+				try {
+					processGraphics(data, camera, style);
+				} catch (const std::exception& e) {
+					std::cerr << "Error in graphics thread: " << e.what() << std::endl;
+					std::terminate();
+				}
+			});
 
-    if (stats && sThread.joinable()) sThread.join();
-    if (gThread.joinable()) gThread.join();
-		data.clear();
-  }
+			if (stats && sThread.joinable()) sThread.join();
+			if (gThread.joinable()) gThread.join();
+			data.clear();
+		} else {
+			rawDataLock.unlock();
+		}
+	}
 }
 
 void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
@@ -1220,9 +1225,13 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
 	{ // guard scope
 	std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
 	std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
-  if (!gTime_.has_value()) gTime_ = data[0].getTime() - gDeltaT_;
+  if (!gTime_.has_value()) {
+		gTime_ = data[0].getTime() - gDeltaT_;
+	}
   assert(gDeltaT_ > 0.);
-  assert(gTime_ <= data[0].getTime());
+	if (data.size()) {
+  	assert(gTime_ <= data[0].getTime());
+	}
 	gTime = *gTime_;
 	gDeltaT = gDeltaT_;
 	} // guard scope
