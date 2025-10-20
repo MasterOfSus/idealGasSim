@@ -98,15 +98,13 @@ class SimOutput {
   void setFramerate(double frameRate);
 
   void addData(const GasData& data);
-  void processData();
+  void processData(bool mfpMemory = true);
   void processData(const Camera& camera, const RenderStyle& style,
-                   bool stats = false);
+                   bool mfpMemory = true);
 	std::vector<sf::Texture> getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyQueue = false);
 
 	// why is this method even here? anyway, it is extremely resource-intensive, never use it
-  std::deque<GasData> getData() const {
-		return rawData_;
-	};
+  std::deque<GasData> getData();
 	bool dataEmpty();
   double getFramerate() const { return 1. / gDeltaT_; }
   int getStatSize() const { return statSize_; }
@@ -118,7 +116,7 @@ class SimOutput {
   void setDone();
 
  private:
-  void processStats(const std::vector<GasData>& data);
+  void processStats(const std::vector<GasData>& data, bool mfpMemory);
   void processGraphics(const std::vector<GasData>& data, const Camera& camera,
                        const RenderStyle& style);
 
@@ -129,12 +127,13 @@ class SimOutput {
   int statSize_;
   std::deque<TdStats> stats_;
   std::mutex statsMtx_;
+	std::optional<TdStats> lastStat_;
+	std::mutex lastStatMtx_;
 
   double gDeltaT_;
 	std::mutex gDeltaTMtx_;
   std::optional<double> gTime_;
 	std::mutex gTimeMtx_;
-	std::mutex rendersTimeGapsMtx_;
   std::deque<std::pair<sf::Texture, double>> renders_;
   std::mutex rendersMtx_;
 

@@ -102,6 +102,8 @@ TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
   lastCollPositions_[firstState.getP1Index()] = firstState.getP1().position;
 }
 
+bool isNegligible(double epsilon, double x);
+
 TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& speedsHTemplate)
     : wallPulses_{},
       freePaths_{},
@@ -109,16 +111,20 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& spee
       time_(data.getTime()),
       boxSide_(data.getBoxSide()) {
   if (data.getParticles().size() != prevStats.getNParticles()) {
+		std::cout << "data.getParticles size = " << data.getParticles().size() << " != " << prevStats.getNParticles() << " prevStats.getNParticles." << std::endl;
     throw std::invalid_argument("Non-matching particle numbers in arguments.");
   } else if (data.getBoxSide() != prevStats.getBoxSide()) {
     throw std::invalid_argument("Non-matching box sides.");
   } else if (data.getTime() < prevStats.getTime()) {
     throw std::invalid_argument("Stats time is less than gas time.");
-  } else if (std::accumulate(data.getParticles().begin(),
-                             data.getParticles().end(), 0.,
-                             [](double x, const Particle& p) {
-                               return x + p.speed * p.speed;
-                             }) != prevStats.getTemp()) {
+  } else if (!isNegligible(
+				std::accumulate(
+					data.getParticles().begin(),
+          data.getParticles().end(), 0.,
+          [](double x, const Particle& p) {
+            return x + p.speed * p.speed;
+          }) - prevStats.getTemp(),
+				prevStats.getTemp())) {
     throw std::invalid_argument("Non-matching temperatures.");
   } else {
 		{
@@ -193,6 +199,7 @@ void TdStats::addData(const GasData& data) {
 		std::for_each(
 				data.getParticles().begin(), data.getParticles().end(),
 				[this] (const Particle& p) {
+					std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
 					speedsH_.Fill(p.speed.norm());
 				}
 		);
@@ -211,8 +218,7 @@ double TdStats::getPressure() const {
 
 double TdStats::getMeanFreePath() const {
   if (freePaths_.size() == 0) {
-    throw std::logic_error(
-        "Tried to get mean free path from blank free path data.");
+		return -1.;
   } else {
     return std::accumulate(freePaths_.begin(), freePaths_.end(), 0.) /
            freePaths_.size();
@@ -313,6 +319,11 @@ bool GasData::operator==(const GasData& data) const {
 
 // wondering if I should even keep these two setters?
 
+std::deque<GasData> SimOutput::getData() {
+  std::lock_guard<std::mutex> rawDataGuard {rawDataMtx_};
+	return rawData_;
+}
+
 void SimOutput::setFramerate(double framerate) {
   if (framerate <= 0) {
     throw std::invalid_argument("Non-positive framerate provided.");
@@ -352,11 +363,11 @@ void SimOutput::addData(const GasData& data) {
     rawData_.emplace_back(data);
 		std::lock_guard<std::mutex> doneGuard {doneMtx_};
     done_ = false;
-		rawDataCv_.notify_one();
+		rawDataCv_.notify_all();
   }
 }
 
-void SimOutput::processData() {
+void SimOutput::processData(bool mfpMemory) {
   std::vector<GasData> data {};
   std::unique_lock<std::mutex> rawDataLock(rawDataMtx_, std::defer_lock);
   while (true) {
@@ -385,7 +396,7 @@ void SimOutput::processData() {
     	rawDataLock.unlock();
 
 			//std::cout << "Data size: " << data.size() << "; ";
-    	processStats(data);
+    	processStats(data, mfpMemory);
 			/*{
 			std::lock_guard<std::mutex> guard {statsMtx_};
 			//std::cout << "Stats size: " << stats_.size() << std::endl;
@@ -398,7 +409,7 @@ void SimOutput::processData() {
 }
 
 void SimOutput::processData(const Camera& camera, const RenderStyle& style,
-                            bool stats) {
+                            bool mfpMemory) {
   // std::cout << "Started processing data.\n";
   std::vector<GasData> data {};
 	std::unique_lock<std::mutex> rawDataLock {rawDataMtx_, std::defer_lock};
@@ -427,15 +438,14 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 			std::thread sThread;
 			std::thread gThread;
 
-			if (stats)
-				sThread = std::thread([this, &data]() {
-					try {
-						processStats(data);
-					} catch (const std::exception& e) {
-						std::cerr << "Error in stats thread: " << e.what() << std::endl;
-						std::terminate();
-					}
-				});
+			sThread = std::thread([this, &data, mfpMemory]() {
+				try {
+					processStats(data, mfpMemory);
+				} catch (const std::exception& e) {
+					std::cerr << "Error in stats thread: " << e.what() << std::endl;
+					std::terminate();
+				}
+			});
 
 			gThread = std::thread([this, &data, &camera, &style]() {
 				try {
@@ -446,7 +456,7 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 				}
 			});
 
-			if (stats && sThread.joinable()) sThread.join();
+			if (sThread.joinable()) sThread.join();
 			if (gThread.joinable()) gThread.join();
 			data.clear();
 		} else {
@@ -482,6 +492,9 @@ bool isIntMultOf(double x, double dt) {
 
 std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) {
 
+	static int nExec {0};
+	std::cerr << "Started getVideo, call number " << ++nExec << std::endl;
+
 	if ((opt == VideoOpts::justGas && windowSize.x < 400 && windowSize.y < 400)
 	|| 	(opt == VideoOpts::justStats && windowSize.x < 600 && windowSize.y < 600)
 	||  (windowSize.x < 800 && windowSize.y < 600)) {
@@ -513,8 +526,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			throw std::logic_error("Tried to get render time for output with no time set.");
 		}
 	};
-
-	// extraction of renders and/or stats clusters compatible with processing algorithm
+	
+	std::cerr << "Got to data extraction phase." << std::endl;
+	//	// extraction of renders and/or stats clusters compatible with processing algorithm
 	// fTime_ initialization, either through gTime_ or through stats[0]
 	switch (opt) {
 		case VideoOpts::justGas:
@@ -587,34 +601,52 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			gTime = gTime_;
 			gDeltaT = gDeltaT_;
 			} // end of locks scope 2
+			std::cerr <<
+				"Initialized gTime with value " <<
+				(gTime.has_value()? std::to_string(*gTime): "empty") <<
+				", gDeltaT with value " << gDeltaT <<
+				std::endl;
+
 			if (!gTime.has_value()) {
 				return {};
 			}
 			if (renders_.size() || stats_.size()) {
+				std::cerr << "Found sizes: renders_ = " << renders_.size()
+					<< ", stats_ = " << stats_.size() << std::endl;
 				// dealing with fTime_
 				if (!fTime_.has_value() || !isIntMultOf(*gTime - *fTime_, gDeltaT)) {
+					std::cerr << "Setting fTime_. ";
 					if (!stats_.size()) {
 						*fTime_ = getRendersT0(renders_) - gDeltaT;
 					} else if (!renders_.size()) {
-						*fTime_ = *gTime + gDeltaT*std::floor((stats.front().getTime0() - *gTime)/gDeltaT);
+						*fTime_ = *gTime + gDeltaT*std::floor((stats_.front().getTime0() - *gTime)/gDeltaT);
 						assert(isIntMultOf(*fTime_ - *gTime, gDeltaT));
 					} else {
-						if (getRendersT0(renders_) >= stats_.front().getTime0()) {
+						if (getRendersT0(renders_) > stats_.front().getTime0()) {
 							*fTime_ = getRendersT0(renders_) + gDeltaT * std::floor(
-								(stats[0].getTime0() - getRendersT0(renders_))/gDeltaT
+								(stats_[0].getTime0() - getRendersT0(renders_))/gDeltaT
 							);
+							std::cerr << "Found getRendersT0 = " << getRendersT0(renders_)
+								<< ", stats beginning = " << stats_[0].getTime0()
+								<< "; set fTime_ to " << *fTime_ << std::endl;
 						} else {
-							*fTime_ = getRendersT0(renders_);
+							*fTime_ = getRendersT0(renders_) - gDeltaT;
+							std::cerr << "Found getRendersT0 = " << getRendersT0(renders_)
+							<< ", stats beginning = " << stats_[0].getTime0()
+							<< "; set fTime_ to " << *fTime_ << std::endl;
 						}
 					}
 				}
 				
+				std::cerr << "Starting vector segments extraction." << std::endl;
 				// extracting algorithm-compatible vector segments
 				if (stats_.size()) {
 					auto sStartI {
 						std::lower_bound(stats_.begin(), stats_.end(), *fTime_ + gDeltaT,
-						[](const TdStats& s, double value) { return value <= s.getTime0(); })
+						[](const TdStats& s, double value) { return value > s.getTime0(); })
 					};
+					std::cerr << "Found sStartI = " << sStartI - stats_.begin() << std::endl;
+					std::cerr << "fTime_ value = " << *fTime_ << " with stats_ front Time0 = " << stats_.front().getTime0() << std::endl;
 					if (sStartI != stats_.end()) {
 						auto gStartI {
 							std::lower_bound(
@@ -624,15 +656,17 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 								}
 							)
 						};
-						assert(!std::fmod((*gTime - *fTime_), gDeltaT));
+						assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
 						auto gEndI {
 							std::upper_bound(
 								renders_.begin(), renders_.end(), stats_.back().getTime(),
 								[](double value, auto& render) {
-									return render.second < value;
+									return value < render.second;
 								}
 							)
 						};
+						std::cerr << "Found gStartI = " << gStartI - renders_.begin()
+							<< ", gEndI = " << gEndI - renders_.begin() << std::endl;
 						stats = std::vector(sStartI, stats_.end());
 						if (emptyStats) {
 							stats_.clear();
@@ -646,6 +680,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						);
 						renders_.erase(gStartI, gEndI);
 					}
+					std::cerr << "Extracted vectors. Result sizes: stats size = " << stats.size() << ", renders size = " << renders.size() << std::endl;
 				} else {
 					auto gStartI {
 						std::lower_bound(
@@ -671,6 +706,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		default:
 			throw std::invalid_argument("Invalid video option provided.");
 	}
+
+	std::cerr << "Got to second phase." << std::endl;
 
 	// std::cout << "Started variables setup." << std::endl;
 	// recurrent variables setup
@@ -700,8 +737,12 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	sf::RectangleShape box;
 	std::vector<sf::Texture> frames {};
 	auto drawObj = [&] (auto& TDrawable, double percPosX, double percPosY) {
-		// cnvs.Clear();?
-		TDrawable.Draw();
+		cnvs.Clear();
+		if (TDrawable.IsA() != TH1::Class()) {
+			TDrawable.Draw("APL");
+		} else {
+			TDrawable.Draw("HIST");
+		}
 		cnvs.Update();
 		trnsfrImg->FromPad(&cnvs);
 		argbToSfImage(trnsfrImg->GetArgbArray(), auxImg);
@@ -1042,6 +1083,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+					auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., 0.5);
 					drawObj(speedH, 0.75, 0.);
@@ -1086,7 +1128,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 							}
 						)
 					};
-					assert(s != stats.end());
+					// std::cerr << "Found stat index = " << s - stats.begin() << " for fTime_ = " << *fTime_ + gDeltaT << std::endl;
+					assert(s != stats.end()); 
 					const TdStats& stat {*s};
 					// make the graphs picture
 					for(int k {0}; k < 7; ++k) {
@@ -1102,11 +1145,13 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						stat.getTime(),
 						stat.getPressure()*stat.getVolume()/(stat.getNParticles()*stat.getTemp())
 					);
-					TH1D speedH {stat.getSpeedH()};
+					TH1D speedH;
+					speedH = stat.getSpeedH();
 
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+					auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., 0.5);
 					drawObj(speedH, 0.75, 0.);
@@ -1163,6 +1208,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				frame.clear();
 
 				cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+				auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
 				drawObj(pGraphs, 0., 0.);
 				drawObj(kBGraph, 0., 0.5);
 				drawObj(speedH, 0.75, 0.);
@@ -1226,11 +1272,11 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
 	std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
 	std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
   if (!gTime_.has_value()) {
-		gTime_ = data[0].getTime() - gDeltaT_;
+		gTime_ = data[0].getT0() - gDeltaT_;
 	}
   assert(gDeltaT_ > 0.);
 	if (data.size()) {
-  	assert(gTime_ <= data[0].getTime());
+  	assert(gTime_ <= data[0].getT0());
 	}
 	gTime = *gTime_;
 	gDeltaT = gDeltaT_;
@@ -1239,7 +1285,7 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
 
   renders.reserve((data.back().getTime() - data.front().getTime()) / gDeltaT +
                   1);
-
+	
 	while (gTime + gDeltaT < data[0].getT0()) {
 		gTime += gDeltaT;
 	}
@@ -1260,7 +1306,7 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
   // std::cout << "done!\n";
 }
 
-void SimOutput::processStats(const std::vector<GasData>& data) {
+void SimOutput::processStats(const std::vector<GasData>& data, bool mfpMemory) {
   // std::cout << "Started processing stats.\n";
   std::vector<TdStats> stats{};
 
@@ -1269,13 +1315,27 @@ void SimOutput::processStats(const std::vector<GasData>& data) {
   stats.reserve(std::div(data.size(), statSize_).quot);
 
   // std::cout << "Reached pre-loop\n";
-  for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {
-    TdStats stat{data[i * statSize_], speedsHTemplate_};
-    for (int j{1}; j < statSize_; ++j) {
-      stat.addData(data[i * statSize_ + j]);
-    }
-    stats.emplace_back(stat);
-  }
+	if (mfpMemory) {
+		for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {
+			TdStats stat {lastStat_.has_value()?
+				TdStats {data[i * statSize_], *lastStat_}:
+				TdStats {data[i * statSize_], speedsHTemplate_}
+			};
+			for (int j{1}; j < statSize_; ++j) {
+				stat.addData(data[i * statSize_ + j]);
+			}
+			stats.emplace_back(stat);
+			lastStat_ = stat;
+		}
+	} else {
+		for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {
+			TdStats stat{data[i * statSize_], speedsHTemplate_};
+			for (int j{1}; j < statSize_; ++j) {
+				stat.addData(data[i * statSize_ + j]);
+			}
+			stats.emplace_back(stat);
+		}
+	}
   // std::cout << "Done with loop\n";
 	std::lock_guard<std::mutex> statsGuard {statsMtx_};
   std::move(stats.begin(), stats.end(), std::back_inserter(stats_));
@@ -1283,12 +1343,15 @@ void SimOutput::processStats(const std::vector<GasData>& data) {
 
 std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {
   if (emptyQueue) {
+		// wtf was I thinking when I wrote this... to be written better in rewrite
     std::deque<TdStats> stats;
+		std::lock_guard<std::mutex> lastStatGuard {lastStatMtx_};
 		{
-		std::lock_guard<std::mutex> guard {statsMtx_};
+		std::lock_guard<std::mutex> statsGuard {statsMtx_};
     stats = {std::exchange(stats_, {})};
 		stats_.clear();
 		}
+		lastStat_ = stats.back();
 		return std::vector<TdStats>(stats.begin(), stats.end());
   } else {
     std::lock_guard<std::mutex> guard(statsMtx_);

@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <iterator>
 #include <thread>
 #include <TMultiGraph.h>
 #include <TGraph.h>
@@ -19,7 +20,7 @@ double gasSim::Particle::radius;
 int main(int argc, const char* argv[]) {
   
 	try {
-		std::cerr << "Started." << std::endl;
+		std::cout << "Started." << std::endl;
     auto opts{gasSim::input::optParse(argc, argv)};
     if (gasSim::input::optControl(argc, opts)) {
       return 0;
@@ -40,12 +41,13 @@ int main(int argc, const char* argv[]) {
     double temp = cFile.GetReal("gas", "temperature", -1);
     double side = cFile.GetReal("gas", "boxSide", -1);
     int iterNum = cFile.GetInteger("gas", "iterationNum", -1);
-		int statsN = cFile.GetInteger("results", "statsN", 20);
+		int statsN = cFile.GetInteger("results", "statsN", 12);
     bool simult = cFile.GetBoolean("gas", "simultaneous", false);
     gasSim::Gas myGas(pNum, temp, side);
 
-		std::cout << "statsN = " << statsN << std::endl;
-    gasSim::SimOutput output{(unsigned)statsN, 60.};
+		TH1D hTemplate {};
+		hTemplate.SetTitle("Speeds histo");
+    gasSim::SimOutput output{(unsigned)statsN, 60., hTemplate};
     std::cout << "Simulation calculations (" << iterNum << ") are underway... \n";
     std::cout.flush();
 
@@ -55,7 +57,7 @@ int main(int argc, const char* argv[]) {
     auto simStart = std::chrono::high_resolution_clock::now();
     std::thread simThread{simLambda};
 
-		std::cerr << "Initialized sim thread." << std::endl;
+		std::cout << "Initialized sim thread." << std::endl;
 
 		gasSim::PhysVectorF camPos {
 			static_cast<gasSim::PhysVectorF>(
@@ -88,9 +90,9 @@ int main(int argc, const char* argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
     std::thread processThread{processLambda};
 
-		std::cerr << "Initialized processing thread." << std::endl;
+		std::cout << "Initialized processing thread." << std::endl;
 
-    std::vector<sf::Texture> stats;
+    std::vector<sf::Texture> video;
 		
 		TList graphs;
 		TMultiGraph pGraphs;
@@ -106,40 +108,45 @@ int main(int argc, const char* argv[]) {
 		sf::Texture placeholder;
 		placeholder.loadFromFile("assets/placeholder.png");
 
-    auto displayLambda{[&stats, &output, &graphs, &placeholder]() {
+		std::cout << "Initialized display thread" << std::endl;
+    auto displayLambda{[&video, &output, &graphs, &placeholder]() {
+			std::this_thread::sleep_for(std::chrono::milliseconds {10000});
 			while(true) {
 				std::vector<sf::Texture> tempRndrs {
 					output.getVideo(gasSim::VideoOpts::all,
 					{1600, 600 * 10 / 9},
-					placeholder, graphs, true)};
+					placeholder, graphs, true)
+				};
 
-				stats.insert(stats.end(), tempRndrs.begin(), tempRndrs.end());
+				video.insert(video.end(),
+						std::make_move_iterator(tempRndrs.begin()),
+						std::make_move_iterator(tempRndrs.end()));
 				if (output.isDone() && output.dataEmpty() && output.getStats().empty()) {
 					break;
 				}
 			}
 		}};
-    std::thread statsThread{displayLambda};
+    std::thread displayThread{displayLambda};
 
-		std::cerr << "Initialized stats thread." << std::endl;
+		std::cout << "Initialized stats thread." << std::endl;
   
 		if (simThread.joinable()) {
 			simThread.join();
-			std::cerr << "Joined simThread." << std::endl;
+			std::cout << "Joined simThread, gasData number = " << output.getData().size() << std::endl;
 		}
    	if (processThread.joinable()) {
 			processThread.join();
-			std::cerr << "Joined processThread." << std::endl;
+			std::cout << "Joined processThread, renders number = " << output.getRenders().size() << ", stats number = " << output.getStats().size() << std::endl;
 		}
- 	  if (statsThread.joinable()) {
-			statsThread.join();
-			std::cerr << "Joined statsThread." << std::endl;
+ 	  if (displayThread.joinable()) {
+			displayThread.join();
+			std::cout << "Joined displayThread." << std::endl;
 		}
 
-		std::cerr << "Got to threads end of life. Starting drawing." << std::endl;
+		std::cout << "Got to threads end of life. Starting drawing." << std::endl;
 
     sf::RenderWindow window(
-        sf::VideoMode(camera.getWidth(), camera.getHeight()), "SFML Window",
+        sf::VideoMode(1600, 600*10/9), "SFML Window",
         sf::Style::Default);
     window.setFramerateLimit(60);
 	
@@ -169,7 +176,7 @@ int main(int argc, const char* argv[]) {
         // "close requested" event: we close the window
         if (event.type == sf::Event::Closed) window.close();
       }
-      if (i >= (int)stats.size() - 1) {
+      if (i >= (int)video.size() - 1) {
         std::string replay;
         std::cout << "Replay? ";
         std::cout.flush();
@@ -180,7 +187,7 @@ int main(int argc, const char* argv[]) {
           i = 0;
       }
       window.clear(sf::Color::Yellow);
-			sprt.setTexture(stats[i]);
+			sprt.setTexture(video[i]);
       window.draw(sprt);
       window.display();
 
@@ -202,10 +209,10 @@ int main(int argc, const char* argv[]) {
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> renderTime = stop - start;
     std::cout << "Data processing time: " << renderTime.count() << std::endl;
-    std::cout << "Stats count: " << stats.size() << std::endl;
+    std::cout << "Frames count: " << video.size() << std::endl;
 
     gasSim::printInitData(pNum, temp, side, iterNum, simult);
-    gasSim::printStat((const gasSim::TdStats&)stats.back());
+    // gasSim::printStat((const gasSim::TdStats&)video.back());
     gasSim::printLastShit();
 
     return 0;
