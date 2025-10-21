@@ -47,7 +47,8 @@ class GasData {
 class TdStats {
  public:
   TdStats(const GasData& firstState, const TH1D& speedsHTemplate);
-  TdStats(const GasData& data, const TdStats& prevStats, const TH1D& speedsHTemplate = {});
+  TdStats(const GasData& data, const TdStats& prevStats);
+  TdStats(const GasData& data, const TdStats& prevStats, const TH1D& speedsHTemplate);
   // void setDeltaT(double time);
   // void setBoxSide();
   void addData(const GasData& data);

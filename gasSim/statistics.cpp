@@ -23,6 +23,7 @@
 #include <string>
 #include <thread>
 #include <utility>
+#include <execution>
 
 #include <RtypesCore.h>
 #include <TClass.h>
@@ -100,9 +101,67 @@ TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
     lastCollPositions_[firstState.getP2Index()] = firstState.getP2().position;
   }
   lastCollPositions_[firstState.getP1Index()] = firstState.getP1().position;
+	std::for_each(
+			firstState.getParticles().begin(), firstState.getParticles().end(),
+			[this] (const Particle& p) {
+				std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
+				speedsH_.Fill(p.speed.norm());
+				std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
+				<< ", bin content for last added occourrence = "
+				<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm()))
+				<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
+			}
+	);
 }
 
 bool isNegligible(double epsilon, double x);
+
+TdStats::TdStats(const GasData& data, const TdStats& prevStats)
+    : wallPulses_{},
+      freePaths_{},
+      t0_(data.getT0()),
+      time_(data.getTime()),
+      boxSide_(data.getBoxSide()) {
+  if (data.getParticles().size() != prevStats.getNParticles()) {
+		std::cout << "data.getParticles size = " << data.getParticles().size() << " != " << prevStats.getNParticles() << " prevStats.getNParticles." << std::endl;
+    throw std::invalid_argument("Non-matching particle numbers in arguments.");
+  } else if (data.getBoxSide() != prevStats.getBoxSide()) {
+    throw std::invalid_argument("Non-matching box sides.");
+  } else if (data.getTime() < prevStats.getTime()) {
+    throw std::invalid_argument("Stats time is less than gas time.");
+  } else if (!isNegligible(
+				std::accumulate(
+					data.getParticles().begin(),
+          data.getParticles().end(), 0.,
+          [](double x, const Particle& p) {
+            return x + p.speed * p.speed * p.mass;
+          })/data.getParticles().size() - prevStats.getTemp(),
+				prevStats.getTemp())) {
+    throw std::invalid_argument("Non-matching temperatures for provided GasData.");
+  } else {
+		speedsH_ = prevStats.speedsH_;
+		speedsH_.Clear();
+    lastCollPositions_ = prevStats.lastCollPositions_;
+    T_ = prevStats.T_;
+    if (data.getCollType() == 'w') {
+      addPulse(data);
+    } else if (data.getCollType() == 'p') {
+      lastCollPositions_[data.getP2Index()] = data.getP2().position;
+    }
+    lastCollPositions_[data.getP1Index()] = data.getP1().position;
+		std::for_each(
+				data.getParticles().begin(), data.getParticles().end(),
+				[this] (const Particle& p) {
+					std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
+					speedsH_.Fill(p.speed.norm());
+					std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
+					<< ", bin content for last added occourrence = "
+					<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm())) 
+					<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
+				}
+		);
+  }
+}
 
 TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& speedsHTemplate)
     : wallPulses_{},
@@ -122,25 +181,19 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& spee
 					data.getParticles().begin(),
           data.getParticles().end(), 0.,
           [](double x, const Particle& p) {
-            return x + p.speed * p.speed;
-          }) - prevStats.getTemp(),
+            return x + p.speed * p.speed * p.mass;
+          })/data.getParticles().size() - prevStats.getTemp(),
 				prevStats.getTemp())) {
-    throw std::invalid_argument("Non-matching temperatures.");
+    throw std::invalid_argument("Non-matching temperatures for provided GasData.");
   } else {
 		{
 		TH1D* defH = new TH1D();
 		if (speedsHTemplate.IsEqual(defH)) {
-			speedsH_ = TH1D();
-			speedsH_.SetBins(
-				prevStats.speedsH_.GetNbinsX(),
-				prevStats.speedsH_.GetXaxis()->GetXmin(),
-				prevStats.speedsH_.GetXaxis()->GetXmax()
-			);
-			speedsH_.SetNameTitle(
-				prevStats.speedsH_.GetName(),
-				prevStats.speedsH_.GetTitle()
-			);
+			std::cerr << "Found default histo, initializing with prevStats speedsH_.\n";
+			speedsH_ = prevStats.speedsH_;
+			speedsH_.Clear();
 		} else {
+			std::cerr << "Found non-default histo template, initializing with template.\n";
 			if (speedsHTemplate.GetEntries() != 0.) {
 				delete defH;
 				throw std::runtime_error("Non-empty speedsH template provided.");
@@ -159,6 +212,17 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& spee
       lastCollPositions_[data.getP2Index()] = data.getP2().position;
     }
     lastCollPositions_[data.getP1Index()] = data.getP1().position;
+		std::for_each(
+				data.getParticles().begin(), data.getParticles().end(),
+				[this] (const Particle& p) {
+					std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
+					speedsH_.Fill(p.speed.norm());
+					std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
+					<< ", bin content for last added occourrence = "
+					<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm())) 
+					<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
+				}
+		);
   }
 }
 
@@ -199,8 +263,11 @@ void TdStats::addData(const GasData& data) {
 		std::for_each(
 				data.getParticles().begin(), data.getParticles().end(),
 				[this] (const Particle& p) {
-					std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
+					//std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
 					speedsH_.Fill(p.speed.norm());
+					//std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
+					//<< ", bin content for last added occourrence = "
+					//<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm())) << std::endl;
 				}
 		);
   }
@@ -339,6 +406,7 @@ SimOutput::SimOutput(unsigned int statSize, double framerate, const TH1D& speeds
 	if (speedsHTemplate.GetEntries() != 0) {
 		throw std::invalid_argument("Provided non-empty histogram template.");
 	}
+	assert(speedsHTemplate.GetNbinsX() != 0);
 }
 
 bool SimOutput::dataEmpty() {
@@ -464,7 +532,7 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 		}
 	}
 }
-
+/*
 void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
 	unsigned ww {img.getSize().x};
 	UInt_t argb {};
@@ -481,6 +549,29 @@ void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
 			img.setPixel(i, j, pxlClr);
 		}
 	}
+}
+*/
+void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
+    const unsigned w = img.getSize().x;
+    const unsigned h = img.getSize().y;
+    const size_t total = static_cast<size_t>(w) * h;
+
+    std::vector<sf::Uint8> pixels(total * 4);
+
+    std::vector<size_t> indices(total);
+    std::iota(indices.begin(), indices.end(), 0);
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+        [&](size_t idx) {
+            UInt_t argb = argbBffr[idx];
+            size_t base = idx * 4;
+            pixels[base + 0] = static_cast<sf::Uint8>((argb >> 16) & 0xFF); // R
+            pixels[base + 1] = static_cast<sf::Uint8>((argb >> 8) & 0xFF);  // G
+            pixels[base + 2] = static_cast<sf::Uint8>(argb & 0xFF);         // B
+            pixels[base + 3] = static_cast<sf::Uint8>((argb >> 24) & 0xFF); // A
+        });
+
+    img.create(w, h, pixels.data());
 }
 
 bool isNegligible(double epsilon, double x) {
@@ -738,10 +829,10 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	std::vector<sf::Texture> frames {};
 	auto drawObj = [&] (auto& TDrawable, double percPosX, double percPosY) {
 		cnvs.Clear();
-		if (TDrawable.IsA() != TH1::Class()) {
+		if (TDrawable.IsA() != TH1D::Class()) {
 			TDrawable.Draw("APL");
 		} else {
-			TDrawable.Draw("HIST");
+			TDrawable.Draw();
 		}
 		cnvs.Update();
 		trnsfrImg->FromPad(&cnvs);
@@ -1317,10 +1408,14 @@ void SimOutput::processStats(const std::vector<GasData>& data, bool mfpMemory) {
   // std::cout << "Reached pre-loop\n";
 	if (mfpMemory) {
 		for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {
-			TdStats stat {lastStat_.has_value()?
+			TdStats stat {
+				lastStat_.has_value()?
 				TdStats {data[i * statSize_], *lastStat_}:
 				TdStats {data[i * statSize_], speedsHTemplate_}
 			};
+			if (lastStat_.has_value())
+				std::cerr << "Bin number for lastStat_ speedsH_ = " << lastStat_->getSpeedH().GetNbinsX() << std::endl;
+			std::cerr << "Bin number for speedsHTemplate_ = " << speedsHTemplate_.GetNbinsX() << std::endl;
 			for (int j{1}; j < statSize_; ++j) {
 				stat.addData(data[i * statSize_ + j]);
 			}

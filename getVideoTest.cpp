@@ -1,3 +1,4 @@
+#include <Rtypes.h>
 #include <unistd.h>
 
 #include <chrono>
@@ -41,12 +42,12 @@ int main(int argc, const char* argv[]) {
     double temp = cFile.GetReal("gas", "temperature", -1);
     double side = cFile.GetReal("gas", "boxSide", -1);
     int iterNum = cFile.GetInteger("gas", "iterationNum", -1);
-		int statsN = cFile.GetInteger("results", "statsN", 12);
+		int statsN = cFile.GetInteger("results", "statsN", 30);
     bool simult = cFile.GetBoolean("gas", "simultaneous", false);
     gasSim::Gas myGas(pNum, temp, side);
 
-		TH1D hTemplate {};
-		hTemplate.SetTitle("Speeds histo");
+		TH1D hTemplate {"hTemplate", "Speeds histo", 40, 0., 40.};
+		hTemplate.SetFillColor(kBlue);
     gasSim::SimOutput output{(unsigned)statsN, 60., hTemplate};
     std::cout << "Simulation calculations (" << iterNum << ") are underway... \n";
     std::cout.flush();
@@ -82,6 +83,7 @@ int main(int argc, const char* argv[]) {
     std::string options{"ufdl"};
     style.setWallsOpts(options);
 
+		auto processStart = std::chrono::high_resolution_clock::now();
     auto processLambda{
 			[&output, &camera, &style]() {
 				output.processData(camera, style, true);
@@ -108,9 +110,10 @@ int main(int argc, const char* argv[]) {
 		sf::Texture placeholder;
 		placeholder.loadFromFile("assets/placeholder.png");
 
-		std::cout << "Initialized display thread" << std::endl;
+		std::cout << "Initialized getVideo thread" << std::endl;
+		auto displayStart = std::chrono::high_resolution_clock::now();
     auto displayLambda{[&video, &output, &graphs, &placeholder]() {
-			std::this_thread::sleep_for(std::chrono::milliseconds {10000});
+			std::this_thread::sleep_for(std::chrono::milliseconds(4000));
 			while(true) {
 				std::vector<sf::Texture> tempRndrs {
 					output.getVideo(gasSim::VideoOpts::all,
@@ -130,17 +133,23 @@ int main(int argc, const char* argv[]) {
 
 		std::cout << "Initialized stats thread." << std::endl;
   
+    auto simEnd = std::chrono::high_resolution_clock::now();
 		if (simThread.joinable()) {
 			simThread.join();
+    	simEnd = std::chrono::high_resolution_clock::now();
 			std::cout << "Joined simThread, gasData number = " << output.getData().size() << std::endl;
 		}
+		auto processEnd = std::chrono::high_resolution_clock::now();
    	if (processThread.joinable()) {
 			processThread.join();
+			processEnd = std::chrono::high_resolution_clock::now();
 			std::cout << "Joined processThread, renders number = " << output.getRenders().size() << ", stats number = " << output.getStats().size() << std::endl;
 		}
+		auto displayEnd = std::chrono::high_resolution_clock::now();
  	  if (displayThread.joinable()) {
 			displayThread.join();
-			std::cout << "Joined displayThread." << std::endl;
+			displayEnd = std::chrono::high_resolution_clock::now();
+			std::cout << "Joined getVideo thread." << std::endl;
 		}
 
 		std::cout << "Got to threads end of life. Starting drawing." << std::endl;
@@ -200,16 +209,18 @@ int main(int argc, const char* argv[]) {
 		std::cout << "Leftover rawData_ count: " << output.getData().size() << std::endl;
 		std::cout << "Leftover stats_ count: " << output.getStats().size() << std::endl;
 
-    auto simEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> simTime = simEnd - simStart;
     std::cout << "Simulation time: " << simTime.count()
               << " -> iterations per second: "
-              << static_cast<double>(output.getData().size()) / simTime.count()
+              << static_cast<double>(iterNum) / simTime.count()
               << std::endl;
     auto stop = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> renderTime = stop - start;
-    std::cout << "Data processing time: " << renderTime.count() << std::endl;
-    std::cout << "Frames count: " << video.size() << std::endl;
+    std::cout << "Total elapsed time: " << renderTime.count() << std::endl;
+    std::chrono::duration<double> processTime = processEnd - processStart;
+    std::cout << "Frames count: " << video.size() << ", processing time = " << processTime.count() << ", fps = " << static_cast<double>(video.size()) / processTime.count() << std::endl;
+    std::chrono::duration<double> displayTime = displayEnd - displayStart;
+		std::cout << "Video composition time: " << displayTime.count() << ", fps = " << video.size() / displayTime.count() << std::endl;
 
     gasSim::printInitData(pNum, temp, side, iterNum, simult);
     // gasSim::printStat((const gasSim::TdStats&)video.back());
