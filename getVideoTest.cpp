@@ -112,8 +112,10 @@ int main(int argc, const char* argv[]) {
 
 		std::cout << "Initialized getVideo thread" << std::endl;
 		auto displayStart = std::chrono::high_resolution_clock::now();
-    auto displayLambda{[&video, &output, &graphs, &placeholder]() {
+    auto displayLambda{[&video, &output, &graphs, &placeholder, &displayStart]() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(6000));
+			std::cout << "Starting!!!!" << std::endl;
+			displayStart = std::chrono::high_resolution_clock::now(); // this wasn't here before!!!!
 			while(true) {
 				std::vector<sf::Texture> tempRndrs {
 					output.getVideo(gasSim::VideoOpts::all,
