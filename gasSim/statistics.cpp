@@ -607,27 +607,22 @@ void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
 	}
 }
 */
-void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
-    const unsigned w = img.getSize().x;
-    const unsigned h = img.getSize().y;
+void argbToRgba(const UInt_t* argbBffr, unsigned w, unsigned h, std::vector<sf::Uint8>& pixels) {
     const size_t total = static_cast<size_t>(w) * h;
-
-    std::vector<sf::Uint8> pixels(total * 4);
+    pixels.resize(total * 4);
 
     std::vector<size_t> indices(total);
     std::iota(indices.begin(), indices.end(), 0);
 
     std::for_each(std::execution::par, indices.begin(), indices.end(),
-        [&](size_t idx) {
-            UInt_t argb = argbBffr[idx];
-            size_t base = idx * 4;
-            pixels[base + 0] = static_cast<sf::Uint8>((argb >> 16) & 0xFF); // R
-            pixels[base + 1] = static_cast<sf::Uint8>((argb >> 8) & 0xFF);  // G
-            pixels[base + 2] = static_cast<sf::Uint8>(argb & 0xFF);         // B
-            pixels[base + 3] = static_cast<sf::Uint8>((argb >> 24) & 0xFF); // A
-        });
-
-    img.create(w, h, pixels.data());
+                  [&](size_t idx) {
+        UInt_t argb = argbBffr[idx];
+        size_t base = idx * 4;
+        pixels[base + 0] = static_cast<sf::Uint8>((argb >> 16) & 0xFF); // R
+        pixels[base + 1] = static_cast<sf::Uint8>((argb >> 8) & 0xFF);  // G
+        pixels[base + 2] = static_cast<sf::Uint8>(argb & 0xFF);         // B
+        pixels[base + 3] = static_cast<sf::Uint8>((argb >> 24) & 0xFF); // A
+    });
 }
 
 bool isNegligible(double epsilon, double x) {
@@ -661,7 +656,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		throw std::invalid_argument("Number of graphs in pressure multigraph != 7.");
 	}
 
-	std::vector<std::pair<sf::Texture, double>> renders {};
+	std::deque<std::pair<sf::Texture, double>> renders {};
 	std::vector<TdStats> stats {};
 	std::optional<double> gTime;
 	double gDeltaT;
@@ -701,12 +696,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				return {};
 			}
 			if (renders_.size()) {
-				renders.reserve(renders_.size());
-				std::move(
-					std::make_move_iterator(renders_.begin()),
-					std::make_move_iterator(renders_.end()),
-					std::back_inserter(renders)
-				);
+				renders = std::move(renders_);
 				renders_.clear();
 			}
 			} // end of lock scope
@@ -893,7 +883,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	TCanvas cnvs {};
 	// image stuff
 	TImage* trnsfrImg;
-	sf::Image auxImg;
+	//sf::Image auxImg;
+	std::vector<sf::Uint8> pixels;
 	sf::Texture auxTxtr;
 	sf::Sprite auxSprt;
 	sf::RenderTexture frame;
@@ -908,8 +899,12 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		}
 		cnvs.Update();
 		trnsfrImg->FromPad(&cnvs);
-		argbToSfImage(trnsfrImg->GetArgbArray(), auxImg);
-		auxTxtr.loadFromImage(auxImg);
+		argbToRgba(
+			trnsfrImg->GetArgbArray(),
+			trnsfrImg->GetWidth(), trnsfrImg->GetHeight(),
+			pixels);
+		auxTxtr.update(pixels.data());
+		//auxTxtr.update(auxImg);
 		auxSprt.setTexture(auxTxtr);
 		auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
 		frame.draw(auxSprt);
@@ -942,11 +937,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 
 	// processing
 	auto ph3Start = clock::now();
-	doubleTime graphsAddTime {};
-	doubleTime drawObjTime {};
-	doubleTime txtDrawTime {};
-	doubleTime drawGasTime {};
-	doubleTime emplaceTime {};
+	doubleTime graphsAddTime {},
+	drawObjTime {}, txtDrawTime {}, drawGasTime {}, emplaceTime {},
+	setTextureTime {}, boxDrawTime {}, displayTime {}, eraseTime {};
 	frame.create(windowSize.x, windowSize.y);
 	switch (opt) {
 		case VideoOpts::justGas:
@@ -990,13 +983,13 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
-					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., windowSize.y * 0.55);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(mfpGraph, 0.5, 0.5);
 
@@ -1034,13 +1027,13 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
-					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., windowSize.y * 6./10.);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-					auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
+					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(speedH, 0.5, 0.);
 					drawObj(mfpGraph, 0.5, 0.5);
@@ -1233,6 +1226,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			{ // case scope
 			sf::Vector2f gasSize {static_cast<float>(windowSize.x * 0.5), static_cast<float>(windowSize.y * 9./10.)};
 			if (stats.size()) {
+				auxTxtr.create(windowSize.x * 0.25, windowSize.y * 0.5);
 				if (*fTime_ + gDeltaT_ < stats.front().getTime0()) {
 					for(int i {0}; i < 7; ++i) { // uhm... is this index right? hopefully
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
@@ -1255,7 +1249,6 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
-					auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., 0.5);
 					drawObj(speedH, 0.75, 0.);
@@ -1326,7 +1319,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 
 					auto drawObjStart = clock::now();
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
-					auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
+					//auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., 0.5);
 					drawObj(speedH, 0.75, 0.);
@@ -1354,9 +1347,16 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						if (renders.size() && isNegligible(*fTime_ - renders[0].second, gDeltaT)) {
 							auto drawGasStart = clock::now();
 							box.setTexture(&(renders.front().first));
+							setTextureTime += (doubleTime) (clock::now() - drawGasStart);
+							auto boxDrawStart = clock::now();
 							frame.draw(box);
+							boxDrawTime += (doubleTime) (clock::now() - boxDrawStart);
+							auto displayStart = clock::now();
 							frame.display();
-							renders.erase(renders.begin());
+							displayTime += (doubleTime) (clock::now() - displayStart);
+							auto eraseStart = clock::now();
+							renders.pop_front();
+							eraseTime += (doubleTime) (clock::now() - eraseStart);
 							drawGasTime += (doubleTime) (clock::now() - drawGasStart);
 						} else {
 							box.setTexture(&placeholder);
@@ -1390,7 +1390,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				frame.clear();
 
 				cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
-				auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
+				//auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
 				drawObj(pGraphs, 0., 0.);
 				drawObj(kBGraph, 0., 0.5);
 				drawObj(speedH, 0.75, 0.);
@@ -1430,7 +1430,11 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				std::cerr << "Phase 3 time: " << ph3t.count() << " of which:\n"
 				<< "graphsAddTime = " << graphsAddTime.count() << '\n'
 				<< "drawObjTime = " << drawObjTime.count() << '\n'
-				<< "drawGasTime = " << drawGasTime.count() << '\n'
+				<< "drawGasTime = " << drawGasTime.count() << " of which:\n"
+				<< "~\tsetTexture time = " << setTextureTime.count() << '\n'
+				<< "~\tboxDraw time = " << boxDrawTime.count() << '\n'
+				<< "~\tdisplay time = " << displayTime.count() << '\n'
+				<< "~\terase time = " << eraseTime.count() << '\n'
 				<< "emplaceTime = " << emplaceTime.count()
 				<< std::endl;
 			}
