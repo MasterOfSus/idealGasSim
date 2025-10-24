@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
 #include <filesystem>
 #include <iomanip>
 #include <ios>
@@ -90,6 +91,7 @@ TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
 		throw std::invalid_argument("Non-empty speedsH template provided.");
 	}
 	speedsH_ = speedsHTemplate;
+	speedsH_.SetDirectory(nullptr);
   T_ = std::accumulate(
            firstState.getParticles().begin(), firstState.getParticles().end(),
            0.,
@@ -104,12 +106,12 @@ TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
 	std::for_each(
 			firstState.getParticles().begin(), firstState.getParticles().end(),
 			[this] (const Particle& p) {
-				std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
+			//	std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
 				speedsH_.Fill(p.speed.norm());
-				std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
-				<< ", bin content for last added occourrence = "
-				<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm()))
-				<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
+				//std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
+				//<< ", bin content for last added occourrence = "
+				//<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm()))
+				//<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
 			}
 	);
 }
@@ -140,7 +142,8 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats)
     throw std::invalid_argument("Non-matching temperatures for provided GasData.");
   } else {
 		speedsH_ = prevStats.speedsH_;
-		speedsH_.Clear();
+		speedsH_.Reset("ICES");
+		speedsH_.SetDirectory(nullptr);
     lastCollPositions_ = prevStats.lastCollPositions_;
     T_ = prevStats.T_;
     if (data.getCollType() == 'w') {
@@ -152,12 +155,12 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats)
 		std::for_each(
 				data.getParticles().begin(), data.getParticles().end(),
 				[this] (const Particle& p) {
-					std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
+					//std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
 					speedsH_.Fill(p.speed.norm());
-					std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
-					<< ", bin content for last added occourrence = "
-					<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm())) 
-					<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
+					//std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
+					//<< ", bin content for last added occourrence = "
+					//<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm())) 
+					//<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
 				}
 		);
   }
@@ -191,7 +194,8 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& spee
 		if (speedsHTemplate.IsEqual(defH)) {
 			std::cerr << "Found default histo, initializing with prevStats speedsH_.\n";
 			speedsH_ = prevStats.speedsH_;
-			speedsH_.Clear();
+			speedsH_.SetDirectory(nullptr);
+			speedsH_.Reset("ICES");
 		} else {
 			std::cerr << "Found non-default histo template, initializing with template.\n";
 			if (speedsHTemplate.GetEntries() != 0.) {
@@ -215,15 +219,67 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& spee
 		std::for_each(
 				data.getParticles().begin(), data.getParticles().end(),
 				[this] (const Particle& p) {
-					std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
+					//std::cerr << "Filling histo with value " << p.speed.norm() << std::endl;
 					speedsH_.Fill(p.speed.norm());
-					std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
-					<< ", bin content for last added occourrence = "
-					<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm())) 
-					<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
+					//std::cerr << "speedsH_ entries = " << speedsH_.GetEntries()
+					//<< ", bin content for last added occourrence = "
+					//<< speedsH_.GetBinContent(speedsH_.FindBin(p.speed.norm())) 
+					//<< ", bin number = " << speedsH_.GetNbinsX() << std::endl;
 				}
 		);
   }
+}
+
+TdStats::TdStats(const TdStats& s)
+	: wallPulses_(s.wallPulses_),
+	lastCollPositions_(s.lastCollPositions_),
+	T_(s.T_),
+	freePaths_(s.freePaths_),
+	speedsH_(s.speedsH_),
+	t0_(s.t0_),
+	time_(s.time_),
+	boxSide_(s.boxSide_) {
+		speedsH_.SetDirectory(nullptr);
+}
+
+TdStats::TdStats(TdStats&& s) noexcept
+	: wallPulses_(std::move(s.wallPulses_)),
+	lastCollPositions_(std::move(s.lastCollPositions_)),
+	T_(s.T_),
+	freePaths_(std::move(s.freePaths_)),
+	speedsH_(std::move(s.speedsH_)),
+	t0_(s.t0_),
+	time_(s.time_),
+	boxSide_(s.boxSide_) {
+		speedsH_.SetDirectory(nullptr);
+		s.speedsH_.SetDirectory(nullptr);
+}
+
+TdStats& TdStats::operator=(const TdStats& s) {
+	wallPulses_ = s.wallPulses_;
+	lastCollPositions_ = s.lastCollPositions_;
+	T_ = s.T_;
+	freePaths_ = s.freePaths_;
+	speedsH_ = s.speedsH_;
+	speedsH_.SetDirectory(nullptr);
+	t0_ = s.t0_;
+	time_ = s.time_;
+	boxSide_ = s.boxSide_; 
+	return *this;
+}
+
+TdStats& TdStats::operator=(TdStats&& s) noexcept {
+	wallPulses_ = std::move(s.wallPulses_);
+	lastCollPositions_ = std::move(s.lastCollPositions_);
+	T_ = s.T_;
+	freePaths_ = std::move(s.freePaths_);
+	speedsH_ = std::move(s.speedsH_);
+	speedsH_.SetDirectory(nullptr);
+	s.speedsH_.SetDirectory(nullptr);
+	t0_ = s.t0_;
+	time_ = s.time_;
+	boxSide_ = s.boxSide_; 
+	return *this;
 }
 
 void TdStats::addData(const GasData& data) {
@@ -583,6 +639,10 @@ bool isIntMultOf(double x, double dt) {
 
 std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) {
 
+	using clock = std::chrono::high_resolution_clock;
+	using doubleTime = std::chrono::duration<double>;
+	auto ph0Start = clock::now();
+
 	static int nExec {0};
 	std::cerr << "Started getVideo, call number " << ++nExec << std::endl;
 
@@ -617,8 +677,14 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			throw std::logic_error("Tried to get render time for output with no time set.");
 		}
 	};
-	
+
+	{
+		doubleTime ph0t = clock::now() - ph0Start;
+		std::cerr << "Phase 0 time: " << ph0t.count() << std::endl;
+	}
+
 	std::cerr << "Got to data extraction phase." << std::endl;
+	auto ph1Start = clock::now();
 	//	// extraction of renders and/or stats clusters compatible with processing algorithm
 	// fTime_ initialization, either through gTime_ or through stats[0]
 	switch (opt) {
@@ -797,8 +863,14 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		default:
 			throw std::invalid_argument("Invalid video option provided.");
 	}
+	{
+		doubleTime ph1t = clock::now() - ph1Start;
+		std::cerr << "Phase 1 time: " << ph1t.count() << std::endl;
+	}
 
 	std::cerr << "Got to second phase." << std::endl;
+
+	auto ph2Start = clock::now();
 
 	// std::cout << "Started variables setup." << std::endl;
 	// recurrent variables setup
@@ -865,7 +937,16 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			throw std::invalid_argument("Invalid video option provided.");
 	}
 
+	doubleTime ph2t = clock::now() - ph2Start;
+	std::cerr << "Phase 2 time: " << ph2t.count() << std::endl;
+
 	// processing
+	auto ph3Start = clock::now();
+	doubleTime graphsAddTime {};
+	doubleTime drawObjTime {};
+	doubleTime txtDrawTime {};
+	doubleTime drawGasTime {};
+	doubleTime emplaceTime {};
 	frame.create(windowSize.x, windowSize.y);
 	switch (opt) {
 		case VideoOpts::justGas:
@@ -1223,6 +1304,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					assert(s != stats.end()); 
 					const TdStats& stat {*s};
 					// make the graphs picture
+					auto rootStart = clock::now();
 					for(int k {0}; k < 7; ++k) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(k)};
 						if (!k) {
@@ -1238,16 +1320,20 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					);
 					TH1D speedH;
 					speedH = stat.getSpeedH();
+					graphsAddTime += (doubleTime) (clock::now() - rootStart);
 
 					frame.clear();
 
+					auto drawObjStart = clock::now();
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
 					auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
 					drawObj(pGraphs, 0., 0.);
 					drawObj(kBGraph, 0., 0.5);
 					drawObj(speedH, 0.75, 0.);
 					drawObj(mfpGraph, 0.75, 0.5);
+					drawObjTime += (doubleTime) (clock::now() - drawObjStart);
 
+					auto txtDrawStart = clock::now();
 					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
 					txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
 					VText.setPosition(windowSize.x * 0.25 + 10., windowSize.y * 0.9 + 10.);
@@ -1257,6 +1343,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.draw(VText);
 					frame.draw(NText);
 					frame.draw(TText);
+					txtDrawTime += (doubleTime) (clock::now() - txtDrawStart);
 
 					// insert paired renders or placeholders
 					box.setSize(gasSize);
@@ -1265,16 +1352,20 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						*fTime_ += gDeltaT;
 						assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
 						if (renders.size() && isNegligible(*fTime_ - renders[0].second, gDeltaT)) {
+							auto drawGasStart = clock::now();
 							box.setTexture(&(renders.front().first));
 							frame.draw(box);
 							frame.display();
 							renders.erase(renders.begin());
+							drawGasTime += (doubleTime) (clock::now() - drawGasStart);
 						} else {
 							box.setTexture(&placeholder);
 							frame.draw(box);
 							frame.display();
 						}
+						auto emplaceStart = clock::now();
 						frames.emplace_back(frame.getTexture());
+						emplaceTime += (doubleTime) (clock::now() - emplaceStart);
 					}
 				} // while (fTime_ + gDeltaT_ < stats.back().getTime())
 			} else if (renders.size()) {
@@ -1334,6 +1425,15 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			} // else if renders.size()
 			} // case scope end
 			trnsfrImg->Delete();
+			{
+				doubleTime ph3t = clock::now() - ph3Start;
+				std::cerr << "Phase 3 time: " << ph3t.count() << " of which:\n"
+				<< "graphsAddTime = " << graphsAddTime.count() << '\n'
+				<< "drawObjTime = " << drawObjTime.count() << '\n'
+				<< "drawGasTime = " << drawGasTime.count() << '\n'
+				<< "emplaceTime = " << emplaceTime.count()
+				<< std::endl;
+			}
 			return frames;
 			break;
 		default:
@@ -1413,14 +1513,13 @@ void SimOutput::processStats(const std::vector<GasData>& data, bool mfpMemory) {
 				TdStats {data[i * statSize_], *lastStat_}:
 				TdStats {data[i * statSize_], speedsHTemplate_}
 			};
-			if (lastStat_.has_value())
-				std::cerr << "Bin number for lastStat_ speedsH_ = " << lastStat_->getSpeedH().GetNbinsX() << std::endl;
-			std::cerr << "Bin number for speedsHTemplate_ = " << speedsHTemplate_.GetNbinsX() << std::endl;
+			//std::cerr << "Bin number for lastStat_ speedsH_ = " << lastStat_->getSpeedH().GetNbinsX() << std::endl;
+			//std::cerr << "Bin number for speedsHTemplate_ = " << speedsHTemplate_.GetNbinsX() << std::endl;
 			for (int j{1}; j < statSize_; ++j) {
 				stat.addData(data[i * statSize_ + j]);
 			}
 			stats.emplace_back(stat);
-			lastStat_ = stat;
+			lastStat_ = std::move(stat);
 		}
 	} else {
 		for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {

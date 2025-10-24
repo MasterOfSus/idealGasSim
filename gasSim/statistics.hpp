@@ -49,6 +49,8 @@ class TdStats {
   TdStats(const GasData& firstState, const TH1D& speedsHTemplate);
   TdStats(const GasData& data, const TdStats& prevStats);
   TdStats(const GasData& data, const TdStats& prevStats, const TH1D& speedsHTemplate);
+	TdStats(const TdStats& s);
+	TdStats(TdStats&& s) noexcept;
   // void setDeltaT(double time);
   // void setBoxSide();
   void addData(const GasData& data);
@@ -68,6 +70,8 @@ class TdStats {
   // const std::vector<PhysVectorD>& getSpeeds() const { return speeds_; };
 
   bool operator==(const TdStats&) const;
+	TdStats& operator=(const TdStats&);
+	TdStats& operator=(TdStats&&) noexcept;
 
  private:
   void addPulse(const GasData& data);
