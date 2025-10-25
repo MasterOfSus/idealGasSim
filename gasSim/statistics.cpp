@@ -910,19 +910,30 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		frame.draw(auxSprt);
 	};
 
+	TText.setCharacterSize(windowSize.y * 0.05);
+	VText.setCharacterSize(windowSize.y * 0.05);
+	NText.setCharacterSize(windowSize.y * 0.05);
 	// definitions as per available data
 	switch (opt) {
 		case VideoOpts::gasPlusCoords:
+			TText.setCharacterSize(windowSize.y * 0.5/9.);
+			VText.setCharacterSize(windowSize.y * 0.5/9.);
+			NText.setCharacterSize(windowSize.y * 0.5/9.);
 		case VideoOpts::all:
 		case VideoOpts::justStats:
 			if (stats.size()) {
 				Temp << std::fixed << std::setprecision(2) << stats[0].getTemp();
 				TText = {"T = " + Temp.str() + "K", font, 18};
-				TText.setPosition(10.f, 10.f);
+				TText.setFont(font);
+				TText.setFillColor(sf::Color::Black);
 				Vol << std::fixed << std::setprecision(2) << stats[0].getVolume();
 				VText = {"V = " + Vol.str() + "m\u00B3", font, 18};
+				VText.setFont(font);
+				VText.setFillColor(sf::Color::Black);
 				Num << std::fixed << std::setprecision(2) << stats[0].getNParticles();
 				NText = {"N = " + Num.str(), font, 18};
+				NText.setFont(font);
+				NText.setFillColor(sf::Color::Black);			
 				trnsfrImg = TImage::Create();
 			}
 			break;
@@ -939,7 +950,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	auto ph3Start = clock::now();
 	doubleTime graphsAddTime {},
 	drawObjTime {}, txtDrawTime {}, drawGasTime {}, emplaceTime {},
-	setTextureTime {}, boxDrawTime {}, displayTime {}, eraseTime {};
+	setTextureTime {}, boxDrawTime {}, displayTime {}, reserveTime{}, eraseTime {};
 	frame.create(windowSize.x, windowSize.y);
 	switch (opt) {
 		case VideoOpts::justGas:
@@ -1078,7 +1089,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 
 					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f/9.f});
 					txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8./9.);
-					VText.setPosition(windowSize.x * 0.5 + 10., windowSize.y * 8./9. + 10.);
+					VText.setPosition(windowSize.x * (0.5 + 0.15), windowSize.y * 8./9. + 10.);
 					NText.setPosition(windowSize.x * 0.5 + 35., windowSize.y * 8./9. + 10.);
 					TText.setPosition(windowSize.x * 0.5 + 60., windowSize.y * 8./9. + 10.);
 					frame.draw(txtBox);
@@ -1300,8 +1311,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					auto rootStart = clock::now();
 					for(int k {0}; k < 7; ++k) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(k)};
-						if (!k) {
-							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));	
+						if (k) {
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k - 1)));	
 						} else {
 							graph->AddPoint(stat.getTime(), stat.getPressure());
 						}
@@ -1329,9 +1340,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					auto txtDrawStart = clock::now();
 					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
 					txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
-					VText.setPosition(windowSize.x * 0.25 + 10., windowSize.y * 0.9 + 10.);
-					NText.setPosition(windowSize.x * 0.25 + 35., windowSize.y * 0.9 + 10.);
-					TText.setPosition(windowSize.x * 0.25 + 60., windowSize.y * 0.9 + 10.);
+					VText.setPosition(windowSize.x * (0.25 + 0.025), windowSize.y * (0.9 + 0.025));
+					NText.setPosition(windowSize.x * (0.25 + 0.175), windowSize.y * (0.9 + 0.025));
+					TText.setPosition(windowSize.x * (0.25 + 0.325), windowSize.y * (0.9 + 0.025));
 					frame.draw(txtBox);
 					frame.draw(VText);
 					frame.draw(NText);
@@ -1341,6 +1352,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					// insert paired renders or placeholders
 					box.setSize(gasSize);
 					box.setPosition(windowSize.x * 0.25, 0.);
+					auto reserveStart = clock::now();
+					frames.reserve(renders.size());
+					reserveTime += (doubleTime) (clock::now() - reserveStart);
 					while (*fTime_ + gDeltaT_ < stat.getTime()) {
 						*fTime_ += gDeltaT;
 						assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
@@ -1435,6 +1449,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 				<< "~\tboxDraw time = " << boxDrawTime.count() << '\n'
 				<< "~\tdisplay time = " << displayTime.count() << '\n'
 				<< "~\terase time = " << eraseTime.count() << '\n'
+				<< "~\treserve time = " << reserveTime.count() << '\n'
 				<< "emplaceTime = " << emplaceTime.count()
 				<< std::endl;
 			}

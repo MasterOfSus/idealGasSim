@@ -62,7 +62,7 @@ int main(int argc, const char* argv[]) {
 
 		gasSim::PhysVectorF camPos {
 			static_cast<gasSim::PhysVectorF>(
-				gasSim::PhysVectorD{side * 2.f, side * 1.5f, side*0.75f}
+				gasSim::PhysVectorD{side * 1.5f, side * 1.25f, side*0.75f}
 			)
 		};
 		gasSim::PhysVectorF gasCenter {
@@ -72,7 +72,7 @@ int main(int argc, const char* argv[]) {
 		};
 
 		gasSim::Camera camera {gasSim::Camera(
-			camPos, gasCenter - camPos, 1.f, 90.f, 800, 600
+			camPos, gasCenter - camPos, 1.f, 90.f, 600, 600
 		)};
 
    	sf::Texture texture;
@@ -100,7 +100,12 @@ int main(int argc, const char* argv[]) {
 		TMultiGraph pGraphs;
 		pGraphs.SetTitle("Pressure graphs.");
 		for(int i {0}; i < 7; ++i) {
-			pGraphs.Add(new TGraph());
+			TGraph* g = new TGraph();
+			g->SetLineColor(i + 1);
+			if (!i) {
+				g->SetLineWidth(2);
+			}
+			pGraphs.Add(g);
 		}
 		TGraph kBGraph {};
 		TGraph mfpGraph {};
@@ -112,21 +117,29 @@ int main(int argc, const char* argv[]) {
 
 		std::cout << "Initialized getVideo thread" << std::endl;
 		auto displayStart = std::chrono::high_resolution_clock::now();
-    auto displayLambda{[&video, &output, &graphs, &placeholder, &displayStart]() {
-			std::this_thread::sleep_for(std::chrono::milliseconds(6000));
+		std::chrono::duration<double> tempRndrsTime {}, insertTime {};
+    auto displayLambda{[&video, &output, &graphs, &placeholder, &displayStart, &tempRndrsTime, &insertTime]() {
+			std::this_thread::sleep_for(std::chrono::seconds(60));
 			std::cout << "Starting!!!!" << std::endl;
 			displayStart = std::chrono::high_resolution_clock::now(); // this wasn't here before!!!!
 			while(true) {
+				auto tempRndrsStart = std::chrono::high_resolution_clock::now();
 				std::vector<sf::Texture> tempRndrs {
 					output.getVideo(gasSim::VideoOpts::all,
-					{1600, 600 * 10 / 9},
+					{1200, 600 * 10 / 9},
 					placeholder, graphs, true)
 				};
+				tempRndrsTime += (std::chrono::duration<double>) (std::chrono::high_resolution_clock::now() - tempRndrsStart);
 
+				auto insertStart = std::chrono::high_resolution_clock::now();
+				video.reserve(tempRndrs.size());
 				video.insert(video.end(),
 						std::make_move_iterator(tempRndrs.begin()),
 						std::make_move_iterator(tempRndrs.end()));
+				insertTime += (std::chrono::duration<double>) (std::chrono::high_resolution_clock::now() - insertStart);
 				if (output.isDone() && output.dataEmpty() && output.getStats().empty()) {
+					std::cerr << "tempRndrsTime = " << tempRndrsTime.count() << '\n'
+					<< "insertTime = " << insertTime.count() << std::endl;
 					break;
 				}
 			}
@@ -157,7 +170,7 @@ int main(int argc, const char* argv[]) {
 		std::cout << "Got to threads end of life. Starting drawing." << std::endl;
 
     sf::RenderWindow window(
-        sf::VideoMode(1600, 600*10/9), "SFML Window",
+        sf::VideoMode(1200, 600*10/9), "SFML Window",
         sf::Style::Default);
     window.setFramerateLimit(60);
 	

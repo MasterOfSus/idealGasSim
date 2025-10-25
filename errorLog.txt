@@ -1,23 +1,26 @@
 Started getVideo, call number 1
-Phase 0 time: 0.000977437
+Phase 0 time: 0.000671242
 Got to data extraction phase.
-Initialized gTime with value 7.000000, gDeltaT with value 0.0166667
-Found sizes: renders_ = 421, stats_ = 40
+Initialized gTime with value 19.866667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 1193, stats_ = 40
 Setting fTime_. Found getRendersT0 = 0, stats beginning = 0; set fTime_ to -0.0166667
 Starting vector segments extraction.
 Found sStartI = 0
 fTime_ value = -0.0166667 with stats_ front Time0 = 0
-Found gStartI = 0, gEndI = 421
-Extracted vectors. Result sizes: stats size = 40, renders size = 421
-Phase 1 time: 0.122286
+Found gStartI = 0, gEndI = 1193
+Extracted vectors. Result sizes: stats size = 40, renders size = 1193
+Phase 1 time: 0.659853
 Got to second phase.
-Phase 2 time: 0.0721976
-Phase 3 time: 1.98704 of which:
-graphsAddTime = 0.00207024
-drawObjTime = 1.05567
-drawGasTime = 0.00561088 of which:
-~	setTexture time = 0.000118372
-~	boxDraw time = 0.0044297
-~	display time = 0.000176161
-~	erase time = 0.000734882
-emplaceTime = 0.910547
+Phase 2 time: 0.1836
+Phase 3 time: 2.78236 of which:
+graphsAddTime = 0.00292116
+drawObjTime = 0.93212
+drawGasTime = 0.0362562 of which:
+~	setTexture time = 0.000459328
+~	boxDraw time = 0.0306656
+~	display time = 0.000869018
+~	erase time = 0.00380445
+~	reserve time = 3.7688e-05
+emplaceTime = 1.7957
+tempRndrsTime = 3.65275
+insertTime = 9.96103
