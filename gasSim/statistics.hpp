@@ -141,6 +141,9 @@ class SimOutput {
 	std::mutex gTimeMtx_;
   std::deque<std::pair<sf::Texture, double>> renders_;
   std::mutex rendersMtx_;
+	std::mutex resultsMtx_;
+	bool addedResults_ {false};
+	std::condition_variable resultsCv_;
 
 	std::optional<double> fTime_;
 

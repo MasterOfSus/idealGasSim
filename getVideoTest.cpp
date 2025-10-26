@@ -119,10 +119,11 @@ int main(int argc, const char* argv[]) {
 		auto displayStart = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> tempRndrsTime {}, insertTime {};
     auto displayLambda{[&video, &output, &graphs, &placeholder, &displayStart, &tempRndrsTime, &insertTime]() {
-			std::this_thread::sleep_for(std::chrono::seconds(60));
+			// std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			std::cout << "Starting!!!!" << std::endl;
 			displayStart = std::chrono::high_resolution_clock::now(); // this wasn't here before!!!!
 			while(true) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 				auto tempRndrsStart = std::chrono::high_resolution_clock::now();
 				std::vector<sf::Texture> tempRndrs {
 					output.getVideo(gasSim::VideoOpts::all,

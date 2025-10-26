@@ -525,6 +525,7 @@ void SimOutput::processData(bool mfpMemory) {
 			std::lock_guard<std::mutex> guard {statsMtx_};
 			//std::cout << "Stats size: " << stats_.size() << std::endl;
 			}*/
+			resultsCv_.notify_all();
 		} else {
 			rawDataLock.unlock();
 		}
@@ -561,6 +562,9 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 
 			std::thread sThread;
 			std::thread gThread;
+			
+			{ // guard scope begin
+			std::lock_guard<std::mutex> resultsGuard {resultsMtx_};
 
 			sThread = std::thread([this, &data, mfpMemory]() {
 				try {
@@ -582,6 +586,9 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 
 			if (sThread.joinable()) sThread.join();
 			if (gThread.joinable()) gThread.join();
+			} // guard scope end
+			addedResults_ = true;
+			resultsCv_.notify_all();
 			data.clear();
 		} else {
 			rawDataLock.unlock();
@@ -639,7 +646,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	auto ph0Start = clock::now();
 
 	static int nExec {0};
-	std::cerr << "Started getVideo, call number " << ++nExec << std::endl;
+	std::cerr << std::endl << "Started getVideo, call number " << ++nExec << std::endl;
 
 	if ((opt == VideoOpts::justGas && windowSize.x < 400 && windowSize.y < 400)
 	|| 	(opt == VideoOpts::justStats && windowSize.x < 600 && windowSize.y < 600)
@@ -740,6 +747,12 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 		case VideoOpts::all:
 		case VideoOpts::gasPlusCoords:
 			{ // locks scope
+			std::unique_lock<std::mutex> resultsLock {resultsMtx_};
+			resultsCv_.wait_for(resultsLock,
+			std::chrono::seconds(1), 
+			[this] () { 
+				return addedResults_;
+			});
 			std::lock_guard<std::mutex> rGuard {rendersMtx_};
 			std::lock_guard<std::mutex> sGuard {statsMtx_};
 			{ // locks scope 2
@@ -762,38 +775,55 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					<< ", stats_ = " << stats_.size() << std::endl;
 				// dealing with fTime_
 				if (!fTime_.has_value() || !isIntMultOf(*gTime - *fTime_, gDeltaT)) {
-					std::cerr << "Setting fTime_. ";
+					std::cerr << "Setting fTime_. Because ";
+					if (fTime_.has_value()) {
+						std::cerr << "isIntMultOf returned " << isIntMultOf(*gTime - *fTime_, gDeltaT) <<
+						" for gTime - fTime_ = " << *gTime - *fTime_ << ", gDeltaT = " << gDeltaT;
+					} else {	
+						std::cerr << "fTime_.has_value returned " << fTime_.has_value();
+					}
+					std::cerr << std::endl;
 					if (!stats_.size()) {
-						*fTime_ = getRendersT0(renders_) - gDeltaT;
+						fTime_ = getRendersT0(renders_) - gDeltaT;
 					} else if (!renders_.size()) {
-						*fTime_ = *gTime + gDeltaT*std::floor((stats_.front().getTime0() - *gTime)/gDeltaT);
+						fTime_ = *gTime + gDeltaT*std::floor((stats_.front().getTime0() - *gTime)/gDeltaT);
 						assert(isIntMultOf(*fTime_ - *gTime, gDeltaT));
 					} else {
 						if (getRendersT0(renders_) > stats_.front().getTime0()) {
-							*fTime_ = getRendersT0(renders_) + gDeltaT * std::floor(
+							fTime_ = getRendersT0(renders_) + gDeltaT * std::floor(
 								(stats_[0].getTime0() - getRendersT0(renders_))/gDeltaT
 							);
 							std::cerr << "Found getRendersT0 = " << getRendersT0(renders_)
 								<< ", stats beginning = " << stats_[0].getTime0()
 								<< "; set fTime_ to " << *fTime_ << std::endl;
 						} else {
-							*fTime_ = getRendersT0(renders_) - gDeltaT;
+							fTime_ = getRendersT0(renders_) - gDeltaT;
 							std::cerr << "Found getRendersT0 = " << getRendersT0(renders_)
 							<< ", stats beginning = " << stats_[0].getTime0()
 							<< "; set fTime_ to " << *fTime_ << std::endl;
 						}
 					}
+					std::cerr << "Set fTime_. Now fTime_.has_value() returns " << fTime_.has_value() << " with value = " << fTime_.value() << std::endl;
 				}
 				
 				std::cerr << "Starting vector segments extraction." << std::endl;
 				// extracting algorithm-compatible vector segments
 				if (stats_.size()) {
 					auto sStartI {
-						std::lower_bound(stats_.begin(), stats_.end(), *fTime_ + gDeltaT,
-						[](const TdStats& s, double value) { return value > s.getTime0(); })
+						std::upper_bound(stats_.begin(), stats_.end(), *fTime_ + gDeltaT,
+						[](double value, const TdStats& s) { 
+							std::cerr << "Value = " << value;
+							value <= s.getTime()?
+							 	std::cerr << " <= s.getTime() = " << s.getTime():
+								std::cerr << " > s.getTime() = " << s.getTime();
+							std::cerr << std::endl;
+							return value <= s.getTime();
+						})
+
 					};
+					std::cerr << "There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!\n";
 					std::cerr << "Found sStartI = " << sStartI - stats_.begin() << std::endl;
-					std::cerr << "fTime_ value = " << *fTime_ << " with stats_ front Time0 = " << stats_.front().getTime0() << std::endl;
+					std::cerr << "fTime_ value = " << *fTime_ << " with stats_ front Time0 = " << stats_.front().getTime0() << " and Time = " << stats_.front().getTime() << std::endl;
 					if (sStartI != stats_.end()) {
 						auto gStartI {
 							std::lower_bound(
@@ -828,6 +858,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						renders_.erase(gStartI, gEndI);
 					}
 					std::cerr << "Extracted vectors. Result sizes: stats size = " << stats.size() << ", renders size = " << renders.size() << std::endl;
+					if (!stats.size() && !renders.size()) {
+						return {};
+					}
 				} else {
 					auto gStartI {
 						std::lower_bound(
@@ -848,6 +881,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			} else {
 				return {};
 			}
+			addedResults_ = false;
+			resultsLock.unlock();
 			} // end of locks scope
 			break;
 		default:
