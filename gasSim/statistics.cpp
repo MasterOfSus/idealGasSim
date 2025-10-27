@@ -470,25 +470,28 @@ bool SimOutput::dataEmpty() {
 	return rawData_.empty();
 }
 
-void SimOutput::addData(const GasData& data) {
-  if (nParticles_ == 0)
-    if (data.getParticles().size() != 0)
-      nParticles_ = data.getParticles().size();
-  if (data.getParticles().size() != nParticles_)
-    throw std::invalid_argument("Non-matching particle numbers.");
-  else {
-    std::lock_guard<std::mutex> rawDataGuard {rawDataMtx_};
-    if (rawData_.size() > 0) {
-      if (data.getTime() < rawData_.back().getTime()) {
-        throw std::invalid_argument(
-            "Argument time less than latest raw data piece time");
-      }
+void SimOutput::addData(const std::vector<GasData>& data) {
+	for (const GasData& d: data) {
+		if (nParticles_ == 0)
+			if (d.getParticles().size() != 0)
+				nParticles_ = d.getParticles().size();
+		if (d.getParticles().size() != nParticles_)
+			throw std::invalid_argument("Non-matching particle numbers.");
+		// need to add sequentiality check and fix the throwing, there was an else
+	}
+	{
+  std::lock_guard<std::mutex> rawDataGuard {rawDataMtx_};
+  if (rawData_.size() > 0) {
+    if (data.front().getTime() < rawData_.back().getTime()) {
+      throw std::invalid_argument(
+          "Argument time less than latest raw data piece time");
     }
-    rawData_.emplace_back(data);
-		std::lock_guard<std::mutex> doneGuard {doneMtx_};
-    done_ = false;
-		rawDataCv_.notify_all();
   }
+  rawData_.insert(rawData_.end(), data.begin(), data.end());
+	std::lock_guard<std::mutex> doneGuard {doneMtx_};
+  done_ = false;
+	}
+	rawDataCv_.notify_all();
 }
 
 void SimOutput::processData(bool mfpMemory) {
@@ -749,7 +752,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			{ // locks scope
 			std::unique_lock<std::mutex> resultsLock {resultsMtx_};
 			resultsCv_.wait_for(resultsLock,
-			std::chrono::seconds(1), 
+			std::chrono::milliseconds(100), 
 			[this] () { 
 				return addedResults_;
 			});

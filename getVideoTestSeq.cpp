@@ -51,15 +51,22 @@ int main(int argc, const char* argv[]) {
     gasSim::SimOutput output{(unsigned)statsN, 60., hTemplate};
     std::cout << "Simulation calculations (" << iterNum << ") are underway... \n";
     std::cout.flush();
-
 		auto procStart = std::chrono::high_resolution_clock::now();
+
     auto simLambda{[&myGas, &output, iterNum]() {
       myGas.simulate(iterNum, output);
     }};
     auto simStart = std::chrono::high_resolution_clock::now();
     std::thread simThread{simLambda};
-
+		
 		std::cout << "Initialized sim thread." << std::endl;
+
+    auto simEnd = std::chrono::high_resolution_clock::now();
+		if (simThread.joinable()) {
+			simThread.join();
+    	simEnd = std::chrono::high_resolution_clock::now();
+			std::cout << "Joined simThread, gasData number = " << output.getData().size() << std::endl;
+		}
 
 		gasSim::PhysVectorF camPos {
 			static_cast<gasSim::PhysVectorF>(
@@ -90,9 +97,15 @@ int main(int argc, const char* argv[]) {
 				output.processData(camera, style, true);
 			}
 		};
+
     auto start = std::chrono::high_resolution_clock::now();
     std::thread processThread{processLambda};
-
+		auto processEnd = std::chrono::high_resolution_clock::now();
+   	if (processThread.joinable()) {
+			processThread.join();
+			processEnd = std::chrono::high_resolution_clock::now();
+			std::cout << "Joined processThread, renders number = " << output.getRenders().size() << ", stats number = " << output.getStats().size() << std::endl;
+		}
 		std::cout << "Initialized processing thread." << std::endl;
 
     std::vector<sf::Texture> video;
@@ -146,21 +159,7 @@ int main(int argc, const char* argv[]) {
 			}
 		}};
     std::thread displayThread{displayLambda};
-
-		std::cout << "Initialized stats thread." << std::endl;
-  
-    auto simEnd = std::chrono::high_resolution_clock::now();
-		if (simThread.joinable()) {
-			simThread.join();
-    	simEnd = std::chrono::high_resolution_clock::now();
-			std::cout << "Joined simThread, gasData number = " << output.getData().size() << std::endl;
-		}
-		auto processEnd = std::chrono::high_resolution_clock::now();
-   	if (processThread.joinable()) {
-			processThread.join();
-			processEnd = std::chrono::high_resolution_clock::now();
-			std::cout << "Joined processThread, renders number = " << output.getRenders().size() << ", stats number = " << output.getStats().size() << std::endl;
-		}
+		std::cout << "Initialized video thread." << std::endl;
 		auto displayEnd = std::chrono::high_resolution_clock::now();
  	  if (displayThread.joinable()) {
 			displayThread.join();
@@ -168,9 +167,9 @@ int main(int argc, const char* argv[]) {
 			std::cout << "Joined getVideo thread." << std::endl;
 		}
 		std::chrono::duration<double> procTime = (std::chrono::duration<double>) (std::chrono::high_resolution_clock::now() - procStart);
+		std::cout << "Got to threads end of life. Starting drawing." << std::endl;
 		std::cout << "Performance: for " << video.size() << " frames, " << procTime.count() << " seconds, resulting fps = " << ((double) video.size())/procTime.count() << std::endl;
 
-		std::cout << "Got to threads end of life. Starting drawing." << std::endl;
     sf::RenderWindow window(
         sf::VideoMode(1200, 600*10/9), "SFML Window",
         sf::Style::Default);

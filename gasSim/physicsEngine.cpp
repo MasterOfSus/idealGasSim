@@ -262,24 +262,29 @@ double Gas::getTime() const { return time_; }
 void Gas::simulate(int nIterations, SimOutput& output) {
   // should modify to not insert first gasData into SimOutput
 
-  for (int i{0}; i < nIterations; ++i) {
+	std::vector<GasData> tempOutput {};
+	tempOutput.reserve(output.getStatSize());
+  for (int i{0}; i < nIterations;) {
     // std::cout << "Started " << i << "th iteration.\n";
-    PartCollision pColl{firstPartCollision()};
-    WallCollision wColl{firstWallCollision()};
-    Collision* firstColl{nullptr};
+		for (int j {0}; j < output.getStatSize() && i < nIterations; ++j, ++i) {
+    	PartCollision pColl{firstPartCollision()};
+    	WallCollision wColl{firstWallCollision()};
+    	Collision* firstColl{nullptr};
 
-    if (pColl.getTime() < wColl.getTime())
-      firstColl = &pColl;
-    else
-      firstColl = &wColl;
+    	if (pColl.getTime() < wColl.getTime())
+      	firstColl = &pColl;
+    	else
+      	firstColl = &wColl;
 
-    move(firstColl->getTime());
+    	move(firstColl->getTime());
 
-    firstColl->solve();
+    	firstColl->solve();
 
-    GasData data{*this, firstColl};
-    output.addData(data);
-  }
+    	tempOutput.emplace_back(GasData(*this, firstColl));
+		}
+  	output.addData(tempOutput);
+		tempOutput.clear();
+	}
   output.setDone();
   // std::cout << "Elapsed simulation time: " <<
   // output.getData().back().getTime() - output.getData()[0].getTime() <<

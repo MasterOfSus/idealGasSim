@@ -102,7 +102,7 @@ class SimOutput {
   void setStatSize(unsigned int statSize) { statSize_ = statSize; }
   void setFramerate(double frameRate);
 
-  void addData(const GasData& data);
+  void addData(const std::vector<GasData>& data);
   void processData(bool mfpMemory = true);
   void processData(const Camera& camera, const RenderStyle& style,
                    bool mfpMemory = true);
