@@ -214,6 +214,9 @@ int main(int argc, const char* argv[]) {
 		bool mfpMemory {
 			cFile.GetBoolean("output", "mfpMemory", true)
 		};
+
+		const int frameTimems {static_cast<int>(1000./output.getFramerate())};
+
 		std::thread processThread {
 			[&output, &camera, &style, mfpMemory] {
 				output.processData(
@@ -246,6 +249,9 @@ int main(int argc, const char* argv[]) {
 			cmd.str().c_str(),
 			"w"
 		);
+		if (!ffmpeg) {
+			throw std::runtime_error("Failed to open ffmpeg pipe.");
+		}
 		std::mutex ffmpegMtx;
 
 		sf::RenderWindow window(
@@ -254,7 +260,7 @@ int main(int argc, const char* argv[]) {
 		);
 		std::mutex windowMtx;
 		std::atomic<bool> stopBufferLoop {false};
-		auto loopVideo {[&stopBufferLoop, &placeHolder, &window, &windowMtx] () {
+		auto loopVideo {[&stopBufferLoop, &placeHolder, &window, &windowMtx, frameTimems] () {
 			sf::Sprite auxS {placeHolder};
 			while (true) {
 				if (!stopBufferLoop) {
@@ -274,22 +280,28 @@ int main(int argc, const char* argv[]) {
 							break;
 						}
 					}
+					if (!window.isOpen()) {
+						break;
+					}
 				} else {
-					std::this_thread::sleep_for(std::chrono::milliseconds(16));
+					std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
 				}
 			}
 		}};
 		std::atomic<int> queueNumber {1};
 		int playThreadN {0};
 		auto playLambda {
-			[&window, &windowMtx, &stopBufferLoop, &queueNumber]
+			[&window, &windowMtx, &stopBufferLoop, &queueNumber, frameTimems]
 			(std::shared_ptr<std::vector<sf::Texture>> rPtr,
 			 std::shared_ptr<std::mutex> rPtrMtx,
 			 std::atomic<bool>& displayStatus,
-			 int placeInQueue) {
+			 int threadN) {
 				std::lock_guard<std::mutex> rPtrsGuard {*rPtrMtx};
-				stopBufferLoop = true;
 				sf::Sprite auxS;
+				while (threadN != queueNumber) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
+				}
+				stopBufferLoop = true;
 				std::lock_guard<std::mutex> windowGuard {windowMtx};
 				for (const sf::Texture& r: *rPtr) {
 					if (window.isOpen()) {
@@ -305,8 +317,8 @@ int main(int argc, const char* argv[]) {
 					}
 				}
 				displayStatus = true;
-				queueNumber++;
 				stopBufferLoop = false;
+				queueNumber++;
 			}
 		};
 		auto encodeLambda {
@@ -332,12 +344,11 @@ int main(int argc, const char* argv[]) {
 		window.setFramerateLimit(60);
 		std::thread bufferingLoop {loopVideo};
 		bufferingLoop.detach();
+		bool lastBatch {false};
+		std::atomic<bool> doneDisplaying {false};
+		std::atomic<bool> doneEncoding {false};
 		while (true) {
 			std::shared_ptr<std::vector<sf::Texture>> rendersPtr {std::make_shared<std::vector<sf::Texture>>()};
-			if (output.isDone() && output.dataEmpty() && rendersPtr->size() == 0) {
-				window.close();
-				break;
-			}
 			std::shared_ptr<std::mutex> rendersMtxPtr {std::make_shared<std::mutex>()};
 			std::atomic<bool> displayDone {false};
 			rendersPtr->reserve(output.getFramerate() * 10);
@@ -350,26 +361,82 @@ int main(int argc, const char* argv[]) {
 					std::make_move_iterator(v.begin()),
 					std::make_move_iterator(v.end())
 				);
+				if (output.isDone() && output.dataEmpty() && !output.isProcessing()) {
+					std::vector<sf::Texture> v = {output.getVideo(
+						videoOpt, windowSize, placeHolder, *graphsList, true
+					)};
+					rendersPtr->insert(
+						rendersPtr->end(),
+						std::make_move_iterator(v.begin()),
+						std::make_move_iterator(v.end())
+					);
+					lastBatch = true;
+					break;
+				}
 			}
 			++playThreadN;
-			std::thread playThread {
-				[&playLambda, &rendersPtr, &rendersMtxPtr, &displayDone, playThreadN] {
-					playLambda(rendersPtr, rendersMtxPtr, displayDone, playThreadN);
-				}
-			};
-			playThread.detach();
-			std::thread encodeThread {
-				[&encodeLambda, &rendersPtr, &rendersMtxPtr, &displayDone] {
-					encodeLambda(rendersPtr, rendersMtxPtr, displayDone);
-				}
-			};
-			encodeThread.detach();
+
+			if (!lastBatch) {
+				std::thread playThread {
+					[playLambda, &rendersPtr, &rendersMtxPtr, &displayDone, playThreadN] {
+						playLambda(rendersPtr, rendersMtxPtr, displayDone, playThreadN);
+					}
+				};
+				playThread.detach();
+			
+				std::thread encodeThread {
+					[encodeLambda, &rendersPtr, &rendersMtxPtr, &displayDone] {
+						encodeLambda(rendersPtr, rendersMtxPtr, displayDone);
+					}
+				};
+				encodeThread.detach();
+			} else {
+				std::thread playThread {
+					[playLambda, &rendersPtr, &rendersMtxPtr, &displayDone, playThreadN, &doneDisplaying] {
+						playLambda(rendersPtr, rendersMtxPtr, displayDone, playThreadN);
+						doneDisplaying = true;
+					}
+
+				};
+				playThread.detach();
+			
+				std::thread encodeThread {
+					[encodeLambda, &rendersPtr, &rendersMtxPtr, &displayDone, &doneEncoding] {
+						encodeLambda(rendersPtr, rendersMtxPtr, displayDone);
+						doneEncoding = true;
+					}
+				};
+				encodeThread.detach();
+				break;
+			}
 		}
 
-		std::lock_guard<std::mutex> windowGuard {windowMtx};
-		std::lock_guard<std::mutex> ffmpegGuard {ffmpegMtx};
-		pclose(ffmpeg);
-		window.close();
+		std::thread displayEnder {
+			[&doneDisplaying, &window, &windowMtx] {
+				while (!doneDisplaying) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				}
+				std::lock_guard<std::mutex> windowGuard {windowMtx};
+				window.close();
+			}
+		};
+		std::thread encodeEnder {
+			[&doneEncoding, &ffmpeg, &ffmpegMtx] {
+				while (!doneEncoding) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				}
+				std::lock_guard<std::mutex> ffmpegGuard {ffmpegMtx};
+				pclose(ffmpeg);
+			}
+		};
+
+		if (simThread.joinable()) {
+			simThread.join();
+		}
+		if (processThread.joinable()) {
+			processThread.join();
+		}
+
 		graphsList->Delete();
 		return 0;
   } catch (const std::runtime_error& error) {

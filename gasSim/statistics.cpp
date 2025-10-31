@@ -495,6 +495,7 @@ void SimOutput::addData(const std::vector<GasData>& data) {
 }
 
 void SimOutput::processData(bool mfpMemory) {
+	processing = true;
   std::vector<GasData> data {};
   std::unique_lock<std::mutex> rawDataLock(rawDataMtx_, std::defer_lock);
   while (true) {
@@ -534,10 +535,12 @@ void SimOutput::processData(bool mfpMemory) {
 		}
 		data.clear();
   }
+	processing = false;
 }
 
 void SimOutput::processData(const Camera& camera, const RenderStyle& style,
                             bool mfpMemory) {
+	processing = true;
   // std::cout << "Started processing data.\n";
   std::vector<GasData> data {};
 	std::unique_lock<std::mutex> rawDataLock {rawDataMtx_, std::defer_lock};
@@ -597,6 +600,7 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 			rawDataLock.unlock();
 		}
 	}
+	processing = false;
 }
 /*
 void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {

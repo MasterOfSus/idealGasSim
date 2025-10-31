@@ -116,6 +116,7 @@ class SimOutput {
 
   std::vector<TdStats> getStats(bool emptyQueue = false);
   std::vector<sf::Texture> getRenders(bool emptyQueue = false);
+	bool isProcessing() { return processing; }
 
   bool isDone();
   void setDone();
@@ -124,6 +125,7 @@ class SimOutput {
   void processStats(const std::vector<GasData>& data, bool mfpMemory);
   void processGraphics(const std::vector<GasData>& data, const Camera& camera,
                        const RenderStyle& style);
+	std::atomic<bool> processing {false};
 
   std::deque<GasData> rawData_;
   std::mutex rawDataMtx_;
