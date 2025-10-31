@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <csignal>
@@ -290,7 +291,75 @@ void Gas::simulate(int nIterations, SimOutput& output) {
   // output.getData().back().getTime() - output.getData()[0].getTime() <<
   // std::endl;
 }
+/*
+void Gas::simulate(int nIterations, SimOutput& output) {
+  // should modify to not insert first gasData into SimOutput
+	std::chrono::duration<double> simStallTime {};
 
+	std::vector<GasData> tempOutput1 {};
+	std::vector<GasData> tempOutput2 {};
+	int nDone {};
+
+	auto calcLambda = [this, &nDone] (std::vector<GasData>& o, int nIters) {
+		assert(o.empty());
+		o.reserve(nIters);
+		for (int i{0}; i < nIters; ++i) {
+			// std::cout << "Started " << i << "th iteration.\n";
+				PartCollision pColl{firstPartCollision()};
+				WallCollision wColl{firstWallCollision()};
+				Collision* firstColl{nullptr};
+
+				if (pColl.getTime() < wColl.getTime())
+					firstColl = &pColl;
+				else
+					firstColl = &wColl;
+
+				move(firstColl->getTime());
+
+				firstColl->solve();
+
+			o.emplace_back(GasData(*this, firstColl));
+			++nDone;
+		}
+	};
+	auto insertLambda = [&output] (std::vector<GasData>& o) {
+		output.addData(o);
+		o.clear();
+	};
+	
+	calcLambda(tempOutput1, nIterations < output.getStatSize()? nIterations: output.getStatSize());
+	
+	bool tempOutput1Full {true};
+	// 0 -> calc to tempOutput2, insert tempOutput1, 1 -> calc to tempOutput1, insert tempOutput2
+	while (nDone < nIterations) {
+		int nIts = nIterations - nDone >= output.getStatSize()? output.getStatSize(): nIterations - nDone;
+		auto& calcVec {tempOutput1Full? tempOutput2: tempOutput1};
+		auto& insertVec {tempOutput1Full? tempOutput1: tempOutput2};
+		std::thread calcThread {
+			[&] { calcLambda(calcVec, nIts); }
+		};
+		std::thread insertThread {
+			[&] { insertLambda(insertVec); } 
+		};
+		if (calcThread.joinable()) {
+			calcThread.join();
+		}
+		if (insertThread.joinable()) {
+			insertThread.join();
+		}
+		tempOutput1Full = !tempOutput1Full;
+	}
+
+	assert(nDone == nIterations);
+
+	insertLambda(tempOutput1Full? tempOutput1: tempOutput2);
+
+  output.setDone();
+  // std::cout << "Elapsed simulation time: " <<
+  // output.getData().back().getTime() - output.getData()[0].getTime() <<
+  // std::endl;
+}
+*/
 int Gas::getPIndex(const Particle* p) const { return p - particles_.data(); }
 
 WallCollision Gas::firstWallCollision() {

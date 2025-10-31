@@ -8,7 +8,7 @@ namespace input {
 cxxopts::ParseResult optParse(int argc, const char* argv[]) {
   cxxopts::Options options(
       "idealGasSim",
-      "Physics simulation of a particle gas determined only by kinetik energy");
+      "Physics simulation of a particle gas determined only by kinetic energy");
   options.add_options("base")(
       "h,help", "Print the list of commands and their description") /*(
 "usage", "Prints the list of commands and their description with instructions

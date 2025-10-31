@@ -121,8 +121,12 @@ int main(int argc, const char* argv[]) {
 		std::chrono::duration<double> tempRndrsTime {}, insertTime {};
     auto displayLambda{[&video, &output, &graphs, &placeholder, &displayStart, &tempRndrsTime, &insertTime]() {
 			// std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			std::cout << "Starting!!!!" << std::endl;
 			displayStart = std::chrono::high_resolution_clock::now(); // this wasn't here before!!!!
+			FILE* ffmpeg = popen(
+				"ffmpeg -y -f rawvideo -pixel_format rgba -video_size 1200x667 "
+        "-framerate 30 -i - -c:v libx264 -pix_fmt yuv420p output.mp4",
+        "w"
+			);
 			while(true) {
 				auto tempRndrsStart = std::chrono::high_resolution_clock::now();
 				std::vector<sf::Texture> tempRndrs {
@@ -200,7 +204,7 @@ int main(int argc, const char* argv[]) {
 
       while (window.pollEvent(event)) {
         // "close requested" event: we close the window
-        if (event.type == sf::Event::Closed) window.close();
+   if (event.type == sf::Event::Closed) window.close();
       }
       if (i >= (int)video.size() - 1) {
         std::string replay;
