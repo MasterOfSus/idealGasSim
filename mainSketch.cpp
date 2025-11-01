@@ -81,7 +81,7 @@ gasSim::PhysVectorD stovec(std::string s) {
 	};
 }
 
-gasSim::VideoOpts stovopts (std::string s) {
+gasSim::VideoOpts stovideoopts (std::string s) {
 	if (s == "all") {
 		return gasSim::VideoOpts::all;
 	} else if (s == "gasPlusCoords") {
@@ -120,9 +120,19 @@ int main(int argc, const char* argv[]) {
 
 		TFile inputFile {
 			TFile(
-				cFile.Get("simulation parameters", "ROOTInputPath", "defaultInput").c_str()
+				(
+				std::ostringstream()
+				<< "inputs/"
+				<< cFile.Get("simulation parameters", "ROOTInputPath", "input").c_str()
+				<< ".root"
+				).str().c_str()
 			)
 		};
+		std::cout << (std::ostringstream()
+				<< "inputs/"
+				<< cFile.Get("simulation parameters", "ROOTInputPath", "input").c_str()
+				<< ".root"
+				).str().c_str() << std::endl;
 		if (inputFile.IsZombie()) {
 			throw std::runtime_error("Provided a path not mapping to any ROOT file.");
 		}
@@ -132,14 +142,16 @@ int main(int argc, const char* argv[]) {
 			throw std::runtime_error("Couldn't find speedsHTemplate in input root file.");
 		}
 
+		std::cout << "Found speedsHTemplate." << std::endl;
+
 		long nStats {cFile.GetInteger("simulation parameters", "nStats", 1)};
 		if (nStats <= 0) {
 			throw std::invalid_argument("Provided negative nStats.");
 		}
 		gasSim::SimOutput output {
 			static_cast<unsigned>(
-				cFile.GetInteger("simulation parameters", "nStats", 1) > 0?
-				cFile.GetInteger("simulation parameters", "nStats", 1):
+				nStats > 0?
+				nStats:
 				throw std::invalid_argument("Provided negative nStats.")
 			),
 			cFile.GetFloat("output", "framerate", 60.f),
@@ -153,19 +165,24 @@ int main(int argc, const char* argv[]) {
 			cFile.GetFloat("simulation parameters", "boxSide", 1.)
 		};
 
+		std::cout << "Starting simulation thread." << std::endl;
+
+		double gasSide {gas.getBoxSide()};
 		std::thread simThread {
 			[&gas, &output, &cFile] {
 				gas.simulate(cFile.GetInteger("simulation parameters", "nIters", 0), output);
 			}
 		};
 
-		double gasSide {gas.getBoxSide()};
+		std::cout << "Started simulation thread." << std::endl;
+
 		gasSim::PhysVectorF camPos {
 			static_cast<gasSim::PhysVectorF>(
 				stovec(
 					cFile.Get(
 						"rendering", "camPos",
-						(std::ostringstream("{")
+						(std::ostringstream()
+						<< "{"
 						<< gasSide * 1.5 << ", "
 						<< gasSide * 1.25 << ", "
 						<< gasSide * 0.75 << '}').str()
@@ -178,7 +195,8 @@ int main(int argc, const char* argv[]) {
 				stovec(
 					cFile.Get(
 						"rendering", "camSight",
-						(std::ostringstream("{")
+						(std::ostringstream()
+						<< "{"
 						<< gasSide * 0.5 - camPos.x << ", "
 						<< gasSide * 0.5 - camPos.y << ", "
 						<< gasSide * 0.5 - camPos.z << '}').str()
@@ -186,6 +204,9 @@ int main(int argc, const char* argv[]) {
 				)
 			)
 		};
+
+		std::cout << "Made camera vectors." << std::endl;
+
 		sf::Vector2i windowSize {
 			static_cast<int>(cFile.GetInteger("output", "videoResX", 800)),
 			static_cast<int>(cFile.GetInteger("output", "videoResY", 600))
@@ -198,8 +219,10 @@ int main(int argc, const char* argv[]) {
 			windowSize.x / 2, windowSize.y * 9 / 10
 		};
 
+		std::cout << "Starting textures loading." << std::endl;
+
    	sf::Texture particleTex;
-		particleTex.loadFromFile("assets/" + cFile.Get("render", "particleTexPath", "lightBall.png"));
+		particleTex.loadFromFile("assets/" + cFile.Get("render", "particleTexPath", "lightBall") + ".png");
     gasSim::RenderStyle style{particleTex};
 		style.setWallsColor(
 			sf::Color(cFile.GetInteger("render", "wallsColor", 0x50fa7b80))
@@ -217,6 +240,8 @@ int main(int argc, const char* argv[]) {
 
 		const int frameTimems {static_cast<int>(1000./output.getFramerate())};
 
+		std::cout << "Initializing processing thread." << std::endl;
+
 		std::thread processThread {
 			[&output, &camera, &style, mfpMemory] {
 				output.processData(
@@ -225,143 +250,159 @@ int main(int argc, const char* argv[]) {
 			}
 		};
 
-		TList* graphsList = nullptr;
-		inputFile.GetObject("graphsList", graphsList);
-		if (!graphsList) {
-			throw std::runtime_error("Couldn't find graphs list in provided input file.");
+		std::cout << "Initialized processing thread." << std::endl;
+
+		TList* graphsList = new TList();
+		TMultiGraph* pGraphs = (TMultiGraph*) inputFile.Get("pGraphs");
+		TGraph* kBGraph = (TGraph*) inputFile.Get("kBGraph");
+		TGraph* mfpGraph = (TGraph*) inputFile.Get("mfpGraph");
+		if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
+			throw std::runtime_error("Couldn't find one or more graphs in provided root file.");
 		}
+		graphsList->Add(pGraphs);
+		graphsList->Add(kBGraph);
+		graphsList->Add(mfpGraph);
+		std::cout << "Extracted graphsList." << std::endl;
 		gasSim::VideoOpts videoOpt {
-			stovopts(cFile.Get("output", "videoOpt", "all"))
+			stovideoopts(cFile.Get("output", "videoOpt", "all"))
 		};
+		std::cout << "Extracted videoOpts." << std::endl;
 		sf::Texture placeHolder;
 		placeHolder.loadFromFile(
-			cFile.Get("render", "placeHolderName", "placeholder.png")
+			(std::ostringstream()
+			 << "assets/"
+			 << cFile.Get("render", "placeHolderName", "placeholder")
+			 << ".png").str().c_str()
 		);
-		
-		std::ostringstream cmd {};
-		cmd << "ffmpeg -y -f rawvideo -pixel_format rgba -video_size "
-			<< windowSize.x << "x" << windowSize.y
-			<< " -framerate " << output.getFramerate()
-			<< " -i - -c:v libx264 -pix_fmt yuv420p "
-			<< cFile.Get("output", "videoOutputName", "output")
-			<< ".mp4";
-		FILE* ffmpeg = popen(
-			cmd.str().c_str(),
-			"w"
-		);
-		if (!ffmpeg) {
-			throw std::runtime_error("Failed to open ffmpeg pipe.");
-		}
-		std::mutex ffmpegMtx;
+		std::cout << "Loaded placeholder." << std::endl;
 
-		sf::RenderWindow window(
-			sf::VideoMode(windowSize.x, windowSize.y), "GasSim Display",
-			sf::Style::Default
-		);
-		std::mutex windowMtx;
-		std::atomic<bool> stopBufferLoop {false};
-		auto loopVideo {[&stopBufferLoop, &placeHolder, &window, &windowMtx, frameTimems] () {
-			sf::Sprite auxS {placeHolder};
+		while (!output.isProcessing()) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		}
+
+		if (cFile.GetBoolean("output", "saveVideo", "false")) {
+		
+			std::ostringstream cmd {};
+			cmd << "ffmpeg -y -f rawvideo -pixel_format rgba -video_size "
+				<< windowSize.x << "x" << windowSize.y
+				<< " -framerate " << output.getFramerate()
+				<< " -i - -c:v libx264 -pix_fmt yuv420p "
+				<< "outputs/videos/"
+				<< cFile.Get("output", "videoOutputName", "output")
+				<< ".mp4";
+
+			std::cout << "Trying to open ffmpeg pipe." << std::endl;
+			
+			FILE* ffmpeg = popen(
+				cmd.str().c_str(),
+				"w"
+			);
+			if (!ffmpeg) {
+				throw std::runtime_error("Failed to open ffmpeg pipe.");
+			}
+			bool lastBatch {false};
+			sf::Image auxImg;
+			auxImg.create(windowSize.x, windowSize.y);
 			while (true) {
-				if (!stopBufferLoop) {
+				std::vector<sf::Texture> frames {};
+				if (output.isDone() && output.dataEmpty() && !output.isProcessing()) {
+					lastBatch = true;
+				}
+				frames.reserve(output.getFramerate() * 10);
+				std::vector<sf::Texture> v = {output.getVideo(
+					videoOpt, windowSize, placeHolder, *graphsList, true
+				)};
+				frames.insert(
+					frames.end(),
+					std::make_move_iterator(v.begin()),
+					std::make_move_iterator(v.end())
+				);
+				for (sf::Texture& t: frames) {
+					auxImg = t.copyToImage();
+					fwrite(auxImg.getPixelsPtr(), 1, windowSize.x * windowSize.y * 4, ffmpeg);
+				}
+				if (lastBatch) {
+					break;
+				}
+			}
+		} else { // no permanent video output requested -> wiew-once real time video
+			sf::RenderWindow window(
+				sf::VideoMode(windowSize.x, windowSize.y), "GasSim Display",
+				sf::Style::Default
+			);
+			std::mutex windowMtx;
+			window.setFramerateLimit(60);
+			window.setActive(false);
+			std::atomic<bool> stopBufferLoop {false};
+			std::cout << "Reached video output loop." << std::endl;
+			std::atomic<int> queueNumber {1};
+			std::atomic<int> launchedPlayThreadsN {0};
+			auto playLambda {
+				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, frameTimems]
+				(std::shared_ptr<std::vector<sf::Texture>> rPtr,
+				 int threadN) {
+					sf::Context c;
+					sf::Sprite auxS;
+					while (threadN != queueNumber) {
+						std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
+					}
+					stopBufferLoop = true;
 					std::lock_guard<std::mutex> windowGuard {windowMtx};
-					while (window.isOpen()) {
-						if (!stopBufferLoop) {
+					window.setActive();
+					for (const sf::Texture& r: *rPtr) {
+						if (window.isOpen()) {
 							sf::Event e;
 							while (window.pollEvent(e)) {
 								if (e.type == sf::Event::Closed) {
 									window.close();
 								}
 							}
-							window.clear(sf::Color::Red);
+							auxS.setTexture(r, true);
 							window.draw(auxS);
 							window.display();
-						} else {
-							break;
 						}
 					}
-					if (!window.isOpen()) {
-						break;
+					queueNumber++;
+					if (launchedPlayThreadsN == threadN) {
+						stopBufferLoop = false;
 					}
-				} else {
-					std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
+					window.setActive(false);
 				}
-			}
-		}};
-		std::atomic<int> queueNumber {1};
-		int playThreadN {0};
-		auto playLambda {
-			[&window, &windowMtx, &stopBufferLoop, &queueNumber, frameTimems]
-			(std::shared_ptr<std::vector<sf::Texture>> rPtr,
-			 std::shared_ptr<std::mutex> rPtrMtx,
-			 std::atomic<bool>& displayStatus,
-			 int threadN) {
-				std::lock_guard<std::mutex> rPtrsGuard {*rPtrMtx};
-				sf::Sprite auxS;
-				while (threadN != queueNumber) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
-				}
-				stopBufferLoop = true;
-				std::lock_guard<std::mutex> windowGuard {windowMtx};
-				for (const sf::Texture& r: *rPtr) {
-					if (window.isOpen()) {
-						sf::Event e;
-						while (window.pollEvent(e)) {
-							if (e.type == sf::Event::Closed) {
-								window.close();
+			};
+			std::thread bufferingLoop {
+				[&stopBufferLoop, &placeHolder, &window, &windowMtx, frameTimems] () {
+					sf::Context c;
+					sf::Sprite auxS {placeHolder};
+					while (true) {
+						if (!stopBufferLoop) {
+							std::lock_guard<std::mutex> windowGuard {windowMtx};
+							window.setActive();
+							while (window.isOpen() && !stopBufferLoop) {
+								sf::Event e;
+								while (window.pollEvent(e)) {
+									if (e.type == sf::Event::Closed) {
+										window.close();
+									}
+								}
+								window.clear(sf::Color::Red);
+								window.draw(auxS);
+								window.display();
 							}
+							window.setActive(false);
+							if (!window.isOpen()) {
+								break;
+							}
+						} else {
+							std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
 						}
-						auxS.setTexture(r, true);
-						window.draw(auxS);
-						window.display();
 					}
 				}
-				displayStatus = true;
-				stopBufferLoop = false;
-				queueNumber++;
-			}
-		};
-		auto encodeLambda {
-			[&ffmpeg, &ffmpegMtx, windowSize]
-			(std::shared_ptr<std::vector<sf::Texture>> rPtr,
-			std::shared_ptr<std::mutex> rMtxPtr,
-			std::atomic<bool>& displayStatus) {
-				sf::Context context;
-				std::lock_guard<std::mutex> ffmpegGuard {ffmpegMtx};
-				sf::Image auxImg;
-				auxImg.create(windowSize.x, windowSize.y);
-				while (!displayStatus) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(5));
-				}
-				std::lock_guard<std::mutex> rPtrGuard {*rMtxPtr};
-				for (sf::Texture& t: *rPtr) {
-					auxImg = t.copyToImage();
-					fwrite(auxImg.getPixelsPtr(), 1, windowSize.x * windowSize.y * 4, ffmpeg);
-				}
-				rPtr->clear();
-			}
-		};
-		window.setFramerateLimit(60);
-		std::thread bufferingLoop {loopVideo};
-		bufferingLoop.detach();
-		bool lastBatch {false};
-		std::atomic<bool> doneDisplaying {false};
-		std::atomic<bool> doneEncoding {false};
-		while (true) {
-			std::shared_ptr<std::vector<sf::Texture>> rendersPtr {std::make_shared<std::vector<sf::Texture>>()};
-			std::shared_ptr<std::mutex> rendersMtxPtr {std::make_shared<std::mutex>()};
-			std::atomic<bool> displayDone {false};
-			rendersPtr->reserve(output.getFramerate() * 10);
-			while (rendersPtr->size() <= output.getFramerate() * 5) {
-				std::vector<sf::Texture> v = {output.getVideo(
-					videoOpt, windowSize, placeHolder, *graphsList, true
-				)};
-				rendersPtr->insert(
-					rendersPtr->end(),
-					std::make_move_iterator(v.begin()),
-					std::make_move_iterator(v.end())
-				);
-				if (output.isDone() && output.dataEmpty() && !output.isProcessing()) {
+			};
+			bool lastBatch {false};
+			while (true) {
+				std::shared_ptr<std::vector<sf::Texture>> rendersPtr {std::make_shared<std::vector<sf::Texture>>()};
+				rendersPtr->reserve(output.getFramerate() * 10);
+				while (rendersPtr->size() <= output.getFramerate() * 5) {
 					std::vector<sf::Texture> v = {output.getVideo(
 						videoOpt, windowSize, placeHolder, *graphsList, true
 					)};
@@ -370,65 +411,46 @@ int main(int argc, const char* argv[]) {
 						std::make_move_iterator(v.begin()),
 						std::make_move_iterator(v.end())
 					);
-					lastBatch = true;
+					if (output.isDone() && output.dataEmpty() && !output.isProcessing()) {
+						std::vector<sf::Texture> v = {output.getVideo(
+							videoOpt, windowSize, placeHolder, *graphsList, true
+						)};
+						rendersPtr->insert(
+							rendersPtr->end(),
+							std::make_move_iterator(v.begin()),
+							std::make_move_iterator(v.end())
+						);
+						lastBatch = true;
+						break;
+					}
+				}
+
+				if (!lastBatch) {
+					std::thread playThread {
+						[playLambda, &rendersPtr, &launchedPlayThreadsN] {
+							++launchedPlayThreadsN;
+							playLambda(rendersPtr, launchedPlayThreadsN);
+						}
+					};
+					playThread.detach();
+				} else {
+					std::thread playThread {
+						[playLambda, &rendersPtr, &launchedPlayThreadsN] {
+							++launchedPlayThreadsN;
+							playLambda(rendersPtr, launchedPlayThreadsN);
+						}
+					};
+					if (playThread.joinable()) {
+						playThread.join();
+						std::lock_guard<std::mutex> windowGuard {windowMtx};
+						window.setActive();
+						window.close();
+					}
 					break;
 				}
 			}
-			++playThreadN;
-
-			if (!lastBatch) {
-				std::thread playThread {
-					[playLambda, &rendersPtr, &rendersMtxPtr, &displayDone, playThreadN] {
-						playLambda(rendersPtr, rendersMtxPtr, displayDone, playThreadN);
-					}
-				};
-				playThread.detach();
-			
-				std::thread encodeThread {
-					[encodeLambda, &rendersPtr, &rendersMtxPtr, &displayDone] {
-						encodeLambda(rendersPtr, rendersMtxPtr, displayDone);
-					}
-				};
-				encodeThread.detach();
-			} else {
-				std::thread playThread {
-					[playLambda, &rendersPtr, &rendersMtxPtr, &displayDone, playThreadN, &doneDisplaying] {
-						playLambda(rendersPtr, rendersMtxPtr, displayDone, playThreadN);
-						doneDisplaying = true;
-					}
-
-				};
-				playThread.detach();
-			
-				std::thread encodeThread {
-					[encodeLambda, &rendersPtr, &rendersMtxPtr, &displayDone, &doneEncoding] {
-						encodeLambda(rendersPtr, rendersMtxPtr, displayDone);
-						doneEncoding = true;
-					}
-				};
-				encodeThread.detach();
-				break;
-			}
+			bufferingLoop.join();
 		}
-
-		std::thread displayEnder {
-			[&doneDisplaying, &window, &windowMtx] {
-				while (!doneDisplaying) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(500));
-				}
-				std::lock_guard<std::mutex> windowGuard {windowMtx};
-				window.close();
-			}
-		};
-		std::thread encodeEnder {
-			[&doneEncoding, &ffmpeg, &ffmpegMtx] {
-				while (!doneEncoding) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(500));
-				}
-				std::lock_guard<std::mutex> ffmpegGuard {ffmpegMtx};
-				pclose(ffmpeg);
-			}
-		};
 
 		if (simThread.joinable()) {
 			simThread.join();
