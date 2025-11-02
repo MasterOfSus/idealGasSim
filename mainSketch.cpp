@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iostream>
 #include <iterator>
+#include <queue>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -346,6 +347,7 @@ int main(int argc, const char* argv[]) {
 					while (threadN != queueNumber) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
 					}
+					std::cout << "Found queue number " << queueNumber << " equal to thread number " << threadN << ", stopping buffer loop." << std::endl;
 					stopBufferLoop = true;
 					std::lock_guard<std::mutex> windowGuard {windowMtx};
 					window.setActive();
@@ -357,13 +359,14 @@ int main(int argc, const char* argv[]) {
 									window.close();
 								}
 							}
-							auxS.setTexture(r, true);
+							auxS.setTexture(r);
 							window.draw(auxS);
 							window.display();
 						}
 					}
 					queueNumber++;
 					if (launchedPlayThreadsN == threadN) {
+						std::cout << "Found playThreads number " << launchedPlayThreadsN << " still equal to thread number " << threadN << ": starting up buffering loop." << std::endl;
 						stopBufferLoop = false;
 					}
 					window.setActive(false);
@@ -375,6 +378,7 @@ int main(int argc, const char* argv[]) {
 					sf::Sprite auxS {placeHolder};
 					while (true) {
 						if (!stopBufferLoop) {
+							std::cout << "Found buffer loop activation signal." << std::endl;
 							std::lock_guard<std::mutex> windowGuard {windowMtx};
 							window.setActive();
 							while (window.isOpen() && !stopBufferLoop) {
@@ -388,10 +392,12 @@ int main(int argc, const char* argv[]) {
 								window.draw(auxS);
 								window.display();
 							}
-							window.setActive(false);
 							if (!window.isOpen()) {
+								window.setActive(false);
 								break;
 							}
+							std::cout << "Buffering loop turned off." << std::endl;
+							window.setActive(false);
 						} else {
 							std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
 						}
@@ -406,6 +412,8 @@ int main(int argc, const char* argv[]) {
 					std::vector<sf::Texture> v = {output.getVideo(
 						videoOpt, windowSize, placeHolder, *graphsList, true
 					)};
+					size_t vSize = v.size();
+					std::cerr << "Found v size = " << vSize << std::endl;
 					rendersPtr->insert(
 						rendersPtr->end(),
 						std::make_move_iterator(v.begin()),
@@ -422,20 +430,27 @@ int main(int argc, const char* argv[]) {
 						);
 						lastBatch = true;
 						break;
+					} else {
+						if (v.size() == 0) {
+							std::cerr << "Output isDone() = " << output.isDone() << ", output.dataEmpty() = " << output.dataEmpty() << ", output.isProcessing() = " << output.isProcessing() << std::endl;
+						}
 					}
+					std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video." << std::endl;
 				}
 
 				if (!lastBatch) {
+					std::cout << "Sending playthread n. " << 1 + launchedPlayThreadsN << std::endl;
 					std::thread playThread {
-						[playLambda, &rendersPtr, &launchedPlayThreadsN] {
+						[playLambda, rendersPtr, &launchedPlayThreadsN] {
 							++launchedPlayThreadsN;
 							playLambda(rendersPtr, launchedPlayThreadsN);
 						}
 					};
 					playThread.detach();
 				} else {
+					std::cout << "Sending last playthread at n. " << 1 + launchedPlayThreadsN << std::endl;
 					std::thread playThread {
-						[playLambda, &rendersPtr, &launchedPlayThreadsN] {
+						[playLambda, rendersPtr, &launchedPlayThreadsN] {
 							++launchedPlayThreadsN;
 							playLambda(rendersPtr, launchedPlayThreadsN);
 						}
@@ -449,8 +464,13 @@ int main(int argc, const char* argv[]) {
 					break;
 				}
 			}
+			std::cout << "Reached main loop end." << std::endl;
+			stopBufferLoop = false;
+			std::cout << "Set buffer loop to stop." << std::endl;
 			bufferingLoop.join();
 		}
+
+		std::cout << "Joining simulation and processing threads." << std::endl;
 
 		if (simThread.joinable()) {
 			simThread.join();
