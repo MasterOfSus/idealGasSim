@@ -4,6 +4,7 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <condition_variable>
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -97,9 +98,11 @@ enum class VideoOpts {
 
 class SimOutput {
  public:
-  SimOutput(unsigned int statSize, double frameRate, const TH1D& speedsHTemplate = {});
+  SimOutput(size_t statSize, double frameRate, const TH1D& speedsHTemplate);
 
-  void setStatSize(unsigned int statSize) { statSize_ = statSize; }
+	void setStatChunkSize(size_t statChunkSize);
+	size_t getStatChunkSize() { return statChunkSize_.load(); }
+  void setStatSize(size_t statSize);
   void setFramerate(double frameRate);
 
   void addData(const std::vector<GasData>& data);
@@ -110,49 +113,48 @@ class SimOutput {
 
 	// why is this method even here? anyway, it is extremely resource-intensive, never use it
   std::deque<GasData> getData();
-	bool dataEmpty();
-  double getFramerate() const { return 1. / gDeltaT_; }
-  int getStatSize() const { return statSize_; }
+	size_t getRawDataSize();
+  double getFramerate() const { return 1. / gDeltaT_.load(); }
+  int getStatSize() const { return statSize_.load(); }
 
   std::vector<TdStats> getStats(bool emptyQueue = false);
   std::vector<sf::Texture> getRenders(bool emptyQueue = false);
-	bool isProcessing() { return processing; }
+	bool isProcessing() { return processing_.load(); }
 
-  bool isDone();
-  void setDone();
+  bool isDone() { return dataDone_.load(); };
+  void setDone() { dataDone_.store(true); };
 
  private:
   void processStats(const std::vector<GasData>& data, bool mfpMemory);
   void processGraphics(const std::vector<GasData>& data, const Camera& camera,
                        const RenderStyle& style);
-	std::atomic<bool> processing {false};
+	std::atomic<bool> dataDone_ {false};
+	std::atomic<bool> processing_ {false};
+	std::atomic<bool> addedResults_ {false};
 
   std::deque<GasData> rawData_;
+	std::optional<double> rawDataBackTime_;
   std::mutex rawDataMtx_;
   std::condition_variable rawDataCv_;
 
-  int statSize_;
+	std::atomic<size_t> statSize_;
+	std::atomic<size_t> statChunkSize_ {0};
   std::deque<TdStats> stats_;
   std::mutex statsMtx_;
 	std::optional<TdStats> lastStat_;
 	std::mutex lastStatMtx_;
 
-  double gDeltaT_;
-	std::mutex gDeltaTMtx_;
+	std::atomic<double> gDeltaT_;
   std::optional<double> gTime_;
 	std::mutex gTimeMtx_;
   std::deque<std::pair<sf::Texture, double>> renders_;
   std::mutex rendersMtx_;
 	std::mutex resultsMtx_;
-	bool addedResults_ {false};
 	std::condition_variable resultsCv_;
 
 	std::optional<double> fTime_;
 
-  unsigned long nParticles_{0};
-
-  bool done_{false};
-	std::mutex doneMtx_;
+	std::optional<size_t> nParticles_;
 
 	const TH1D speedsHTemplate_;
 };

@@ -1,4 +1,5 @@
 .vscode
+mainSketch
 unitTesting/unitTests
 build
 .cache

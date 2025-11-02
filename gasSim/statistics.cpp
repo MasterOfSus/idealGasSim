@@ -451,12 +451,11 @@ void SimOutput::setFramerate(double framerate) {
   if (framerate <= 0) {
     throw std::invalid_argument("Non-positive framerate provided.");
   } else {
-		std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
-    gDeltaT_ = 1. / framerate;
+    gDeltaT_.store(1./framerate);
   }
 }
 
-SimOutput::SimOutput(unsigned int statSize, double framerate, const TH1D& speedsHTemplate)
+SimOutput::SimOutput(size_t statSize, double framerate, const TH1D& speedsHTemplate)
     : statSize_(statSize), speedsHTemplate_(speedsHTemplate) {
   setFramerate(framerate);
 	if (speedsHTemplate.GetEntries() != 0) {
@@ -465,59 +464,78 @@ SimOutput::SimOutput(unsigned int statSize, double framerate, const TH1D& speeds
 	assert(speedsHTemplate.GetNbinsX() != 0);
 }
 
-bool SimOutput::dataEmpty() {
+size_t SimOutput::getRawDataSize() {
 	std::lock_guard<std::mutex> dataGuard (rawDataMtx_);
-	return rawData_.empty();
+	return rawData_.size();
 }
 
 void SimOutput::addData(const std::vector<GasData>& data) {
-	for (const GasData& d: data) {
-		if (nParticles_ == 0)
-			if (d.getParticles().size() != 0)
+	if (data.size()) {
+		dataDone_.store(false);
+		double prevDTime;
+		bool firstD {true};
+		for (const GasData& d: data) {
+			if (!nParticles_.has_value()) {
 				nParticles_ = d.getParticles().size();
-		if (d.getParticles().size() != nParticles_)
-			throw std::invalid_argument("Non-matching particle numbers.");
-		// need to add sequentiality check and fix the throwing, there was an else
+			} else {
+				if (d.getParticles().size() != nParticles_) {
+					throw std::invalid_argument(
+						"Non-matching particle numbers."
+					);
+				}
+			}
+			if (!firstD && !isNegligible(d.getT0() - prevDTime, d.getTime() - d.getT0())) {
+				throw std::invalid_argument("Non sequential data vector provided.");
+			}
+			prevDTime = d.getTime();
+			firstD = false;
+		}
+		{
+		std::lock_guard<std::mutex> rawDataGuard {rawDataMtx_};
+		if (rawDataBackTime_.has_value()) {
+			if (!isNegligible(data.front().getT0() - rawDataBackTime_.value(), data.front().getTime() - data.front().getT0())) {
+				throw std::invalid_argument(
+					"Argument time less than latest raw data piece time"
+				);
+			}
+		}
+		rawData_.insert(rawData_.end(), data.begin(), data.end());
+		rawDataBackTime_ = rawData_.back().getTime();
+		}
+		rawDataCv_.notify_all();
 	}
-	{
-  std::lock_guard<std::mutex> rawDataGuard {rawDataMtx_};
-  if (rawData_.size() > 0) {
-    if (data.front().getTime() < rawData_.back().getTime()) {
-      throw std::invalid_argument(
-          "Argument time less than latest raw data piece time");
-    }
-  }
-  rawData_.insert(rawData_.end(), data.begin(), data.end());
-	std::lock_guard<std::mutex> doneGuard {doneMtx_};
-  done_ = false;
-	}
-	rawDataCv_.notify_all();
 }
 
 void SimOutput::processData(bool mfpMemory) {
-	processing = true;
+	processing_.store(true);
   std::vector<GasData> data {};
   std::unique_lock<std::mutex> rawDataLock(rawDataMtx_, std::defer_lock);
   while (true) {
 		rawDataLock.lock();
     rawDataCv_.wait_for(rawDataLock, std::chrono::milliseconds(100),
   		[this] {
-			std::lock_guard<std::mutex> doneGuard(doneMtx_);
-			return !rawData_.empty() || done_;
+				return rawData_.size() > statSize_.load() || dataDone_.load();
 			}
 		);
-		{ // doneGuard scope
-		std::lock_guard<std::mutex> doneGuard {doneMtx_};
-		if (done_ && rawData_.empty()) {
+		if (dataDone_ && rawData_.empty()) {
       break;
     }
-		} // end of doneGuard scope
-    int nStats{static_cast<int>(rawData_.size() / statSize_)};
+    size_t nStats{rawData_.size() / statSize_};
+		{ // chunkSize nspc
+		size_t chunkSize = statChunkSize_.load();
+		if (chunkSize) {
+			nStats = nStats > chunkSize? chunkSize: nStats;
+		}
+		} // chunkSize nspcEnd
+		// don't stop make it drop dj blow my speakers up
     // std::cout << "nStats for this iteration is " << rawData_.size() << "/" << statSize_ << " = " << nStats << std::endl;
 
-		if (nStats != 0) {
-    	std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
-    	          std::back_inserter(data));
+		if (nStats) {
+    	data.insert(
+				data.end(),
+				std::make_move_iterator(rawData_.begin()),
+				std::make_move_iterator(rawData_.begin() + nStats * statSize_)
+			);
 			assert(data.size());
     	// std::cout << "GasData count = " << data.size() << std::endl;
     	rawData_.erase(rawData_.begin(), rawData_.begin() + nStats * statSize_);
@@ -535,30 +553,33 @@ void SimOutput::processData(bool mfpMemory) {
 		}
 		data.clear();
   }
-	processing = false;
+	processing_.store(false);
 }
 
 void SimOutput::processData(const Camera& camera, const RenderStyle& style,
                             bool mfpMemory) {
-	processing = true;
+	processing_.store(true);
   // std::cout << "Started processing data.\n";
   std::vector<GasData> data {};
 	std::unique_lock<std::mutex> rawDataLock {rawDataMtx_, std::defer_lock};
   while (true) {
 		rawDataLock.lock();
     rawDataCv_.wait_for(rawDataLock, std::chrono::milliseconds(100),
-		[this] {
-		std::lock_guard<std::mutex> doneGuard {doneMtx_};
-		return !rawData_.empty() || done_; });
+			[this] {
+				return rawData_.size() > statSize_.load() || dataDone_;
+			}
+		);
     // std::cout << "Done status: " << done_ << ". RawData emptiness: " <<
     // rawData_.empty() << std::endl;
-		{ // doneGuard scope
-		std::lock_guard<std::mutex> doneGuard {doneMtx_};
-    if (done_ && rawData_.empty()) {
+    if (dataDone_.load() && rawData_.empty()) {
       break;
     }
-		} // end of doneGuard scope
-    int nStats{static_cast<int>(rawData_.size() / statSize_)};
+
+    size_t nStats { rawData_.size() / statSize_ };
+		size_t chunkSize { statChunkSize_.load() };
+		if (chunkSize) {
+			nStats = nStats > chunkSize? chunkSize: nStats;
+		}
 
 		if (nStats) {
 			std::move(rawData_.begin(), rawData_.begin() + nStats * statSize_,
@@ -593,14 +614,14 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 			if (sThread.joinable()) sThread.join();
 			if (gThread.joinable()) gThread.join();
 			} // guard scope end
-			addedResults_ = true;
+			addedResults_.store(true);
 			resultsCv_.notify_all();
 			data.clear();
 		} else {
 			rawDataLock.unlock();
 		}
 	}
-	processing = false;
+	processing_.store(false);
 }
 /*
 void argbToSfImage(const UInt_t* argbBffr, sf::Image& img) {
@@ -702,10 +723,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			std::lock_guard<std::mutex> rGuard {rendersMtx_};
 			{ // locks scope 2
 			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
-			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
 			gTime = gTime_;
-			gDeltaT = gDeltaT_;
 			} // end of locks scope 2
+			gDeltaT = gDeltaT_.load();
 			if (!gTime.has_value()) {
 				return {};
 			}
@@ -723,10 +743,9 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			std::lock_guard<std::mutex> sGuard {statsMtx_};
 			{ // locks scope 2
 			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
-			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
 			gTime = gTime_;
-			gDeltaT = gDeltaT_;
 			} // end of locks scope 2
+			gDeltaT = gDeltaT_.load();
 			if (stats_.size()) {
 				// setting fTime_
 				if (!fTime_.has_value()) {
@@ -758,16 +777,15 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			resultsCv_.wait_for(resultsLock,
 			std::chrono::milliseconds(10), 
 			[this] () { 
-				return addedResults_;
+				return addedResults_.load();
 			});
 			std::lock_guard<std::mutex> rGuard {rendersMtx_};
 			std::lock_guard<std::mutex> sGuard {statsMtx_};
 			{ // locks scope 2
 			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
-			std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
 			gTime = gTime_;
-			gDeltaT = gDeltaT_;
 			} // end of locks scope 2
+			gDeltaT = gDeltaT_.load();
 			std::cerr <<
 				"Initialized gTime with value " <<
 				(gTime.has_value()? std::to_string(*gTime): "empty") <<
@@ -1519,19 +1537,17 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
   std::vector<std::pair<sf::Texture, double>> renders{};
 
 	double gTime;
-	double gDeltaT;
+	double gDeltaT {gDeltaT_.load()};
 	{ // guard scope
 	std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
-	std::lock_guard<std::mutex> gDeltaTGuard {gDeltaTMtx_};
   if (!gTime_.has_value()) {
-		gTime_ = data[0].getT0() - gDeltaT_;
+		gTime_ = data[0].getT0() - gDeltaT;
 	}
-  assert(gDeltaT_ > 0.);
+  assert(gDeltaT > 0.);
 	if (data.size()) {
   	assert(gTime_ <= data[0].getT0());
 	}
 	gTime = *gTime_;
-	gDeltaT = gDeltaT_;
 	} // guard scope
 	sf::RenderTexture picture;
 
@@ -1563,38 +1579,44 @@ void SimOutput::processStats(const std::vector<GasData>& data, bool mfpMemory) {
   // std::cout << "Started processing stats.\n";
   std::vector<TdStats> stats{};
 
-  assert(!std::div(data.size(), statSize_).rem);
+	size_t statSize = statSize_.load();
+	assert(!(data.size() % statSize));
 
-  stats.reserve(std::div(data.size(), statSize_).quot);
+  stats.reserve(data.size() / statSize);
 
   // std::cout << "Reached pre-loop\n";
 	if (mfpMemory) {
-		for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {
+		std::lock_guard<std::mutex> lastStatGuard {lastStatMtx_};
+		for (unsigned i{0}; i < data.size() / statSize; ++i) {
 			TdStats stat {
 				lastStat_.has_value()?
-				TdStats {data[i * statSize_], *lastStat_}:
-				TdStats {data[i * statSize_], speedsHTemplate_}
+				TdStats {data[i * statSize], *lastStat_}:
+				TdStats {data[i * statSize], speedsHTemplate_}
 			};
 			//std::cerr << "Bin number for lastStat_ speedsH_ = " << lastStat_->getSpeedH().GetNbinsX() << std::endl;
 			//std::cerr << "Bin number for speedsHTemplate_ = " << speedsHTemplate_.GetNbinsX() << std::endl;
-			for (int j{1}; j < statSize_; ++j) {
-				stat.addData(data[i * statSize_ + j]);
+			for (unsigned j{1}; j < statSize; ++j) {
+				stat.addData(data[i * statSize + j]);
 			}
 			stats.emplace_back(stat);
 			lastStat_ = std::move(stat);
 		}
 	} else {
-		for (int i{0}; i < std::div(data.size(), statSize_).quot; ++i) {
-			TdStats stat{data[i * statSize_], speedsHTemplate_};
-			for (int j{1}; j < statSize_; ++j) {
-				stat.addData(data[i * statSize_ + j]);
+		for (size_t i{0}; i < data.size() / statSize; ++i) {
+			TdStats stat{data[i * statSize], speedsHTemplate_};
+			for (size_t j{1}; j < statSize; ++j) {
+				stat.addData(data[i * statSize + j]);
 			}
 			stats.emplace_back(stat);
 		}
 	}
   // std::cout << "Done with loop\n";
 	std::lock_guard<std::mutex> statsGuard {statsMtx_};
-  std::move(stats.begin(), stats.end(), std::back_inserter(stats_));
+	stats_.insert(
+		stats_.end(),
+		std::make_move_iterator(stats.begin()),
+		std::make_move_iterator(stats.end())
+	);
 }
 
 std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {
@@ -1604,10 +1626,10 @@ std::vector<TdStats> SimOutput::getStats(bool emptyQueue) {
 		std::lock_guard<std::mutex> lastStatGuard {lastStatMtx_};
 		{
 		std::lock_guard<std::mutex> statsGuard {statsMtx_};
+		lastStat_ = stats.back();
     stats = {std::exchange(stats_, {})};
 		stats_.clear();
 		}
-		lastStat_ = stats.back();
 		return std::vector<TdStats>(stats.begin(), stats.end());
   } else {
     std::lock_guard<std::mutex> guard(statsMtx_);
@@ -1634,14 +1656,20 @@ std::vector<sf::Texture> SimOutput::getRenders(bool emptyQueue) {
   return renders;
 }
 
-void SimOutput::setDone() {
-	std::lock_guard<std::mutex> guard {doneMtx_};
-	done_ = true;
+void SimOutput::setStatChunkSize(size_t s) {
+	if (s) {
+		statChunkSize_.store(s);
+	} else {
+		throw(std::invalid_argument("Provided null stat chunk size."));
+	}
 }
 
-bool SimOutput::isDone() {
-	std::lock_guard<std::mutex> guard {doneMtx_};
-	return done_;
+void SimOutput::setStatSize(size_t s) {
+	if (s) {
+		statSize_.store(s);
+	} else {
+		throw(std::invalid_argument("Provided null stat size."));
+	}
 }
 
 }  // namespace gasSim

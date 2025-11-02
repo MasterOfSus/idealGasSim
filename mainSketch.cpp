@@ -114,12 +114,6 @@ int main(int argc, const char* argv[]) {
     gasSim::Particle::mass = cFile.GetReal("simulation parameters", "particleMass", 1);
     gasSim::Particle::radius = cFile.GetReal("simulation parameters", "particleRadius", 1);
 
-    gasSim::Gas myGas(
-			cFile.GetInteger("simulation parameters", "nParticles", -1),
-			cFile.GetReal("simulation parameters", "targetT", -1),
-			cFile.GetReal("simulation parameters", "boxSide", -1)
-		);
-
 		TFile inputFile {
 			TFile(
 				(
@@ -166,6 +160,27 @@ int main(int argc, const char* argv[]) {
 			cFile.GetFloat("simulation parameters", "targetT", 1),
 			cFile.GetFloat("simulation parameters", "boxSide", 1.)
 		};
+
+		double targetBufferTime {
+			cFile.GetReal("output", "targetBuffer", 2.5)
+		};
+
+		double desiredStatChunkSize {
+			targetBufferTime *
+			M_PI * std::pow(gasSim::Particle::radius/gas.getBoxSide(), 2.) *
+			std::accumulate(
+				gas.getParticles().begin(),
+				gas.getParticles().end(),
+				0.,
+				[] (double acc,const gasSim::Particle& p) {
+					return acc + p.speed.norm();
+				}
+			) / nStats / gas.getBoxSide()
+		};
+		output.setStatChunkSize(
+			desiredStatChunkSize > 1.? desiredStatChunkSize: 1
+		);
+		std::cout << "Set statChunkSize at " << output.getStatChunkSize() << std::endl;
 
 		std::cout << "Starting simulation thread." << std::endl;
 
@@ -307,7 +322,7 @@ int main(int argc, const char* argv[]) {
 			auxImg.create(windowSize.x, windowSize.y);
 			while (true) {
 				std::vector<sf::Texture> frames {};
-				if (output.isDone() && output.dataEmpty() && !output.isProcessing()) {
+				if (output.isDone() && !output.getRawDataSize() && !output.isProcessing()) {
 					lastBatch = true;
 				}
 				frames.reserve(output.getFramerate() * 10);
@@ -402,9 +417,6 @@ int main(int argc, const char* argv[]) {
 				}
 			};
 			bool lastBatch {false};
-			double targetBufferTime {
-				cFile.GetReal("output", "targetBuffer", 3.)
-			};
 			while (true) {
 				std::shared_ptr<std::vector<sf::Texture>> rendersPtr {std::make_shared<std::vector<sf::Texture>>()};
 				rendersPtr->reserve(output.getFramerate() * 10);
@@ -419,7 +431,7 @@ int main(int argc, const char* argv[]) {
 						std::make_move_iterator(v.begin()),
 						std::make_move_iterator(v.end())
 					);
-					if (output.isDone() && output.dataEmpty() && !output.isProcessing()) {
+					if (output.isDone() && !output.getRawDataSize() && !output.isProcessing()) {
 						std::vector<sf::Texture> v = {output.getVideo(
 							videoOpt, windowSize, placeHolder, *graphsList, true
 						)};
@@ -433,7 +445,7 @@ int main(int argc, const char* argv[]) {
 						break;
 					} else {
 						if (v.size() == 0) {
-							std::cerr << "Output isDone() = " << output.isDone() << ", output.dataEmpty() = " << output.dataEmpty() << ", output.isProcessing() = " << output.isProcessing() << std::endl;
+							std::cerr << "Output isDone() = " << output.isDone() << ", output.dataEmpty() = " << output.getRawDataSize() << ", output.isProcessing() = " << output.isProcessing() << std::endl;
 						}
 					}
 					std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video. Time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
