@@ -5,7 +5,7 @@
 #include <TFile.h>
 void makeInputFile () {
 	TFile* inputFile = new TFile("inputs/input.root", "RECREATE", "inputFile");
-	TH1D* speedsHTemplate = new TH1D("speedsHTemplate", "Squared velocities distribution", 30, 0., 30.);
+	TH1D* speedsHTemplate = new TH1D("speedsHTemplate", "Squared velocities distribution", 33, 0., 11.);
 	speedsHTemplate->SetFillColor(kViolet - 6);
 	speedsHTemplate->SetLineColor(kGreen + 3);
 	TList* graphsList = new TList(); 
@@ -17,7 +17,7 @@ void makeInputFile () {
 		pGraphs->Add(g);
 	}	
 	TGraph* g = new TGraph();
-	g->SetLineColor(0);
+	g->SetLineColor(1);
 	g->SetLineWidth(2);
 	pGraphs->Add(g);
 

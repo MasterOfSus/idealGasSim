@@ -97,6 +97,7 @@ gasSim::VideoOpts stovideoopts (std::string s) {
 }
 
 int main(int argc, const char* argv[]) {
+	auto simStart = std::chrono::high_resolution_clock::now();
 	try {
     auto opts{gasSim::input::optParse(argc, argv)};
     if (gasSim::input::optControl(argc, opts)) {
@@ -335,6 +336,7 @@ int main(int argc, const char* argv[]) {
 			window.setFramerateLimit(60);
 			window.setActive(false);
 			std::atomic<bool> stopBufferLoop {false};
+			std::atomic<bool> bufferKillSignal {false};
 			std::cout << "Reached video output loop." << std::endl;
 			std::atomic<int> queueNumber {1};
 			std::atomic<int> launchedPlayThreadsN {0};
@@ -342,7 +344,6 @@ int main(int argc, const char* argv[]) {
 				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, frameTimems]
 				(std::shared_ptr<std::vector<sf::Texture>> rPtr,
 				 int threadN) {
-					sf::Context c;
 					sf::Sprite auxS;
 					while (threadN != queueNumber) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
@@ -353,12 +354,6 @@ int main(int argc, const char* argv[]) {
 					window.setActive();
 					for (const sf::Texture& r: *rPtr) {
 						if (window.isOpen()) {
-							sf::Event e;
-							while (window.pollEvent(e)) {
-								if (e.type == sf::Event::Closed) {
-									window.close();
-								}
-							}
 							auxS.setTexture(r);
 							window.draw(auxS);
 							window.display();
@@ -373,8 +368,7 @@ int main(int argc, const char* argv[]) {
 				}
 			};
 			std::thread bufferingLoop {
-				[&stopBufferLoop, &placeHolder, &window, &windowMtx, frameTimems] () {
-					sf::Context c;
+				[&stopBufferLoop, &placeHolder, &window, &windowMtx, &bufferKillSignal, frameTimems] () {
 					sf::Sprite auxS {placeHolder};
 					while (true) {
 						if (!stopBufferLoop) {
@@ -382,18 +376,18 @@ int main(int argc, const char* argv[]) {
 							std::lock_guard<std::mutex> windowGuard {windowMtx};
 							window.setActive();
 							while (window.isOpen() && !stopBufferLoop) {
-								sf::Event e;
-								while (window.pollEvent(e)) {
-									if (e.type == sf::Event::Closed) {
-										window.close();
-									}
-								}
 								window.clear(sf::Color::Red);
 								window.draw(auxS);
 								window.display();
+								if (bufferKillSignal) {
+									break;
+								}
 							}
 							if (!window.isOpen()) {
 								window.setActive(false);
+								break;
+							}
+							if (bufferKillSignal) {
 								break;
 							}
 							std::cout << "Buffering loop turned off." << std::endl;
@@ -401,14 +395,20 @@ int main(int argc, const char* argv[]) {
 						} else {
 							std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
 						}
+						if (bufferKillSignal) {
+							break;
+						}
 					}
 				}
 			};
 			bool lastBatch {false};
+			double targetBufferTime {
+				cFile.GetReal("output", "targetBuffer", 3.)
+			};
 			while (true) {
 				std::shared_ptr<std::vector<sf::Texture>> rendersPtr {std::make_shared<std::vector<sf::Texture>>()};
 				rendersPtr->reserve(output.getFramerate() * 10);
-				while (rendersPtr->size() <= output.getFramerate() * 5) {
+				while (rendersPtr->size() <= output.getFramerate() * targetBufferTime) {
 					std::vector<sf::Texture> v = {output.getVideo(
 						videoOpt, windowSize, placeHolder, *graphsList, true
 					)};
@@ -429,17 +429,18 @@ int main(int argc, const char* argv[]) {
 							std::make_move_iterator(v.end())
 						);
 						lastBatch = true;
+						std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video. Time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 						break;
 					} else {
 						if (v.size() == 0) {
 							std::cerr << "Output isDone() = " << output.isDone() << ", output.dataEmpty() = " << output.dataEmpty() << ", output.isProcessing() = " << output.isProcessing() << std::endl;
 						}
 					}
-					std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video." << std::endl;
+					std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video. Time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 				}
 
 				if (!lastBatch) {
-					std::cout << "Sending playthread n. " << 1 + launchedPlayThreadsN << std::endl;
+					std::cout << "Sending playthread n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 					std::thread playThread {
 						[playLambda, rendersPtr, &launchedPlayThreadsN] {
 							++launchedPlayThreadsN;
@@ -448,26 +449,25 @@ int main(int argc, const char* argv[]) {
 					};
 					playThread.detach();
 				} else {
-					std::cout << "Sending last playthread at n. " << 1 + launchedPlayThreadsN << std::endl;
+					std::cout << "Sending last playthread at n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 					std::thread playThread {
 						[playLambda, rendersPtr, &launchedPlayThreadsN] {
 							++launchedPlayThreadsN;
 							playLambda(rendersPtr, launchedPlayThreadsN);
 						}
 					};
-					if (playThread.joinable()) {
-						playThread.join();
-						std::lock_guard<std::mutex> windowGuard {windowMtx};
-						window.setActive();
-						window.close();
-					}
+					std::cout << "Joining playThread." << std::endl;
+					playThread.join();
+					std::lock_guard<std::mutex> windowGuard {windowMtx};
+					bufferKillSignal = true;
 					break;
 				}
 			}
 			std::cout << "Reached main loop end." << std::endl;
-			stopBufferLoop = false;
+			stopBufferLoop = true;
 			std::cout << "Set buffer loop to stop." << std::endl;
 			bufferingLoop.join();
+			window.close();
 		}
 
 		std::cout << "Joining simulation and processing threads." << std::endl;

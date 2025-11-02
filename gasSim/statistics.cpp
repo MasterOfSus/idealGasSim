@@ -756,7 +756,7 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 			{ // locks scope
 			std::unique_lock<std::mutex> resultsLock {resultsMtx_};
 			resultsCv_.wait_for(resultsLock,
-			std::chrono::milliseconds(100), 
+			std::chrono::milliseconds(10), 
 			[this] () { 
 				return addedResults_;
 			});
@@ -1555,6 +1555,7 @@ void SimOutput::processGraphics(const std::vector<GasData>& data,
   std::move(renders.begin(), renders.end(), std::back_inserter(renders_));
 	std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
 	gTime_ = gTime;
+
   // std::cout << "done!\n";
 }
 
