@@ -1,6 +1,7 @@
 #ifndef STATISTICS_HPP
 #define STATISTICS_HPP
 
+#include <functional>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <condition_variable>
@@ -81,8 +82,6 @@ class TdStats {
 
   std::vector<PhysVectorD> lastCollPositions_{};
   double T_;  // non varying as for conservation of kinetic energy for every hit
-              // std::vector<PhysVectorD> speeds_{};  // all speed values for
-              // each iteration
 
   std::vector<double> freePaths_{};
 	TH1D speedsH_;
@@ -109,13 +108,13 @@ class SimOutput {
   void processData(bool mfpMemory = true);
   void processData(const Camera& camera, const RenderStyle& style,
                    bool mfpMemory = true);
-	std::vector<sf::Texture> getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyQueue = false);
+	std::vector<sf::Texture> getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyQueue = false, std::function<void(TH1D&, VideoOpts)> userLambda = {});
 
 	// why is this method even here? anyway, it is extremely resource-intensive, never use it
   std::deque<GasData> getData();
 	size_t getRawDataSize();
   double getFramerate() const { return 1. / gDeltaT_.load(); }
-  int getStatSize() const { return statSize_.load(); }
+  size_t getStatSize() const { return statSize_.load(); }
 
   std::vector<TdStats> getStats(bool emptyQueue = false);
   std::vector<sf::Texture> getRenders(bool emptyQueue = false);

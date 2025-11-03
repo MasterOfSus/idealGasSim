@@ -96,7 +96,7 @@ TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
            firstState.getParticles().begin(), firstState.getParticles().end(),
            0.,
            [](double x, const Particle& p) { return x + p.speed * p.speed; }) *
-       Particle::mass / getNParticles();
+       Particle::mass / getNParticles() / 3.;
   if (firstState.getCollType() == 'w') {
     addPulse(firstState);
   } else if (firstState.getCollType() == 'p') {
@@ -136,8 +136,8 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats)
 					data.getParticles().begin(),
           data.getParticles().end(), 0.,
           [](double x, const Particle& p) {
-            return x + p.speed * p.speed * p.mass;
-          })/data.getParticles().size() - prevStats.getTemp(),
+            return x + p.speed * p.speed;
+          }) * Particle::mass /	data.getParticles().size() / 3. - prevStats.getTemp(),
 				prevStats.getTemp())) {
     throw std::invalid_argument("Non-matching temperatures for provided GasData.");
   } else {
@@ -184,8 +184,8 @@ TdStats::TdStats(const GasData& data, const TdStats& prevStats, const TH1D& spee
 					data.getParticles().begin(),
           data.getParticles().end(), 0.,
           [](double x, const Particle& p) {
-            return x + p.speed * p.speed * p.mass;
-          })/data.getParticles().size() - prevStats.getTemp(),
+            return x + p.speed * p.speed;
+          }) * Particle::mass / data.getParticles().size() / 3. - prevStats.getTemp(),
 				prevStats.getTemp())) {
     throw std::invalid_argument("Non-matching temperatures for provided GasData.");
   } else {
@@ -517,7 +517,7 @@ void SimOutput::processData(bool mfpMemory) {
 				return rawData_.size() > statSize_.load() || dataDone_.load();
 			}
 		);
-		if (dataDone_ && rawData_.empty()) {
+		if (dataDone_ && rawData_.size() < statSize_.load()) {
       break;
     }
     size_t nStats{rawData_.size() / statSize_};
@@ -571,7 +571,7 @@ void SimOutput::processData(const Camera& camera, const RenderStyle& style,
 		);
     // std::cout << "Done status: " << done_ << ". RawData emptiness: " <<
     // rawData_.empty() << std::endl;
-    if (dataDone_.load() && rawData_.empty()) {
+    if (dataDone_.load() && rawData_.size() < statSize_.load()) {
       break;
     }
 
@@ -667,7 +667,7 @@ bool isIntMultOf(double x, double dt) {
 	return isNegligible(x - dt*std::round(x/dt), dt);
 }
 
-std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats) {
+std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats, std::function<void(TH1D&, VideoOpts)> userLambda) {
 
 	using clock = std::chrono::high_resolution_clock;
 	using doubleTime = std::chrono::duration<double>;
@@ -1094,7 +1094,10 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					);
 	
 					TH1D speedH {stat.getSpeedH()};
-	
+
+					if (userLambda) {
+						userLambda(speedH, opt);
+					}
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
@@ -1255,6 +1258,11 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						0.
 					);
 
+					if (userLambda) {
+						static TH1D empty {};
+						userLambda(empty, opt);
+					}
+
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
@@ -1382,8 +1390,18 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						stat.getTime(),
 						stat.getPressure()*stat.getVolume()/(stat.getNParticles()*stat.getTemp())
 					);
+					std::cerr << "Added kB measurement to graph from starting data: \n" 
+					<< "Pressure = " << stat.getPressure()
+					<< "\nVolume = " << stat.getVolume()
+					<< "\nTemperature = " << stat.getTemp()
+					<< "\nNParticles = " << stat.getNParticles() << std::endl;
 					TH1D speedH;
 					speedH = stat.getSpeedH();
+
+					if (userLambda) {
+						userLambda(speedH, opt);
+					}
+
 					graphsAddTime += (doubleTime) (clock::now() - rootStart);
 
 					frame.clear();

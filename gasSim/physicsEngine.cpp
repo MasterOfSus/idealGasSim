@@ -25,14 +25,37 @@ namespace gasSim {
 
 // Definition of vector functions
 PhysVectorD unifRandVector(const double maxNorm) {
-  if (maxNorm <= 0) {
+  static double theta;
+	static double phi;
+	static double rho;
+  static std::default_random_engine eng(std::random_device{}());
+  static std::uniform_real_distribution<double> baseDist(0, 1);
+	if (maxNorm <= 0) {
     throw std::invalid_argument("maxNorm must be greater than 0");
   }
-  static std::default_random_engine eng(std::random_device{}());
-  std::uniform_real_distribution<double> dist(-std::sqrt(maxNorm / 3),
-                                              std::sqrt(maxNorm / 3));
-  return {dist(eng), dist(eng), dist(eng)};
+	theta = baseDist(eng) * 2. * M_PI;
+	phi = - M_PI / 2. + baseDist(eng) * M_PI;
+	rho = baseDist(eng) * maxNorm;
+  return PhysVectorD({
+		rho * cos(phi) * cos(theta),
+		rho * cos(phi) * sin(theta),
+		rho * sin(phi)
+	});
 }
+
+PhysVectorD unifCoordRandVector(double maxNorm) {
+  static std::default_random_engine eng(std::random_device{}());
+  static std::uniform_real_distribution<double> baseDist(-1, 1);
+	if (maxNorm <= 0) {
+    throw std::invalid_argument("maxNorm must be greater than 0");
+  }
+  return PhysVectorD({
+		baseDist(eng) * maxNorm / 1.73205080757,
+		baseDist(eng) * maxNorm / 1.73205080757,
+		baseDist(eng) * maxNorm / 1.73205080757
+	});
+}
+
 PhysVectorD gausRandVector(const double standardDev) {
   if (standardDev <= 0) {
     throw std::invalid_argument("standardDev must be greater than 0");
@@ -231,8 +254,7 @@ Gas::Gas(int nParticles, double temperature, double boxSide)
     throw std::runtime_error("Can't fit all particles in the box.");
   }
 
-  double maxSpeed = 4. / 3. * temperature;  // espressione sbagliata appena
-  // riesco faccio il calcolo
+  double maxSpeed = sqrt(30./M_PI * temperature/Particle::mass); // should be correct expression
 
   auto gridVector = [=](int i) {
     int pX{i % elementPerSide};
@@ -267,7 +289,7 @@ void Gas::simulate(int nIterations, SimOutput& output) {
 	tempOutput.reserve(output.getStatSize());
   for (int i{0}; i < nIterations;) {
     // std::cout << "Started " << i << "th iteration.\n";
-		for (int j {0}; j < output.getStatSize() && i < nIterations; ++j, ++i) {
+		for (size_t j {0}; j < output.getStatSize() && i < nIterations; ++j, ++i) {
     	PartCollision pColl{firstPartCollision()};
     	WallCollision wColl{firstWallCollision()};
     	Collision* firstColl{nullptr};

@@ -16,6 +16,7 @@
 #include <TMultiGraph.h>
 #include <TGraph.h>
 #include <TFile.h>
+#include <TF1.h>
 
 #include "gasSim/INIReader.h"
 #include "gasSim/graphics.hpp"
@@ -279,7 +280,22 @@ int main(int argc, const char* argv[]) {
 		graphsList->Add(pGraphs);
 		graphsList->Add(kBGraph);
 		graphsList->Add(mfpGraph);
+		TF1 pLineF {TF1("pLineF", "[0]", 0., 1.)};
 		std::cout << "Extracted graphsList." << std::endl;
+		std::function<void(TH1D&, gasSim::VideoOpts)> fitLambda {
+			[pGraphs, kBGraph, mfpGraph, &pLineF] (TH1D& speedsH, gasSim::VideoOpts opt) {
+				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(0)};
+				if (genPGraph->GetN()) {
+					pLineF.GetXaxis()->SetLimits(0., kBGraph->GetPointX(0));
+					if (genPGraph->GetN() >= 10) {
+						pGraphs->GetXaxis()->SetLimits(
+							genPGraph->GetPointX(genPGraph->GetN() - 10),
+							genPGraph->GetPointX(genPGraph->GetN() - 1)
+						);
+					}
+				}
+			}
+		};
 		gasSim::VideoOpts videoOpt {
 			stovideoopts(cFile.Get("output", "videoOpt", "all"))
 		};
@@ -322,7 +338,7 @@ int main(int argc, const char* argv[]) {
 			auxImg.create(windowSize.x, windowSize.y);
 			while (true) {
 				std::vector<sf::Texture> frames {};
-				if (output.isDone() && !output.getRawDataSize() && !output.isProcessing()) {
+				if (output.isDone() && output.getRawDataSize() < output.getStatSize() && !output.isProcessing()) {
 					lastBatch = true;
 				}
 				frames.reserve(output.getFramerate() * 10);
@@ -355,8 +371,10 @@ int main(int argc, const char* argv[]) {
 			std::cout << "Reached video output loop." << std::endl;
 			std::atomic<int> queueNumber {1};
 			std::atomic<int> launchedPlayThreadsN {0};
+			std::atomic<int> droppedFrames {0};
+			std::atomic<int> framesToDrop {0};
 			auto playLambda {
-				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, frameTimems]
+				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, &droppedFrames, &framesToDrop, frameTimems]
 				(std::shared_ptr<std::vector<sf::Texture>> rPtr,
 				 int threadN) {
 					sf::Sprite auxS;
@@ -367,17 +385,35 @@ int main(int argc, const char* argv[]) {
 					stopBufferLoop = true;
 					std::lock_guard<std::mutex> windowGuard {windowMtx};
 					window.setActive();
+					auto lastDrawEnd {std::chrono::high_resolution_clock::now()};
+					float frameTimeS {static_cast<float>(frameTimems/1000.)};
+					std::chrono::duration<float> lastFrameDrawTime {};
 					for (const sf::Texture& r: *rPtr) {
-						if (window.isOpen()) {
-							auxS.setTexture(r);
-							window.draw(auxS);
-							window.display();
+						if (window.isOpen() && !framesToDrop.load()) {
+							lastFrameDrawTime =
+								std::chrono::high_resolution_clock::now() - lastDrawEnd;
+							if (
+								lastFrameDrawTime.count() <= frameTimeS
+							) {
+								auxS.setTexture(r);
+								window.draw(auxS);
+								window.display();
+							} else {
+								framesToDrop.fetch_add(static_cast<int>(lastFrameDrawTime.count()/frameTimems) - 1);
+								droppedFrames.fetch_add(1);
+							}
+							lastDrawEnd = std::chrono::high_resolution_clock::now();
+						} else {
+							framesToDrop.fetch_sub(1);
+							lastDrawEnd = std::chrono::high_resolution_clock::now();
 						}
-					}
+					} 
 					queueNumber++;
 					if (launchedPlayThreadsN == threadN) {
 						std::cout << "Found playThreads number " << launchedPlayThreadsN << " still equal to thread number " << threadN << ": starting up buffering loop." << std::endl;
 						stopBufferLoop = false;
+					} else {
+						std::cout << "Found playThreads number " << launchedPlayThreadsN << " higher than thread number " << threadN << ": not reactivating buffering loop" << std::endl;
 					}
 					window.setActive(false);
 				}
@@ -421,41 +457,27 @@ int main(int argc, const char* argv[]) {
 				std::shared_ptr<std::vector<sf::Texture>> rendersPtr {std::make_shared<std::vector<sf::Texture>>()};
 				rendersPtr->reserve(output.getFramerate() * 10);
 				while (rendersPtr->size() <= output.getFramerate() * targetBufferTime) {
+					if (output.isDone() && output.getRawDataSize() < output.getStatSize() && !output.isProcessing()) {
+						lastBatch = true;
+					}
 					std::vector<sf::Texture> v = {output.getVideo(
 						videoOpt, windowSize, placeHolder, *graphsList, true
 					)};
-					size_t vSize = v.size();
-					std::cerr << "Found v size = " << vSize << std::endl;
 					rendersPtr->insert(
 						rendersPtr->end(),
 						std::make_move_iterator(v.begin()),
 						std::make_move_iterator(v.end())
 					);
-					if (output.isDone() && !output.getRawDataSize() && !output.isProcessing()) {
-						std::vector<sf::Texture> v = {output.getVideo(
-							videoOpt, windowSize, placeHolder, *graphsList, true
-						)};
-						rendersPtr->insert(
-							rendersPtr->end(),
-							std::make_move_iterator(v.begin()),
-							std::make_move_iterator(v.end())
-						);
-						lastBatch = true;
-						std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video. Time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
-						break;
-					} else {
-						if (v.size() == 0) {
-							std::cerr << "Output isDone() = " << output.isDone() << ", output.dataEmpty() = " << output.getRawDataSize() << ", output.isProcessing() = " << output.isProcessing() << std::endl;
-						}
-					}
 					std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video. Time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
+					if (lastBatch) {
+						break;
+					}
 				}
-
 				if (!lastBatch) {
 					std::cout << "Sending playthread n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 					std::thread playThread {
 						[playLambda, rendersPtr, &launchedPlayThreadsN] {
-							++launchedPlayThreadsN;
+							launchedPlayThreadsN.fetch_add(1);
 							playLambda(rendersPtr, launchedPlayThreadsN);
 						}
 					};
@@ -464,14 +486,14 @@ int main(int argc, const char* argv[]) {
 					std::cout << "Sending last playthread at n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 					std::thread playThread {
 						[playLambda, rendersPtr, &launchedPlayThreadsN] {
-							++launchedPlayThreadsN;
-							playLambda(rendersPtr, launchedPlayThreadsN);
+							launchedPlayThreadsN.fetch_add(1);
+							playLambda(rendersPtr, launchedPlayThreadsN.load());
 						}
 					};
 					std::cout << "Joining playThread." << std::endl;
 					playThread.join();
-					std::lock_guard<std::mutex> windowGuard {windowMtx};
 					bufferKillSignal = true;
+					std::lock_guard<std::mutex> windowGuard {windowMtx};
 					break;
 				}
 			}
@@ -480,6 +502,7 @@ int main(int argc, const char* argv[]) {
 			std::cout << "Set buffer loop to stop." << std::endl;
 			bufferingLoop.join();
 			window.close();
+			std::cout << "Dropped frames: " << droppedFrames.load() << std::endl;
 		}
 
 		std::cout << "Joining simulation and processing threads." << std::endl;
@@ -490,6 +513,8 @@ int main(int argc, const char* argv[]) {
 		if (processThread.joinable()) {
 			processThread.join();
 		}
+		
+		std::cout << "Leftover data: " << output.getRawDataSize() << " collisions." << std::endl;
 
 		graphsList->Delete();
 		return 0;

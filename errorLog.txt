@@ -1,169 +1,4003 @@
 
 Started getVideo, call number 1
-Phase 0 time: 0.000341578
+Phase 0 time: 0.000107663
 Got to data extraction phase.
-Initialized gTime with value 8.316667, gDeltaT with value 0.0166667
-Found sizes: renders_ = 500, stats_ = 1
+Initialized gTime with value 0.250000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
 Setting fTime_. Because fTime_.has_value returned 0
 Found getRendersT0 = 0, stats beginning = 0; set fTime_ to -0.0166667
 Set fTime_. Now fTime_.has_value() returns 1 with value = -0.0166667
 Starting vector segments extraction.
-Value = 0 <= s.getTime() = 8.32942
+Value = 0 <= s.getTime() = 0.256836
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = -0.0166667 with stats_ front Time0 = 0 and Time = 8.32942
-Found gStartI = 0, gEndI = 500
-Extracted vectors. Result sizes: stats size = 1, renders size = 500
-Phase 1 time: 9.16681
+fTime_ value = -0.0166667 with stats_ front Time0 = 0 and Time = 0.256836
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.29698
 Got to second phase.
-Phase 2 time: 0.0864347
-Phase 3 time: 2.68109 of which:
-graphsAddTime = 0.000101515
-drawObjTime = 0.215846
-drawGasTime = 0.272055 of which:
-~	setTexture time = 0.000579641
-~	boxDraw time = 0.262023
-~	display time = 0.00183791
-~	erase time = 0.00654885
-~	reserve time = 2.949e-06
-emplaceTime = 2.1498
-Found v size = 500
+Phase 2 time: 0.071401
+Added kB measurement to graph from starting data: 
+Pressure = 1.9215
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.308545 of which:
+graphsAddTime = 0.00022894
+drawObjTime = 0.205436
+drawGasTime = 0.00783557 of which:
+~	setTexture time = 1.3704e-05
+~	boxDraw time = 0.007588
+~	display time = 5.3613e-05
+~	erase time = 0.000150817
+~	reserve time = 2.38e-06
+emplaceTime = 0.0743294
 
 Started getVideo, call number 2
-Phase 0 time: 7.0915e-05
+Phase 0 time: 4.692e-05
 Got to data extraction phase.
-Initialized gTime with value 18.800000, gDeltaT with value 0.0166667
-Found sizes: renders_ = 629, stats_ = 1
+Initialized gTime with value 1.016667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 46, stats_ = 3
 Starting vector segments extraction.
-Value = 8.33333 <= s.getTime() = 18.8003
+Value = 0.266667 <= s.getTime() = 0.748908
+Value = 0.266667 <= s.getTime() = 0.50754
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 8.31667 with stats_ front Time0 = 8.32942 and Time = 18.8003
-Found gStartI = 0, gEndI = 629
-Extracted vectors. Result sizes: stats size = 1, renders size = 629
-Phase 1 time: 9.19835
+fTime_ value = 0.25 with stats_ front Time0 = 0.256836 and Time = 0.50754
+Found gStartI = 0, gEndI = 46
+Extracted vectors. Result sizes: stats size = 3, renders size = 46
+Phase 1 time: 0.613369
 Got to second phase.
-Phase 2 time: 0.00776959
-Phase 3 time: 1.36095 of which:
-graphsAddTime = 8.3801e-05
-drawObjTime = 0.0686601
-drawGasTime = 0.173493 of which:
-~	setTexture time = 0.000428556
-~	boxDraw time = 0.144696
-~	display time = 0.00850058
-~	erase time = 0.0190109
-~	reserve time = 4.868e-06
-emplaceTime = 1.10182
-Found v size = 629
+Phase 2 time: 0.000309456
+Added kB measurement to graph from starting data: 
+Pressure = 1.97995
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.1229
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.86002
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.538739 of which:
+graphsAddTime = 0.00127423
+drawObjTime = 0.292204
+drawGasTime = 0.0210912 of which:
+~	setTexture time = 3.6052e-05
+~	boxDraw time = 0.0184565
+~	display time = 0.000138272
+~	erase time = 0.00238681
+~	reserve time = 1.162e-05
+emplaceTime = 0.189359
 
 Started getVideo, call number 3
-Phase 0 time: 0.000168009
+Phase 0 time: 7.1499e-05
 Got to data extraction phase.
-Initialized gTime with value 27.683333, gDeltaT with value 0.0166667
-Found sizes: renders_ = 533, stats_ = 1
+Initialized gTime with value 1.483333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 28, stats_ = 2
 Starting vector segments extraction.
-Value = 18.8167 <= s.getTime() = 27.6932
+Value = 1.03333 <= s.getTime() = 1.48969
+Value = 1.03333 <= s.getTime() = 1.26363
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 18.8 with stats_ front Time0 = 18.8003 and Time = 27.6932
-Found gStartI = 0, gEndI = 533
-Extracted vectors. Result sizes: stats size = 1, renders size = 533
-Phase 1 time: 7.2011
+fTime_ value = 1.01667 with stats_ front Time0 = 1.01985 and Time = 1.26363
+Found gStartI = 0, gEndI = 28
+Extracted vectors. Result sizes: stats size = 2, renders size = 28
+Phase 1 time: 0.113467
 Got to second phase.
-Phase 2 time: 0.000775548
-Phase 3 time: 2.21943 of which:
-graphsAddTime = 0.000105246
-drawObjTime = 0.0556271
-drawGasTime = 0.2298 of which:
-~	setTexture time = 0.000401769
-~	boxDraw time = 0.217464
-~	display time = 0.00138291
-~	erase time = 0.0096689
-~	reserve time = 3.725e-06
-emplaceTime = 1.91662
-Found v size = 533
+Phase 2 time: 0.000672636
+Added kB measurement to graph from starting data: 
+Pressure = 2.06482
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.93774
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.225479 of which:
+graphsAddTime = 0.000506136
+drawObjTime = 0.183392
+drawGasTime = 0.00419665 of which:
+~	setTexture time = 1.1713e-05
+~	boxDraw time = 0.00320071
+~	display time = 3.4853e-05
+~	erase time = 0.000924135
+~	reserve time = 1.0235e-05
+emplaceTime = 0.0158999
 
 Started getVideo, call number 4
-Phase 0 time: 0.00648993
+Phase 0 time: 5.7713e-05
 Got to data extraction phase.
-Initialized gTime with value 37.900000, gDeltaT with value 0.0166667
-Found sizes: renders_ = 613, stats_ = 1
+Initialized gTime with value 1.733333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
 Starting vector segments extraction.
-Value = 27.7 <= s.getTime() = 37.9133
+Value = 1.5 <= s.getTime() = 1.7356
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 27.6833 with stats_ front Time0 = 27.6932 and Time = 37.9133
-Found gStartI = 0, gEndI = 613
-Extracted vectors. Result sizes: stats size = 1, renders size = 613
-Phase 1 time: 7.94434
+fTime_ value = 1.48333 with stats_ front Time0 = 1.48969 and Time = 1.7356
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.106188
 Got to second phase.
-Phase 2 time: 0.0321032
-Phase 3 time: 2.56792 of which:
-graphsAddTime = 0.0007946
-drawObjTime = 0.0933848
-drawGasTime = 0.240787 of which:
-~	setTexture time = 0.000406005
-~	boxDraw time = 0.233381
-~	display time = 0.00140953
-~	erase time = 0.00460416
-~	reserve time = 3.357e-06
-emplaceTime = 2.20909
-Found v size = 613
+Phase 2 time: 0.000322782
+Added kB measurement to graph from starting data: 
+Pressure = 2.04277
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.136873 of which:
+graphsAddTime = 0.000334535
+drawObjTime = 0.0940435
+drawGasTime = 0.00441976 of which:
+~	setTexture time = 8.461e-06
+~	boxDraw time = 0.00427306
+~	display time = 3.2832e-05
+~	erase time = 8.8034e-05
+~	reserve time = 1.962e-06
+emplaceTime = 0.00937183
 
 Started getVideo, call number 5
-Phase 0 time: 0.00585149
+Phase 0 time: 6.8707e-05
 Got to data extraction phase.
-Initialized gTime with value 47.650000, gDeltaT with value 0.0166667
-Found sizes: renders_ = 585, stats_ = 1
+Initialized gTime with value 1.966667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
 Starting vector segments extraction.
-Value = 37.9167 <= s.getTime() = 47.6607
+Value = 1.75 <= s.getTime() = 1.96766
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 37.9 with stats_ front Time0 = 37.9133 and Time = 47.6607
-Found gStartI = 0, gEndI = 585
-Extracted vectors. Result sizes: stats size = 1, renders size = 585
-Phase 1 time: 7.47818
+fTime_ value = 1.73333 with stats_ front Time0 = 1.7356 and Time = 1.96766
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.135844
 Got to second phase.
-Phase 2 time: 0.0251731
-Phase 3 time: 2.20863 of which:
-graphsAddTime = 0.000754152
-drawObjTime = 0.0786707
-drawGasTime = 0.222585 of which:
-~	setTexture time = 0.000493541
-~	boxDraw time = 0.21122
-~	display time = 0.00146549
-~	erase time = 0.00867114
-~	reserve time = 3.235e-06
-emplaceTime = 1.88426
-Found v size = 585
+Phase 2 time: 0.000632109
+Added kB measurement to graph from starting data: 
+Pressure = 1.83597
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.131606 of which:
+graphsAddTime = 0.00024064
+drawObjTime = 0.0955044
+drawGasTime = 0.000622471 of which:
+~	setTexture time = 7.648e-06
+~	boxDraw time = 0.000504515
+~	display time = 2.0827e-05
+~	erase time = 7.343e-05
+~	reserve time = 6.502e-06
+emplaceTime = 0.00381514
 
 Started getVideo, call number 6
-Phase 0 time: 0.00572723
+Phase 0 time: 6.8473e-05
 Got to data extraction phase.
-Initialized gTime with value 57.150000, gDeltaT with value 0.0166667
-Found sizes: renders_ = 570, stats_ = 1
+Initialized gTime with value 2.183333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
 Starting vector segments extraction.
-Value = 47.6667 <= s.getTime() = 57.1542
+Value = 1.98333 <= s.getTime() = 2.19051
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 47.65 with stats_ front Time0 = 47.6607 and Time = 57.1542
-Found gStartI = 0, gEndI = 570
-Extracted vectors. Result sizes: stats size = 1, renders size = 570
-Phase 1 time: 6.53705
+fTime_ value = 1.96667 with stats_ front Time0 = 1.96766 and Time = 2.19051
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.143288
 Got to second phase.
-Phase 2 time: 0.0324554
-Phase 3 time: 2.18904 of which:
-graphsAddTime = 0.000704805
-drawObjTime = 0.0874262
-drawGasTime = 0.231598 of which:
-~	setTexture time = 0.00042743
-~	boxDraw time = 0.224232
-~	display time = 0.00127529
-~	erase time = 0.00484905
-~	reserve time = 7.459e-06
-emplaceTime = 1.84671
-Found v size = 570
+Phase 2 time: 0.000650254
+Added kB measurement to graph from starting data: 
+Pressure = 2.1776
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.147616 of which:
+graphsAddTime = 0.000122022
+drawObjTime = 0.104685
+drawGasTime = 0.00583628 of which:
+~	setTexture time = 7.247e-06
+~	boxDraw time = 0.00396005
+~	display time = 2.6065e-05
+~	erase time = 0.00182582
+~	reserve time = 2.418e-06
+emplaceTime = 0.0126004
 
 Started getVideo, call number 7
-Phase 0 time: 0.00671241
+Phase 0 time: 4.8908e-05
 Got to data extraction phase.
+Initialized gTime with value 2.683333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 30, stats_ = 2
+Starting vector segments extraction.
+Value = 2.2 <= s.getTime() = 2.69095
+Value = 2.2 <= s.getTime() = 2.44233
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 2.18333 with stats_ front Time0 = 2.19051 and Time = 2.44233
+Found gStartI = 0, gEndI = 30
+Extracted vectors. Result sizes: stats size = 2, renders size = 30
+Phase 1 time: 0.431293
+Got to second phase.
+Phase 2 time: 0.000586844
+Added kB measurement to graph from starting data: 
+Pressure = 1.80363
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.15381
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.38064 of which:
+graphsAddTime = 0.00033889
+drawObjTime = 0.22853
+drawGasTime = 0.0105858 of which:
+~	setTexture time = 2.2496e-05
+~	boxDraw time = 0.0102135
+~	display time = 7.8825e-05
+~	erase time = 0.00022711
+~	reserve time = 5.873e-06
+emplaceTime = 0.101567
+
+Started getVideo, call number 8
+Phase 0 time: 4.9629e-05
+Got to data extraction phase.
+Initialized gTime with value 3.416667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 44, stats_ = 3
+Starting vector segments extraction.
+Value = 2.7 <= s.getTime() = 3.2082
+Value = 2.7 <= s.getTime() = 2.93976
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 2.68333 with stats_ front Time0 = 2.69095 and Time = 2.93976
+Found gStartI = 0, gEndI = 44
+Extracted vectors. Result sizes: stats size = 3, renders size = 44
+Phase 1 time: 0.496298
+Got to second phase.
+Phase 2 time: 0.000567939
+Added kB measurement to graph from starting data: 
+Pressure = 1.70458
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.72798
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.45116
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.415536 of which:
+graphsAddTime = 0.000956746
+drawObjTime = 0.297993
+drawGasTime = 0.0223876 of which:
+~	setTexture time = 3.4939e-05
+~	boxDraw time = 0.0196069
+~	display time = 0.000115779
+~	erase time = 0.00256497
+~	reserve time = 5.931e-06
+emplaceTime = 0.0709617
+
+Started getVideo, call number 9
+Phase 0 time: 6.4434e-05
+Got to data extraction phase.
+Initialized gTime with value 4.116667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 42, stats_ = 3
+Starting vector segments extraction.
+Value = 3.43333 <= s.getTime() = 3.91412
+Value = 3.43333 <= s.getTime() = 3.65097
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 3.41667 with stats_ front Time0 = 3.42458 and Time = 3.65097
+Found gStartI = 0, gEndI = 42
+Extracted vectors. Result sizes: stats size = 3, renders size = 42
+Phase 1 time: 0.433305
+Got to second phase.
+Phase 2 time: 0.00076586
+Added kB measurement to graph from starting data: 
+Pressure = 2.45951
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.62185
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.71625
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.312549 of which:
+graphsAddTime = 0.00136614
+drawObjTime = 0.271591
+drawGasTime = 0.00229963 of which:
+~	setTexture time = 1.9532e-05
+~	boxDraw time = 0.00133276
+~	display time = 5.1823e-05
+~	erase time = 0.000859921
+~	reserve time = 5.168e-06
+emplaceTime = 0.0189897
+
+Started getVideo, call number 10
+Phase 0 time: 0.000177084
+Got to data extraction phase.
+Initialized gTime with value 4.550000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 26, stats_ = 2
+Starting vector segments extraction.
+Value = 4.13333 <= s.getTime() = 4.55001
+Value = 4.13333 <= s.getTime() = 4.34218
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 4.11667 with stats_ front Time0 = 4.12099 and Time = 4.34218
+Found gStartI = 0, gEndI = 26
+Extracted vectors. Result sizes: stats size = 2, renders size = 26
+Phase 1 time: 0.195598
+Got to second phase.
+Phase 2 time: 0.00743796
+Added kB measurement to graph from starting data: 
+Pressure = 2.26693
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.46423
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.211576 of which:
+graphsAddTime = 0.000360875
+drawObjTime = 0.17615
+drawGasTime = 0.00217478 of which:
+~	setTexture time = 1.1323e-05
+~	boxDraw time = 0.00196478
+~	display time = 3.7384e-05
+~	erase time = 0.000126266
+~	reserve time = 7.327e-06
+emplaceTime = 0.00633493
+
+Started getVideo, call number 11
+Phase 0 time: 8.6084e-05
+Got to data extraction phase.
+Initialized gTime with value 5.000000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 27, stats_ = 2
+Starting vector segments extraction.
+Value = 4.56667 <= s.getTime() = 5.01572
+Value = 4.56667 <= s.getTime() = 4.75706
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 4.55 with stats_ front Time0 = 4.55001 and Time = 4.75706
+Found gStartI = 0, gEndI = 27
+Extracted vectors. Result sizes: stats size = 2, renders size = 27
+Phase 1 time: 0.571889
+Got to second phase.
+Phase 2 time: 0.000645705
+Added kB measurement to graph from starting data: 
+Pressure = 1.8518
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.95416
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.453728 of which:
+graphsAddTime = 0.000947265
+drawObjTime = 0.344093
+drawGasTime = 0.00385813 of which:
+~	setTexture time = 1.8845e-05
+~	boxDraw time = 0.00352609
+~	display time = 6.4933e-05
+~	erase time = 0.000202184
+~	reserve time = 9.177e-06
+emplaceTime = 0.0491831
+
+Started getVideo, call number 12
+Phase 0 time: 0.000129636
+Got to data extraction phase.
+Initialized gTime with value 5.250000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 5.01667 <= s.getTime() = 5.26123
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 5 with stats_ front Time0 = 5.01572 and Time = 5.26123
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.121895
+Got to second phase.
+Phase 2 time: 0.00172108
+Added kB measurement to graph from starting data: 
+Pressure = 2.01846
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.261996 of which:
+graphsAddTime = 0.00066178
+drawObjTime = 0.182582
+drawGasTime = 0.00104082 of which:
+~	setTexture time = 1.1195e-05
+~	boxDraw time = 0.00086188
+~	display time = 3.3155e-05
+~	erase time = 0.00010406
+~	reserve time = 4.115e-06
+emplaceTime = 0.0065596
+
+Started getVideo, call number 13
+Phase 0 time: 0.000106955
+Got to data extraction phase.
+Initialized gTime with value 5.733333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 29, stats_ = 2
+Starting vector segments extraction.
+Value = 5.26667 <= s.getTime() = 5.74981
+Value = 5.26667 <= s.getTime() = 5.50958
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 5.25 with stats_ front Time0 = 5.26123 and Time = 5.50958
+Found gStartI = 0, gEndI = 29
+Extracted vectors. Result sizes: stats size = 2, renders size = 29
+Phase 1 time: 0.714465
+Got to second phase.
+Phase 2 time: 0.000551805
+Added kB measurement to graph from starting data: 
+Pressure = 2.13683
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.15054
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.2417 of which:
+graphsAddTime = 0.000392326
+drawObjTime = 0.148444
+drawGasTime = 0.00813003 of which:
+~	setTexture time = 1.7515e-05
+~	boxDraw time = 0.00789976
+~	display time = 4.4775e-05
+~	erase time = 0.000138463
+~	reserve time = 4.417e-06
+emplaceTime = 0.0629712
+
+Started getVideo, call number 14
+Phase 0 time: 0.00124155
+Got to data extraction phase.
+Initialized gTime with value 6.233333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 30, stats_ = 2
+Starting vector segments extraction.
+Value = 5.75 <= s.getTime() = 6.24464
+Value = 5.75 <= s.getTime() = 5.99752
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 5.73333 with stats_ front Time0 = 5.74981 and Time = 5.99752
+Found gStartI = 0, gEndI = 30
+Extracted vectors. Result sizes: stats size = 2, renders size = 30
+Phase 1 time: 0.405134
+Got to second phase.
+Phase 2 time: 0.0212123
+Added kB measurement to graph from starting data: 
+Pressure = 1.58519
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.22037
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.233274 of which:
+graphsAddTime = 0.00054174
+drawObjTime = 0.178847
+drawGasTime = 0.00633907 of which:
+~	setTexture time = 1.1557e-05
+~	boxDraw time = 0.00604243
+~	display time = 4.1058e-05
+~	erase time = 0.000215078
+~	reserve time = 3.967e-06
+emplaceTime = 0.0189066
+
+Started getVideo, call number 15
+Phase 0 time: 8.5377e-05
+Got to data extraction phase.
+Initialized gTime with value 6.716667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 29, stats_ = 2
+Starting vector segments extraction.
+Value = 6.25 <= s.getTime() = 6.73271
+Value = 6.25 <= s.getTime() = 6.47574
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 6.23333 with stats_ front Time0 = 6.24464 and Time = 6.47574
+Found gStartI = 0, gEndI = 29
+Extracted vectors. Result sizes: stats size = 2, renders size = 29
+Phase 1 time: 0.250988
+Got to second phase.
+Phase 2 time: 0.000673016
+Added kB measurement to graph from starting data: 
+Pressure = 2.15018
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.76811
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.198151 of which:
+graphsAddTime = 0.000281998
+drawObjTime = 0.155288
+drawGasTime = 0.00510516 of which:
+~	setTexture time = 1.7236e-05
+~	boxDraw time = 0.00370415
+~	display time = 5.7984e-05
+~	erase time = 0.00128093
+~	reserve time = 5.43e-06
+emplaceTime = 0.0139848
+
+Started getVideo, call number 16
+Phase 0 time: 0.000206905
+Got to data extraction phase.
+Initialized gTime with value 6.950000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 6.73333 <= s.getTime() = 6.95074
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 6.71667 with stats_ front Time0 = 6.73271 and Time = 6.95074
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.174105
+Got to second phase.
+Phase 2 time: 0.00225489
+Added kB measurement to graph from starting data: 
+Pressure = 2.16982
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.271788 of which:
+graphsAddTime = 0.00035966
+drawObjTime = 0.197942
+drawGasTime = 0.00643189 of which:
+~	setTexture time = 1.1856e-05
+~	boxDraw time = 0.00616005
+~	display time = 6.0069e-05
+~	erase time = 0.000165133
+~	reserve time = 3.795e-06
+emplaceTime = 0.0185913
+
+Started getVideo, call number 17
+Phase 0 time: 0.00022333
+Got to data extraction phase.
+Initialized gTime with value 7.166667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 6.96667 <= s.getTime() = 7.18038
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 6.95 with stats_ front Time0 = 6.95074 and Time = 7.18038
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.118326
+Got to second phase.
+Phase 2 time: 0.000266998
+Added kB measurement to graph from starting data: 
+Pressure = 2.10685
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0842243 of which:
+graphsAddTime = 8.2159e-05
+drawObjTime = 0.0630404
+drawGasTime = 0.00206017 of which:
+~	setTexture time = 3.53e-06
+~	boxDraw time = 0.000491976
+~	display time = 1.1137e-05
+~	erase time = 0.00154263
+~	reserve time = 2.077e-06
+emplaceTime = 0.00260115
+
+Started getVideo, call number 18
+Phase 0 time: 9.8456e-05
+Got to data extraction phase.
+Initialized gTime with value 7.683333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 31, stats_ = 2
+Starting vector segments extraction.
+Value = 7.18333 <= s.getTime() = 7.68561
+Value = 7.18333 <= s.getTime() = 7.4533
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 7.16667 with stats_ front Time0 = 7.18038 and Time = 7.4533
+Found gStartI = 0, gEndI = 31
+Extracted vectors. Result sizes: stats size = 2, renders size = 31
+Phase 1 time: 0.407223
+Got to second phase.
+Phase 2 time: 0.000651171
+Added kB measurement to graph from starting data: 
+Pressure = 1.7089
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.81464
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.465042 of which:
+graphsAddTime = 0.00123539
+drawObjTime = 0.348657
+drawGasTime = 0.00231093 of which:
+~	setTexture time = 2.0725e-05
+~	boxDraw time = 0.00159721
+~	display time = 6.5795e-05
+~	erase time = 0.00053395
+~	reserve time = 8.47e-06
+emplaceTime = 0.0422476
+
+Started getVideo, call number 19
+Phase 0 time: 0.00013038
+Got to data extraction phase.
+Initialized gTime with value 8.183333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 30, stats_ = 2
+Starting vector segments extraction.
+Value = 7.7 <= s.getTime() = 8.19723
+Value = 7.7 <= s.getTime() = 7.92941
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 7.68333 with stats_ front Time0 = 7.68561 and Time = 7.92941
+Found gStartI = 0, gEndI = 30
+Extracted vectors. Result sizes: stats size = 2, renders size = 30
+Phase 1 time: 0.349376
+Got to second phase.
+Phase 2 time: 0.000402985
+Added kB measurement to graph from starting data: 
+Pressure = 2.22109
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.04308
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.184108 of which:
+graphsAddTime = 0.000309171
+drawObjTime = 0.150533
+drawGasTime = 0.000692583 of which:
+~	setTexture time = 7.909e-06
+~	boxDraw time = 0.000558599
+~	display time = 2.2987e-05
+~	erase time = 8.306e-05
+~	reserve time = 5.235e-06
+emplaceTime = 0.0051136
+
+Started getVideo, call number 20
+Phase 0 time: 4.5433e-05
+Got to data extraction phase.
+Initialized gTime with value 8.450000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 8.2 <= s.getTime() = 8.45686
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 8.18333 with stats_ front Time0 = 8.19723 and Time = 8.45686
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.12363
+Got to second phase.
+Phase 2 time: 0.000602496
+Added kB measurement to graph from starting data: 
+Pressure = 1.57304
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.302102 of which:
+graphsAddTime = 0.00025672
+drawObjTime = 0.211167
+drawGasTime = 0.00695099 of which:
+~	setTexture time = 1.1255e-05
+~	boxDraw time = 0.00384699
+~	display time = 4.1835e-05
+~	erase time = 0.00301326
+~	reserve time = 4.405e-06
+emplaceTime = 0.0199028
+
+Started getVideo, call number 21
+Phase 0 time: 0.00022533
+Got to data extraction phase.
+Initialized gTime with value 8.700000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 8.46667 <= s.getTime() = 8.70412
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 8.45 with stats_ front Time0 = 8.45686 and Time = 8.70412
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.249881
+Got to second phase.
+Phase 2 time: 0.000489484
+Added kB measurement to graph from starting data: 
+Pressure = 2.24816
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0983386 of which:
+graphsAddTime = 0.000121006
+drawObjTime = 0.0737907
+drawGasTime = 0.000548159 of which:
+~	setTexture time = 6.057e-06
+~	boxDraw time = 0.000453379
+~	display time = 1.5374e-05
+~	erase time = 6.1493e-05
+~	reserve time = 2.066e-06
+emplaceTime = 0.00343808
+
+Started getVideo, call number 22
+Phase 0 time: 0.000131574
+Got to data extraction phase.
+Initialized gTime with value 9.700000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 60, stats_ = 4
+Starting vector segments extraction.
+Value = 8.71667 <= s.getTime() = 9.44699
+Value = 8.71667 <= s.getTime() = 9.20988
+Value = 8.71667 <= s.getTime() = 8.94082
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 8.7 with stats_ front Time0 = 8.70412 and Time = 8.94082
+Found gStartI = 0, gEndI = 60
+Extracted vectors. Result sizes: stats size = 4, renders size = 60
+Phase 1 time: 1.40299
+Got to second phase.
+Phase 2 time: 0.000635123
+Added kB measurement to graph from starting data: 
+Pressure = 1.80077
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.86868
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.30666
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.66143
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.713357 of which:
+graphsAddTime = 0.000846762
+drawObjTime = 0.396546
+drawGasTime = 0.0341747 of which:
+~	setTexture time = 5.7003e-05
+~	boxDraw time = 0.033301
+~	display time = 0.000191773
+~	erase time = 0.000511412
+~	reserve time = 7.964e-06
+emplaceTime = 0.25903
+
+Started getVideo, call number 23
+Phase 0 time: 4.7786e-05
+Got to data extraction phase.
+Initialized gTime with value 10.416667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 43, stats_ = 3
+Starting vector segments extraction.
+Value = 9.71667 <= s.getTime() = 10.1934
+Value = 9.71667 <= s.getTime() = 9.95934
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 9.7 with stats_ front Time0 = 9.70812 and Time = 9.95934
+Found gStartI = 0, gEndI = 43
+Extracted vectors. Result sizes: stats size = 3, renders size = 43
+Phase 1 time: 0.254428
+Got to second phase.
+Phase 2 time: 0.00060952
+Added kB measurement to graph from starting data: 
+Pressure = 2.14068
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.3505
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.80028
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.414962 of which:
+graphsAddTime = 0.000685479
+drawObjTime = 0.360224
+drawGasTime = 0.0125543 of which:
+~	setTexture time = 3.3784e-05
+~	boxDraw time = 0.00676504
+~	display time = 0.00524762
+~	erase time = 0.000417524
+~	reserve time = 1.3331e-05
+emplaceTime = 0.0235206
+
+Started getVideo, call number 24
+Phase 0 time: 9.3814e-05
+Got to data extraction phase.
+Initialized gTime with value 10.900000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 29, stats_ = 2
+Starting vector segments extraction.
+Value = 10.4333 <= s.getTime() = 10.9064
+Value = 10.4333 <= s.getTime() = 10.6656
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 10.4167 with stats_ front Time0 = 10.4229 and Time = 10.6656
+Found gStartI = 0, gEndI = 29
+Extracted vectors. Result sizes: stats size = 2, renders size = 29
+Phase 1 time: 0.178838
+Got to second phase.
+Phase 2 time: 0.00589445
+Added kB measurement to graph from starting data: 
+Pressure = 1.4975
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.10664
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.170559 of which:
+graphsAddTime = 0.000391121
+drawObjTime = 0.145071
+drawGasTime = 0.00411792 of which:
+~	setTexture time = 8.615e-06
+~	boxDraw time = 0.00298114
+~	display time = 3.3816e-05
+~	erase time = 0.00105288
+~	reserve time = 6.252e-06
+emplaceTime = 0.0095242
+
+Started getVideo, call number 25
+Phase 0 time: 0.000103048
+Got to data extraction phase.
+Initialized gTime with value 11.400000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 30, stats_ = 2
+Starting vector segments extraction.
+Value = 10.9167 <= s.getTime() = 11.4061
+Value = 10.9167 <= s.getTime() = 11.1339
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 10.9 with stats_ front Time0 = 10.9064 and Time = 11.1339
+Found gStartI = 0, gEndI = 30
+Extracted vectors. Result sizes: stats size = 2, renders size = 30
+Phase 1 time: 0.482191
+Got to second phase.
+Phase 2 time: 0.00051757
+Added kB measurement to graph from starting data: 
+Pressure = 2.4699
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.51633
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.224418 of which:
+graphsAddTime = 0.000517176
+drawObjTime = 0.188586
+drawGasTime = 0.000618025 of which:
+~	setTexture time = 6.738e-06
+~	boxDraw time = 0.000495049
+~	display time = 2.2483e-05
+~	erase time = 7.2895e-05
+~	reserve time = 5.001e-06
+emplaceTime = 0.0112261
+
+Started getVideo, call number 26
+Phase 0 time: 8.0326e-05
+Got to data extraction phase.
+Initialized gTime with value 11.833333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 26, stats_ = 2
+Starting vector segments extraction.
+Value = 11.4167 <= s.getTime() = 11.8497
+Value = 11.4167 <= s.getTime() = 11.618
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 11.4 with stats_ front Time0 = 11.4061 and Time = 11.618
+Found gStartI = 0, gEndI = 26
+Extracted vectors. Result sizes: stats size = 2, renders size = 26
+Phase 1 time: 0.22823
+Got to second phase.
+Phase 2 time: 0.000484052
+Added kB measurement to graph from starting data: 
+Pressure = 2.2073
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.13065
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.174299 of which:
+graphsAddTime = 0.000255981
+drawObjTime = 0.145903
+drawGasTime = 0.00590435 of which:
+~	setTexture time = 8.988e-06
+~	boxDraw time = 0.0057513
+~	display time = 3.0931e-05
+~	erase time = 8.9765e-05
+~	reserve time = 3.986e-06
+emplaceTime = 0.0113976
+
+Started getVideo, call number 27
+Phase 0 time: 4.5885e-05
+Got to data extraction phase.
+Initialized gTime with value 12.083333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 11.85 <= s.getTime() = 12.0889
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 11.8333 with stats_ front Time0 = 11.8497 and Time = 12.0889
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.118991
+Got to second phase.
+Phase 2 time: 0.010348
+Added kB measurement to graph from starting data: 
+Pressure = 2.05717
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.185043 of which:
+graphsAddTime = 0.0002595
+drawObjTime = 0.140318
+drawGasTime = 0.0143373 of which:
+~	setTexture time = 1.1066e-05
+~	boxDraw time = 0.0120187
+~	display time = 4.2881e-05
+~	erase time = 0.00222278
+~	reserve time = 6.265e-06
+emplaceTime = 0.00668718
+
+Started getVideo, call number 28
+Phase 0 time: 0.00011486
+Got to data extraction phase.
+Initialized gTime with value 12.333333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 12.1 <= s.getTime() = 12.3337
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 12.0833 with stats_ front Time0 = 12.0889 and Time = 12.3337
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.0868539
+Got to second phase.
+Phase 2 time: 0.00316059
+Added kB measurement to graph from starting data: 
+Pressure = 1.87662
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.073908 of which:
+graphsAddTime = 0.000175965
+drawObjTime = 0.0543095
+drawGasTime = 0.000222634 of which:
+~	setTexture time = 3.208e-06
+~	boxDraw time = 0.00017259
+~	display time = 6.737e-06
+~	erase time = 3.4423e-05
+~	reserve time = 4.39e-06
+emplaceTime = 0.0027824
+
+Started getVideo, call number 29
+Phase 0 time: 0.000111551
+Got to data extraction phase.
+Initialized gTime with value 12.566667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 12.35 <= s.getTime() = 12.57
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 12.3333 with stats_ front Time0 = 12.3337 and Time = 12.57
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0983725
+Got to second phase.
+Phase 2 time: 0.000337067
+Added kB measurement to graph from starting data: 
+Pressure = 1.64695
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0679235 of which:
+graphsAddTime = 8.435e-05
+drawObjTime = 0.0418484
+drawGasTime = 0.000465902 of which:
+~	setTexture time = 4.683e-06
+~	boxDraw time = 0.000385217
+~	display time = 1.4172e-05
+~	erase time = 5.0381e-05
+~	reserve time = 2.261e-06
+emplaceTime = 0.0026163
+
+Started getVideo, call number 30
+Phase 0 time: 0.000114534
+Got to data extraction phase.
+Initialized gTime with value 12.783333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 12.5833 <= s.getTime() = 12.7968
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 12.5667 with stats_ front Time0 = 12.57 and Time = 12.7968
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0650324
+Got to second phase.
+Phase 2 time: 0.00469684
+Added kB measurement to graph from starting data: 
+Pressure = 2.44397
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0778889 of which:
+graphsAddTime = 7.928e-05
+drawObjTime = 0.0593282
+drawGasTime = 0.000160988 of which:
+~	setTexture time = 2.485e-06
+~	boxDraw time = 0.000129757
+~	display time = 4.503e-06
+~	erase time = 1.9299e-05
+~	reserve time = 1.988e-06
+emplaceTime = 0.00120898
+
+Started getVideo, call number 31
+Phase 0 time: 5.0838e-05
+Got to data extraction phase.
+Initialized gTime with value 13.066667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 17, stats_ = 1
+Starting vector segments extraction.
+Value = 12.8 <= s.getTime() = 13.0769
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 12.7833 with stats_ front Time0 = 12.7968 and Time = 13.0769
+Found gStartI = 0, gEndI = 17
+Extracted vectors. Result sizes: stats size = 1, renders size = 17
+Phase 1 time: 0.114005
+Got to second phase.
+Phase 2 time: 0.000548079
+Added kB measurement to graph from starting data: 
+Pressure = 1.74671
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.134634 of which:
+graphsAddTime = 0.00029794
+drawObjTime = 0.0702641
+drawGasTime = 0.00436808 of which:
+~	setTexture time = 1.4551e-05
+~	boxDraw time = 0.004136
+~	display time = 6.1981e-05
+~	erase time = 0.000123805
+~	reserve time = 1.1994e-05
+emplaceTime = 0.0288329
+
+Started getVideo, call number 32
+Phase 0 time: 0.00011394
+Got to data extraction phase.
+Initialized gTime with value 13.333333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 13.0833 <= s.getTime() = 13.3341
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 13.0667 with stats_ front Time0 = 13.0769 and Time = 13.3341
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.277312
+Got to second phase.
+Phase 2 time: 0.0127474
+Added kB measurement to graph from starting data: 
+Pressure = 1.8666
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0860762 of which:
+graphsAddTime = 0.00041071
+drawObjTime = 0.0558192
+drawGasTime = 0.00402669 of which:
+~	setTexture time = 3.445e-06
+~	boxDraw time = 0.00394966
+~	display time = 1.4464e-05
+~	erase time = 4.7522e-05
+~	reserve time = 2.552e-06
+emplaceTime = 0.00248094
+
+Started getVideo, call number 33
+Phase 0 time: 7.7373e-05
+Got to data extraction phase.
+Initialized gTime with value 13.550000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 13.35 <= s.getTime() = 13.5524
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 13.3333 with stats_ front Time0 = 13.3341 and Time = 13.5524
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0668221
+Got to second phase.
+Phase 2 time: 0.000279877
+Added kB measurement to graph from starting data: 
+Pressure = 2.31922
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0689557 of which:
+graphsAddTime = 6.4951e-05
+drawObjTime = 0.0501428
+drawGasTime = 0.00038054 of which:
+~	setTexture time = 3.634e-06
+~	boxDraw time = 0.000313242
+~	display time = 9.005e-06
+~	erase time = 4.7768e-05
+~	reserve time = 2.149e-06
+emplaceTime = 0.00207931
+
+Started getVideo, call number 34
+Phase 0 time: 0.000111517
+Got to data extraction phase.
+Initialized gTime with value 13.816667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 13.5667 <= s.getTime() = 13.8175
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 13.55 with stats_ front Time0 = 13.5524 and Time = 13.8175
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.0969499
+Got to second phase.
+Phase 2 time: 0.00427815
+Added kB measurement to graph from starting data: 
+Pressure = 1.81477
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0690369 of which:
+graphsAddTime = 0.000180635
+drawObjTime = 0.0488414
+drawGasTime = 0.000397104 of which:
+~	setTexture time = 3.981e-06
+~	boxDraw time = 0.000310201
+~	display time = 1.053e-05
+~	erase time = 6.2161e-05
+~	reserve time = 2.189e-06
+emplaceTime = 0.00306882
+
+Started getVideo, call number 35
+Phase 0 time: 9.8002e-05
+Got to data extraction phase.
+Initialized gTime with value 14.033333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 13.8333 <= s.getTime() = 14.0346
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 13.8167 with stats_ front Time0 = 13.8175 and Time = 14.0346
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.106071
+Got to second phase.
+Phase 2 time: 0.00445756
+Added kB measurement to graph from starting data: 
+Pressure = 2.18063
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0733765 of which:
+graphsAddTime = 0.000117186
+drawObjTime = 0.053748
+drawGasTime = 0.00156901 of which:
+~	setTexture time = 4.007e-06
+~	boxDraw time = 0.00149622
+~	display time = 1.4799e-05
+~	erase time = 4.164e-05
+~	reserve time = 2.377e-06
+emplaceTime = 0.00570909
+
+Started getVideo, call number 36
+Phase 0 time: 0.000102452
+Got to data extraction phase.
+Initialized gTime with value 14.266667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 14.05 <= s.getTime() = 14.2715
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 14.0333 with stats_ front Time0 = 14.0346 and Time = 14.2715
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0935929
+Got to second phase.
+Phase 2 time: 0.00445672
+Added kB measurement to graph from starting data: 
+Pressure = 1.89497
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0672514 of which:
+graphsAddTime = 0.000208987
+drawObjTime = 0.0456993
+drawGasTime = 0.000362499 of which:
+~	setTexture time = 4.855e-06
+~	boxDraw time = 0.000290046
+~	display time = 1.2672e-05
+~	erase time = 4.2612e-05
+~	reserve time = 5.505e-06
+emplaceTime = 0.00266712
+
+Started getVideo, call number 37
+Phase 0 time: 0.000164654
+Got to data extraction phase.
+Initialized gTime with value 14.500000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 14.2833 <= s.getTime() = 14.502
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 14.2667 with stats_ front Time0 = 14.2715 and Time = 14.502
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.142793
+Got to second phase.
+Phase 2 time: 0.00965683
+Added kB measurement to graph from starting data: 
+Pressure = 2.11422
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.22899 of which:
+graphsAddTime = 0.000284275
+drawObjTime = 0.159141
+drawGasTime = 0.00124901 of which:
+~	setTexture time = 8.632e-06
+~	boxDraw time = 0.000785277
+~	display time = 2.3317e-05
+~	erase time = 0.000409139
+~	reserve time = 3.52e-06
+emplaceTime = 0.0329171
+
+Started getVideo, call number 38
+Phase 0 time: 0.00014134
+Got to data extraction phase.
+Initialized gTime with value 14.733333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 14.5167 <= s.getTime() = 14.7404
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 14.5 with stats_ front Time0 = 14.502 and Time = 14.7404
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.195536
+Got to second phase.
+Phase 2 time: 0.00943848
+Added kB measurement to graph from starting data: 
+Pressure = 1.5877
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.120257 of which:
+graphsAddTime = 0.000250755
+drawObjTime = 0.098565
+drawGasTime = 0.000300854 of which:
+~	setTexture time = 2.989e-06
+~	boxDraw time = 0.000238789
+~	display time = 8.093e-06
+~	erase time = 3.2257e-05
+~	reserve time = 1.896e-06
+emplaceTime = 0.00180204
+
+Started getVideo, call number 39
+Phase 0 time: 0.000157078
+Got to data extraction phase.
+Initialized gTime with value 14.966667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 14.75 <= s.getTime() = 14.9761
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 14.7333 with stats_ front Time0 = 14.7404 and Time = 14.9761
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0919174
+Got to second phase.
+Phase 2 time: 0.000765055
+Added kB measurement to graph from starting data: 
+Pressure = 2.24359
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0716789 of which:
+graphsAddTime = 0.000262132
+drawObjTime = 0.0489716
+drawGasTime = 0.00040094 of which:
+~	setTexture time = 3.942e-06
+~	boxDraw time = 0.000275321
+~	display time = 1.0621e-05
+~	erase time = 0.000101446
+~	reserve time = 1.938e-06
+emplaceTime = 0.00228911
+
+Started getVideo, call number 40
+Phase 0 time: 9.8691e-05
+Got to data extraction phase.
+Initialized gTime with value 15.250000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 17, stats_ = 1
+Starting vector segments extraction.
+Value = 14.9833 <= s.getTime() = 15.2528
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 14.9667 with stats_ front Time0 = 14.9761 and Time = 15.2528
+Found gStartI = 0, gEndI = 17
+Extracted vectors. Result sizes: stats size = 1, renders size = 17
+Phase 1 time: 0.11549
+Got to second phase.
+Phase 2 time: 0.00408372
+Added kB measurement to graph from starting data: 
+Pressure = 1.95459
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0630263 of which:
+graphsAddTime = 0.000211799
+drawObjTime = 0.0452071
+drawGasTime = 0.000343545 of which:
+~	setTexture time = 3.706e-06
+~	boxDraw time = 0.00027383
+~	display time = 1.1028e-05
+~	erase time = 4.4475e-05
+~	reserve time = 2.135e-06
+emplaceTime = 0.00238425
+
+Started getVideo, call number 41
+Phase 0 time: 0.000145585
+Got to data extraction phase.
+Initialized gTime with value 15.683333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 26, stats_ = 2
+Starting vector segments extraction.
+Value = 15.2667 <= s.getTime() = 15.6895
+Value = 15.2667 <= s.getTime() = 15.4768
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 15.25 with stats_ front Time0 = 15.2528 and Time = 15.4768
+Found gStartI = 0, gEndI = 26
+Extracted vectors. Result sizes: stats size = 2, renders size = 26
+Phase 1 time: 0.18605
+Got to second phase.
+Phase 2 time: 0.00537162
+Added kB measurement to graph from starting data: 
+Pressure = 1.84292
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.02962
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.193565 of which:
+graphsAddTime = 0.000312166
+drawObjTime = 0.131789
+drawGasTime = 0.0194151 of which:
+~	setTexture time = 1.1888e-05
+~	boxDraw time = 0.0191484
+~	display time = 4.9475e-05
+~	erase time = 0.000169618
+~	reserve time = 5.614e-06
+emplaceTime = 0.028127
+
+Started getVideo, call number 42
+Phase 0 time: 0.000266466
+Got to data extraction phase.
+Initialized gTime with value 15.933333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 15.7 <= s.getTime() = 15.9419
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 15.6833 with stats_ front Time0 = 15.6895 and Time = 15.9419
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.165041
+Got to second phase.
+Phase 2 time: 0.0139104
+Added kB measurement to graph from starting data: 
+Pressure = 1.90557
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.201888 of which:
+graphsAddTime = 0.00044079
+drawObjTime = 0.140088
+drawGasTime = 0.000882129 of which:
+~	setTexture time = 1.0007e-05
+~	boxDraw time = 0.000707995
+~	display time = 3.3043e-05
+~	erase time = 9.7954e-05
+~	reserve time = 5.42e-06
+emplaceTime = 0.0202995
+
+Started getVideo, call number 43
+Phase 0 time: 0.000101328
+Got to data extraction phase.
+Initialized gTime with value 16.150000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 15.95 <= s.getTime() = 16.162
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 15.9333 with stats_ front Time0 = 15.9419 and Time = 16.162
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0681874
+Got to second phase.
+Phase 2 time: 0.00407304
+Added kB measurement to graph from starting data: 
+Pressure = 2.31584
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0720045 of which:
+graphsAddTime = 0.000113676
+drawObjTime = 0.0506779
+drawGasTime = 0.00463006 of which:
+~	setTexture time = 6.335e-06
+~	boxDraw time = 0.00451927
+~	display time = 2.4074e-05
+~	erase time = 5.288e-05
+~	reserve time = 2.754e-06
+emplaceTime = 0.00273442
+
+Started getVideo, call number 44
+Phase 0 time: 4.6324e-05
+Got to data extraction phase.
+Initialized gTime with value 16.366667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 16.1667 <= s.getTime() = 16.3724
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 16.15 with stats_ front Time0 = 16.162 and Time = 16.3724
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0665456
+Got to second phase.
+Phase 2 time: 0.00373537
+Added kB measurement to graph from starting data: 
+Pressure = 1.81263
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.071976 of which:
+graphsAddTime = 0.000136227
+drawObjTime = 0.0525128
+drawGasTime = 0.000511499 of which:
+~	setTexture time = 4.509e-06
+~	boxDraw time = 0.000438164
+~	display time = 1.2754e-05
+~	erase time = 4.5496e-05
+~	reserve time = 1.803e-06
+emplaceTime = 0.00221444
+
+Started getVideo, call number 45
+Phase 0 time: 0.000114175
+Got to data extraction phase.
+Initialized gTime with value 16.583333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 16.3833 <= s.getTime() = 16.5865
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 16.3667 with stats_ front Time0 = 16.3724 and Time = 16.5865
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.107177
+Got to second phase.
+Phase 2 time: 0.000627796
+Added kB measurement to graph from starting data: 
+Pressure = 2.00428
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0675143 of which:
+graphsAddTime = 0.000167407
+drawObjTime = 0.0441839
+drawGasTime = 0.000304077 of which:
+~	setTexture time = 2.781e-06
+~	boxDraw time = 0.000250039
+~	display time = 8.134e-06
+~	erase time = 3.6677e-05
+~	reserve time = 1.912e-06
+emplaceTime = 0.00179292
+
+Started getVideo, call number 46
+Phase 0 time: 4.648e-05
+Got to data extraction phase.
+Initialized gTime with value 16.816667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 16.6 <= s.getTime() = 16.8215
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 16.5833 with stats_ front Time0 = 16.5865 and Time = 16.8215
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0969648
+Got to second phase.
+Phase 2 time: 0.0044692
+Added kB measurement to graph from starting data: 
+Pressure = 2.23439
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0609237 of which:
+graphsAddTime = 9.8476e-05
+drawObjTime = 0.0424666
+drawGasTime = 0.00158893 of which:
+~	setTexture time = 4.318e-06
+~	boxDraw time = 0.00150236
+~	display time = 1.866e-05
+~	erase time = 5.045e-05
+~	reserve time = 3.907e-06
+emplaceTime = 0.00648005
+
+Started getVideo, call number 47
+Phase 0 time: 8.9162e-05
+Got to data extraction phase.
+Initialized gTime with value 17.050000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 16.8333 <= s.getTime() = 17.0646
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 16.8167 with stats_ front Time0 = 16.8215 and Time = 17.0646
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0944106
+Got to second phase.
+Phase 2 time: 0.00539679
+Added kB measurement to graph from starting data: 
+Pressure = 1.8004
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0742387 of which:
+graphsAddTime = 0.000256038
+drawObjTime = 0.0494658
+drawGasTime = 0.000976739 of which:
+~	setTexture time = 2.742e-06
+~	boxDraw time = 0.000902019
+~	display time = 1.5668e-05
+~	erase time = 4.9737e-05
+~	reserve time = 1.646e-06
+emplaceTime = 0.00231082
+
+Started getVideo, call number 48
+Phase 0 time: 6.578e-05
+Got to data extraction phase.
+Initialized gTime with value 17.266667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 17.0667 <= s.getTime() = 17.2794
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 17.05 with stats_ front Time0 = 17.0646 and Time = 17.2794
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.130668
+Got to second phase.
+Phase 2 time: 0.00932256
+Added kB measurement to graph from starting data: 
+Pressure = 2.24765
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.193109 of which:
+graphsAddTime = 0.00027294
+drawObjTime = 0.153509
+drawGasTime = 0.000724555 of which:
+~	setTexture time = 7.365e-06
+~	boxDraw time = 0.00061296
+~	display time = 1.864e-05
+~	erase time = 6.7625e-05
+~	reserve time = 4.66e-06
+emplaceTime = 0.00435541
+
+Started getVideo, call number 49
+Phase 0 time: 0.000196955
+Got to data extraction phase.
+Initialized gTime with value 17.550000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 17, stats_ = 1
+Starting vector segments extraction.
+Value = 17.2833 <= s.getTime() = 17.5502
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 17.2667 with stats_ front Time0 = 17.2794 and Time = 17.5502
+Found gStartI = 0, gEndI = 17
+Extracted vectors. Result sizes: stats size = 1, renders size = 17
+Phase 1 time: 0.193911
+Got to second phase.
+Phase 2 time: 0.00463213
+Added kB measurement to graph from starting data: 
+Pressure = 1.72988
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0832632 of which:
+graphsAddTime = 0.000108103
+drawObjTime = 0.0497616
+drawGasTime = 0.000330134 of which:
+~	setTexture time = 3.729e-06
+~	boxDraw time = 0.000266162
+~	display time = 1.0521e-05
+~	erase time = 3.9269e-05
+~	reserve time = 2.194e-06
+emplaceTime = 0.0185975
+
+Started getVideo, call number 50
+Phase 0 time: 5.2906e-05
+Got to data extraction phase.
+Initialized gTime with value 17.783333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 17.5667 <= s.getTime() = 17.7879
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 17.55 with stats_ front Time0 = 17.5502 and Time = 17.7879
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0759945
+Got to second phase.
+Phase 2 time: 0.00400894
+Added kB measurement to graph from starting data: 
+Pressure = 1.97008
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0676329 of which:
+graphsAddTime = 0.0001885
+drawObjTime = 0.0486319
+drawGasTime = 0.000341782 of which:
+~	setTexture time = 4.177e-06
+~	boxDraw time = 0.000277643
+~	display time = 1.171e-05
+~	erase time = 3.888e-05
+~	reserve time = 2.099e-06
+emplaceTime = 0.00237381
+
+Started getVideo, call number 51
+Phase 0 time: 4.0691e-05
+Got to data extraction phase.
+Initialized gTime with value 18.033333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 17.8 <= s.getTime() = 18.0438
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 17.7833 with stats_ front Time0 = 17.7879 and Time = 18.0438
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.0762265
+Got to second phase.
+Phase 2 time: 0.00442349
+Added kB measurement to graph from starting data: 
+Pressure = 1.66788
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0795669 of which:
+graphsAddTime = 0.000172182
+drawObjTime = 0.0569251
+drawGasTime = 0.0010441 of which:
+~	setTexture time = 4.028e-06
+~	boxDraw time = 0.000520056
+~	display time = 8.963e-06
+~	erase time = 0.000504149
+~	reserve time = 1.942e-06
+emplaceTime = 0.00462985
+
+Started getVideo, call number 52
+Phase 0 time: 5.5646e-05
+Got to data extraction phase.
+Initialized gTime with value 18.233333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 18.05 <= s.getTime() = 18.2487
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 18.0333 with stats_ front Time0 = 18.0438 and Time = 18.2487
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.0481988
+Got to second phase.
+Phase 2 time: 0.00316992
+Added kB measurement to graph from starting data: 
+Pressure = 2.52296
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0696829 of which:
+graphsAddTime = 6.482e-05
+drawObjTime = 0.05198
+drawGasTime = 0.000346158 of which:
+~	setTexture time = 4.65e-06
+~	boxDraw time = 0.000281453
+~	display time = 1.0734e-05
+~	erase time = 3.9798e-05
+~	reserve time = 2.005e-06
+emplaceTime = 0.00276962
+
+Started getVideo, call number 53
+Phase 0 time: 0.00011302
+Got to data extraction phase.
+Initialized gTime with value 18.433333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 18.25 <= s.getTime() = 18.4389
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 18.2333 with stats_ front Time0 = 18.2487 and Time = 18.4389
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.147083
+Got to second phase.
+Phase 2 time: 0.0113875
+Added kB measurement to graph from starting data: 
+Pressure = 2.36868
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.193058 of which:
+graphsAddTime = 0.00038825
+drawObjTime = 0.150665
+drawGasTime = 0.000516774 of which:
+~	setTexture time = 6.282e-06
+~	boxDraw time = 0.000407756
+~	display time = 1.771e-05
+~	erase time = 6.8728e-05
+~	reserve time = 7.416e-06
+emplaceTime = 0.00415651
+
+Started getVideo, call number 54
+Phase 0 time: 0.000151005
+Got to data extraction phase.
+Initialized gTime with value 18.666667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 18.45 <= s.getTime() = 18.6699
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 18.4333 with stats_ front Time0 = 18.4389 and Time = 18.6699
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.182539
+Got to second phase.
+Phase 2 time: 0.0036538
+Added kB measurement to graph from starting data: 
+Pressure = 1.84394
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0681284 of which:
+graphsAddTime = 0.000113712
+drawObjTime = 0.0543361
+drawGasTime = 0.000300642 of which:
+~	setTexture time = 4.869e-06
+~	boxDraw time = 0.000239629
+~	display time = 1.081e-05
+~	erase time = 3.6318e-05
+~	reserve time = 3.501e-06
+emplaceTime = 0.00240468
+
+Started getVideo, call number 55
+Phase 0 time: 8.9326e-05
+Got to data extraction phase.
+Initialized gTime with value 18.866667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 18.6833 <= s.getTime() = 18.8756
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 18.6667 with stats_ front Time0 = 18.6699 and Time = 18.8756
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.0626607
+Got to second phase.
+Phase 2 time: 0.00441481
+Added kB measurement to graph from starting data: 
+Pressure = 2.06594
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.080079 of which:
+graphsAddTime = 7.1196e-05
+drawObjTime = 0.0606722
+drawGasTime = 0.00028783 of which:
+~	setTexture time = 4.185e-06
+~	boxDraw time = 0.00023042
+~	display time = 9.878e-06
+~	erase time = 3.4472e-05
+~	reserve time = 4.895e-06
+emplaceTime = 0.00214353
+
+Started getVideo, call number 56
+Phase 0 time: 0.000102699
+Got to data extraction phase.
+Initialized gTime with value 19.100000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 18.8833 <= s.getTime() = 19.1089
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 18.8667 with stats_ front Time0 = 18.8756 and Time = 19.1089
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0831423
+Got to second phase.
+Phase 2 time: 0.00377464
+Added kB measurement to graph from starting data: 
+Pressure = 1.66752
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0673801 of which:
+graphsAddTime = 0.000238557
+drawObjTime = 0.0432257
+drawGasTime = 0.000218513 of which:
+~	setTexture time = 2.887e-06
+~	boxDraw time = 0.000171932
+~	display time = 6.937e-06
+~	erase time = 3.048e-05
+~	reserve time = 4.32e-06
+emplaceTime = 0.00875078
+
+Started getVideo, call number 57
+Phase 0 time: 5.6543e-05
+Got to data extraction phase.
+Initialized gTime with value 19.333333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 19.1167 <= s.getTime() = 19.34
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 19.1 with stats_ front Time0 = 19.1089 and Time = 19.34
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0884991
+Got to second phase.
+Phase 2 time: 0.00033456
+Added kB measurement to graph from starting data: 
+Pressure = 2.59475
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.142234 of which:
+graphsAddTime = 0.000228008
+drawObjTime = 0.0969547
+drawGasTime = 0.00110542 of which:
+~	setTexture time = 1.191e-05
+~	boxDraw time = 0.00087673
+~	display time = 6.399e-05
+~	erase time = 0.00012072
+~	reserve time = 1.017e-05
+emplaceTime = 0.0066965
+
+Started getVideo, call number 58
+Phase 0 time: 0.00072442
+Got to data extraction phase.
+Initialized gTime with value 19.600000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 19.35 <= s.getTime() = 19.6023
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 19.3333 with stats_ front Time0 = 19.34 and Time = 19.6023
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.299107
+Got to second phase.
+Phase 2 time: 0.0010996
+Added kB measurement to graph from starting data: 
+Pressure = 1.93551
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.154194 of which:
+graphsAddTime = 0.000226755
+drawObjTime = 0.112202
+drawGasTime = 0.00261007 of which:
+~	setTexture time = 5.83e-06
+~	boxDraw time = 0.00250711
+~	display time = 1.9329e-05
+~	erase time = 6.6568e-05
+~	reserve time = 1.918e-06
+emplaceTime = 0.00564267
+
+Started getVideo, call number 59
+Phase 0 time: 0.000117578
+Got to data extraction phase.
+Initialized gTime with value 19.833333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 19.6167 <= s.getTime() = 19.8388
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 19.6 with stats_ front Time0 = 19.6023 and Time = 19.8388
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0574339
+Got to second phase.
+Phase 2 time: 0.00442693
+Added kB measurement to graph from starting data: 
+Pressure = 1.53989
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0880844 of which:
+graphsAddTime = 0.000319894
+drawObjTime = 0.0495109
+drawGasTime = 0.000789984 of which:
+~	setTexture time = 1.7192e-05
+~	boxDraw time = 0.000677842
+~	display time = 1.7631e-05
+~	erase time = 6.6251e-05
+~	reserve time = 1.987e-06
+emplaceTime = 0.0229787
+
+Started getVideo, call number 60
+Phase 0 time: 8.2534e-05
+Got to data extraction phase.
+Initialized gTime with value 20.050000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 19.85 <= s.getTime() = 20.0616
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 19.8333 with stats_ front Time0 = 19.8388 and Time = 20.0616
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0635074
+Got to second phase.
+Phase 2 time: 0.00368052
+Added kB measurement to graph from starting data: 
+Pressure = 2.28576
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0935824 of which:
+graphsAddTime = 0.00012539
+drawObjTime = 0.0576056
+drawGasTime = 0.000286229 of which:
+~	setTexture time = 4.039e-06
+~	boxDraw time = 0.000224871
+~	display time = 9.283e-06
+~	erase time = 4.1391e-05
+~	reserve time = 4.012e-06
+emplaceTime = 0.0216482
+
+Started getVideo, call number 61
+Phase 0 time: 7.5216e-05
+Got to data extraction phase.
+Initialized gTime with value 20.516667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 28, stats_ = 2
+Starting vector segments extraction.
+Value = 20.0667 <= s.getTime() = 20.5179
+Value = 20.0667 <= s.getTime() = 20.277
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 20.05 with stats_ front Time0 = 20.0616 and Time = 20.277
+Found gStartI = 0, gEndI = 28
+Extracted vectors. Result sizes: stats size = 2, renders size = 28
+Phase 1 time: 0.219488
+Got to second phase.
+Phase 2 time: 0.000714363
+Added kB measurement to graph from starting data: 
+Pressure = 2.13162
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 2.34088
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.293996 of which:
+graphsAddTime = 0.000349382
+drawObjTime = 0.169583
+drawGasTime = 0.00971236 of which:
+~	setTexture time = 2.1331e-05
+~	boxDraw time = 0.00936702
+~	display time = 7.1416e-05
+~	erase time = 0.000203467
+~	reserve time = 5.674e-06
+emplaceTime = 0.0930231
+
+Started getVideo, call number 62
+Phase 0 time: 0.000110815
+Got to data extraction phase.
+Initialized gTime with value 20.766667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 20.5333 <= s.getTime() = 20.7685
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 20.5167 with stats_ front Time0 = 20.5179 and Time = 20.7685
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.0742586
+Got to second phase.
+Phase 2 time: 0.000596625
+Added kB measurement to graph from starting data: 
+Pressure = 1.50492
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.140093 of which:
+graphsAddTime = 0.000229595
+drawObjTime = 0.108632
+drawGasTime = 0.000156866 of which:
+~	setTexture time = 2.06e-06
+~	boxDraw time = 0.000126198
+~	display time = 4.578e-06
+~	erase time = 1.8659e-05
+~	reserve time = 1.548e-06
+emplaceTime = 0.00117075
+
+Started getVideo, call number 63
+Phase 0 time: 0.000111424
+Got to data extraction phase.
+Initialized gTime with value 20.983333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 20.7833 <= s.getTime() = 20.9985
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 20.7667 with stats_ front Time0 = 20.7685 and Time = 20.9985
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0871554
+Got to second phase.
+Phase 2 time: 0.000522295
+Added kB measurement to graph from starting data: 
+Pressure = 1.67196
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0699884 of which:
+graphsAddTime = 0.000231848
+drawObjTime = 0.0399284
+drawGasTime = 0.00710194 of which:
+~	setTexture time = 3.866e-06
+~	boxDraw time = 0.00579909
+~	display time = 1.49e-05
+~	erase time = 0.00127393
+~	reserve time = 2.081e-06
+emplaceTime = 0.00751052
+
+Started getVideo, call number 64
+Phase 0 time: 4.1425e-05
+Got to data extraction phase.
+Initialized gTime with value 21.216667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 21 <= s.getTime() = 21.2249
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 20.9833 with stats_ front Time0 = 20.9985 and Time = 21.2249
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0930299
+Got to second phase.
+Phase 2 time: 0.000340214
+Added kB measurement to graph from starting data: 
+Pressure = 2.45534
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0710329 of which:
+graphsAddTime = 0.000259565
+drawObjTime = 0.0472936
+drawGasTime = 0.00108229 of which:
+~	setTexture time = 4.052e-06
+~	boxDraw time = 0.00100214
+~	display time = 1.3922e-05
+~	erase time = 5.244e-05
+~	reserve time = 2.123e-06
+emplaceTime = 0.0026281
+
+Started getVideo, call number 65
+Phase 0 time: 0.000164755
+Got to data extraction phase.
+Initialized gTime with value 21.450000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 21.2333 <= s.getTime() = 21.4529
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 21.2167 with stats_ front Time0 = 21.2249 and Time = 21.4529
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.228669
+Got to second phase.
+Phase 2 time: 0.0108184
+Added kB measurement to graph from starting data: 
+Pressure = 2.15656
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.189135 of which:
+graphsAddTime = 0.00041648
+drawObjTime = 0.144716
+drawGasTime = 0.000696975 of which:
+~	setTexture time = 7.542e-06
+~	boxDraw time = 0.000564713
+~	display time = 1.968e-05
+~	erase time = 8.4309e-05
+~	reserve time = 4.47e-06
+emplaceTime = 0.00504692
+
+Started getVideo, call number 66
+Phase 0 time: 0.00016541
+Got to data extraction phase.
+Initialized gTime with value 21.716667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 21.4667 <= s.getTime() = 21.7194
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 21.45 with stats_ front Time0 = 21.4529 and Time = 21.7194
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.129645
+Got to second phase.
+Phase 2 time: 0.00444019
+Added kB measurement to graph from starting data: 
+Pressure = 1.68296
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0675382 of which:
+graphsAddTime = 0.000207963
+drawObjTime = 0.0489777
+drawGasTime = 0.00544099 of which:
+~	setTexture time = 4.169e-06
+~	boxDraw time = 0.00535864
+~	display time = 1.6415e-05
+~	erase time = 4.6794e-05
+~	reserve time = 1.654e-06
+emplaceTime = 0.00296186
+
+Started getVideo, call number 67
+Phase 0 time: 0.000138837
+Got to data extraction phase.
+Initialized gTime with value 21.933333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 21.7333 <= s.getTime() = 21.9436
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 21.7167 with stats_ front Time0 = 21.7194 and Time = 21.9436
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0634884
+Got to second phase.
+Phase 2 time: 0.00355326
+Added kB measurement to graph from starting data: 
+Pressure = 2.20483
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0883253 of which:
+graphsAddTime = 0.000106139
+drawObjTime = 0.0716594
+drawGasTime = 0.00119341 of which:
+~	setTexture time = 3.127e-06
+~	boxDraw time = 0.00113334
+~	display time = 1.243e-05
+~	erase time = 3.5037e-05
+~	reserve time = 1.832e-06
+emplaceTime = 0.00204088
+
+Started getVideo, call number 68
+Phase 0 time: 4.8011e-05
+Got to data extraction phase.
+Initialized gTime with value 22.166667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 21.95 <= s.getTime() = 22.1742
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 21.9333 with stats_ front Time0 = 21.9436 and Time = 22.1742
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0960818
+Got to second phase.
+Phase 2 time: 0.00498675
+Added kB measurement to graph from starting data: 
+Pressure = 2.04853
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0705812 of which:
+graphsAddTime = 0.000224772
+drawObjTime = 0.0512509
+drawGasTime = 0.00135636 of which:
+~	setTexture time = 4.477e-06
+~	boxDraw time = 0.000913867
+~	display time = 1.2477e-05
+~	erase time = 0.000415143
+~	reserve time = 1.965e-06
+emplaceTime = 0.00606762
+
+Started getVideo, call number 69
+Phase 0 time: 4.6435e-05
+Got to data extraction phase.
+Initialized gTime with value 22.433333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 22.1833 <= s.getTime() = 22.4428
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 22.1667 with stats_ front Time0 = 22.1742 and Time = 22.4428
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.120222
+Got to second phase.
+Phase 2 time: 0.00521982
+Added kB measurement to graph from starting data: 
+Pressure = 1.76288
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.164675 of which:
+graphsAddTime = 0.000311242
+drawObjTime = 0.120486
+drawGasTime = 0.0011244 of which:
+~	setTexture time = 1.1866e-05
+~	boxDraw time = 0.000789861
+~	display time = 3.5792e-05
+~	erase time = 0.000252627
+~	reserve time = 5.955e-06
+emplaceTime = 0.0070935
+
+Started getVideo, call number 70
+Phase 0 time: 0.000187774
+Got to data extraction phase.
+Initialized gTime with value 22.683333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 22.45 <= s.getTime() = 22.6991
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 22.4333 with stats_ front Time0 = 22.4428 and Time = 22.6991
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.232936
+Got to second phase.
+Phase 2 time: 0.0105998
+Added kB measurement to graph from starting data: 
+Pressure = 1.83587
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.151055 of which:
+graphsAddTime = 0.00027064
+drawObjTime = 0.1278
+drawGasTime = 0.000596471 of which:
+~	setTexture time = 2.069e-06
+~	boxDraw time = 0.000560338
+~	display time = 5.945e-06
+~	erase time = 2.2003e-05
+~	reserve time = 1.605e-06
+emplaceTime = 0.00128461
+
+Started getVideo, call number 71
+Phase 0 time: 9.4084e-05
+Got to data extraction phase.
+Initialized gTime with value 23.150000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 28, stats_ = 2
+Starting vector segments extraction.
+Value = 22.7 <= s.getTime() = 23.1587
+Value = 22.7 <= s.getTime() = 22.8841
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 22.6833 with stats_ front Time0 = 22.6991 and Time = 22.8841
+Found gStartI = 0, gEndI = 28
+Extracted vectors. Result sizes: stats size = 2, renders size = 28
+Phase 1 time: 0.204959
+Got to second phase.
+Phase 2 time: 0.000263539
+Added kB measurement to graph from starting data: 
+Pressure = 3.02378
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Added kB measurement to graph from starting data: 
+Pressure = 1.42906
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.12789 of which:
+graphsAddTime = 0.000312829
+drawObjTime = 0.0893347
+drawGasTime = 0.00318201 of which:
+~	setTexture time = 9.716e-06
+~	boxDraw time = 0.00302649
+~	display time = 2.9631e-05
+~	erase time = 9.6531e-05
+~	reserve time = 8.156e-06
+emplaceTime = 0.0158125
+
+Started getVideo, call number 72
+Phase 0 time: 7.0484e-05
+Got to data extraction phase.
+Initialized gTime with value 23.383333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 23.1667 <= s.getTime() = 23.3951
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 23.15 with stats_ front Time0 = 23.1587 and Time = 23.3951
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0538032
+Got to second phase.
+Phase 2 time: 0.006465
+Added kB measurement to graph from starting data: 
+Pressure = 2.09712
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.071742 of which:
+graphsAddTime = 0.000245714
+drawObjTime = 0.0520596
+drawGasTime = 0.000236964 of which:
+~	setTexture time = 3.557e-06
+~	boxDraw time = 0.000186743
+~	display time = 8.457e-06
+~	erase time = 2.9898e-05
+~	reserve time = 3.806e-06
+emplaceTime = 0.00190183
+
+Started getVideo, call number 73
+Phase 0 time: 0.000126909
+Got to data extraction phase.
+Initialized gTime with value 23.650000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 23.4 <= s.getTime() = 23.6541
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 23.3833 with stats_ front Time0 = 23.3951 and Time = 23.6541
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.106759
+Got to second phase.
+Phase 2 time: 0.00373353
+Added kB measurement to graph from starting data: 
+Pressure = 2.25397
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.174328 of which:
+graphsAddTime = 0.000257906
+drawObjTime = 0.112823
+drawGasTime = 0.00138793 of which:
+~	setTexture time = 1.2345e-05
+~	boxDraw time = 0.00116633
+~	display time = 4.114e-05
+~	erase time = 0.000131317
+~	reserve time = 4.16e-06
+emplaceTime = 0.0289512
+
+Started getVideo, call number 74
+Phase 0 time: 0.00010165
+Got to data extraction phase.
+Initialized gTime with value 23.900000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 23.6667 <= s.getTime() = 23.9062
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 23.65 with stats_ front Time0 = 23.6541 and Time = 23.9062
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.219522
+Got to second phase.
+Phase 2 time: 0.00449047
+Added kB measurement to graph from starting data: 
+Pressure = 1.53613
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0653878 of which:
+graphsAddTime = 0.000101849
+drawObjTime = 0.0466668
+drawGasTime = 0.00109623 of which:
+~	setTexture time = 2.518e-06
+~	boxDraw time = 0.00104179
+~	display time = 1.0387e-05
+~	erase time = 3.3863e-05
+~	reserve time = 2.08e-06
+emplaceTime = 0.00179324
+
+Started getVideo, call number 75
+Phase 0 time: 3.5063e-05
+Got to data extraction phase.
+Initialized gTime with value 24.133333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 23.9167 <= s.getTime() = 24.1458
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 23.9 with stats_ front Time0 = 23.9062 and Time = 24.1458
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0941644
+Got to second phase.
+Phase 2 time: 0.00509613
+Added kB measurement to graph from starting data: 
+Pressure = 2.07876
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0614088 of which:
+graphsAddTime = 0.000173039
+drawObjTime = 0.0436779
+drawGasTime = 0.000303757 of which:
+~	setTexture time = 3.449e-06
+~	boxDraw time = 0.000246369
+~	display time = 9.657e-06
+~	erase time = 3.4935e-05
+~	reserve time = 1.838e-06
+emplaceTime = 0.00231169
+
+Started getVideo, call number 76
+Phase 0 time: 0.00010489
+Got to data extraction phase.
+Initialized gTime with value 24.366667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 24.15 <= s.getTime() = 24.3831
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 24.1333 with stats_ front Time0 = 24.1458 and Time = 24.3831
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0899601
+Got to second phase.
+Phase 2 time: 0.00031589
+Added kB measurement to graph from starting data: 
+Pressure = 2.49642
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.066968 of which:
+graphsAddTime = 8.5434e-05
+drawObjTime = 0.0416137
+drawGasTime = 0.000844427 of which:
+~	setTexture time = 4.955e-06
+~	boxDraw time = 0.000766826
+~	display time = 1.4151e-05
+~	erase time = 4.6927e-05
+~	reserve time = 2.111e-06
+emplaceTime = 0.00260743
+
+Started getVideo, call number 77
+Phase 0 time: 0.00010564
+Got to data extraction phase.
+Initialized gTime with value 24.633333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 24.3833 <= s.getTime() = 24.6347
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 24.3667 with stats_ front Time0 = 24.3831 and Time = 24.6347
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.103315
+Got to second phase.
+Phase 2 time: 0.00337092
+Added kB measurement to graph from starting data: 
+Pressure = 1.44918
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0723478 of which:
+graphsAddTime = 0.000140393
+drawObjTime = 0.0478539
+drawGasTime = 0.00171993 of which:
+~	setTexture time = 5.435e-06
+~	boxDraw time = 0.00160587
+~	display time = 1.8473e-05
+~	erase time = 7.6473e-05
+~	reserve time = 2.298e-06
+emplaceTime = 0.0139793
+
+Started getVideo, call number 78
+Phase 0 time: 6.9027e-05
+Got to data extraction phase.
+Initialized gTime with value 24.866667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 24.65 <= s.getTime() = 24.8772
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 24.6333 with stats_ front Time0 = 24.6347 and Time = 24.8772
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0921188
+Got to second phase.
+Phase 2 time: 0.000348294
+Added kB measurement to graph from starting data: 
+Pressure = 1.73995
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.104543 of which:
+graphsAddTime = 9.3728e-05
+drawObjTime = 0.0657394
+drawGasTime = 0.00329938 of which:
+~	setTexture time = 1.133e-05
+~	boxDraw time = 0.00308396
+~	display time = 4.6792e-05
+~	erase time = 0.000122374
+~	reserve time = 4.705e-06
+emplaceTime = 0.00738604
+
+Started getVideo, call number 79
+Phase 0 time: 0.00016808
+Got to data extraction phase.
+Initialized gTime with value 25.066667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 24.8833 <= s.getTime() = 25.0814
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 24.8667 with stats_ front Time0 = 24.8772 and Time = 25.0814
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.191764
+Got to second phase.
+Phase 2 time: 0.00954666
+Added kB measurement to graph from starting data: 
+Pressure = 2.54613
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.153616 of which:
+graphsAddTime = 0.00025096
+drawObjTime = 0.132209
+drawGasTime = 0.00444208 of which:
+~	setTexture time = 2.583e-06
+~	boxDraw time = 0.00439852
+~	display time = 8.359e-06
+~	erase time = 2.5783e-05
+~	reserve time = 1.899e-06
+emplaceTime = 0.00152392
+
+Started getVideo, call number 80
+Phase 0 time: 4.5547e-05
+Got to data extraction phase.
+Initialized gTime with value 25.283333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 25.0833 <= s.getTime() = 25.2892
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 25.0667 with stats_ front Time0 = 25.0814 and Time = 25.2892
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0867939
+Got to second phase.
+Phase 2 time: 0.00407469
+Added kB measurement to graph from starting data: 
+Pressure = 2.2726
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0577112 of which:
+graphsAddTime = 0.000102272
+drawObjTime = 0.0409909
+drawGasTime = 0.000802541 of which:
+~	setTexture time = 3.089e-06
+~	boxDraw time = 0.000739255
+~	display time = 1.1215e-05
+~	erase time = 3.974e-05
+~	reserve time = 4.242e-06
+emplaceTime = 0.00184733
+
+Started getVideo, call number 81
+Phase 0 time: 0.000103654
+Got to data extraction phase.
+Initialized gTime with value 25.516667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 25.3 <= s.getTime() = 25.5263
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 25.2833 with stats_ front Time0 = 25.2892 and Time = 25.5263
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0681431
+Got to second phase.
+Phase 2 time: 0.00313284
+Added kB measurement to graph from starting data: 
+Pressure = 1.84046
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0853418 of which:
+graphsAddTime = 0.000116848
+drawObjTime = 0.0697064
+drawGasTime = 0.00101274 of which:
+~	setTexture time = 3.322e-06
+~	boxDraw time = 0.000323986
+~	display time = 7.454e-06
+~	erase time = 0.000671134
+~	reserve time = 2.114e-06
+emplaceTime = 0.00587811
+
+Started getVideo, call number 82
+Phase 0 time: 0.000120152
+Got to data extraction phase.
+Initialized gTime with value 25.766667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 25.5333 <= s.getTime() = 25.7811
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 25.5167 with stats_ front Time0 = 25.5263 and Time = 25.7811
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.0943567
+Got to second phase.
+Phase 2 time: 0.000268041
+Added kB measurement to graph from starting data: 
+Pressure = 1.74899
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0697047 of which:
+graphsAddTime = 0.000128822
+drawObjTime = 0.0454935
+drawGasTime = 0.00237776 of which:
+~	setTexture time = 4.915e-06
+~	boxDraw time = 0.00230328
+~	display time = 1.5789e-05
+~	erase time = 4.4552e-05
+~	reserve time = 6.127e-06
+emplaceTime = 0.00837198
+
+Started getVideo, call number 83
+Phase 0 time: 5.9383e-05
+Got to data extraction phase.
+Initialized gTime with value 25.983333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 25.7833 <= s.getTime() = 25.9849
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 25.7667 with stats_ front Time0 = 25.7811 and Time = 25.9849
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0597358
+Got to second phase.
+Phase 2 time: 0.00416905
+Added kB measurement to graph from starting data: 
+Pressure = 2.16135
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.185158 of which:
+graphsAddTime = 0.000105006
+drawObjTime = 0.139667
+drawGasTime = 0.00081728 of which:
+~	setTexture time = 8.49e-06
+~	boxDraw time = 0.000542219
+~	display time = 0.000165379
+~	erase time = 8.0486e-05
+~	reserve time = 4.325e-06
+emplaceTime = 0.0147033
+
+Started getVideo, call number 84
+Phase 0 time: 0.000183735
+Got to data extraction phase.
+Initialized gTime with value 26.166667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 11, stats_ = 1
+Starting vector segments extraction.
+Value = 26 <= s.getTime() = 26.1792
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 25.9833 with stats_ front Time0 = 25.9849 and Time = 26.1792
+Found gStartI = 0, gEndI = 11
+Extracted vectors. Result sizes: stats size = 1, renders size = 11
+Phase 1 time: 0.140976
+Got to second phase.
+Phase 2 time: 0.0108406
+Added kB measurement to graph from starting data: 
+Pressure = 2.4807
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.143478 of which:
+graphsAddTime = 0.00027939
+drawObjTime = 0.120266
+drawGasTime = 0.00058592 of which:
+~	setTexture time = 2.179e-06
+~	boxDraw time = 0.000549951
+~	display time = 6.804e-06
+~	erase time = 2.0477e-05
+~	reserve time = 1.782e-06
+emplaceTime = 0.0013458
+
+Started getVideo, call number 85
+Phase 0 time: 0.000100032
+Got to data extraction phase.
+Initialized gTime with value 26.433333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 26.1833 <= s.getTime() = 26.4419
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 26.1667 with stats_ front Time0 = 26.1792 and Time = 26.4419
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.0969556
+Got to second phase.
+Phase 2 time: 0.00394957
+Added kB measurement to graph from starting data: 
+Pressure = 1.99126
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0706468 of which:
+graphsAddTime = 0.000165881
+drawObjTime = 0.0528051
+drawGasTime = 0.000836261 of which:
+~	setTexture time = 3.461e-06
+~	boxDraw time = 0.000786804
+~	display time = 7.973e-06
+~	erase time = 3.0968e-05
+~	reserve time = 1.673e-06
+emplaceTime = 0.00647881
+
+Started getVideo, call number 86
+Phase 0 time: 8.8794e-05
+Got to data extraction phase.
+Initialized gTime with value 26.666667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 26.45 <= s.getTime() = 26.6681
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 26.4333 with stats_ front Time0 = 26.4419 and Time = 26.6681
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0887159
+Got to second phase.
+Phase 2 time: 0.00669477
+Added kB measurement to graph from starting data: 
+Pressure = 1.94977
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0698406 of which:
+graphsAddTime = 0.000435076
+drawObjTime = 0.0503986
+drawGasTime = 0.00167387 of which:
+~	setTexture time = 4.462e-06
+~	boxDraw time = 0.00154593
+~	display time = 1.847e-05
+~	erase time = 9.2636e-05
+~	reserve time = 1.547e-06
+emplaceTime = 0.00724141
+
+Started getVideo, call number 87
+Phase 0 time: 5.1295e-05
+Got to data extraction phase.
+Initialized gTime with value 26.883333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 26.6833 <= s.getTime() = 26.898
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 26.6667 with stats_ front Time0 = 26.6681 and Time = 26.898
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0786362
+Got to second phase.
+Phase 2 time: 0.00284567
+Added kB measurement to graph from starting data: 
+Pressure = 1.62068
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0653443 of which:
+graphsAddTime = 0.000141562
+drawObjTime = 0.0484754
+drawGasTime = 0.00144765 of which:
+~	setTexture time = 6.773e-06
+~	boxDraw time = 0.00135721
+~	display time = 1.552e-05
+~	erase time = 5.7807e-05
+~	reserve time = 4.422e-06
+emplaceTime = 0.006573
+
+Started getVideo, call number 88
+Phase 0 time: 3.9762e-05
+Got to data extraction phase.
+Initialized gTime with value 27.083333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 26.9 <= s.getTime() = 27.0998
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 26.8833 with stats_ front Time0 = 26.898 and Time = 27.0998
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.0791443
+Got to second phase.
+Phase 2 time: 0.00471566
+Added kB measurement to graph from starting data: 
+Pressure = 2.46035
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.144042 of which:
+graphsAddTime = 0.000111923
+drawObjTime = 0.105964
+drawGasTime = 0.000804806 of which:
+~	setTexture time = 9.335e-06
+~	boxDraw time = 0.00062453
+~	display time = 6.5099e-05
+~	erase time = 8.1031e-05
+~	reserve time = 4.32e-06
+emplaceTime = 0.00582805
+
+Started getVideo, call number 89
+Phase 0 time: 0.00013796
+Got to data extraction phase.
+Initialized gTime with value 27.366667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 17, stats_ = 1
+Starting vector segments extraction.
+Value = 27.1 <= s.getTime() = 27.3673
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 27.0833 with stats_ front Time0 = 27.0998 and Time = 27.3673
+Found gStartI = 0, gEndI = 17
+Extracted vectors. Result sizes: stats size = 1, renders size = 17
+Phase 1 time: 0.31417
+Got to second phase.
+Phase 2 time: 0.014354
+Added kB measurement to graph from starting data: 
+Pressure = 1.6202
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.212128 of which:
+graphsAddTime = 0.00019655
+drawObjTime = 0.152168
+drawGasTime = 0.0007962 of which:
+~	setTexture time = 9.613e-06
+~	boxDraw time = 0.000646425
+~	display time = 2.676e-05
+~	erase time = 8.6807e-05
+~	reserve time = 4.23e-06
+emplaceTime = 0.019342
+
+Started getVideo, call number 90
+Phase 0 time: 5.2061e-05
+Got to data extraction phase.
+Initialized gTime with value 27.550000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 11, stats_ = 1
+Starting vector segments extraction.
+Value = 27.3833 <= s.getTime() = 27.5566
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 27.3667 with stats_ front Time0 = 27.3673 and Time = 27.5566
+Found gStartI = 0, gEndI = 11
+Extracted vectors. Result sizes: stats size = 1, renders size = 11
+Phase 1 time: 0.0650256
+Got to second phase.
+Phase 2 time: 0.00499526
+Added kB measurement to graph from starting data: 
+Pressure = 2.5854
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0655745 of which:
+graphsAddTime = 0.000238019
+drawObjTime = 0.0415368
+drawGasTime = 0.000368519 of which:
+~	setTexture time = 3.75e-06
+~	boxDraw time = 0.000311424
+~	display time = 1.0752e-05
+~	erase time = 3.4153e-05
+~	reserve time = 3.6e-06
+emplaceTime = 0.00982935
+
+Started getVideo, call number 91
+Phase 0 time: 4.1679e-05
+Got to data extraction phase.
+Initialized gTime with value 27.750000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 27.5667 <= s.getTime() = 27.764
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 27.55 with stats_ front Time0 = 27.5566 and Time = 27.764
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.0928773
+Got to second phase.
+Phase 2 time: 0.00040014
+Added kB measurement to graph from starting data: 
+Pressure = 2.07321
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0620085 of which:
+graphsAddTime = 0.000113068
+drawObjTime = 0.0426398
+drawGasTime = 0.000780887 of which:
+~	setTexture time = 3.501e-06
+~	boxDraw time = 0.000271399
+~	display time = 1.1071e-05
+~	erase time = 0.00048614
+~	reserve time = 1.923e-06
+emplaceTime = 0.00251373
+
+Started getVideo, call number 92
+Phase 0 time: 0.00014986
+Got to data extraction phase.
+Initialized gTime with value 27.966667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 27.7667 <= s.getTime() = 27.9727
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 27.75 with stats_ front Time0 = 27.764 and Time = 27.9727
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0714234
+Got to second phase.
+Phase 2 time: 0.00322538
+Added kB measurement to graph from starting data: 
+Pressure = 2.16136
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0877075 of which:
+graphsAddTime = 0.000107382
+drawObjTime = 0.0587741
+drawGasTime = 0.000719107 of which:
+~	setTexture time = 4.303e-06
+~	boxDraw time = 0.000452753
+~	display time = 8.8687e-05
+~	erase time = 0.000162894
+~	reserve time = 2.04e-06
+emplaceTime = 0.0124359
+
+Started getVideo, call number 93
+Phase 0 time: 8.1155e-05
+Got to data extraction phase.
+Initialized gTime with value 28.183333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 27.9833 <= s.getTime() = 28.1843
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 27.9667 with stats_ front Time0 = 27.9727 and Time = 28.1843
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0865712
+Got to second phase.
+Phase 2 time: 0.000735775
+Added kB measurement to graph from starting data: 
+Pressure = 2.05176
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0593306 of which:
+graphsAddTime = 0.000156643
+drawObjTime = 0.040814
+drawGasTime = 0.00129702 of which:
+~	setTexture time = 3.511e-06
+~	boxDraw time = 0.00121717
+~	display time = 2.2812e-05
+~	erase time = 4.3432e-05
+~	reserve time = 2.052e-06
+emplaceTime = 0.00533576
+
+Started getVideo, call number 94
+Phase 0 time: 4.4172e-05
+Got to data extraction phase.
+Initialized gTime with value 28.450000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 28.2 <= s.getTime() = 28.466
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 28.1833 with stats_ front Time0 = 28.1843 and Time = 28.466
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.170609
+Got to second phase.
+Phase 2 time: 0.0103982
+Added kB measurement to graph from starting data: 
+Pressure = 1.66461
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.198273 of which:
+graphsAddTime = 0.00025631
+drawObjTime = 0.144959
+drawGasTime = 0.00164369 of which:
+~	setTexture time = 5.4206e-05
+~	boxDraw time = 0.0013725
+~	display time = 3.8434e-05
+~	erase time = 0.000143315
+~	reserve time = 7.84e-06
+emplaceTime = 0.00774137
+
+Started getVideo, call number 95
+Phase 0 time: 0.00010144
+Got to data extraction phase.
+Initialized gTime with value 28.666667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 28.4667 <= s.getTime() = 28.6824
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 28.45 with stats_ front Time0 = 28.466 and Time = 28.6824
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.146824
+Got to second phase.
+Phase 2 time: 0.000274857
+Added kB measurement to graph from starting data: 
+Pressure = 2.6659
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0834564 of which:
+graphsAddTime = 7.0244e-05
+drawObjTime = 0.0536786
+drawGasTime = 0.00501187 of which:
+~	setTexture time = 3.802e-06
+~	boxDraw time = 0.000933526
+~	display time = 2.3657e-05
+~	erase time = 0.00404149
+~	reserve time = 1.982e-06
+emplaceTime = 0.011432
+
+Started getVideo, call number 96
+Phase 0 time: 3.6301e-05
+Got to data extraction phase.
+Initialized gTime with value 28.933333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 28.6833 <= s.getTime() = 28.9378
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 28.6667 with stats_ front Time0 = 28.6824 and Time = 28.9378
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.120332
+Got to second phase.
+Phase 2 time: 0.00292563
+Added kB measurement to graph from starting data: 
+Pressure = 1.78943
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0667552 of which:
+graphsAddTime = 7.9287e-05
+drawObjTime = 0.0426244
+drawGasTime = 0.000281117 of which:
+~	setTexture time = 3.694e-06
+~	boxDraw time = 0.000227293
+~	display time = 7.956e-06
+~	erase time = 3.4683e-05
+~	reserve time = 1.459e-06
+emplaceTime = 0.00196531
+
+Started getVideo, call number 97
+Phase 0 time: 0.00012608
+Got to data extraction phase.
+Initialized gTime with value 29.183333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 28.95 <= s.getTime() = 29.1864
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 28.9333 with stats_ front Time0 = 28.9378 and Time = 29.1864
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.0909575
+Got to second phase.
+Phase 2 time: 0.000757548
+Added kB measurement to graph from starting data: 
+Pressure = 1.83803
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0816473 of which:
+graphsAddTime = 0.000325405
+drawObjTime = 0.0487682
+drawGasTime = 0.00260074 of which:
+~	setTexture time = 6.476e-06
+~	boxDraw time = 0.00242903
+~	display time = 2.5736e-05
+~	erase time = 0.000124871
+~	reserve time = 1.988e-06
+emplaceTime = 0.0078926
+
+Started getVideo, call number 98
+Phase 0 time: 0.000105032
+Got to data extraction phase.
+Initialized gTime with value 29.400000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 29.2 <= s.getTime() = 29.4102
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 29.1833 with stats_ front Time0 = 29.1864 and Time = 29.4102
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0641587
+Got to second phase.
+Phase 2 time: 0.00331156
+Added kB measurement to graph from starting data: 
+Pressure = 2.15886
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.065159 of which:
+graphsAddTime = 0.000101183
+drawObjTime = 0.0455705
+drawGasTime = 0.000291459 of which:
+~	setTexture time = 3.695e-06
+~	boxDraw time = 0.000230737
+~	display time = 8.158e-06
+~	erase time = 4.2693e-05
+~	reserve time = 2.863e-06
+emplaceTime = 0.00188551
+
+Started getVideo, call number 99
+Phase 0 time: 0.000100862
+Got to data extraction phase.
+Initialized gTime with value 29.616667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 29.4167 <= s.getTime() = 29.6303
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 29.4 with stats_ front Time0 = 29.4102 and Time = 29.6303
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.0935762
+Got to second phase.
+Phase 2 time: 0.00040076
+Added kB measurement to graph from starting data: 
+Pressure = 1.73923
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0870796 of which:
+graphsAddTime = 0.000208238
+drawObjTime = 0.0448968
+drawGasTime = 0.00528097 of which:
+~	setTexture time = 2.559e-05
+~	boxDraw time = 0.00186292
+~	display time = 2.1495e-05
+~	erase time = 0.00334904
+~	reserve time = 4.03e-06
+emplaceTime = 0.00485754
+
+Started getVideo, call number 100
+Phase 0 time: 8.702e-05
+Got to data extraction phase.
+Initialized gTime with value 29.866667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 29.6333 <= s.getTime() = 29.8669
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 29.6167 with stats_ front Time0 = 29.6303 and Time = 29.8669
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.260762
+Got to second phase.
+Phase 2 time: 0.0105754
+Added kB measurement to graph from starting data: 
+Pressure = 2.19308
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.110301 of which:
+graphsAddTime = 0.0004124
+drawObjTime = 0.086007
+drawGasTime = 0.000988342 of which:
+~	setTexture time = 3.277e-06
+~	boxDraw time = 0.000921139
+~	display time = 1.4748e-05
+~	erase time = 3.9859e-05
+~	reserve time = 2.135e-06
+emplaceTime = 0.0056674
+
+Started getVideo, call number 101
+Phase 0 time: 7.6156e-05
+Got to data extraction phase.
+Initialized gTime with value 30.100000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 29.8833 <= s.getTime() = 30.1112
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 29.8667 with stats_ front Time0 = 29.8669 and Time = 30.1112
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0966509
+Got to second phase.
+Phase 2 time: 0.00562927
+Added kB measurement to graph from starting data: 
+Pressure = 1.75432
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0658385 of which:
+graphsAddTime = 0.000237853
+drawObjTime = 0.0479387
+drawGasTime = 0.000875786 of which:
+~	setTexture time = 3.57e-06
+~	boxDraw time = 0.000809575
+~	display time = 1.4642e-05
+~	erase time = 3.8623e-05
+~	reserve time = 2.073e-06
+emplaceTime = 0.00614675
+
+Started getVideo, call number 102
+Phase 0 time: 7.6172e-05
+Got to data extraction phase.
+Initialized gTime with value 30.366667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 30.1167 <= s.getTime() = 30.3698
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 30.1 with stats_ front Time0 = 30.1112 and Time = 30.3698
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.121316
+Got to second phase.
+Phase 2 time: 0.000576568
+Added kB measurement to graph from starting data: 
+Pressure = 1.89469
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0667654 of which:
+graphsAddTime = 0.00016993
+drawObjTime = 0.0420699
+drawGasTime = 0.000445801 of which:
+~	setTexture time = 4.796e-06
+~	boxDraw time = 0.000370232
+~	display time = 1.2631e-05
+~	erase time = 4.7139e-05
+~	reserve time = 1.725e-06
+emplaceTime = 0.00255153
+
+Started getVideo, call number 103
+Phase 0 time: 9.6252e-05
+Got to data extraction phase.
+Initialized gTime with value 30.566667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 30.3833 <= s.getTime() = 30.5746
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 30.3667 with stats_ front Time0 = 30.3698 and Time = 30.5746
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.0545819
+Got to second phase.
+Phase 2 time: 0.00340517
+Added kB measurement to graph from starting data: 
+Pressure = 2.25515
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0800028 of which:
+graphsAddTime = 8.0277e-05
+drawObjTime = 0.064206
+drawGasTime = 0.000206558 of which:
+~	setTexture time = 2.701e-06
+~	boxDraw time = 0.000161281
+~	display time = 5.631e-06
+~	erase time = 3.1938e-05
+~	reserve time = 2.35e-06
+emplaceTime = 0.00594167
+
+Started getVideo, call number 104
+Phase 0 time: 8.6036e-05
+Got to data extraction phase.
+Initialized gTime with value 30.800000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 30.5833 <= s.getTime() = 30.8056
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 30.5667 with stats_ front Time0 = 30.5746 and Time = 30.8056
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0983227
+Got to second phase.
+Phase 2 time: 0.00620442
+Added kB measurement to graph from starting data: 
+Pressure = 2.45093
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0600468 of which:
+graphsAddTime = 0.000250731
+drawObjTime = 0.0408602
+drawGasTime = 0.000378275 of which:
+~	setTexture time = 3.697e-06
+~	boxDraw time = 0.000307724
+~	display time = 1.2596e-05
+~	erase time = 4.3121e-05
+~	reserve time = 2.567e-06
+emplaceTime = 0.0026843
+
+Started getVideo, call number 105
+Phase 0 time: 3.8871e-05
+Got to data extraction phase.
+Initialized gTime with value 31.083333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 17, stats_ = 1
+Starting vector segments extraction.
+Value = 30.8167 <= s.getTime() = 31.0939
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 30.8 with stats_ front Time0 = 30.8056 and Time = 31.0939
+Found gStartI = 0, gEndI = 17
+Extracted vectors. Result sizes: stats size = 1, renders size = 17
+Phase 1 time: 0.288162
+Got to second phase.
+Phase 2 time: 0.00065911
+Added kB measurement to graph from starting data: 
+Pressure = 1.34877
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.248857 of which:
+graphsAddTime = 0.00039588
+drawObjTime = 0.154572
+drawGasTime = 0.00543707 of which:
+~	setTexture time = 1.4846e-05
+~	boxDraw time = 0.00508687
+~	display time = 6.7883e-05
+~	erase time = 0.000225749
+~	reserve time = 3.45e-06
+emplaceTime = 0.0430867
+
+Started getVideo, call number 106
+Phase 0 time: 9.176e-05
+Got to data extraction phase.
+Initialized gTime with value 31.266667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 11, stats_ = 1
+Starting vector segments extraction.
+Value = 31.1 <= s.getTime() = 31.2765
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 31.0833 with stats_ front Time0 = 31.0939 and Time = 31.2765
+Found gStartI = 0, gEndI = 11
+Extracted vectors. Result sizes: stats size = 1, renders size = 11
+Phase 1 time: 0.101455
+Got to second phase.
+Phase 2 time: 0.0112933
+Added kB measurement to graph from starting data: 
+Pressure = 2.43055
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.184971 of which:
+graphsAddTime = 0.00027882
+drawObjTime = 0.138912
+drawGasTime = 0.00320693 of which:
+~	setTexture time = 5.586e-06
+~	boxDraw time = 0.00307384
+~	display time = 2.1068e-05
+~	erase time = 9.1261e-05
+~	reserve time = 3.43e-06
+emplaceTime = 0.00900102
+
+Started getVideo, call number 107
+Phase 0 time: 0.000163842
+Got to data extraction phase.
+Initialized gTime with value 31.450000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 11, stats_ = 1
+Starting vector segments extraction.
+Value = 31.2833 <= s.getTime() = 31.4647
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 31.2667 with stats_ front Time0 = 31.2765 and Time = 31.4647
+Found gStartI = 0, gEndI = 11
+Extracted vectors. Result sizes: stats size = 1, renders size = 11
+Phase 1 time: 0.0512657
+Got to second phase.
+Phase 2 time: 0.00350191
+Added kB measurement to graph from starting data: 
+Pressure = 2.17656
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0698966 of which:
+graphsAddTime = 0.000100688
+drawObjTime = 0.0418814
+drawGasTime = 0.000920051 of which:
+~	setTexture time = 3.492e-06
+~	boxDraw time = 0.000835511
+~	display time = 3.798e-05
+~	erase time = 3.624e-05
+~	reserve time = 2.74e-06
+emplaceTime = 0.0171989
+
+Started getVideo, call number 108
+Phase 0 time: 0.000106437
+Got to data extraction phase.
+Initialized gTime with value 31.683333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 31.4667 <= s.getTime() = 31.6927
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 31.45 with stats_ front Time0 = 31.4647 and Time = 31.6927
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0891917
+Got to second phase.
+Phase 2 time: 0.000641481
+Added kB measurement to graph from starting data: 
+Pressure = 2.1977
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0666601 of which:
+graphsAddTime = 0.000197135
+drawObjTime = 0.046731
+drawGasTime = 0.000379171 of which:
+~	setTexture time = 4.078e-06
+~	boxDraw time = 0.000315105
+~	display time = 1.034e-05
+~	erase time = 4.0449e-05
+~	reserve time = 2.227e-06
+emplaceTime = 0.00244497
+
+Started getVideo, call number 109
+Phase 0 time: 7.9399e-05
+Got to data extraction phase.
+Initialized gTime with value 31.916667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 31.7 <= s.getTime() = 31.9256
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 31.6833 with stats_ front Time0 = 31.6927 and Time = 31.9256
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.1779
+Got to second phase.
+Phase 2 time: 0.00969533
+Added kB measurement to graph from starting data: 
+Pressure = 1.9048
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.206397 of which:
+graphsAddTime = 0.00029104
+drawObjTime = 0.156073
+drawGasTime = 0.00162587 of which:
+~	setTexture time = 8.98e-06
+~	boxDraw time = 0.00147596
+~	display time = 2.8595e-05
+~	erase time = 8.86e-05
+~	reserve time = 3.795e-06
+emplaceTime = 0.0169662
+
+Started getVideo, call number 110
+Phase 0 time: 0.000105765
+Got to data extraction phase.
+Initialized gTime with value 32.183333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 31.9333 <= s.getTime() = 32.1842
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 31.9167 with stats_ front Time0 = 31.9256 and Time = 32.1842
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.215635
+Got to second phase.
+Phase 2 time: 0.00530546
+Added kB measurement to graph from starting data: 
+Pressure = 1.37247
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0763065 of which:
+graphsAddTime = 0.000251881
+drawObjTime = 0.0496278
+drawGasTime = 0.00137538 of which:
+~	setTexture time = 5.203e-06
+~	boxDraw time = 0.00129094
+~	display time = 1.5906e-05
+~	erase time = 5.1737e-05
+~	reserve time = 5.35e-06
+emplaceTime = 0.0140074
+
+Started getVideo, call number 111
+Phase 0 time: 0.000112645
+Got to data extraction phase.
+Initialized gTime with value 32.416667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 32.2 <= s.getTime() = 32.4222
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 32.1833 with stats_ front Time0 = 32.1842 and Time = 32.4222
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0971595
+Got to second phase.
+Phase 2 time: 0.00628196
+Added kB measurement to graph from starting data: 
+Pressure = 2.54707
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0638316 of which:
+graphsAddTime = 0.000261991
+drawObjTime = 0.0448496
+drawGasTime = 0.000499732 of which:
+~	setTexture time = 4.959e-06
+~	boxDraw time = 0.000418061
+~	display time = 1.3931e-05
+~	erase time = 5.2171e-05
+~	reserve time = 3.078e-06
+emplaceTime = 0.00276101
+
+Started getVideo, call number 112
+Phase 0 time: 8.7391e-05
+Got to data extraction phase.
+Initialized gTime with value 32.650000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 32.4333 <= s.getTime() = 32.6562
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 32.4167 with stats_ front Time0 = 32.4222 and Time = 32.6562
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0971904
+Got to second phase.
+Phase 2 time: 0.000548806
+Added kB measurement to graph from starting data: 
+Pressure = 2.05043
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0622022 of which:
+graphsAddTime = 0.000188569
+drawObjTime = 0.0373115
+drawGasTime = 0.000612203 of which:
+~	setTexture time = 5.715e-06
+~	boxDraw time = 0.000518332
+~	display time = 1.6799e-05
+~	erase time = 5.9132e-05
+~	reserve time = 6.737e-06
+emplaceTime = 0.00716063
+
+Started getVideo, call number 113
+Phase 0 time: 8.4669e-05
+Got to data extraction phase.
+Initialized gTime with value 32.900000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 32.6667 <= s.getTime() = 32.9054
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 32.65 with stats_ front Time0 = 32.6562 and Time = 32.9054
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.0996643
+Got to second phase.
+Phase 2 time: 0.0042381
+Added kB measurement to graph from starting data: 
+Pressure = 1.89627
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.159984 of which:
+graphsAddTime = 0.000149275
+drawObjTime = 0.0904612
+drawGasTime = 0.0033462 of which:
+~	setTexture time = 1.0185e-05
+~	boxDraw time = 0.00315662
+~	display time = 3.785e-05
+~	erase time = 0.00010544
+~	reserve time = 3.2825e-05
+emplaceTime = 0.0311334
+
+Started getVideo, call number 114
+Phase 0 time: 0.00018575
+Got to data extraction phase.
+Initialized gTime with value 33.150000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 32.9167 <= s.getTime() = 33.1602
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 32.9 with stats_ front Time0 = 32.9054 and Time = 33.1602
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.225441
+Got to second phase.
+Phase 2 time: 0.00974794
+Added kB measurement to graph from starting data: 
+Pressure = 2.01476
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.193097 of which:
+graphsAddTime = 0.00032603
+drawObjTime = 0.146669
+drawGasTime = 0.000411967 of which:
+~	setTexture time = 3.829e-06
+~	boxDraw time = 0.000298233
+~	display time = 4.1707e-05
+~	erase time = 4.6157e-05
+~	reserve time = 2.278e-06
+emplaceTime = 0.00761193
+
+Started getVideo, call number 115
+Phase 0 time: 0.000117498
+Got to data extraction phase.
+Initialized gTime with value 33.383333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 33.1667 <= s.getTime() = 33.3931
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 33.15 with stats_ front Time0 = 33.1602 and Time = 33.3931
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0957467
+Got to second phase.
+Phase 2 time: 0.00673719
+Added kB measurement to graph from starting data: 
+Pressure = 1.80782
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0599108 of which:
+graphsAddTime = 0.000321861
+drawObjTime = 0.0431042
+drawGasTime = 0.00100467 of which:
+~	setTexture time = 2.555e-06
+~	boxDraw time = 0.000929314
+~	display time = 1.6285e-05
+~	erase time = 4.5251e-05
+~	reserve time = 2.384e-06
+emplaceTime = 0.00219388
+
+Started getVideo, call number 116
+Phase 0 time: 5.3675e-05
+Got to data extraction phase.
+Initialized gTime with value 33.650000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 33.4 <= s.getTime() = 33.6501
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 33.3833 with stats_ front Time0 = 33.3931 and Time = 33.6501
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.0999197
+Got to second phase.
+Phase 2 time: 0.000680328
+Added kB measurement to graph from starting data: 
+Pressure = 1.94122
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0782418 of which:
+graphsAddTime = 0.000188327
+drawObjTime = 0.0423186
+drawGasTime = 0.00521144 of which:
+~	setTexture time = 6.176e-06
+~	boxDraw time = 0.00508522
+~	display time = 2.9916e-05
+~	erase time = 7.5631e-05
+~	reserve time = 2.161e-06
+emplaceTime = 0.0180356
+
+Started getVideo, call number 117
+Phase 0 time: 4.1449e-05
+Got to data extraction phase.
+Initialized gTime with value 33.850000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 12, stats_ = 1
+Starting vector segments extraction.
+Value = 33.6667 <= s.getTime() = 33.8639
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 33.65 with stats_ front Time0 = 33.6501 and Time = 33.8639
+Found gStartI = 0, gEndI = 12
+Extracted vectors. Result sizes: stats size = 1, renders size = 12
+Phase 1 time: 0.100577
+Got to second phase.
+Phase 2 time: 0.0104071
+Added kB measurement to graph from starting data: 
+Pressure = 1.9649
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.222941 of which:
+graphsAddTime = 0.00030697
+drawObjTime = 0.162466
+drawGasTime = 0.00095425 of which:
+~	setTexture time = 7.394e-06
+~	boxDraw time = 0.000671705
+~	display time = 2.296e-05
+~	erase time = 0.000233884
+~	reserve time = 3.665e-06
+emplaceTime = 0.0189982
+
+Started getVideo, call number 118
+Phase 0 time: 0.000134015
+Got to data extraction phase.
+Initialized gTime with value 34.083333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 33.8667 <= s.getTime() = 34.0861
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 33.85 with stats_ front Time0 = 33.8639 and Time = 34.0861
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.215964
+Got to second phase.
+Phase 2 time: 0.00059833
+Added kB measurement to graph from starting data: 
+Pressure = 2.00701
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0948829 of which:
+graphsAddTime = 0.000654364
+drawObjTime = 0.0511942
+drawGasTime = 0.000324643 of which:
+~	setTexture time = 3.523e-06
+~	boxDraw time = 0.000272456
+~	display time = 9.409e-06
+~	erase time = 3.0831e-05
+~	reserve time = 2.463e-06
+emplaceTime = 0.00200878
+
+Started getVideo, call number 119
+Phase 0 time: 8.586e-05
+Got to data extraction phase.
+Initialized gTime with value 34.333333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 15, stats_ = 1
+Starting vector segments extraction.
+Value = 34.1 <= s.getTime() = 34.3418
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 34.0833 with stats_ front Time0 = 34.0861 and Time = 34.3418
+Found gStartI = 0, gEndI = 15
+Extracted vectors. Result sizes: stats size = 1, renders size = 15
+Phase 1 time: 0.0964899
+Got to second phase.
+Phase 2 time: 0.00487362
+Added kB measurement to graph from starting data: 
+Pressure = 2.29816
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0598287 of which:
+graphsAddTime = 0.00017302
+drawObjTime = 0.041725
+drawGasTime = 0.000919898 of which:
+~	setTexture time = 3.626e-06
+~	boxDraw time = 0.00081863
+~	display time = 2.1195e-05
+~	erase time = 6.5608e-05
+~	reserve time = 2.162e-06
+emplaceTime = 0.00303323
+
+Started getVideo, call number 120
+Phase 0 time: 0.000114006
+Got to data extraction phase.
+Initialized gTime with value 34.600000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 16, stats_ = 1
+Starting vector segments extraction.
+Value = 34.35 <= s.getTime() = 34.6077
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 34.3333 with stats_ front Time0 = 34.3418 and Time = 34.6077
+Found gStartI = 0, gEndI = 16
+Extracted vectors. Result sizes: stats size = 1, renders size = 16
+Phase 1 time: 0.107465
+Got to second phase.
+Phase 2 time: 0.0043769
+Added kB measurement to graph from starting data: 
+Pressure = 1.45784
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.122659 of which:
+graphsAddTime = 0.000235537
+drawObjTime = 0.0817055
+drawGasTime = 0.00101018 of which:
+~	setTexture time = 9.299e-06
+~	boxDraw time = 0.000841567
+~	display time = 2.7497e-05
+~	erase time = 0.000106491
+~	reserve time = 3.555e-06
+emplaceTime = 0.00618753
+
+Started getVideo, call number 121
+Phase 0 time: 0.000100635
+Got to data extraction phase.
+Initialized gTime with value 34.816667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 13, stats_ = 1
+Starting vector segments extraction.
+Value = 34.6167 <= s.getTime() = 34.83
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 34.6 with stats_ front Time0 = 34.6077 and Time = 34.83
+Found gStartI = 0, gEndI = 13
+Extracted vectors. Result sizes: stats size = 1, renders size = 13
+Phase 1 time: 0.171945
+Got to second phase.
+Phase 2 time: 0.0100167
+Added kB measurement to graph from starting data: 
+Pressure = 2.42467
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.223046 of which:
+graphsAddTime = 0.000420725
+drawObjTime = 0.162328
+drawGasTime = 0.00499901 of which:
+~	setTexture time = 9.549e-06
+~	boxDraw time = 0.00206294
+~	display time = 3.1815e-05
+~	erase time = 0.00286625
+~	reserve time = 4.217e-05
+emplaceTime = 0.0173186
+
+Started getVideo, call number 122
+Phase 0 time: 0.000101585
+Got to data extraction phase.
+Initialized gTime with value 35.050000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 34.8333 <= s.getTime() = 35.0634
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 34.8167 with stats_ front Time0 = 34.83 and Time = 35.0634
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.122518
+Got to second phase.
+Phase 2 time: 0.00308357
+Added kB measurement to graph from starting data: 
+Pressure = 1.82089
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0809558 of which:
+graphsAddTime = 8.8893e-05
+drawObjTime = 0.0463071
+drawGasTime = 0.000528124 of which:
+~	setTexture time = 2.835e-06
+~	boxDraw time = 0.000373223
+~	display time = 6.37e-06
+~	erase time = 0.000139849
+~	reserve time = 2.893e-06
+emplaceTime = 0.0181226
+
+Started getVideo, call number 123
+Phase 0 time: 0.000115532
+Got to data extraction phase.
+Initialized gTime with value 35.283333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 35.0667 <= s.getTime() = 35.2835
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 35.05 with stats_ front Time0 = 35.0634 and Time = 35.2835
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0963739
+Got to second phase.
+Phase 2 time: 0.000845299
+Added kB measurement to graph from starting data: 
+Pressure = 2.23704
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0532228 of which:
+graphsAddTime = 0.00020319
+drawObjTime = 0.0360209
+drawGasTime = 0.000188636 of which:
+~	setTexture time = 2.123e-06
+~	boxDraw time = 0.000153602
+~	display time = 5.763e-06
+~	erase time = 2.2358e-05
+~	reserve time = 1.891e-06
+emplaceTime = 0.00134974
+
+Started getVideo, call number 124
+Phase 0 time: 7.0823e-05
+Got to data extraction phase.
+Initialized gTime with value 35.516667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 14, stats_ = 1
+Starting vector segments extraction.
+Value = 35.3 <= s.getTime() = 35.517
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 35.2833 with stats_ front Time0 = 35.2835 and Time = 35.517
+Found gStartI = 0, gEndI = 14
+Extracted vectors. Result sizes: stats size = 1, renders size = 14
+Phase 1 time: 0.0928827
+Got to second phase.
+Phase 2 time: 0.000536914
+Added kB measurement to graph from starting data: 
+Pressure = 1.73629
+Volume = 8000
+Temperature = 112.896
+NParticles = 100
+Phase 3 time: 0.0485841 of which:
+graphsAddTime = 0.0002811
+drawObjTime = 0.035991
+drawGasTime = 0.000204748 of which:
+~	setTexture time = 3.201e-06
+~	boxDraw time = 0.000164081
+~	display time = 6.53e-06
+~	erase time = 2.452e-05
+~	reserve time = 2e-06
+emplaceTime = 0.00159322
+
+Started getVideo, call number 125
+Phase 0 time: 7.6519e-05
+Got to data extraction phase.
+Initialized gTime with value 35.516667, gDeltaT with value 0.0166667
