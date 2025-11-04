@@ -667,7 +667,11 @@ bool isIntMultOf(double x, double dt) {
 	return isNegligible(x - dt*std::round(x/dt), dt);
 }
 
-std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyStats, std::function<void(TH1D&, VideoOpts)> userLambda) {
+std::vector<sf::Texture> SimOutput::getVideo(
+		VideoOpts opt, sf::Vector2i windowSize,
+		sf::Texture placeholder, TList& prevGraphs, bool emptyStats,
+		std::function<void(TH1D&, VideoOpts)> fitLambda,
+		std::array<std::function<void()>, 4> drawLambdas) {
 
 	using clock = std::chrono::high_resolution_clock;
 	using doubleTime = std::chrono::duration<double>;
@@ -950,12 +954,15 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	sf::RenderTexture frame;
 	sf::RectangleShape box;
 	std::vector<sf::Texture> frames {};
-	auto drawObj = [&] (auto& TDrawable, double percPosX, double percPosY) {
+	auto drawObj = [&] (
+			auto& TDrawable,
+			double percPosX, double percPosY,
+			const char* drawOpts = "",
+			std::function<void()> drawLambda = {}) {
 		cnvs.Clear();
-		if (TDrawable.IsA() != TH1D::Class()) {
-			TDrawable.Draw("APL");
-		} else {
-			TDrawable.Draw();
+		TDrawable.Draw(drawOpts);
+		if (drawLambda) {
+			drawLambda();
 		}
 		cnvs.Update();
 		trnsfrImg->FromPad(&cnvs);
@@ -1056,13 +1063,13 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
 					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
-					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., windowSize.y * 0.55);
+					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+					drawObj(kBGraph, 0., windowSize.y * 0.55, "APL", drawLambdas[1]);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
-					drawObj(mfpGraph, 0.5, 0.5);
+					drawObj(mfpGraph, 0.5, 0.5, "APL", drawLambdas[3]);
 
 					box.setSize(sf::Vector2f(windowSize.x * 0.5, windowSize.y * 0.5));
 					box.setPosition(windowSize.x * 0.5, windowSize.y);
@@ -1095,22 +1102,22 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 	
 					TH1D speedH {stat.getSpeedH()};
 
-					if (userLambda) {
-						userLambda(speedH, opt);
+					if (fitLambda) {
+						fitLambda(speedH, opt);
 					}
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
 					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
-					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., windowSize.y * 6./10.);
+					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+					drawObj(kBGraph, 0., windowSize.y * 6./10., "APL", drawLambdas[1]);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
-					drawObj(speedH, 0.5, 0.);
-					drawObj(mfpGraph, 0.5, 0.5);
+					drawObj(speedH, 0.5, 0., "HIST", drawLambdas[2]);
+					drawObj(mfpGraph, 0.5, 0.5, "APL", drawLambdas[3]);
 
 					frame.display(); // whuh? is it to refresh something?
 
@@ -1147,8 +1154,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
 					// !!! likely drawing in wrong position everywhere, assumed bottom left corner instead of top left !!!
-					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., 0.5);
+					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+					drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
 					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f/9.f});
 					txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8./9.);
@@ -1207,8 +1214,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., 0.5);
+					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+					drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
 					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f/9.f});
 					txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8./9.);
@@ -1258,16 +1265,11 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 						0.
 					);
 
-					if (userLambda) {
-						static TH1D empty {};
-						userLambda(empty, opt);
-					}
-
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., 0.5);
+					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+					drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
 					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f/9.f});
 					txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8./9.);
@@ -1328,10 +1330,10 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
-					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., 0.5);
-					drawObj(speedH, 0.75, 0.);
-					drawObj(mfpGraph, 0.75, 0.5);
+					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+					drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
+					drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);
+					drawObj(mfpGraph, 0.75, 0.5, "APL", drawLambdas[3]);
 
 					txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
 					txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
@@ -1398,8 +1400,8 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					TH1D speedH;
 					speedH = stat.getSpeedH();
 
-					if (userLambda) {
-						userLambda(speedH, opt);
+					if (fitLambda) {
+						fitLambda(speedH, opt);
 					}
 
 					graphsAddTime += (doubleTime) (clock::now() - rootStart);
@@ -1409,10 +1411,10 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 					auto drawObjStart = clock::now();
 					cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
 					//auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
-					drawObj(pGraphs, 0., 0.);
-					drawObj(kBGraph, 0., 0.5);
-					drawObj(speedH, 0.75, 0.);
-					drawObj(mfpGraph, 0.75, 0.5);
+					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+					drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
+					drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);
+					drawObj(mfpGraph, 0.75, 0.5, "APL", drawLambdas[3]);
 					drawObjTime += (doubleTime) (clock::now() - drawObjStart);
 
 					auto txtDrawStart = clock::now();
@@ -1483,10 +1485,10 @@ std::vector<sf::Texture> SimOutput::getVideo(VideoOpts opt, sf::Vector2i windowS
 
 				cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
 				//auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
-				drawObj(pGraphs, 0., 0.);
-				drawObj(kBGraph, 0., 0.5);
-				drawObj(speedH, 0.75, 0.);
-				drawObj(mfpGraph, 0.75, 0.5);
+				drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
+				drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
+				drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);
+				drawObj(mfpGraph, 0.75, 0.5, "APL", drawLambdas[3]);
 
 				txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
 				txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);

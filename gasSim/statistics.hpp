@@ -11,6 +11,7 @@
 #include <optional>
 #include <queue>
 #include <TH1D.h>
+#include <TCanvas.h>
 
 #include "graphics.hpp"
 #include "physicsEngine.hpp"
@@ -108,7 +109,11 @@ class SimOutput {
   void processData(bool mfpMemory = true);
   void processData(const Camera& camera, const RenderStyle& style,
                    bool mfpMemory = true);
-	std::vector<sf::Texture> getVideo(VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder, TList& prevGraphs, bool emptyQueue = false, std::function<void(TH1D&, VideoOpts)> userLambda = {});
+	std::vector<sf::Texture> getVideo(
+			VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder,
+			TList& prevGraphs, bool emptyQueue = false,
+			std::function<void(TH1D&, VideoOpts)> fitLambda = {},
+			std::array<std::function<void()>, 4> drawLambdas = {});
 
 	// why is this method even here? anyway, it is extremely resource-intensive, never use it
   std::deque<GasData> getData();

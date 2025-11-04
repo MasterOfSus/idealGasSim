@@ -1,4 +1,5 @@
 #include <Rtypes.h>
+#include <RtypesCore.h>
 #include <unistd.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -6,9 +7,11 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <iterator>
 #include <queue>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -17,6 +20,7 @@
 #include <TGraph.h>
 #include <TFile.h>
 #include <TF1.h>
+#include <TLegend.h>
 
 #include "gasSim/INIReader.h"
 #include "gasSim/graphics.hpp"
@@ -95,6 +99,14 @@ gasSim::VideoOpts stovideoopts (std::string s) {
 	} else {
 		throw std::invalid_argument("String not corresponding to available videoOpt.");
 	}
+}
+
+double maxwellian(Double_t* x, Double_t* pars) {
+	static double xV;
+	xV = *x;
+	return 4 * xV * xV *
+		sqrt(std::pow(gasSim::Particle::mass/2./pars[0], 3)/M_PI) *
+		std::pow(M_E, - gasSim::Particle::mass * xV * xV/2./pars[0]);
 }
 
 int main(int argc, const char* argv[]) {
@@ -280,22 +292,83 @@ int main(int argc, const char* argv[]) {
 		graphsList->Add(pGraphs);
 		graphsList->Add(kBGraph);
 		graphsList->Add(mfpGraph);
-		TF1 pLineF {TF1("pLineF", "[0]", 0., 1.)};
+
+		TF1 pLineF {"pLineF", "[0]", 0., 1.};
+		pLineF.SetLineColor(kOrange + 4);
+		pLineF.SetLineWidth(2);
+		TF1 kBGraphF {"kBGraphF", "[0]", 0., 1.};
+		kBGraphF.SetLineColor(kPink + 5);
+		kBGraphF.SetLineWidth(2);
+		TF1 maxwellF {"maxwellF", maxwellian, 0., 1., 1};
+		maxwellF.SetLineColor(kAzure + 5);
+		maxwellF.SetLineWidth(2);
+		TF1 mfpGraphF {"mfpGraphF", "[0] - [1]*pow(e, [2]*x)", 0., 1.};
+		mfpGraphF.SetLineColor(kSpring + 6);
+		mfpGraphF.SetLineWidth(2);
+		TH1D cumulatedSpeedsH {
+			"cumulatedSpeedsH",
+			"Cumulated speeds norms over whole simulation",
+			speedsHTemplate.GetNbinsX(), speedsHTemplate.GetXaxis()->GetXmin(),
+			speedsHTemplate.GetXaxis()->GetXmax()
+		};
 		std::cout << "Extracted graphsList." << std::endl;
 		std::function<void(TH1D&, gasSim::VideoOpts)> fitLambda {
-			[pGraphs, kBGraph, mfpGraph, &pLineF] (TH1D& speedsH, gasSim::VideoOpts opt) {
+			[pGraphs, kBGraph, mfpGraph, &pLineF, &kBGraphF, &maxwellF, &mfpGraphF, &cumulatedSpeedsH] (TH1D& speedsH, gasSim::VideoOpts opt) {
 				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(0)};
 				if (genPGraph->GetN()) {
-					pLineF.GetXaxis()->SetLimits(0., kBGraph->GetPointX(0));
+					pLineF.GetXaxis()->SetLimits(0., genPGraph->GetPointX(genPGraph->GetN() - 1));
 					if (genPGraph->GetN() >= 10) {
 						pGraphs->GetXaxis()->SetLimits(
 							genPGraph->GetPointX(genPGraph->GetN() - 10),
 							genPGraph->GetPointX(genPGraph->GetN() - 1)
 						);
 					}
+					genPGraph->Fit(&pLineF, "Q");
+				}
+				if (kBGraph->GetN()) {
+					kBGraphF.GetXaxis()->SetLimits(0., kBGraph->GetPointX(kBGraph->GetN() - 1));
+					if (kBGraph->GetN() >= 10) {
+						kBGraph->GetXaxis()->SetLimits(
+							kBGraph->GetPointX(kBGraph->GetN() - 10),
+							kBGraph->GetPointX(kBGraph->GetN() - 1)
+						);
+					}
+					kBGraph->Fit(&kBGraphF, "Q");
+				}
+				if (opt != gasSim::VideoOpts::gasPlusCoords) {
+					if (speedsH.GetEntries()) {
+						speedsH.Fit(&maxwellF, "Q");
+						cumulatedSpeedsH.Add(&speedsH);
+					}
+					if (mfpGraph->GetN()) {
+						mfpGraph->GetXaxis()->SetLimits(0., mfpGraph->GetPointX(mfpGraph->GetN() - 1));
+						if (mfpGraph->GetN() >= 10) {
+							mfpGraph->GetXaxis()->SetLimits(
+								mfpGraph->GetPointX(mfpGraph->GetN() - 10),
+								mfpGraph->GetPointX(mfpGraph->GetN() - 1)
+							);
+						}
+						mfpGraph->Fit(&mfpGraphF, "Q");
+					}
 				}
 			}
 		};
+
+		std::array<std::function<void()>, 4> drawLambdas {
+			[&] () {
+				pLineF.Draw("SAME");
+			},
+			[&] () {
+				kBGraphF.Draw("SAME");
+			},
+			[&] () {
+				maxwellF.Draw("SAME");
+			},
+			[&] () {
+				mfpGraphF.Draw("SAME");
+			}
+		};
+
 		gasSim::VideoOpts videoOpt {
 			stovideoopts(cFile.Get("output", "videoOpt", "all"))
 		};
@@ -343,7 +416,7 @@ int main(int argc, const char* argv[]) {
 				}
 				frames.reserve(output.getFramerate() * 10);
 				std::vector<sf::Texture> v = {output.getVideo(
-					videoOpt, windowSize, placeHolder, *graphsList, true
+					videoOpt, windowSize, placeHolder, *graphsList, true, fitLambda, drawLambdas
 				)};
 				frames.insert(
 					frames.end(),
@@ -461,7 +534,7 @@ int main(int argc, const char* argv[]) {
 						lastBatch = true;
 					}
 					std::vector<sf::Texture> v = {output.getVideo(
-						videoOpt, windowSize, placeHolder, *graphsList, true
+						videoOpt, windowSize, placeHolder, *graphsList, true, fitLambda, drawLambdas
 					)};
 					rendersPtr->insert(
 						rendersPtr->end(),
