@@ -1381,8 +1381,8 @@ std::vector<sf::Texture> SimOutput::getVideo(
 					auto rootStart = clock::now();
 					for(int k {0}; k < 7; ++k) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(k)};
-						if (k) {
-							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k - 1)));	
+						if (k < 6) {
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));	
 						} else {
 							graph->AddPoint(stat.getTime(), stat.getPressure());
 						}

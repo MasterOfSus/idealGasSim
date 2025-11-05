@@ -21,6 +21,7 @@
 #include <TFile.h>
 #include <TF1.h>
 #include <TLegend.h>
+#include <TLine.h>
 
 #include "gasSim/INIReader.h"
 #include "gasSim/graphics.hpp"
@@ -101,13 +102,6 @@ gasSim::VideoOpts stovideoopts (std::string s) {
 	}
 }
 
-double maxwellian(Double_t* x, Double_t* pars) {
-	static double xV;
-	xV = *x;
-	return 4 * xV * xV *
-		sqrt(std::pow(gasSim::Particle::mass/2./pars[0], 3)/M_PI) *
-		std::pow(M_E, - gasSim::Particle::mass * xV * xV/2./pars[0]);
-}
 
 int main(int argc, const char* argv[]) {
 	auto simStart = std::chrono::high_resolution_clock::now();
@@ -282,7 +276,10 @@ int main(int argc, const char* argv[]) {
 
 		std::cout << "Initialized processing thread." << std::endl;
 
+		TList* allPtrs = new TList();
+
 		TList* graphsList = new TList();
+		allPtrs->Add(graphsList);
 		TMultiGraph* pGraphs = (TMultiGraph*) inputFile.Get("pGraphs");
 		TGraph* kBGraph = (TGraph*) inputFile.Get("kBGraph");
 		TGraph* mfpGraph = (TGraph*) inputFile.Get("mfpGraph");
@@ -293,79 +290,124 @@ int main(int argc, const char* argv[]) {
 		graphsList->Add(kBGraph);
 		graphsList->Add(mfpGraph);
 
-		TF1 pLineF {"pLineF", "[0]", 0., 1.};
-		pLineF.SetLineColor(kOrange + 4);
-		pLineF.SetLineWidth(2);
-		TF1 kBGraphF {"kBGraphF", "[0]", 0., 1.};
-		kBGraphF.SetLineColor(kPink + 5);
-		kBGraphF.SetLineWidth(2);
-		TF1 maxwellF {"maxwellF", maxwellian, 0., 1., 1};
-		maxwellF.SetLineColor(kAzure + 5);
-		maxwellF.SetLineWidth(2);
-		TF1 mfpGraphF {"mfpGraphF", "[0] - [1]*pow(e, [2]*x)", 0., 1.};
-		mfpGraphF.SetLineColor(kSpring + 6);
-		mfpGraphF.SetLineWidth(2);
-		TH1D cumulatedSpeedsH {
-			"cumulatedSpeedsH",
-			"Cumulated speeds norms over whole simulation",
-			speedsHTemplate.GetNbinsX(), speedsHTemplate.GetXaxis()->GetXmin(),
-			speedsHTemplate.GetXaxis()->GetXmax()
-		};
-		std::cout << "Extracted graphsList." << std::endl;
+		TF1* pLineF = (TF1*) inputFile.Get("pLineF");
+		allPtrs->Add(pLineF);
+		TF1* kBGraphF = (TF1*) inputFile.Get("kBGraphF");
+		allPtrs->Add(kBGraphF);
+		TF1* maxwellF = (TF1*) inputFile.Get("maxwellF");
+		allPtrs->Add(maxwellF);
+		TF1* mfpGraphF = (TF1*) inputFile.Get("mfpGraphF");
+		allPtrs->Add(mfpGraphF);
+		TH1D* cumulatedSpeedsH= (TH1D*) inputFile.Get("cumulatedSpeedsH");
+		allPtrs->Add(cumulatedSpeedsH);
+		TLine* meanLine = (TLine*) inputFile.Get("meanLine");
+		allPtrs->Add(meanLine);
+		TLine* meanSqLine = (TLine*) inputFile.Get("meanSqLine");
+		allPtrs->Add(meanSqLine);
+		TF1* expP = (TF1*) inputFile.Get("expP");
+		allPtrs->Add(expP);
+		TF1* expkB = (TF1*) inputFile.Get("expkB");
+		allPtrs->Add(expkB);
+		TF1* expMFP = (TF1*) inputFile.Get("expMFP");
+		allPtrs->Add(expMFP);
+
+		for (TObject* p: *allPtrs) {
+			if (p->IsZombie()) {
+				throw std::runtime_error("Couldn't find one or more required objects from input file.");
+			}
+		}
+
+		maxwellF->SetParameter(0, cFile.GetReal("simulation parameters", "targetT", 1.));
+		maxwellF->FixParameter(1, cFile.GetInteger("simulation parameters", "nParticles", 1) * output.getStatSize());
+		std::cout << "Set maxwellF nParticles at " << maxwellF->GetParameter(1) << std::endl;
+		maxwellF->FixParameter(2, cFile.GetReal("simulation parameters", "pMass", 1));
+
 		std::function<void(TH1D&, gasSim::VideoOpts)> fitLambda {
-			[pGraphs, kBGraph, mfpGraph, &pLineF, &kBGraphF, &maxwellF, &mfpGraphF, &cumulatedSpeedsH] (TH1D& speedsH, gasSim::VideoOpts opt) {
+			[=] (TH1D& speedsH, gasSim::VideoOpts opt) {
 				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(0)};
 				if (genPGraph->GetN()) {
-					pLineF.GetXaxis()->SetLimits(0., genPGraph->GetPointX(genPGraph->GetN() - 1));
-					if (genPGraph->GetN() >= 10) {
-						pGraphs->GetXaxis()->SetLimits(
-							genPGraph->GetPointX(genPGraph->GetN() - 10),
-							genPGraph->GetPointX(genPGraph->GetN() - 1)
-						);
-					}
-					genPGraph->Fit(&pLineF, "Q");
+
+					genPGraph->Fit(pLineF, "Q");
 				}
 				if (kBGraph->GetN()) {
-					kBGraphF.GetXaxis()->SetLimits(0., kBGraph->GetPointX(kBGraph->GetN() - 1));
-					if (kBGraph->GetN() >= 10) {
-						kBGraph->GetXaxis()->SetLimits(
-							kBGraph->GetPointX(kBGraph->GetN() - 10),
+					if (kBGraph->GetN() >= 30) {
+						kBGraph->GetXaxis()->SetRangeUser(
+							kBGraph->GetPointX(kBGraph->GetN() - 30),
 							kBGraph->GetPointX(kBGraph->GetN() - 1)
 						);
 					}
-					kBGraph->Fit(&kBGraphF, "Q");
+					kBGraph->Fit(kBGraphF, "Q");
 				}
 				if (opt != gasSim::VideoOpts::gasPlusCoords) {
 					if (speedsH.GetEntries()) {
-						speedsH.Fit(&maxwellF, "Q");
-						cumulatedSpeedsH.Add(&speedsH);
+						speedsH.Fit(maxwellF, "Q");
+						cumulatedSpeedsH->Add(&speedsH);
+						meanLine->SetX1(speedsH.GetMean());
+						meanLine->SetY1(0.);
+						meanLine->SetX2(meanLine->GetX1());
+						meanLine->SetY2(maxwellF->Eval(meanLine->GetX1()));
+						double rms {speedsH.GetRMS()};
+						meanSqLine->SetX1(sqrt(rms * rms + meanLine->GetX1() * meanLine->GetX1()));
+						meanSqLine->SetY1(0.);
+						meanSqLine->SetX2(meanSqLine->GetX1());
+						meanSqLine->SetY2(maxwellF->Eval(meanSqLine->GetX1()));
 					}
 					if (mfpGraph->GetN()) {
-						mfpGraph->GetXaxis()->SetLimits(0., mfpGraph->GetPointX(mfpGraph->GetN() - 1));
-						if (mfpGraph->GetN() >= 10) {
-							mfpGraph->GetXaxis()->SetLimits(
-								mfpGraph->GetPointX(mfpGraph->GetN() - 10),
+						if (mfpGraph->GetN() >= 30) {
+							mfpGraph->GetXaxis()->SetRangeUser(
+								mfpGraph->GetPointX(mfpGraph->GetN() - 30),
 								mfpGraph->GetPointX(mfpGraph->GetN() - 1)
 							);
 						}
-						mfpGraph->Fit(&mfpGraphF, "Q");
+						mfpGraph->Fit(mfpGraphF, "Q");
 					}
 				}
 			}
 		};
 
+		expP->SetParameter(0,
+			cFile.GetFloat("simulation parameters", "targetT", 1) * 
+			cFile.GetInteger("simulation parameters", "nParticles", 1) /
+			std::pow(cFile.GetReal("simulation parameters", "boxSide", 1), 3.)
+		);
+		expkB->SetParameter(0, 1);
+		expMFP->SetParameter(0,
+			cFile.GetFloat("simulation parameters", "targetT", 1) /
+			M_SQRT2 / expP->GetParameter(0) /
+			(M_PI * gasSim::Particle::radius * gasSim::Particle::radius)
+		);
+		std::cout << "Expected MFP set at " << expMFP->GetParameter(0) << " units." << std::endl;
+
 		std::array<std::function<void()>, 4> drawLambdas {
-			[&] () {
-				pLineF.Draw("SAME");
+			[=] () {
+				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(0)};
+				if (genPGraph->GetN()) {
+					pLineF->GetXaxis()->SetRangeUser(0., genPGraph->GetPointX(genPGraph->GetN() - 1));
+					if (genPGraph->GetN() >= 30) {
+						pGraphs->GetXaxis()->SetRangeUser(
+							genPGraph->GetPointX(genPGraph->GetN() - 30),
+							genPGraph->GetPointX(genPGraph->GetN() - 1)
+						);
+					}
+				}
+				pLineF->Draw("SAME");
+				expP->SetRange(0., genPGraph->GetXaxis()->GetXmax());
+				expP->Draw("SAME");
 			},
-			[&] () {
-				kBGraphF.Draw("SAME");
+			[=] () {
+				kBGraphF->Draw("SAME");
+				expkB->SetRange(0., kBGraph->GetXaxis()->GetXmax());
+				expkB->Draw("SAME");
 			},
-			[&] () {
-				maxwellF.Draw("SAME");
+			[=] () {
+				maxwellF->Draw("SAME");
+				meanLine->Draw("SAME");
+				meanSqLine->Draw("SAME");
 			},
-			[&] () {
-				mfpGraphF.Draw("SAME");
+			[=] () {
+				mfpGraphF->Draw("SAME");
+				expMFP->SetRange(0., mfpGraph->GetXaxis()->GetXmax());
+				expMFP->Draw("SAME");
 			}
 		};
 
@@ -441,54 +483,60 @@ int main(int argc, const char* argv[]) {
 			window.setActive(false);
 			std::atomic<bool> stopBufferLoop {false};
 			std::atomic<bool> bufferKillSignal {false};
+			std::atomic<bool> stop {false};
 			std::cout << "Reached video output loop." << std::endl;
 			std::atomic<int> queueNumber {1};
 			std::atomic<int> launchedPlayThreadsN {0};
 			std::atomic<int> droppedFrames {0};
 			std::atomic<int> framesToDrop {0};
 			auto playLambda {
-				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, &droppedFrames, &framesToDrop, frameTimems]
+				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, &droppedFrames, &framesToDrop, frameTimems, &stop]
 				(std::shared_ptr<std::vector<sf::Texture>> rPtr,
 				 int threadN) {
 					sf::Sprite auxS;
 					while (threadN != queueNumber) {
+						if (stop.load()) break;
 						std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
 					}
-					std::cout << "Found queue number " << queueNumber << " equal to thread number " << threadN << ", stopping buffer loop." << std::endl;
-					stopBufferLoop = true;
-					std::lock_guard<std::mutex> windowGuard {windowMtx};
-					window.setActive();
-					auto lastDrawEnd {std::chrono::high_resolution_clock::now()};
-					float frameTimeS {static_cast<float>(frameTimems/1000.)};
-					std::chrono::duration<float> lastFrameDrawTime {};
-					for (const sf::Texture& r: *rPtr) {
-						if (window.isOpen() && !framesToDrop.load()) {
-							lastFrameDrawTime =
-								std::chrono::high_resolution_clock::now() - lastDrawEnd;
-							if (
-								lastFrameDrawTime.count() <= frameTimeS
-							) {
-								auxS.setTexture(r);
-								window.draw(auxS);
-								window.display();
-							} else {
-								framesToDrop.fetch_add(static_cast<int>(lastFrameDrawTime.count()/frameTimems) - 1);
-								droppedFrames.fetch_add(1);
+					if (!stop.load()) {
+						std::cout << "Found queue number " << queueNumber << " equal to thread number " << threadN << ", stopping buffer loop." << std::endl;
+						stopBufferLoop = true;
+						std::lock_guard<std::mutex> windowGuard {windowMtx};
+						window.setActive();
+						auto lastDrawEnd {std::chrono::high_resolution_clock::now()};
+						float frameTimeS {static_cast<float>(frameTimems/1000.)};
+						std::chrono::duration<float> lastFrameDrawTime {};
+						for (const sf::Texture& r: *rPtr) {
+							if (window.isOpen()) {
+								if (!framesToDrop.load()) {
+									lastFrameDrawTime =
+										std::chrono::high_resolution_clock::now() - lastDrawEnd;
+									if (
+										lastFrameDrawTime.count() <= frameTimeS
+									) {
+										auxS.setTexture(r);
+										window.draw(auxS);
+										window.display();
+									} else {
+										framesToDrop.fetch_add(static_cast<int>(lastFrameDrawTime.count()/frameTimems) - 1);
+										droppedFrames.fetch_add(1);
+									}
+									lastDrawEnd = std::chrono::high_resolution_clock::now();
+								} else {
+									framesToDrop.fetch_sub(1);
+									lastDrawEnd = std::chrono::high_resolution_clock::now();
+								}
 							}
-							lastDrawEnd = std::chrono::high_resolution_clock::now();
-						} else {
-							framesToDrop.fetch_sub(1);
-							lastDrawEnd = std::chrono::high_resolution_clock::now();
 						}
-					} 
-					queueNumber++;
-					if (launchedPlayThreadsN == threadN) {
-						std::cout << "Found playThreads number " << launchedPlayThreadsN << " still equal to thread number " << threadN << ": starting up buffering loop." << std::endl;
-						stopBufferLoop = false;
-					} else {
-						std::cout << "Found playThreads number " << launchedPlayThreadsN << " higher than thread number " << threadN << ": not reactivating buffering loop" << std::endl;
+						queueNumber++;
+						if (launchedPlayThreadsN == threadN) {
+							std::cout << "Found playThreads number " << launchedPlayThreadsN << " still equal to thread number " << threadN << ": starting up buffering loop." << std::endl;
+							stopBufferLoop = false;
+						} else {
+							std::cout << "Found playThreads number " << launchedPlayThreadsN << " higher than thread number " << threadN << ": not reactivating buffering loop" << std::endl;
+						}
+						window.setActive(false);
 					}
-					window.setActive(false);
 				}
 			};
 			std::thread bufferingLoop {
@@ -526,10 +574,20 @@ int main(int argc, const char* argv[]) {
 				}
 			};
 			bool lastBatch {false};
-			while (true) {
+			sf::Event e {};
+			while (!stop) {
 				std::shared_ptr<std::vector<sf::Texture>> rendersPtr {std::make_shared<std::vector<sf::Texture>>()};
 				rendersPtr->reserve(output.getFramerate() * 10);
 				while (rendersPtr->size() <= output.getFramerate() * targetBufferTime) {
+					while(window.pollEvent(e)) {
+						if (e.type == sf::Event::Closed) {
+							window.close();
+							bufferKillSignal.store(true);
+							stop.store(true);
+							std::this_thread::sleep_for(std::chrono::seconds(1));
+							break;
+						}
+					}
 					if (output.isDone() && output.getRawDataSize() < output.getStatSize() && !output.isProcessing()) {
 						lastBatch = true;
 					}
@@ -566,7 +624,6 @@ int main(int argc, const char* argv[]) {
 					std::cout << "Joining playThread." << std::endl;
 					playThread.join();
 					bufferKillSignal = true;
-					std::lock_guard<std::mutex> windowGuard {windowMtx};
 					break;
 				}
 			}
@@ -587,9 +644,29 @@ int main(int argc, const char* argv[]) {
 			processThread.join();
 		}
 		
+		inputFile.Close();
 		std::cout << "Leftover data: " << output.getRawDataSize() << " collisions." << std::endl;
+		TFile* rootOutput {new TFile(
+			(std::ostringstream() << "outputs/" << cFile.Get("output", "rootOutputName", "output") << ".root").str().c_str(),
+			"RECREATE")
+		};
+		rootOutput->SetTitle(rootOutput->GetName());
+		allPtrs->Add(rootOutput);
+		graphsList->Write();
+		pLineF->Write();
+		kBGraph->Write();
+		kBGraphF->Write();
+		mfpGraph->Write();
+		mfpGraphF->Write();
+		maxwellF->Write();
 
-		graphsList->Delete();
+		cumulatedSpeedsH->Fit(maxwellF);
+		cumulatedSpeedsH->GetXaxis()->SetRange(0., cumulatedSpeedsH->GetXaxis()->GetXmax());
+		cumulatedSpeedsH->Write();
+
+		rootOutput->Close();
+
+		allPtrs->Delete();
 		return 0;
   } catch (const std::runtime_error& error) {
     std::cout << "RUNTIME ERROR: " << error.what() << std::endl;
