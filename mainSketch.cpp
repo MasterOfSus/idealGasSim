@@ -266,13 +266,16 @@ int main(int argc, const char* argv[]) {
 
 		std::cout << "Initializing processing thread." << std::endl;
 
-		std::thread processThread {
-			[&output, &camera, &style, mfpMemory] {
-				output.processData(
-					camera, style, mfpMemory
-				);
-			}
-		};
+		std::thread processThread;
+		if (stovideoopts(cFile.Get("output", "videoOpt", "justGas")) != gasSim::VideoOpts::justStats) {
+			processThread = std::thread( 
+				[&output, &camera, &style, mfpMemory] {
+					output.processData(
+						camera, style, mfpMemory
+					);
+				}
+			);
+		}
 
 		std::cout << "Initialized processing thread." << std::endl;
 
@@ -298,7 +301,10 @@ int main(int argc, const char* argv[]) {
 		allPtrs->Add(maxwellF);
 		TF1* mfpGraphF = (TF1*) inputFile.Get("mfpGraphF");
 		allPtrs->Add(mfpGraphF);
-		TH1D* cumulatedSpeedsH= (TH1D*) inputFile.Get("cumulatedSpeedsH");
+		TH1D* cumulatedSpeedsH = (TH1D*) inputFile.Get("cumulatedSpeedsH");
+		if (!cumulatedSpeedsH) {
+			throw std::runtime_error("Cumulated speeds histo not found.");
+		}
 		allPtrs->Add(cumulatedSpeedsH);
 		TLine* meanLine = (TLine*) inputFile.Get("meanLine");
 		allPtrs->Add(meanLine);
@@ -323,7 +329,7 @@ int main(int argc, const char* argv[]) {
 		maxwellF->FixParameter(2, cFile.GetReal("simulation parameters", "pMass", 1));
 
 		std::function<void(TH1D&, gasSim::VideoOpts)> fitLambda {
-			[=] (TH1D& speedsH, gasSim::VideoOpts opt) {
+			[&] (TH1D& speedsH, gasSim::VideoOpts opt) {
 				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(0)};
 				if (genPGraph->GetN()) {
 
@@ -341,7 +347,12 @@ int main(int argc, const char* argv[]) {
 				if (opt != gasSim::VideoOpts::gasPlusCoords) {
 					if (speedsH.GetEntries()) {
 						speedsH.Fit(maxwellF, "Q");
+						/*
+						if (!cumulatedSpeedsH) {
+							throw std::runtime_error("Cumulated speeds histo is nullptr.");
+						}
 						cumulatedSpeedsH->Add(&speedsH);
+						*/
 						meanLine->SetX1(speedsH.GetMean());
 						meanLine->SetY1(0.);
 						meanLine->SetX2(meanLine->GetX1());
@@ -379,7 +390,7 @@ int main(int argc, const char* argv[]) {
 		std::cout << "Expected MFP set at " << expMFP->GetParameter(0) << " units." << std::endl;
 
 		std::array<std::function<void()>, 4> drawLambdas {
-			[=] () {
+			[&] () {
 				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(0)};
 				if (genPGraph->GetN()) {
 					pLineF->GetXaxis()->SetRangeUser(0., genPGraph->GetPointX(genPGraph->GetN() - 1));
@@ -394,17 +405,17 @@ int main(int argc, const char* argv[]) {
 				expP->SetRange(0., genPGraph->GetXaxis()->GetXmax());
 				expP->Draw("SAME");
 			},
-			[=] () {
+			[&] () {
 				kBGraphF->Draw("SAME");
 				expkB->SetRange(0., kBGraph->GetXaxis()->GetXmax());
 				expkB->Draw("SAME");
 			},
-			[=] () {
+			[&] () {
 				maxwellF->Draw("SAME");
 				meanLine->Draw("SAME");
 				meanSqLine->Draw("SAME");
 			},
-			[=] () {
+			[&] () {
 				mfpGraphF->Draw("SAME");
 				expMFP->SetRange(0., mfpGraph->GetXaxis()->GetXmax());
 				expMFP->Draw("SAME");
@@ -537,6 +548,7 @@ int main(int argc, const char* argv[]) {
 						}
 						window.setActive(false);
 					}
+					std::cout << "Playthread n. " << threadN << " out. *mic drop*" << std::endl;
 				}
 			};
 			std::thread bufferingLoop {
@@ -630,7 +642,9 @@ int main(int argc, const char* argv[]) {
 			std::cout << "Reached main loop end." << std::endl;
 			stopBufferLoop = true;
 			std::cout << "Set buffer loop to stop." << std::endl;
-			bufferingLoop.join();
+			if (bufferingLoop.joinable()) {
+				bufferingLoop.join();
+			}
 			window.close();
 			std::cout << "Dropped frames: " << droppedFrames.load() << std::endl;
 		}
@@ -650,7 +664,11 @@ int main(int argc, const char* argv[]) {
 			(std::ostringstream() << "outputs/" << cFile.Get("output", "rootOutputName", "output") << ".root").str().c_str(),
 			"RECREATE")
 		};
+
+		std::cerr << "Got to writing without crashing." << std::endl;
+
 		rootOutput->SetTitle(rootOutput->GetName());
+		rootOutput->cd();
 		allPtrs->Add(rootOutput);
 		graphsList->Write();
 		pLineF->Write();
@@ -659,14 +677,14 @@ int main(int argc, const char* argv[]) {
 		mfpGraph->Write();
 		mfpGraphF->Write();
 		maxwellF->Write();
+		// cumulatedSpeedsH->Write();
 
-		cumulatedSpeedsH->Fit(maxwellF);
-		cumulatedSpeedsH->GetXaxis()->SetRange(0., cumulatedSpeedsH->GetXaxis()->GetXmax());
-		cumulatedSpeedsH->Write();
+		std::cerr << "Got to closing without crashing." << std::endl;
 
 		rootOutput->Close();
 
-		allPtrs->Delete();
+		std::cerr << "Got to deleting without crashing." << std::endl;
+
 		return 0;
   } catch (const std::runtime_error& error) {
     std::cout << "RUNTIME ERROR: " << error.what() << std::endl;
