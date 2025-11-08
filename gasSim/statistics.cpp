@@ -34,6 +34,7 @@
 #include <TMultiGraph.h>
 #include <TCanvas.h>
 #include <TImage.h>
+#include <TSystem.h>
 
 #include "graphics.hpp"
 #include "physicsEngine.hpp"
@@ -766,6 +767,7 @@ std::vector<sf::Texture> SimOutput::getVideo(
 					}
 				}
 			} else {
+				std::cout << "Found empty stats_, returning empty vector." << std::endl;
 				return {};
 			}
 			} // end of lock scope
@@ -964,10 +966,11 @@ std::vector<sf::Texture> SimOutput::getVideo(
 		argbToRgba(
 			trnsfrImg->GetArgbArray(),
 			trnsfrImg->GetWidth(), trnsfrImg->GetHeight(),
-			pixels);
+			pixels
+		);
 		auxTxtr.update(pixels.data());
 		//auxTxtr.update(auxImg);
-		auxSprt.setTexture(auxTxtr);
+		auxSprt.setTexture(auxTxtr, true);
 		auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
 		frame.draw(auxSprt);
 	}};
@@ -1043,8 +1046,10 @@ std::vector<sf::Texture> SimOutput::getVideo(
 			}
 			break;
 		case VideoOpts::justStats:
+			std::cerr << "Working with stats of size: " << stats.size() << std::endl;
 			if (stats.size()) {
 				if (*fTime_ + gDeltaT < stats.front().getTime0()) { // insert empty data and use placeholder render
+					std::cerr << "Inserting placeholder." << std::endl;
 					auto& stat {stats.front()};
 					for(int i {0}; i < 7; ++i) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
@@ -1060,12 +1065,15 @@ std::vector<sf::Texture> SimOutput::getVideo(
 					frame.clear();
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
+					auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.45);
 					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
 					drawObj(kBGraph, 0., windowSize.y * 0.55, "APL", drawLambdas[1]);
 
+
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
 					//auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
 					drawObj(mfpGraph, 0.5, 0.5, "APL", drawLambdas[3]);
@@ -1097,6 +1105,7 @@ std::vector<sf::Texture> SimOutput::getVideo(
 				}
 
 				for (const TdStats& stat: stats) {
+					std::cerr << "For stat with t0 = " << stat.getTime0() << " and t = " << stat.getTime() << "inserting frames." << std::endl;
 					for(int i {0}; i < 7; ++i) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
 						if (i < 6) {
@@ -1117,14 +1126,17 @@ std::vector<sf::Texture> SimOutput::getVideo(
 					if (fitLambda) {
 						fitLambda(speedH, opt);
 					}
+
 					frame.clear();
 
-					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);;
+					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);
+					auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.45);
 
 					drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
-					drawObj(kBGraph, 0., windowSize.y * 6./10., "APL", drawLambdas[1]);
+					drawObj(kBGraph, 0., 0.55, "APL", drawLambdas[1]);
 
 					cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+					auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
 
 					drawObj(speedH, 0.5, 0., "HIST", drawLambdas[2]);
 					drawObj(mfpGraph, 0.5, 0.5, "APL", drawLambdas[3]);
@@ -1139,12 +1151,15 @@ std::vector<sf::Texture> SimOutput::getVideo(
 					frame.draw(NText);
 					frame.draw(TText);
 
-					frame.display(); // whuh? is it to refresh something?
-
-					while (*fTime_ + gDeltaT < stat.getTime()) { 
+					frame.display();
+					
+					int i {0};
+					while (*fTime_ + gDeltaT < stat.getTime()) {
+						std::cerr << i++;
 						*fTime_ += gDeltaT;
 						frames.emplace_back(frame.getTexture());
 					}
+					std::cerr << std::endl;
 				}
 				trnsfrImg->Delete();
 				stats.clear();
@@ -1423,7 +1438,7 @@ std::vector<sf::Texture> SimOutput::getVideo(
 					}
 				}
 				size_t rIndex {0};
-				while (*fTime_ + gDeltaT_ < stats.back().getTime()) { // likely skips the first frame here
+				while (*fTime_ + gDeltaT_ < stats.back().getTime()) {
 					assert(*fTime_ + gDeltaT_ >= stats.front().getTime0());
 					auto s {
 						std::lower_bound(
@@ -1483,38 +1498,6 @@ std::vector<sf::Texture> SimOutput::getVideo(
 					frame.draw(NText);
 					frame.draw(TText);
 
-					// insert paired renders or placeholders
-					/*
-					auto reserveStart = clock::now();
-					frames.reserve(renders.size());
-					reserveTime += (doubleTime) (clock::now() - reserveStart);
-					while (*fTime_ + gDeltaT_ < stat.getTime()) {
-						*fTime_ += gDeltaT;
-						assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
-						if (renders.size() && isNegligible(*fTime_ - renders[0].second, gDeltaT)) {
-							auto drawGasStart = clock::now();
-							box.setTexture(&(renders.front().first));
-							setTextureTime += (doubleTime) (clock::now() - drawGasStart);
-							auto boxDrawStart = clock::now();
-							frame.draw(box);
-							boxDrawTime += (doubleTime) (clock::now() - boxDrawStart);
-							auto displayStart = clock::now();
-							frame.display();
-							displayTime += (doubleTime) (clock::now() - displayStart);
-							auto eraseStart = clock::now();
-							renders.pop_front();
-							eraseTime += (doubleTime) (clock::now() - eraseStart);
-							drawGasTime += (doubleTime) (clock::now() - drawGasStart);
-						} else {
-							box.setTexture(&placeholder);
-							frame.draw(box);
-							frame.display();
-						}
-						auto emplaceStart = clock::now();
-						frames.emplace_back(frame.getTexture());
-						emplaceTime += (doubleTime) (clock::now() - emplaceStart);
-					}
-					*/
 					box.setPosition(windowSize.x * 0.25, 0.);
 					while (*fTime_ + gDeltaT < stat.getTime()) {
 						*fTime_ += gDeltaT;

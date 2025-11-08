@@ -275,6 +275,12 @@ int main(int argc, const char* argv[]) {
 					);
 				}
 			);
+		} else {
+			processThread = std::thread(
+				[&output, mfpMemory] {
+					output.processData(mfpMemory);
+				}
+			);
 		}
 
 		std::cout << "Initialized processing thread." << std::endl;
