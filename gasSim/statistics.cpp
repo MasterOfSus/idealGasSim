@@ -720,13 +720,15 @@ std::vector<sf::Texture> SimOutput::getVideo(
 			std::lock_guard<std::mutex> gTimeGuard {gTimeMtx_};
 			gTime = gTime_;
 			} // end of locks scope 2
-			gDeltaT = gDeltaT_.load();
 			if (!gTime.has_value()) {
 				return {};
 			}
+			gDeltaT = gDeltaT_.load();
 			if (renders_.size()) {
 				renders = std::move(renders_);
 				renders_.clear();
+			} else {
+				return {};
 			}
 			} // end of lock scope
 			if ((!fTime_.has_value() || !isIntMultOf(*gTime - *fTime_, gDeltaT))) {
@@ -1014,35 +1016,42 @@ std::vector<sf::Texture> SimOutput::getVideo(
 	switch (opt) {
 		case VideoOpts::justGas:
 			{
-			trnsfrImg->Delete();
-			assert(isIntMultOf(*fTime_ - *gTime, gDeltaT));
-			assert(gTime == renders.back().second);
-			assert(fTime_ <= getRendersT0(renders));
-			box.setPosition(0, windowSize.y);
-			size_t rIndex {0};
-			while (*fTime_ + gDeltaT < stats.front().getTime0()) {
-				*fTime_ += gDeltaT;
-				assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
-				if (renders.size() > rIndex && isNegligible(*fTime_ - renders[rIndex].second, gDeltaT)) {
-					box.setScale(
-						windowSize.x/(float)renders[rIndex].first.getSize().x,
-						windowSize.y/(float)renders[rIndex].first.getSize().y
-					);
-					box.setTexture(renders[rIndex++].first);
-					frame.draw(box);
-					frame.display();
-				} else {
-					box.setScale(
-						windowSize.x/(float)placeholder.getSize().x,
-						windowSize.y/(float)placeholder.getSize().y
-					);
-					box.setTexture(placeholder);
-					frame.draw(box);
-					frame.display();
+			std::cerr << "JustGas case, operating on vector of size: " << renders.size() << std::endl;
+			if (renders.size()) {
+				assert(isIntMultOf(*fTime_ - *gTime, gDeltaT));
+				assert(gTime == renders.back().second);
+				assert(fTime_ <= getRendersT0(renders));
+				box.setPosition(0, 0);
+				size_t rIndex {0};
+				std::cerr << "Inserting frames:" << std::endl;
+				while (*fTime_ + gDeltaT < gTime || isNegligible(*fTime_ + gDeltaT - *gTime, gDeltaT)) {
+					*fTime_ += gDeltaT;
+					assert(isIntMultOf(*gTime - *fTime_, gDeltaT));
+					if (renders.size() > rIndex && isNegligible(*fTime_ - renders[rIndex].second, gDeltaT)) {
+						std::cerr << "rIndex = " << rIndex << std::endl;
+						box.setScale(
+							windowSize.x/(float)renders[rIndex].first.getSize().x,
+							windowSize.y/(float)renders[rIndex].first.getSize().y
+						);
+						box.setTexture(renders[rIndex++].first);
+						frame.draw(box);
+						frame.display();
+					} else {
+						std::cout << "Inserting placeholder.";
+						box.setScale(
+							windowSize.x/(float)placeholder.getSize().x,
+							windowSize.y/(float)placeholder.getSize().y
+						);
+						box.setTexture(placeholder);
+						frame.draw(box);
+						frame.display();
+					}
+					frames.emplace_back(frame.getTexture());
 				}
-				frames.emplace_back(frame.getTexture());
+				renders.clear();
+			} else {
+				return {};
 			}
-			renders.clear();
 			}
 			break;
 		case VideoOpts::justStats:
@@ -1105,11 +1114,10 @@ std::vector<sf::Texture> SimOutput::getVideo(
 				}
 
 				for (const TdStats& stat: stats) {
-					std::cerr << "For stat with t0 = " << stat.getTime0() << " and t = " << stat.getTime() << "inserting frames." << std::endl;
 					for(int i {0}; i < 7; ++i) {
 						TGraph* graph {(TGraph*) pGraphs.GetListOfGraphs()->At(i)};
 						if (i < 6) {
-							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i - 1)));	
+							graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));	
 						} else {
 							graph->AddPoint(stat.getTime(), stat.getPressure());
 						}
@@ -1153,13 +1161,10 @@ std::vector<sf::Texture> SimOutput::getVideo(
 
 					frame.display();
 					
-					int i {0};
 					while (*fTime_ + gDeltaT < stat.getTime()) {
-						std::cerr << i++;
 						*fTime_ += gDeltaT;
 						frames.emplace_back(frame.getTexture());
 					}
-					std::cerr << std::endl;
 				}
 				trnsfrImg->Delete();
 				stats.clear();
@@ -1301,6 +1306,7 @@ std::vector<sf::Texture> SimOutput::getVideo(
 						frames.emplace_back(frame.getTexture());
 					}
 				} // while (fTime_ + gDeltaT_ < stats.back().getTime())
+				trnsfrImg->Delete();
 			}	else if (renders.size()) {
 				assert(renders.back().second == gTime);
 				if (*fTime_ + gDeltaT < gTime || isNegligible(*fTime_ + gDeltaT - *gTime, gDeltaT)) {
@@ -1359,10 +1365,10 @@ std::vector<sf::Texture> SimOutput::getVideo(
 						frames.emplace_back(frame.getTexture());
 					}
 				}
+				trnsfrImg->Delete();
 			} // else if renders.size()
 			} // case scope end
 			renders.clear();
-			trnsfrImg->Delete();
 			break;
 		case VideoOpts::all:
 			assert(gTime == renders.back().second);

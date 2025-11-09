@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <iterator>
+#include <mutex>
 #include <queue>
 #include <random>
 #include <sstream>
@@ -104,8 +105,8 @@ gasSim::VideoOpts stovideoopts (std::string s) {
 
 
 int main(int argc, const char* argv[]) {
-	auto simStart = std::chrono::high_resolution_clock::now();
 	try {
+		std::cout << "Welcome. Starting idealGasSim gas simulation.\n";
     auto opts{gasSim::input::optParse(argc, argv)};
     if (gasSim::input::optControl(argc, opts)) {
       return 0;
@@ -117,6 +118,8 @@ int main(int argc, const char* argv[]) {
     if (cFile.ParseError() != 0) {
       throw std::runtime_error("Can't load " + path);
     }
+
+		std::cout << "Starting resources loading. Using config file at path " << path << std::endl;
 
     gasSim::Particle::mass = cFile.GetReal("simulation parameters", "particleMass", 1);
     gasSim::Particle::radius = cFile.GetReal("simulation parameters", "particleRadius", 1);
@@ -131,11 +134,13 @@ int main(int argc, const char* argv[]) {
 				).str().c_str()
 			)
 		};
+		/*
 		std::cout << (std::ostringstream()
 				<< "inputs/"
 				<< cFile.Get("simulation parameters", "ROOTInputPath", "input").c_str()
 				<< ".root"
 				).str().c_str() << std::endl;
+		*/
 		if (inputFile.IsZombie()) {
 			throw std::runtime_error("Provided a path not mapping to any ROOT file.");
 		}
@@ -145,7 +150,7 @@ int main(int argc, const char* argv[]) {
 			throw std::runtime_error("Couldn't find speedsHTemplate in input root file.");
 		}
 
-		std::cout << "Found speedsHTemplate." << std::endl;
+		//std::cout << "Found speedsHTemplate." << std::endl;
 
 		long nStats {cFile.GetInteger("simulation parameters", "nStats", 1)};
 		if (nStats <= 0) {
@@ -187,18 +192,27 @@ int main(int argc, const char* argv[]) {
 		output.setStatChunkSize(
 			desiredStatChunkSize > 1.? desiredStatChunkSize: 1
 		);
-		std::cout << "Set statChunkSize at " << output.getStatChunkSize() << std::endl;
+		//std::cout << "Set statChunkSize at " << output.getStatChunkSize() << std::endl;
 
-		std::cout << "Starting simulation thread." << std::endl;
+		//std::cout << "Starting simulation thread." << std::endl;
 
 		double gasSide {gas.getBoxSide()};
+
+		std::mutex coutMtx;
 		std::thread simThread {
-			[&gas, &output, &cFile] {
+			[&gas, &output, &cFile, &coutMtx] {
 				gas.simulate(cFile.GetInteger("simulation parameters", "nIters", 0), output);
+				std::lock_guard<std::mutex> coutGuard {coutMtx};
+				std::cout << "Simulation thread done." << std::endl;
 			}
 		};
 
-		std::cout << "Started simulation thread." << std::endl;
+		{
+		std::lock_guard<std::mutex> coutGuard {coutMtx};
+		std::cout << "Simulation thread running." << std::endl;
+		}
+
+		// std::cout << "Started simulation thread." << std::endl;
 
 		gasSim::PhysVectorF camPos {
 			static_cast<gasSim::PhysVectorF>(
@@ -229,21 +243,42 @@ int main(int argc, const char* argv[]) {
 			)
 		};
 
-		std::cout << "Made camera vectors." << std::endl;
+		// std::cout << "Made camera vectors." << std::endl;
 
-		sf::Vector2i windowSize {
-			static_cast<int>(cFile.GetInteger("output", "videoResX", 800)),
-			static_cast<int>(cFile.GetInteger("output", "videoResY", 600))
+		sf::Vector2u windowSize {
+			static_cast<unsigned>(cFile.GetInteger("output", "videoResX", 800)),
+			static_cast<unsigned>(cFile.GetInteger("output", "videoResY", 600))
 		};
+
+		sf::Vector2u gasSize {};
+		switch (stovideoopts(cFile.Get("output", "videoOpt", "justGas"))) {
+			case gasSim::VideoOpts::justGas:
+				gasSize = windowSize;
+				break;
+			case gasSim::VideoOpts::justStats:
+				break;
+			case gasSim::VideoOpts::gasPlusCoords:
+				gasSize = {
+					static_cast<unsigned>(windowSize.x * 0.5),
+					static_cast<unsigned>(windowSize.y * 8./9.)
+				};
+				break;
+			case gasSim::VideoOpts::all:
+				gasSize = {
+					static_cast<unsigned>(windowSize.x * 0.5),
+					static_cast<unsigned>(windowSize.y * 0.9)
+				};
+				break;
+		}
 
 		gasSim::Camera camera {
 			camPos, camSight,
 			cFile.GetFloat("render", "camLength", 1.f),
 			cFile.GetFloat("render", "fov", 90.f),
-			windowSize.x / 2, windowSize.y * 9 / 10
+			(int) gasSize.x, (int) gasSize.y
 		};
 
-		std::cout << "Starting textures loading." << std::endl;
+		// std::cout << "Starting textures loading." << std::endl;
 
    	sf::Texture particleTex;
 		particleTex.loadFromFile("assets/" + cFile.Get("render", "particleTexPath", "lightBall") + ".png");
@@ -264,15 +299,17 @@ int main(int argc, const char* argv[]) {
 
 		const int frameTimems {static_cast<int>(1000./output.getFramerate())};
 
-		std::cout << "Initializing processing thread." << std::endl;
+		// std::cout << "Initializing processing thread." << std::endl;
 
 		std::thread processThread;
 		if (stovideoopts(cFile.Get("output", "videoOpt", "justGas")) != gasSim::VideoOpts::justStats) {
 			processThread = std::thread( 
-				[&output, &camera, &style, mfpMemory] {
+				[&output, &camera, &style, &coutMtx, mfpMemory] {
 					output.processData(
 						camera, style, mfpMemory
 					);
+					std::lock_guard<std::mutex> coutGuard {coutMtx};
+					std::cout << "Data processing thread done.                                        \r" << std::endl;
 				}
 			);
 		} else {
@@ -283,7 +320,12 @@ int main(int argc, const char* argv[]) {
 			);
 		}
 
-		std::cout << "Initialized processing thread." << std::endl;
+		{
+		std::lock_guard<std::mutex> coutGuard {coutMtx};
+		std::cout << "Processing thread running." << std::endl;
+		}
+
+		// std::cout << "Initialized processing thread." << std::endl;
 
 		TList* allPtrs = new TList();
 
@@ -331,14 +373,13 @@ int main(int argc, const char* argv[]) {
 
 		maxwellF->SetParameter(0, cFile.GetReal("simulation parameters", "targetT", 1.));
 		maxwellF->FixParameter(1, cFile.GetInteger("simulation parameters", "nParticles", 1) * output.getStatSize());
-		std::cout << "Set maxwellF nParticles at " << maxwellF->GetParameter(1) << std::endl;
+		// std::cout << "Set maxwellF nParticles at " << maxwellF->GetParameter(1) << std::endl;
 		maxwellF->FixParameter(2, cFile.GetReal("simulation parameters", "pMass", 1));
 
 		std::function<void(TH1D&, gasSim::VideoOpts)> fitLambda {
 			[&] (TH1D& speedsH, gasSim::VideoOpts opt) {
-				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(0)};
+				TGraph* genPGraph {(TGraph*) pGraphs->GetListOfGraphs()->At(6)};
 				if (genPGraph->GetN()) {
-
 					genPGraph->Fit(pLineF, "Q");
 				}
 				if (kBGraph->GetN()) {
@@ -393,7 +434,7 @@ int main(int argc, const char* argv[]) {
 			M_SQRT2 / expP->GetParameter(0) /
 			(M_PI * gasSim::Particle::radius * gasSim::Particle::radius)
 		);
-		std::cout << "Expected MFP set at " << expMFP->GetParameter(0) << " units." << std::endl;
+		// std::cout << "Expected MFP set at " << expMFP->GetParameter(0) << " units." << std::endl;
 
 		std::array<std::function<void()>, 4> drawLambdas {
 			[&] () {
@@ -431,7 +472,7 @@ int main(int argc, const char* argv[]) {
 		gasSim::VideoOpts videoOpt {
 			stovideoopts(cFile.Get("output", "videoOpt", "all"))
 		};
-		std::cout << "Extracted videoOpts." << std::endl;
+		// std::cout << "Extracted videoOpts." << std::endl;
 		sf::Texture placeHolder;
 		placeHolder.loadFromFile(
 			(std::ostringstream()
@@ -439,14 +480,22 @@ int main(int argc, const char* argv[]) {
 			 << cFile.Get("render", "placeHolderName", "placeholder")
 			 << ".png").str().c_str()
 		);
-		std::cout << "Loaded placeholder." << std::endl;
+		// std::cout << "Loaded placeholder." << std::endl;
 
 		while (!output.isProcessing()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 
+		{
+		std::lock_guard<std::mutex> coutGuard {coutMtx};
+		std::cout << "All resources loaded. Starting video output processing." << std::endl;
+		}
+
 		if (cFile.GetBoolean("output", "saveVideo", "false")) {
-		
+			{
+			std::lock_guard<std::mutex> coutGuard {coutMtx};
+			std::cout << "Starting video encoding." << std::endl;
+			}
 			std::ostringstream cmd {};
 			cmd << "ffmpeg -y -f rawvideo -pixel_format rgba -video_size "
 				<< windowSize.x << "x" << windowSize.y
@@ -456,7 +505,7 @@ int main(int argc, const char* argv[]) {
 				<< cFile.Get("output", "videoOutputName", "output")
 				<< ".mp4";
 
-			std::cout << "Trying to open ffmpeg pipe." << std::endl;
+			// std::cout << "Trying to open ffmpeg pipe." << std::endl;
 			
 			FILE* ffmpeg = popen(
 				cmd.str().c_str(),
@@ -469,28 +518,32 @@ int main(int argc, const char* argv[]) {
 			sf::Image auxImg;
 			auxImg.create(windowSize.x, windowSize.y);
 			while (true) {
-				std::vector<sf::Texture> frames {};
 				if (output.isDone() && output.getRawDataSize() < output.getStatSize() && !output.isProcessing()) {
 					lastBatch = true;
 				}
-				frames.reserve(output.getFramerate() * 10);
-				std::vector<sf::Texture> v = {output.getVideo(
-					videoOpt, windowSize, placeHolder, *graphsList, true, fitLambda, drawLambdas
+				std::vector<sf::Texture> frames = {output.getVideo(
+					videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder, *graphsList, true, fitLambda, drawLambdas
 				)};
-				frames.insert(
-					frames.end(),
-					std::make_move_iterator(v.begin()),
-					std::make_move_iterator(v.end())
-				);
+				int i {0};
 				for (sf::Texture& t: frames) {
 					auxImg = t.copyToImage();
 					fwrite(auxImg.getPixelsPtr(), 1, windowSize.x * windowSize.y * 4, ffmpeg);
+					++i;
+					std::lock_guard<std::mutex> coutGuard {coutMtx};
+					std::cout << "Encoding batch of " << frames.size() << " frames: "
+					<< (float)i/(float)(frames.size()) << "% complete.                 \r";
+					std::cout.flush();
 				}
 				if (lastBatch) {
+					std::cout << "Encoding done!" << std::endl;
 					break;
 				}
 			}
 		} else { // no permanent video output requested -> wiew-once real time video
+			{
+			std::lock_guard<std::mutex> coutGuard {coutMtx};
+			std::cout << "Starting video display." << std::endl;
+			}
 			sf::RenderWindow window(
 				sf::VideoMode(windowSize.x, windowSize.y), "GasSim Display",
 				sf::Style::Default
@@ -501,13 +554,13 @@ int main(int argc, const char* argv[]) {
 			std::atomic<bool> stopBufferLoop {false};
 			std::atomic<bool> bufferKillSignal {false};
 			std::atomic<bool> stop {false};
-			std::cout << "Reached video output loop." << std::endl;
+			// std::cout << "Reached video output loop." << std::endl;
 			std::atomic<int> queueNumber {1};
 			std::atomic<int> launchedPlayThreadsN {0};
 			std::atomic<int> droppedFrames {0};
 			std::atomic<int> framesToDrop {0};
 			auto playLambda {
-				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, &droppedFrames, &framesToDrop, frameTimems, &stop]
+				[&window, &windowMtx, &stopBufferLoop, &queueNumber, &launchedPlayThreadsN, &droppedFrames, &framesToDrop, frameTimems, &stop, &coutMtx]
 				(std::shared_ptr<std::vector<sf::Texture>> rPtr,
 				 int threadN) {
 					sf::Sprite auxS;
@@ -516,13 +569,14 @@ int main(int argc, const char* argv[]) {
 						std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
 					}
 					if (!stop.load()) {
-						std::cout << "Found queue number " << queueNumber << " equal to thread number " << threadN << ", stopping buffer loop." << std::endl;
+						// std::cout << "Found queue number " << queueNumber << " equal to thread number " << threadN << ", stopping buffer loop." << std::endl;
 						stopBufferLoop = true;
 						std::lock_guard<std::mutex> windowGuard {windowMtx};
 						window.setActive();
 						auto lastDrawEnd {std::chrono::high_resolution_clock::now()};
 						float frameTimeS {static_cast<float>(frameTimems/1000.)};
 						std::chrono::duration<float> lastFrameDrawTime {};
+						int i {0};
 						for (const sf::Texture& r: *rPtr) {
 							if (window.isOpen()) {
 								if (!framesToDrop.load()) {
@@ -544,25 +598,35 @@ int main(int argc, const char* argv[]) {
 									lastDrawEnd = std::chrono::high_resolution_clock::now();
 								}
 							}
+							std::lock_guard<std::mutex> coutGuard {coutMtx};
+							std::cout << "Status: displaying. Progress: " << ++i <<
+							" from batch of " << rPtr->size() << " renders      \r";
+							std::cout.flush();
 						}
 						queueNumber++;
 						if (launchedPlayThreadsN == threadN) {
-							std::cout << "Found playThreads number " << launchedPlayThreadsN << " still equal to thread number " << threadN << ": starting up buffering loop." << std::endl;
+							// std::cout << "Found playThreads number " << launchedPlayThreadsN << " still equal to thread number " << threadN << ": starting up buffering loop." << std::endl;
 							stopBufferLoop = false;
+							std::lock_guard<std::mutex> coutGuard {coutMtx};
+							std::cout << "Status: buffering.                                                             \r";
 						} else {
-							std::cout << "Found playThreads number " << launchedPlayThreadsN << " higher than thread number " << threadN << ": not reactivating buffering loop" << std::endl;
+							// std::cout << "Found playThreads number " << launchedPlayThreadsN << " higher than thread number " << threadN << ": not reactivating buffering loop" << std::endl;
 						}
 						window.setActive(false);
 					}
-					std::cout << "Playthread n. " << threadN << " out. *mic drop*" << std::endl;
+					// std::cout << "Playthread n. " << threadN << " out. *mic drop*" << std::endl;
 				}
 			};
 			std::thread bufferingLoop {
-				[&stopBufferLoop, &placeHolder, &window, &windowMtx, &bufferKillSignal, frameTimems] () {
+				[&stopBufferLoop, &placeHolder, &window, &windowMtx, &bufferKillSignal, frameTimems, windowSize] () {
 					sf::Sprite auxS {placeHolder};
+					auxS.setScale(
+						(float)windowSize.x/(float)placeHolder.getSize().x,
+						(float)windowSize.y/(float)placeHolder.getSize().y
+					);
 					while (true) {
 						if (!stopBufferLoop) {
-							std::cout << "Found buffer loop activation signal." << std::endl;
+							// std::cout << "Found buffer loop activation signal." << std::endl;
 							std::lock_guard<std::mutex> windowGuard {windowMtx};
 							window.setActive();
 							while (window.isOpen() && !stopBufferLoop) {
@@ -580,7 +644,7 @@ int main(int argc, const char* argv[]) {
 							if (bufferKillSignal) {
 								break;
 							}
-							std::cout << "Buffering loop turned off." << std::endl;
+							// std::cout << "Buffering loop turned off." << std::endl;
 							window.setActive(false);
 						} else {
 							std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
@@ -610,20 +674,20 @@ int main(int argc, const char* argv[]) {
 						lastBatch = true;
 					}
 					std::vector<sf::Texture> v = {output.getVideo(
-						videoOpt, windowSize, placeHolder, *graphsList, true, fitLambda, drawLambdas
+						videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder, *graphsList, true, fitLambda, drawLambdas
 					)};
 					rendersPtr->insert(
 						rendersPtr->end(),
 						std::make_move_iterator(v.begin()),
 						std::make_move_iterator(v.end())
 					);
-					std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video. Time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
+					//std::cout << "Renders pointer size = " << rendersPtr->size() << " yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds of video. Time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 					if (lastBatch) {
 						break;
 					}
 				}
 				if (!lastBatch) {
-					std::cout << "Sending playthread n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
+					// std::cout << "Sending playthread n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 					std::thread playThread {
 						[playLambda, rendersPtr, &launchedPlayThreadsN] {
 							launchedPlayThreadsN.fetch_add(1);
@@ -632,30 +696,36 @@ int main(int argc, const char* argv[]) {
 					};
 					playThread.detach();
 				} else {
-					std::cout << "Sending last playthread at n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
+					// std::cout << "Sending last playthread at n. " << 1 + launchedPlayThreadsN << ", time = " << std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - simStart).count() << std::endl;
 					std::thread playThread {
 						[playLambda, rendersPtr, &launchedPlayThreadsN] {
 							launchedPlayThreadsN.fetch_add(1);
 							playLambda(rendersPtr, launchedPlayThreadsN.load());
 						}
 					};
-					std::cout << "Joining playThread." << std::endl;
+					//std::cout << "Joining playThread." << std::endl;
 					playThread.join();
 					bufferKillSignal = true;
+					{
+					std::lock_guard<std::mutex> coutGuard {coutMtx};
+					std::cout << "Done displaying. Closing window." << std::endl;
+					}
 					break;
 				}
 			}
-			std::cout << "Reached main loop end." << std::endl;
+			//std::cout << "Reached main loop end." << std::endl;
 			stopBufferLoop = true;
-			std::cout << "Set buffer loop to stop." << std::endl;
+			//std::cout << "Set buffer loop to stop." << std::endl;
 			if (bufferingLoop.joinable()) {
 				bufferingLoop.join();
 			}
 			window.close();
-			std::cout << "Dropped frames: " << droppedFrames.load() << std::endl;
+			std::lock_guard<std::mutex> coutGuard {coutMtx};
+			std::cout << "Dropped frames: " << droppedFrames.load() <<
+				". Leftover data: " << output.getRawDataSize() << " collisions." << std::endl;
 		}
 
-		std::cout << "Joining simulation and processing threads." << std::endl;
+		// std::cout << "Joining simulation and processing threads." << std::endl;
 
 		if (simThread.joinable()) {
 			simThread.join();
@@ -664,14 +734,15 @@ int main(int argc, const char* argv[]) {
 			processThread.join();
 		}
 		
+		std::cout << "Saving results to file... ";
+		std::cout.flush();
 		inputFile.Close();
-		std::cout << "Leftover data: " << output.getRawDataSize() << " collisions." << std::endl;
 		TFile* rootOutput {new TFile(
 			(std::ostringstream() << "outputs/" << cFile.Get("output", "rootOutputName", "output") << ".root").str().c_str(),
 			"RECREATE")
 		};
 
-		std::cerr << "Got to writing without crashing." << std::endl;
+		// std::cerr << "Got to writing without crashing." << std::endl;
 
 		rootOutput->SetTitle(rootOutput->GetName());
 		rootOutput->cd();
@@ -685,11 +756,13 @@ int main(int argc, const char* argv[]) {
 		maxwellF->Write();
 		// cumulatedSpeedsH->Write();
 
-		std::cerr << "Got to closing without crashing." << std::endl;
+		// std::cerr << "Got to closing without crashing." << std::endl;
 
 		rootOutput->Close();
 
-		std::cerr << "Got to deleting without crashing." << std::endl;
+		std::cout << "done!" << std::endl;
+
+		// std::cerr << "Got to deleting without crashing." << std::endl;
 
 		return 0;
   } catch (const std::runtime_error& error) {

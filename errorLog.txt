@@ -1,329 +1,148 @@
 
 Started getVideo, call number 1
 Got to data extraction phase.
+Initialized gTime with value 1.166667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 71, stats_ = 1
+Setting fTime_. Because fTime_.has_value returned 0
+Found getRendersT0 = 0, stats beginning = 0; set fTime_ to -0.0166667
+Set fTime_. Now fTime_.has_value() returns 1 with value = -0.0166667
+Starting vector segments extraction.
+Value = 0 <= s.getTime() = 1.18025
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = -0.0166667 with stats_ front Time0 = 0 and Time = 1.18025
+Found gStartI = 0, gEndI = 71, with gSize = 71
+Extracted vectors. Result sizes: stats size = 1, renders size = 71
 Got to second phase.
 Got to phase 3.
-Working with stats of size: 9
-For stat with t0 = 0 and t = 0.282109inserting frames.
-012345678910111213141516
-For stat with t0 = 0.282109 and t = 0.543195inserting frames.
-0123456789101112131415
-For stat with t0 = 0.543195 and t = 0.806304inserting frames.
-0123456789101112131415
-For stat with t0 = 0.806304 and t = 1.05842inserting frames.
-01234567891011121314
-For stat with t0 = 1.05842 and t = 1.31481inserting frames.
-01234567891011121314
-For stat with t0 = 1.31481 and t = 1.55246inserting frames.
-01234567891011121314
-For stat with t0 = 1.55246 and t = 1.79719inserting frames.
-012345678910111213
-For stat with t0 = 1.79719 and t = 2.04158inserting frames.
-01234567891011121314
-For stat with t0 = 2.04158 and t = 2.29565inserting frames.
-01234567891011121314
 
 Started getVideo, call number 2
 Got to data extraction phase.
+Initialized gTime with value 2.600000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 86, stats_ = 1
+Starting vector segments extraction.
+Value = 1.18333 <= s.getTime() = 2.60234
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 1.16667 with stats_ front Time0 = 1.18025 and Time = 2.60234
+Found gStartI = 0, gEndI = 86, with gSize = 86
+Extracted vectors. Result sizes: stats size = 1, renders size = 86
 Got to second phase.
 Got to phase 3.
-Working with stats of size: 24
-For stat with t0 = 2.29565 and t = 2.55486inserting frames.
-0123456789101112131415
-For stat with t0 = 2.55486 and t = 2.80458inserting frames.
-01234567891011121314
-For stat with t0 = 2.80458 and t = 3.10657inserting frames.
-01234567891011121314151617
-For stat with t0 = 3.10657 and t = 3.37944inserting frames.
-0123456789101112131415
-For stat with t0 = 3.37944 and t = 3.63067inserting frames.
-01234567891011121314
-For stat with t0 = 3.63067 and t = 3.87405inserting frames.
-01234567891011121314
-For stat with t0 = 3.87405 and t = 4.12562inserting frames.
-01234567891011121314
-For stat with t0 = 4.12562 and t = 4.38938inserting frames.
-0123456789101112131415
-For stat with t0 = 4.38938 and t = 4.6497inserting frames.
-01234567891011121314
-For stat with t0 = 4.6497 and t = 4.91092inserting frames.
-0123456789101112131415
-For stat with t0 = 4.91092 and t = 5.17246inserting frames.
-0123456789101112131415
-For stat with t0 = 5.17246 and t = 5.43373inserting frames.
-0123456789101112131415
-For stat with t0 = 5.43373 and t = 5.65259inserting frames.
-0123456789101112
-For stat with t0 = 5.65259 and t = 5.94839inserting frames.
-012345678910111213141516
-For stat with t0 = 5.94839 and t = 6.15607inserting frames.
-0123456789101112
-For stat with t0 = 6.15607 and t = 6.44931inserting frames.
-012345678910111213141516
-For stat with t0 = 6.44931 and t = 6.69101inserting frames.
-01234567891011121314
-For stat with t0 = 6.69101 and t = 6.90719inserting frames.
-0123456789101112
-For stat with t0 = 6.90719 and t = 7.17204inserting frames.
-0123456789101112131415
-For stat with t0 = 7.17204 and t = 7.43103inserting frames.
-01234567891011121314
-For stat with t0 = 7.43103 and t = 7.65828inserting frames.
-012345678910111213
-For stat with t0 = 7.65828 and t = 7.89442inserting frames.
-012345678910111213
-For stat with t0 = 7.89442 and t = 8.12781inserting frames.
-012345678910111213
-For stat with t0 = 8.12781 and t = 8.39697inserting frames.
-0123456789101112131415
 
 Started getVideo, call number 3
 Got to data extraction phase.
+Initialized gTime with value 4.083333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 89, stats_ = 1
+Starting vector segments extraction.
+Value = 2.61667 <= s.getTime() = 4.09554
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 2.6 with stats_ front Time0 = 2.60234 and Time = 4.09554
+Found gStartI = 0, gEndI = 89, with gSize = 89
+Extracted vectors. Result sizes: stats size = 1, renders size = 89
 Got to second phase.
 Got to phase 3.
-Working with stats of size: 41
-For stat with t0 = 8.39697 and t = 8.62867inserting frames.
-012345678910111213
-For stat with t0 = 8.62867 and t = 8.89207inserting frames.
-0123456789101112131415
-For stat with t0 = 8.89207 and t = 9.14597inserting frames.
-01234567891011121314
-For stat with t0 = 9.14597 and t = 9.38113inserting frames.
-012345678910111213
-For stat with t0 = 9.38113 and t = 9.60058inserting frames.
-012345678910111213
-For stat with t0 = 9.60058 and t = 9.87291inserting frames.
-0123456789101112131415
-For stat with t0 = 9.87291 and t = 10.1066inserting frames.
-012345678910111213
-For stat with t0 = 10.1066 and t = 10.307inserting frames.
-01234567891011
-For stat with t0 = 10.307 and t = 10.539inserting frames.
-012345678910111213
-For stat with t0 = 10.539 and t = 10.8259inserting frames.
-012345678910111213141516
-For stat with t0 = 10.8259 and t = 11.0576inserting frames.
-012345678910111213
-For stat with t0 = 11.0576 and t = 11.3498inserting frames.
-012345678910111213141516
-For stat with t0 = 11.3498 and t = 11.5809inserting frames.
-012345678910111213
-For stat with t0 = 11.5809 and t = 11.8506inserting frames.
-012345678910111213141516
-For stat with t0 = 11.8506 and t = 12.0969inserting frames.
-012345678910111213
-For stat with t0 = 12.0969 and t = 12.3738inserting frames.
-012345678910111213141516
-For stat with t0 = 12.3738 and t = 12.623inserting frames.
-01234567891011121314
-For stat with t0 = 12.623 and t = 12.8924inserting frames.
-0123456789101112131415
-For stat with t0 = 12.8924 and t = 13.1009inserting frames.
-0123456789101112
-For stat with t0 = 13.1009 and t = 13.3438inserting frames.
-012345678910111213
-For stat with t0 = 13.3438 and t = 13.551inserting frames.
-0123456789101112
-For stat with t0 = 13.551 and t = 13.7723inserting frames.
-0123456789101112
-For stat with t0 = 13.7723 and t = 14.0178inserting frames.
-01234567891011121314
-For stat with t0 = 14.0178 and t = 14.2422inserting frames.
-0123456789101112
-For stat with t0 = 14.2422 and t = 14.4999inserting frames.
-01234567891011121314
-For stat with t0 = 14.4999 and t = 14.7511inserting frames.
-0123456789101112131415
-For stat with t0 = 14.7511 and t = 14.9943inserting frames.
-012345678910111213
-For stat with t0 = 14.9943 and t = 15.2386inserting frames.
-01234567891011121314
-For stat with t0 = 15.2386 and t = 15.4735inserting frames.
-012345678910111213
-For stat with t0 = 15.4735 and t = 15.782inserting frames.
-01234567891011121314151617
-For stat with t0 = 15.782 and t = 16.0515inserting frames.
-012345678910111213141516
-For stat with t0 = 16.0515 and t = 16.3166inserting frames.
-01234567891011121314
-For stat with t0 = 16.3166 and t = 16.5749inserting frames.
-0123456789101112131415
-For stat with t0 = 16.5749 and t = 16.823inserting frames.
-01234567891011121314
-For stat with t0 = 16.823 and t = 17.0452inserting frames.
-0123456789101112
-For stat with t0 = 17.0452 and t = 17.2753inserting frames.
-012345678910111213
-For stat with t0 = 17.2753 and t = 17.5364inserting frames.
-0123456789101112131415
-For stat with t0 = 17.5364 and t = 17.777inserting frames.
-012345678910111213
-For stat with t0 = 17.777 and t = 18.0078inserting frames.
-012345678910111213
-For stat with t0 = 18.0078 and t = 18.2724inserting frames.
-0123456789101112131415
-For stat with t0 = 18.2724 and t = 18.508inserting frames.
-012345678910111213
 
 Started getVideo, call number 4
 Got to data extraction phase.
+Initialized gTime with value 5.383333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 78, stats_ = 1
+Starting vector segments extraction.
+Value = 4.1 <= s.getTime() = 5.38884
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 4.08333 with stats_ front Time0 = 4.09554 and Time = 5.38884
+Found gStartI = 0, gEndI = 78, with gSize = 78
+Extracted vectors. Result sizes: stats size = 1, renders size = 78
 Got to second phase.
 Got to phase 3.
-Working with stats of size: 76
-For stat with t0 = 18.508 and t = 18.739inserting frames.
-012345678910111213
-For stat with t0 = 18.739 and t = 18.986inserting frames.
-01234567891011121314
-For stat with t0 = 18.986 and t = 19.2433inserting frames.
-01234567891011121314
-For stat with t0 = 19.2433 and t = 19.53inserting frames.
-012345678910111213141516
-For stat with t0 = 19.53 and t = 19.778inserting frames.
-01234567891011121314
-For stat with t0 = 19.778 and t = 20.0024inserting frames.
-012345678910111213
-For stat with t0 = 20.0024 and t = 20.289inserting frames.
-012345678910111213141516
-For stat with t0 = 20.289 and t = 20.5481inserting frames.
-01234567891011121314
-For stat with t0 = 20.5481 and t = 20.7978inserting frames.
-01234567891011121314
-For stat with t0 = 20.7978 and t = 21.0766inserting frames.
-012345678910111213141516
-For stat with t0 = 21.0766 and t = 21.3332inserting frames.
-01234567891011121314
-For stat with t0 = 21.3332 and t = 21.6061inserting frames.
-012345678910111213141516
-For stat with t0 = 21.6061 and t = 21.8685inserting frames.
-0123456789101112131415
-For stat with t0 = 21.8685 and t = 22.0812inserting frames.
-01234567891011
-For stat with t0 = 22.0812 and t = 22.3628inserting frames.
-012345678910111213141516
-For stat with t0 = 22.3628 and t = 22.6484inserting frames.
-012345678910111213141516
-For stat with t0 = 22.6484 and t = 22.8869inserting frames.
-01234567891011121314
-For stat with t0 = 22.8869 and t = 23.146inserting frames.
-01234567891011121314
-For stat with t0 = 23.146 and t = 23.4076inserting frames.
-0123456789101112131415
-For stat with t0 = 23.4076 and t = 23.6889inserting frames.
-012345678910111213141516
-For stat with t0 = 23.6889 and t = 23.9469inserting frames.
-01234567891011121314
-For stat with t0 = 23.9469 and t = 24.2021inserting frames.
-0123456789101112131415
-For stat with t0 = 24.2021 and t = 24.4492inserting frames.
-012345678910111213
-For stat with t0 = 24.4492 and t = 24.7282inserting frames.
-012345678910111213141516
-For stat with t0 = 24.7282 and t = 24.9668inserting frames.
-01234567891011121314
-For stat with t0 = 24.9668 and t = 25.1956inserting frames.
-0123456789101112
-For stat with t0 = 25.1956 and t = 25.444inserting frames.
-01234567891011121314
-For stat with t0 = 25.444 and t = 25.7027inserting frames.
-0123456789101112131415
-For stat with t0 = 25.7027 and t = 25.9833inserting frames.
-0123456789101112131415
-For stat with t0 = 25.9833 and t = 26.2465inserting frames.
-0123456789101112131415
-For stat with t0 = 26.2465 and t = 26.5267inserting frames.
-012345678910111213141516
-For stat with t0 = 26.5267 and t = 26.7965inserting frames.
-0123456789101112131415
-For stat with t0 = 26.7965 and t = 27.0332inserting frames.
-012345678910111213
-For stat with t0 = 27.0332 and t = 27.3146inserting frames.
-012345678910111213141516
-For stat with t0 = 27.3146 and t = 27.5961inserting frames.
-012345678910111213141516
-For stat with t0 = 27.5961 and t = 27.9025inserting frames.
-0123456789101112131415161718
-For stat with t0 = 27.9025 and t = 28.1503inserting frames.
-01234567891011121314
-For stat with t0 = 28.1503 and t = 28.427inserting frames.
-0123456789101112131415
-For stat with t0 = 28.427 and t = 28.6271inserting frames.
-01234567891011
-For stat with t0 = 28.6271 and t = 28.8513inserting frames.
-012345678910111213
-For stat with t0 = 28.8513 and t = 29.1125inserting frames.
-01234567891011121314
-For stat with t0 = 29.1125 and t = 29.4061inserting frames.
-01234567891011121314151617
-For stat with t0 = 29.4061 and t = 29.6235inserting frames.
-0123456789101112
-For stat with t0 = 29.6235 and t = 29.9375inserting frames.
-0123456789101112131415161718
-For stat with t0 = 29.9375 and t = 30.2097inserting frames.
-0123456789101112131415
-For stat with t0 = 30.2097 and t = 30.4773inserting frames.
-0123456789101112131415
-For stat with t0 = 30.4773 and t = 30.7362inserting frames.
-0123456789101112131415
-For stat with t0 = 30.7362 and t = 30.9373inserting frames.
-01234567891011
-For stat with t0 = 30.9373 and t = 31.2322inserting frames.
-012345678910111213141516
-For stat with t0 = 31.2322 and t = 31.4725inserting frames.
-01234567891011121314
-For stat with t0 = 31.4725 and t = 31.7291inserting frames.
-01234567891011121314
-For stat with t0 = 31.7291 and t = 31.9519inserting frames.
-012345678910111213
-For stat with t0 = 31.9519 and t = 32.2333inserting frames.
-012345678910111213141516
-For stat with t0 = 32.2333 and t = 32.5479inserting frames.
-01234567891011121314151617
-For stat with t0 = 32.5479 and t = 32.7591inserting frames.
-0123456789101112
-For stat with t0 = 32.7591 and t = 33.0154inserting frames.
-01234567891011121314
-For stat with t0 = 33.0154 and t = 33.2385inserting frames.
-012345678910111213
-For stat with t0 = 33.2385 and t = 33.4777inserting frames.
-012345678910111213
-For stat with t0 = 33.4777 and t = 33.746inserting frames.
-0123456789101112131415
-For stat with t0 = 33.746 and t = 33.9909inserting frames.
-01234567891011121314
-For stat with t0 = 33.9909 and t = 34.2751inserting frames.
-012345678910111213141516
-For stat with t0 = 34.2751 and t = 34.5065inserting frames.
-012345678910111213
-For stat with t0 = 34.5065 and t = 34.7451inserting frames.
-012345678910111213
-For stat with t0 = 34.7451 and t = 34.9888inserting frames.
-01234567891011121314
-For stat with t0 = 34.9888 and t = 35.2158inserting frames.
-0123456789101112
-For stat with t0 = 35.2158 and t = 35.4945inserting frames.
-012345678910111213141516
-For stat with t0 = 35.4945 and t = 35.7383inserting frames.
-01234567891011121314
-For stat with t0 = 35.7383 and t = 36.005inserting frames.
-0123456789101112131415
-For stat with t0 = 36.005 and t = 36.2704inserting frames.
-0123456789101112131415
-For stat with t0 = 36.2704 and t = 36.5568inserting frames.
-012345678910111213141516
-For stat with t0 = 36.5568 and t = 36.7979inserting frames.
-012345678910111213
-For stat with t0 = 36.7979 and t = 37.06inserting frames.
-0123456789101112131415
-For stat with t0 = 37.06 and t = 37.3235inserting frames.
-0123456789101112131415
-For stat with t0 = 37.3235 and t = 37.6029inserting frames.
-012345678910111213141516
-For stat with t0 = 37.6029 and t = 37.8632inserting frames.
-01234567891011121314
-For stat with t0 = 37.8632 and t = 38.1018inserting frames.
-01234567891011121314
-X Error of failed request:  BadAccess (attempt to access private resource denied)
-  Major opcode of failed request:  150 (GLX)
-  Minor opcode of failed request:  5 (X_GLXMakeCurrent)
-  Serial number of failed request:  2514
-  Current serial number in output stream:  2514
+
+Started getVideo, call number 5
+Got to data extraction phase.
+Initialized gTime with value 6.716667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 80, stats_ = 1
+Starting vector segments extraction.
+Value = 5.4 <= s.getTime() = 6.72161
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 5.38333 with stats_ front Time0 = 5.38884 and Time = 6.72161
+Found gStartI = 0, gEndI = 80, with gSize = 80
+Extracted vectors. Result sizes: stats size = 1, renders size = 80
+Got to second phase.
+Got to phase 3.
+
+Started getVideo, call number 6
+Got to data extraction phase.
+Initialized gTime with value 7.950000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 74, stats_ = 1
+Starting vector segments extraction.
+Value = 6.73333 <= s.getTime() = 7.95357
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 6.71667 with stats_ front Time0 = 6.72161 and Time = 7.95357
+Found gStartI = 0, gEndI = 74, with gSize = 74
+Extracted vectors. Result sizes: stats size = 1, renders size = 74
+Got to second phase.
+Got to phase 3.
+
+Started getVideo, call number 7
+Got to data extraction phase.
+Initialized gTime with value 9.200000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 75, stats_ = 1
+Starting vector segments extraction.
+Value = 7.96667 <= s.getTime() = 9.21202
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 7.95 with stats_ front Time0 = 7.95357 and Time = 9.21202
+Found gStartI = 0, gEndI = 75, with gSize = 75
+Extracted vectors. Result sizes: stats size = 1, renders size = 75
+Got to second phase.
+Got to phase 3.
+
+Started getVideo, call number 8
+Got to data extraction phase.
+Initialized gTime with value 10.600000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 84, stats_ = 1
+Starting vector segments extraction.
+Value = 9.21667 <= s.getTime() = 10.614
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 9.2 with stats_ front Time0 = 9.21202 and Time = 10.614
+Found gStartI = 0, gEndI = 84, with gSize = 84
+Extracted vectors. Result sizes: stats size = 1, renders size = 84
+Got to second phase.
+Got to phase 3.
+
+Started getVideo, call number 9
+Got to data extraction phase.
+Initialized gTime with value 12.066667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 88, stats_ = 1
+Starting vector segments extraction.
+Value = 10.6167 <= s.getTime() = 12.0675
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 10.6 with stats_ front Time0 = 10.614 and Time = 12.0675
+Found gStartI = 0, gEndI = 88, with gSize = 88
+Extracted vectors. Result sizes: stats size = 1, renders size = 88
+Got to second phase.
+Got to phase 3.
+
+Started getVideo, call number 10
+Got to data extraction phase.
+Initialized gTime with value 13.416667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 81, stats_ = 1
+Starting vector segments extraction.
+Value = 12.0833 <= s.getTime() = 13.4266
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 12.0667 with stats_ front Time0 = 12.0675 and Time = 13.4266
+Found gStartI = 0, gEndI = 81, with gSize = 81
+Extracted vectors. Result sizes: stats size = 1, renders size = 81
+Got to second phase.
+Got to phase 3.
+
+Started getVideo, call number 11
+Got to data extraction phase.
+Initialized gTime with value 13.416667, gDeltaT with value 0.0166667
+Found empty stats and renders, returning empty vector.
