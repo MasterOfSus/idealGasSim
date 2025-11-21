@@ -24,7 +24,17 @@ string(APPEND CMAKE_CXX_FLAGS " -lsfml-graphics -lsfml-window -lsfml-system ")
 string(APPEND CMAKE_CXX_FLAGS_DEBUG " -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer")
 string(APPEND CMAKE_EXE_LINKER_FLAGS_DEBUG " -fsanitize=address,undefined -fno-omit-frame-pointer ")
 
-add_executable(demo gasSim/physicsEngine.cpp gasSim/graphics.cpp gasSim/statistics.cpp gasSim/output.cpp gasSim/input.cpp main.cpp)
+add_executable(gasSimDemo)
+target_sources(gasSimDemo
+	PRIVATE
+		main.cpp
+)
+
+add_library(idealGasSim)
+target_sources(idealGasSim
+	PRIVATE
+		
+)
 
 # Find SFML
 find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)

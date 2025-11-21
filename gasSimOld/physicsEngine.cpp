@@ -313,75 +313,7 @@ void Gas::simulate(int nIterations, SimOutput& output) {
   // output.getData().back().getTime() - output.getData()[0].getTime() <<
   // std::endl;
 }
-/*
-void Gas::simulate(int nIterations, SimOutput& output) {
-  // should modify to not insert first gasData into SimOutput
-	std::chrono::duration<double> simStallTime {};
 
-	std::vector<GasData> tempOutput1 {};
-	std::vector<GasData> tempOutput2 {};
-	int nDone {};
-
-	auto calcLambda = [this, &nDone] (std::vector<GasData>& o, int nIters) {
-		assert(o.empty());
-		o.reserve(nIters);
-		for (int i{0}; i < nIters; ++i) {
-			// std::cout << "Started " << i << "th iteration.\n";
-				PartCollision pColl{firstPartCollision()};
-				WallCollision wColl{firstWallCollision()};
-				Collision* firstColl{nullptr};
-
-				if (pColl.getTime() < wColl.getTime())
-					firstColl = &pColl;
-				else
-					firstColl = &wColl;
-
-				move(firstColl->getTime());
-
-				firstColl->solve();
-
-			o.emplace_back(GasData(*this, firstColl));
-			++nDone;
-		}
-	};
-	auto insertLambda = [&output] (std::vector<GasData>& o) {
-		output.addData(o);
-		o.clear();
-	};
-	
-	calcLambda(tempOutput1, nIterations < output.getStatSize()? nIterations: output.getStatSize());
-	
-	bool tempOutput1Full {true};
-	// 0 -> calc to tempOutput2, insert tempOutput1, 1 -> calc to tempOutput1, insert tempOutput2
-	while (nDone < nIterations) {
-		int nIts = nIterations - nDone >= output.getStatSize()? output.getStatSize(): nIterations - nDone;
-		auto& calcVec {tempOutput1Full? tempOutput2: tempOutput1};
-		auto& insertVec {tempOutput1Full? tempOutput1: tempOutput2};
-		std::thread calcThread {
-			[&] { calcLambda(calcVec, nIts); }
-		};
-		std::thread insertThread {
-			[&] { insertLambda(insertVec); } 
-		};
-		if (calcThread.joinable()) {
-			calcThread.join();
-		}
-		if (insertThread.joinable()) {
-			insertThread.join();
-		}
-		tempOutput1Full = !tempOutput1Full;
-	}
-
-	assert(nDone == nIterations);
-
-	insertLambda(tempOutput1Full? tempOutput1: tempOutput2);
-
-  output.setDone();
-  // std::cout << "Elapsed simulation time: " <<
-  // output.getData().back().getTime() - output.getData()[0].getTime() <<
-  // std::endl;
-}
-*/
 int Gas::getPIndex(const Particle* p) const { return p - particles_.data(); }
 
 WallCollision Gas::firstWallCollision() {
@@ -500,9 +432,6 @@ void Gas::move(double time) {
   std::for_each(particles_.begin(), particles_.end(),
                 [time](Particle& part) { part.position += part.speed * time; });
   time_ += time;
-  // Sddfqoinp
-  /*std::for_each(std::execution::par, particles_.begin(), particles_.end(),
-              [time](Particle& part) { part.position += part.speed * time; });*/
 }
 
 void Gas::operator=(const Gas& gas) {
@@ -571,85 +500,4 @@ WallCollision calculateWallColl(Particle& p, double squareSide) {
   return minColl;
 }
 
-// Alternativa 1 a WallCollsion
-/*WallCollision calculateWallColl(Particle& p, double squareSide) {
-  auto wallDistance = [&](double pos, double spd) -> double {
-    if (spd < 0) {
-      return -Particle::radius - pos;
-    } else {
-      return squareSide - Particle::radius - pos;
-    }
-  };
-
-  auto calculateTime = [&](double position, double speed) {
-    return wallDistance(position, speed) / speed;
-  };
-
-  double timeX{calculateTime(p.position.x, p.speed.x)};
-  double timeY{calculateTime(p.position.y, p.speed.y)};
-  double timeZ{calculateTime(p.position.z, p.speed.z)};
-
-  double minTime{timeX};
-
-  char wall = (p.speed.x < 0) ? 'l' : 'r';
-
-  if (timeY < minTime) {
-    minTime = timeY;
-    wall = (p.speed.y < 0) ? 'f' : 'b';
-  }
-
-  if (timeZ < minTime) {
-    minTime = timeZ;
-    wall = (p.speed.z < 0) ? 'd' : 'u';
-  }
-
-  assert(minTime > 0);
-
-  return {minTime, &p, wall};
-}*/
-// Alternativa 2 a WallCollsion
-/*WallCollision calculateWallColl(Particle& p, double squareSide) {
-    struct AxisData {
-        double position;
-        double speed;
-        char negWall;
-        char posWall;
-    };
-
-    AxisData axes[3] = {
-        { p.position.x, p.speed.x, 'l', 'r' },
-        { p.position.y, p.speed.y, 'f', 'b' },
-        { p.position.z, p.speed.z, 'd', 'u' }
-    };
-
-    auto wallDistance = [&](double pos, double spd) {
-        if (spd < 0.0) {
-            return -Particle::radius - pos;
-        } else {
-            return squareSide - Particle::radius - pos;
-        }
-    };
-
-    double minTime = INFINITY;
-    char wall = '?';
-
-    for (auto& axis : axes) {
-        if (axis.speed == 0.0) {
-            continue;
-        }
-
-        double distance = wallDistance(axis.position, axis.speed);
-        double t = distance / axis.speed;
-
-        // Consideriamo solo tempi positivi (collisioni future)
-        if (t > 0.0 && t < minTime) {
-            minTime = t;
-            wall = (axis.speed < 0.0) ? axis.negWall : axis.posWall;
-        }
-    }
-
-    assert(std::isfinite(minTime) && minTime > 0.0);
-
-    return {minTime, &p, wall};
-}*/
 }  // namespace gasSim
