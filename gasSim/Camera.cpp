@@ -6,6 +6,7 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 #include "Camera.hpp"
+#include "GasData.hpp"
 
 // Getters and setters
 
@@ -147,9 +148,9 @@ std::vector<GS::Vector3f> GS::Camera::projectParticles(const GasData& data, doub
 
 	if (data.getCollType() == 'w') {
 
-		int p1I {data.getP1Index()};
+		size_t p1I {data.getP1Index()};
 
-		for (int i {0}; i < p1I; ++i) {
+		for (size_t i {0}; i < p1I; ++i) {
 			proj = getPointProjection(static_cast<Vector3f>(particles[i].position + particles[i].speed*deltaT));
 			// selecting scaling factor so that the particle is in front of the camera
 			if (proj.z <= 1.f && proj.z > 0.f)
@@ -176,8 +177,8 @@ std::vector<GS::Vector3f> GS::Camera::projectParticles(const GasData& data, doub
 
 	} else {
 
-		int p1I {data.getP1Index()};
-		int p2I {data.getP2Index()};
+		size_t p1I {data.getP1Index()};
+		size_t p2I {data.getP2Index()};
 
 		Vector3d v1 {data.getP1().speed};
 		Vector3d v2 {data.getP2().speed};
@@ -188,7 +189,7 @@ std::vector<GS::Vector3f> GS::Camera::projectParticles(const GasData& data, doub
 		preCollSpeed(v1, v2, n);
 		}
 
-		int pIs[2] {p1I, p2I};
+		size_t pIs[2] {p1I, p2I};
 		Vector3d vs[2] {v1, v2};
 
 		if (p2I < p1I) {
@@ -211,7 +212,7 @@ std::vector<GS::Vector3f> GS::Camera::projectParticles(const GasData& data, doub
 		if (proj.z <= 1.f && proj.z > 0.f)
 			projections.emplace_back(proj);
 
-		for (int i {pIs[0] + 1}; i < pIs[1]; ++i) {
+		for (size_t i {pIs[0] + 1}; i < pIs[1]; ++i) {
 			proj = getPointProjection(static_cast<Vector3f>(particles[i].position + particles[i].speed*deltaT));
 			// selecting scaling factor so that the particle is in front of the camera
     	if (proj.z <= 1.f && proj.z > 0.f)
@@ -224,7 +225,7 @@ std::vector<GS::Vector3f> GS::Camera::projectParticles(const GasData& data, doub
 		if (proj.z <= 1.f && proj.z > 0.f)
 			projections.emplace_back(proj);
 
-		for (int i {pIs[1] + 1}; i < (int) particles.size(); ++i) {
+		for (size_t i {pIs[1] + 1}; i < particles.size(); ++i) {
 			proj = getPointProjection(static_cast<Vector3f>(particles[i].position + particles[i].speed*deltaT));
 			// selecting scaling factor so that the particle is in front of the camera
     	if (proj.z <= 1.f && proj.z > 0.f) {

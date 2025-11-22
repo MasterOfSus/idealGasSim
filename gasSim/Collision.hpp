@@ -44,7 +44,7 @@ namespace GS {
 	struct PPCollision final : public Collision {
 		friend class Gas;
 		public:
-			const Particle* getP2() const { return p2; };
+			const Particle* getP2() const { return p2; }
 
 			char getType() const override { return 'p'; }
 
