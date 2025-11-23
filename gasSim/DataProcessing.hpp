@@ -1,8 +1,8 @@
 #ifndef DATAPROCESSING_HPP
 #define DATAPROCESSING_HPP
 
-#include "GasData.hpp"
-#include "TdStats.hpp"
-#include "SimOutput.hpp"
+#include "DataProcessing/GasData.hpp"
+#include "DataProcessing/TdStats.hpp"
+#include "DataProcessing/SimDataPipeline.hpp"
 
 #endif

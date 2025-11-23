@@ -1,6 +1,7 @@
-#include <stdexcept>
-#include <cassert>
 #include "GasData.hpp"
+
+#include <cassert>
+#include <stdexcept>
 
 // auxiliary getPIndex function
 
@@ -14,23 +15,23 @@ GS::GasData::GasData(const Gas& gas, const Collision* collision) {
         collision->getP1() <=
             gas.getParticles().data() + gas.getParticles().size()))
     throw std::invalid_argument(
-      "Collision first particle does not belong to gas."
-		);
+        "Collision first particle does not belong to gas.");
   else {
     if (collision->getType() == 'p') {
       const PPCollision* coll{static_cast<const PPCollision*>(collision)};
       if (!(gas.getParticles().data() <= coll->getP2() &&
             coll->getP2() <=
-                gas.getParticles().data() + gas.getParticles().size()))
+                gas.getParticles().data() + gas.getParticles().size())) {
         throw std::invalid_argument(
             "Collision second particle does not belong to gas.");
-      else {
+      } else {
         particles = gas.getParticles();
         t0 = gas.getTime() - collision->getTime();
         time = gas.getTime();  // yes
         boxSide = gas.getBoxSide();
         p1Index = getPIndex(coll->getP1(), gas);
         p2Index = getPIndex(coll->getP2(), gas);
+        wall = Wall::VOID;
       }
     } else {
       particles = gas.getParticles();
@@ -49,11 +50,11 @@ GS::GasData::GasData(const Gas& gas, const Collision* collision) {
 
 char GS::GasData::getCollType() const {
   assert(p1Index >= 0 && p1Index <= static_cast<size_t>(particles.size()));
-  if (p2Index == NAN) {
+  if (wall == Wall::VOID) {
     return 'w';
   } else {
     return 'p';
-	}
+  }
 }
 
 const GS::Particle& GS::GasData::getP2() const {
@@ -78,9 +79,30 @@ GS::Wall GS::GasData::getWall() const {
 }
 
 bool GS::GasData::operator==(const GasData& data) const {
-  return particles == data.particles && t0 == data.t0 &&
-         time == data.time && boxSide == data.boxSide &&
-         p1Index == data.p1Index && p2Index == data.p2Index &&
-         wall == data.wall;
+  return particles == data.particles && t0 == data.t0 && time == data.time &&
+         boxSide == data.boxSide && p1Index == data.p1Index &&
+         p2Index == data.p2Index && wall == data.wall;
 }
 
+GS::GasData::GasData(GasData&& d) noexcept
+    : particles{std::move(d.particles)},
+      t0{d.t0},
+      time{d.time},
+      boxSide{d.boxSide},
+      p1Index{d.p1Index},
+      p2Index{d.p2Index} {
+  wall = d.wall;
+  d.particles.clear();
+}
+
+GS::GasData& GS::GasData::operator=(GasData&& d) {
+  particles = std::move(d.particles);
+  d.particles.clear();
+  t0 = d.t0;
+  time = d.time;
+  boxSide = d.boxSide;
+  p1Index = d.p1Index;
+  p2Index = d.p2Index;
+  wall = d.wall;
+  return *this;
+}

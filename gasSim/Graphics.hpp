@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_HPP
 #define GRAPHICS_HPP
 
-#include "RenderStyle.hpp"
-#include "Camera.hpp"
+#include "Graphics/RenderStyle.hpp"
+#include "Graphics/Camera.hpp"
 
 #endif

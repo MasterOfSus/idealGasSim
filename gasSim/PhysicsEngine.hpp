@@ -1,9 +1,9 @@
 #ifndef PHYSICS_ENGINE_HPP
 #define PHYSICS_ENGINE_HPP
 
-#include "Vector3.hpp"
-#include "Particle.hpp"
-#include "Collision.hpp"
-#include "Gas.hpp"
+#include "PhysicsEngine/Vector3.hpp"
+#include "PhysicsEngine/Particle.hpp"
+#include "PhysicsEngine/Collision.hpp"
+#include "PhysicsEngine/Gas.hpp"
 
 #endif
