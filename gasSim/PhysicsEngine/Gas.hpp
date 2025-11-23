@@ -17,7 +17,7 @@ class Gas {
   Gas(std::vector<Particle>&& particles, double boxSide, double time = 0.);
   // parametric constructor with particles distributed
   // in a cubical lattice and uniform distribution for
-	// speed norm and direction
+  // speed norm and direction
   Gas(unsigned particlesN, double temperature, double boxSide,
       double time = 0.);
 
