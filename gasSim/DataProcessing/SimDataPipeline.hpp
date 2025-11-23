@@ -31,14 +31,14 @@ class SimDataPipeline {
                    bool mfpMemory = true);
   std::vector<sf::Texture> getVideo(
       VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeHolderT,
-      TList& graphs, bool emptyQueue = false,
+      TList& outputGraphs, bool emptyQueue = false,
       std::function<void(TH1D&, VideoOpts)> fitLambda = {},
       std::array<std::function<void()>, 4> drawLambdas = {});
   // std::deque<GasData> getData();
   size_t getRawDataSize();
   double getFramerate() const { return 1. / gDeltaT.load(); }
   size_t getStatSize() const { return statSize.load(); }
-	void setStatSize(size_t size);
+  void setStatSize(size_t size);
 
   std::vector<TdStats> getStats(bool clearMem = false);
   std::vector<sf::Texture> getRenders(bool clearMem = false);
@@ -48,7 +48,7 @@ class SimDataPipeline {
   void setDone() { dataDone.store(true); }
 
  private:
-	void processStats(const std::vector<GasData>& data, bool mfpMemory);
+  void processStats(const std::vector<GasData>& data, bool mfpMemory);
   void processGraphics(const std::vector<GasData>& data, const Camera& camera,
                        const RenderStyle& style);
 
