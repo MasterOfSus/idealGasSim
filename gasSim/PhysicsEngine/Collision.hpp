@@ -14,7 +14,7 @@ struct Collision {
 
  public:
   double getTime() const { return time; }
-  Particle* getP1() const { return p1; }
+  Particle const* getP1() const { return p1; }
 
   virtual char getType() const = 0;
   virtual void solve() = 0;
@@ -23,6 +23,7 @@ struct Collision {
 
  protected:
   Collision(double time, Particle* p);
+  Particle* getP1() { return p1; };
 
  private:
   Particle* p1;
@@ -47,7 +48,7 @@ struct PPCollision final : public Collision {
   friend class Gas;
 
  public:
-  const Particle* getP2() const { return p2; }
+  Particle const* getP2() const { return p2; }
 
   char getType() const override { return 'p'; }
 

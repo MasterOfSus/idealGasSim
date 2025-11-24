@@ -18,6 +18,8 @@
 // Hi, my name's Liam, I was the person who wrote this, I just wanted to say
 // that I'm sorry for everything
 
+namespace GS {
+
 bool isNegligible(double epsilon, double x);  // implemented in TdStats.cpp
 
 bool isIntMultOf(double x, double dt) {
@@ -45,9 +47,9 @@ h; pixels.resize(total * 4);
 */
 
 // hopefully chatGPT cooked
-void RGBA32toRGBA8(const UInt_t* rgbaBffr, unsigned w, unsigned h,
+void RGBA32toRGBA8(UInt_t const* rgbaBffr, size_t w, size_t h,
                    std::vector<sf::Uint8>& pixels) {
-  const size_t total = static_cast<size_t>(w) * h;
+  size_t total{w * h};
   pixels.resize(total * 4);
 
   std::for_each(std::execution::par, size_t{0}, total, [&](size_t idx) {
@@ -92,7 +94,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   std::optional<double> gTime;
   double gDeltaT;
 
-  auto getRendersT0 = [&](const auto& couples) {
+  auto getRendersT0 = [&](auto const& couples) {
     if (couples.size()) {
       assert(gTime.has_value());
       return couples[0].second;
@@ -153,7 +155,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         if (this->stats.back().getTime() >= *fTime + gDeltaT) {
           auto sStartI{std::upper_bound(this->stats.begin(), this->stats.end(),
                                         *fTime + gDeltaT,
-                                        [](double value, const TdStats& s) {
+                                        [](double value, TdStats const& s) {
                                           return value <= s.getTime();
                                         })};
           if (emptyStats) {
@@ -248,7 +250,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         if (this->stats.size()) {
           auto sStartI{std::upper_bound(this->stats.begin(), this->stats.end(),
                                         *fTime + gDeltaT,
-                                        [](double value, const TdStats& s) {
+                                        [](double value, TdStats const& s) {
                                           // std::cerr << "Value = " << value;
                                           // value <= s.getTime()?
                                           // std::cerr << " <= s.getTime() = "
@@ -268,15 +270,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           if (sStartI != this->stats.end()) {
             auto gStartI{std::lower_bound(this->renders.begin(),
                                           this->renders.end(), *fTime,
-                                          [](const auto& render, double value) {
+                                          [](auto const& render, double value) {
                                             return render.second < value;
                                           })};
             assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-            auto gEndI{std::upper_bound(
-                this->renders.begin(), this->renders.end(),
-                this->stats.back().getTime(), [](double value, auto& render) {
-                  return value < render.second;
-                })};
+            auto gEndI{std::upper_bound(this->renders.begin(),
+                                        this->renders.end(),
+                                        this->stats.back().getTime(),
+                                        [](double value, auto const& render) {
+                                          return value < render.second;
+                                        })};
             // std::cerr << "Found gStartI = " << gStartI -
             // this->renders.begin()
             //	<< ", gEndI = " << gEndI - renders_.begin() << ", with gSize = "
@@ -305,7 +308,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         } else {
           auto gStartI{std::lower_bound(this->renders.begin(),
                                         this->renders.end(), *fTime,
-                                        [](const auto& render, double value) {
+                                        [](auto const& render, double value) {
                                           return render.second < value;
                                         })};
           // same as above
@@ -356,7 +359,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   std::vector<sf::Texture> frames{};
 
   auto drawObj{[&](auto& TDrawable, double percPosX, double percPosY,
-                   const char* drawOpts = "",
+                   char const* drawOpts = "",
                    std::function<void()> drawLambda = {}) {
     cnvs.Clear();
     TDrawable.Draw(drawOpts);
@@ -458,7 +461,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                 .getTime0()) {  // insert empty data and use placeholder render
           // std::cerr << "Inserting placeholder." << std::endl;
           auto& stat{stats.front()};
-          for (int i{0}; i < 7; ++i) {
+          for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
             graph->AddPoint(*fTime, NAN);
             graph->AddPoint(stat.getTime0(), NAN);
@@ -512,8 +515,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
         }
 
-        for (const TdStats& stat : stats) {
-          for (int i{0}; i < 7; ++i) {
+        for (TdStats const& stat : stats) {
+          for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
             if (i < 6) {
               graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));
@@ -580,7 +583,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         if (stats.size()) {
           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
           if (*fTime + gDeltaT < stats.front().getTime0()) {
-            for (int i{0}; i < 7; ++i) {
+            for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
               graph->AddPoint(*fTime, NAN);
               graph->AddPoint(stats.front().getTime0(), NAN);
@@ -635,13 +638,13 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           size_t rIndex{0};
           while (*fTime + gDeltaT < stats.back().getTime()) {
             auto s{std::lower_bound(stats.begin(), stats.end(), *fTime,
-                                    [](const TdStats& stat, double value) {
+                                    [](TdStats const& stat, double value) {
                                       return stat.getTime0() <= value;
                                     })};
             assert(s != stats.end());
-            const TdStats& stat{*s};
+            TdStats const& stat{*s};
             // make the graphs picture
-            for (int i{0}; i < 7; ++i) {
+            for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
               if (i < 6) {
                 graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));
@@ -705,7 +708,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           assert(renders.back().second == gTime);
           if (*fTime + gDeltaT < gTime ||
               isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
-            for (int i{0}; i < 7; ++i) {
+            for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
               graph->AddPoint(*fTime, NAN);
               graph->AddPoint(*gTime, NAN);
@@ -771,7 +774,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       if (stats.size()) {
         auxTxtr.create(windowSize.x * 0.25, windowSize.y * 0.5);
         if (*fTime + gDeltaT < stats.front().getTime0()) {
-          for (int i{0}; i < 7; ++i) {
+          for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
             graph->AddPoint(*fTime, NAN);
             graph->AddPoint(stats.front().getTime0(), NAN);
@@ -832,15 +835,15 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         while (*fTime + gDeltaT < stats.back().getTime()) {
           assert(*fTime + gDeltaT >= stats.front().getTime0());
           auto s{std::lower_bound(stats.begin(), stats.end(), *fTime,
-                                  [](const TdStats& stat, double value) {
+                                  [](TdStats const& stat, double value) {
                                     return stat.getTime0() <= value;
                                   })};
           // std::cerr << "Found stat index = " << s - stats.begin() << " for
           // fTime_ = " << *fTime_ + gDeltaT << std::endl;
           assert(s != stats.end());
-          const TdStats& stat{*s};
+          TdStats const& stat{*s};
           // make the graphs picture
-          for (int k{0}; k < 7; ++k) {
+          for (size_t k{0}; k < 7; ++k) {
             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(k)};
             if (k < 6) {
               graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));
@@ -911,7 +914,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
         }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
       } else if (renders.size()) {
-        for (int i{0}; i < 7; ++i) {
+        for (size_t i{0}; i < 7; ++i) {
           TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
           graph->AddPoint(*fTime, NAN);
           graph->AddPoint(*gTime, NAN);
@@ -978,3 +981,5 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
   return frames;
 }
+
+}  // namespace GS

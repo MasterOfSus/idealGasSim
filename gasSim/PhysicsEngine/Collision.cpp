@@ -2,18 +2,20 @@
 
 #include <stdexcept>
 
-GS::Collision::Collision(double time, Particle* p1) : p1{p1}, time{time} {
+namespace GS {
+
+Collision::Collision(double time, Particle* p1) : p1{p1}, time{time} {
   if (time < 0.) {
     throw std::invalid_argument("Provided negative time");
   }
 }
 
-GS::Collision::~Collision() = default;
+Collision::~Collision() = default;
 
-GS::PWCollision::PWCollision(double time, Particle* p1, Wall wall)
+PWCollision::PWCollision(double time, Particle* p1, Wall wall)
     : Collision(time, p1), wall{wall} {}
 
-void GS::PWCollision::solve() {
+void PWCollision::solve() {
   Particle* p{getP1()};
   switch (wall) {
     case Wall::Left:
@@ -30,10 +32,10 @@ void GS::PWCollision::solve() {
   }
 }
 
-GS::PPCollision::PPCollision(double time, Particle* p1, Particle* p2)
+PPCollision::PPCollision(double time, Particle* p1, Particle* p2)
     : Collision(time, p1), p2{p2} {}
 
-void GS::PPCollision::solve() {
+void PPCollision::solve() {
   Particle* p1{getP1()};
   Vector3d d{p1->position - p2->position};
   d.normalize();
@@ -43,3 +45,5 @@ void GS::PPCollision::solve() {
   p1->speed -= d * proj;
   p2->speed += d * proj;
 }
+
+}  // namespace GS

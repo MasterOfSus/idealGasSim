@@ -48,9 +48,9 @@ class SimDataPipeline {
   void setDone() { dataDone.store(true); }
 
  private:
-  void processStats(const std::vector<GasData>& data, bool mfpMemory);
-  void processGraphics(const std::vector<GasData>& data, const Camera& camera,
-                       const RenderStyle& style);
+  void processStats(std::vector<GasData> const& data, bool mfpMemory);
+  void processGraphics(std::vector<GasData> const& data, Camera const& camera,
+                       RenderStyle const& style);
 
   std::atomic<bool> dataDone{false};
   std::atomic<bool> processing{false};

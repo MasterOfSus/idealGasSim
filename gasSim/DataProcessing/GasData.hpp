@@ -6,20 +6,20 @@
 namespace GS {
 class GasData {
  public:
-  GasData(const Gas& gas, const Collision* collision);
+  GasData(Gas const& gas, Collision const* collision);
 
-  const std::vector<Particle>& getParticles() const { return particles; };
-  const Particle& getP1() const { return particles[p1Index]; };
-  size_t getP1Index() const { return p1Index; };
-  const Particle& getP2() const;
+  std::vector<Particle> const& getParticles() const { return particles; }
+  Particle const& getP1() const { return particles[p1Index]; }
+  size_t getP1Index() const { return p1Index; }
+  Particle const& getP2() const;
   size_t getP2Index() const;
   double getT0() const { return t0; }
-  double getTime() const { return time; };
-  double getBoxSide() const { return boxSide; };
+  double getTime() const { return time; }
+  double getBoxSide() const { return boxSide; }
   Wall getWall() const;
   char getCollType() const;
 
-  bool operator==(const GasData& data) const;
+  bool operator==(GasData const& data) const;
 
   GasData(GasData const&) = default;
   GasData& operator=(GasData const&) = default;

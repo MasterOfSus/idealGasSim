@@ -6,7 +6,9 @@
 
 // Auxiliary addPulse private function, assumes solved collision for input
 
-void GS::TdStats::addPulse(const GasData& data) {
+namespace GS {
+
+void TdStats::addPulse(GasData const& data) {
   assert(data.getCollType() == 'w');
   switch (data.getWall()) {
     case Wall::Front:
@@ -43,7 +45,7 @@ void GS::TdStats::addPulse(const GasData& data) {
 // is minimal anyways, but if the user wishes to have perfectly coherent data he
 // must acknowledge this concept and avoid this behaviour.
 
-GS::TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
+TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
     : wallPulses{},
       lastCollPositions(std::vector<Vector3d>(firstState.getParticles().size(),
                                               {0., 0., 0.})),
@@ -62,7 +64,7 @@ GS::TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
   T = std::accumulate(
           firstState.getParticles().begin(), firstState.getParticles().end(),
           0.,
-          [](double x, const Particle& p) { return x + p.speed * p.speed; }) *
+          [](double x, Particle const& p) { return x + p.speed * p.speed; }) *
       Particle::getMass() / getNParticles() / 3.;
   if (firstState.getCollType() == 'w') {
     addPulse(firstState);
@@ -72,18 +74,18 @@ GS::TdStats::TdStats(const GasData& firstState, const TH1D& speedsHTemplate)
   lastCollPositions[firstState.getP1Index()] = firstState.getP1().position;
   std::for_each(firstState.getParticles().begin(),
                 firstState.getParticles().end(),
-                [this](const Particle& p) { speedsH.Fill(p.speed.norm()); });
+                [this](Particle const& p) { speedsH.Fill(p.speed.norm()); });
 }
 
 bool isNegligible(double epsilon, double x) {
   return fabs(epsilon / x) < 1E-6;
 };
 
-GS::TdStats::TdStats(const GasData& data, TdStats&& prevStats)
+TdStats::TdStats(GasData const& data, TdStats&& prevStats)
     : wallPulses{},
       T{std::accumulate(
             data.getParticles().begin(), data.getParticles().end(), 0.,
-            [](double x, const Particle& p) { return x + p.speed * p.speed; }) *
+            [](double x, Particle const& p) { return x + p.speed * p.speed; }) *
             Particle::getMass() / data.getParticles().size() / 3. -
         prevStats.getTemp()},
       freePaths{},
@@ -139,16 +141,16 @@ GS::TdStats::TdStats(const GasData& data, TdStats&& prevStats)
     lastCollPositions[data.getP1Index()] = data.getP1().position;
 
     std::for_each(data.getParticles().begin(), data.getParticles().end(),
-                  [this](const Particle& p) { speedsH.Fill(p.speed.norm()); });
+                  [this](Particle const& p) { speedsH.Fill(p.speed.norm()); });
   }
 }
 
-GS::TdStats::TdStats(const GasData& data, TdStats&& prevStats,
-                     const TH1D& speedsHTemplate)
+TdStats::TdStats(GasData const& data, TdStats&& prevStats,
+                 TH1D const& speedsHTemplate)
     : wallPulses{},
       T{std::accumulate(
             data.getParticles().begin(), data.getParticles().end(), 0.,
-            [](double x, const Particle& p) { return x + p.speed * p.speed; }) *
+            [](double x, Particle const& p) { return x + p.speed * p.speed; }) *
             Particle::getMass() / data.getParticles().size() / 3. -
         prevStats.getTemp()},
       freePaths{},
@@ -226,11 +228,11 @@ GS::TdStats::TdStats(const GasData& data, TdStats&& prevStats,
     lastCollPositions[data.getP1Index()] = data.getP1().position;
 
     std::for_each(data.getParticles().begin(), data.getParticles().end(),
-                  [this](const Particle& p) { speedsH.Fill(p.speed.norm()); });
+                  [this](Particle const& p) { speedsH.Fill(p.speed.norm()); });
   }
 }
 
-GS::TdStats::TdStats(TdStats const& s)
+TdStats::TdStats(TdStats const& s)
     : wallPulses(s.wallPulses),
       lastCollPositions(s.lastCollPositions),
       T(s.T),
@@ -242,7 +244,7 @@ GS::TdStats::TdStats(TdStats const& s)
   speedsH.SetDirectory(nullptr);
 }
 
-GS::TdStats::TdStats(TdStats&& s) noexcept
+TdStats::TdStats(TdStats&& s) noexcept
     : wallPulses(std::move(s.wallPulses)),
       lastCollPositions(std::move(s.lastCollPositions)),
       T(s.T),
@@ -261,7 +263,7 @@ GS::TdStats::TdStats(TdStats&& s) noexcept
   time = NAN;
 }
 
-GS::TdStats& GS::TdStats::operator=(const TdStats& s) {
+TdStats& TdStats::operator=(TdStats const& s) {
   wallPulses = s.wallPulses;
   lastCollPositions = s.lastCollPositions;
   T = s.T;
@@ -274,7 +276,7 @@ GS::TdStats& GS::TdStats::operator=(const TdStats& s) {
   return *this;
 }
 
-GS::TdStats& GS::TdStats::operator=(TdStats&& s) noexcept {
+TdStats& TdStats::operator=(TdStats&& s) noexcept {
   wallPulses = std::move(s.wallPulses);
   wallPulses = {};
   lastCollPositions = std::move(s.lastCollPositions);
@@ -295,12 +297,12 @@ GS::TdStats& GS::TdStats::operator=(TdStats&& s) noexcept {
   return *this;
 }
 
-void GS::TdStats::addData(const GasData& data) {
-  if (data.getParticles().size() != getNParticles())
+void TdStats::addData(GasData const& data) {
+  if (data.getParticles().size() != getNParticles()) {
     throw std::invalid_argument("Non-matching gas particles number.");
-  else if (data.getTime() < time)
+  } else if (data.getTime() < time) {
     throw std::invalid_argument("Data time less than internal time.");
-  else {
+  } else {
     time = data.getTime();
     if (data.getCollType() == 'w') {
       addPulse(data);
@@ -329,23 +331,23 @@ void GS::TdStats::addData(const GasData& data) {
       lastCollPositions[data.getP2Index()] = data.getP2().position;
     }
     std::for_each(data.getParticles().begin(), data.getParticles().end(),
-                  [this](const Particle& p) { speedsH.Fill(p.speed.norm()); });
+                  [this](Particle const& p) { speedsH.Fill(p.speed.norm()); });
   }
 }
 
-double GS::TdStats::getPressure(Wall wall) const {
+double TdStats::getPressure(Wall wall) const {
   if (wall == Wall::VOID) {
     throw std::invalid_argument("VOID wall provided");
   }
   return wallPulses[int(wall)] / (getBoxSide() * getBoxSide() * getDeltaT());
 }
 
-double GS::TdStats::getPressure() const {
+double TdStats::getPressure() const {
   double totPulses{std::accumulate(wallPulses.begin(), wallPulses.end(), 0.)};
   return totPulses / (getBoxSide() * getBoxSide() * 6 * getDeltaT());
 }
 
-double GS::TdStats::getMeanFreePath() const {
+double TdStats::getMeanFreePath() const {
   if (freePaths.size() == 0) {
     return -1.;
   } else {
@@ -354,9 +356,11 @@ double GS::TdStats::getMeanFreePath() const {
   }
 }
 
-bool GS::TdStats::operator==(const TdStats& stats) const {
+bool TdStats::operator==(TdStats const& stats) const {
   return wallPulses == stats.wallPulses &&
          lastCollPositions == stats.lastCollPositions &&
          freePaths == stats.freePaths && t0 == stats.t0 && time == stats.time &&
          T == stats.T;
 }
+
+}  // namespace GS

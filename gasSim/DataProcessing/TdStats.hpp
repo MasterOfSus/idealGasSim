@@ -9,36 +9,36 @@ namespace GS {
 
 class TdStats {
  public:
-  TdStats(const GasData& firstState, const TH1D& speedsHTemplate);
-  TdStats(const GasData& data, TdStats&& prevStats);
-  TdStats(const GasData& data, TdStats&& prevStats,
-          const TH1D& speedsHTemplate);
+  TdStats(GasData const& firstState, TH1D const& speedsHTemplate);
+  TdStats(GasData const& data, TdStats&& prevStats);
+  TdStats(GasData const& data, TdStats&& prevStats,
+          TH1D const& speedsHTemplate);
 
-  void addData(const GasData& data);
+  void addData(GasData const& data);
 
   double getPressure(Wall wall) const;
   double getPressure() const;
   double getTemp() const { return T; }
-  unsigned int getNParticles() const { return lastCollPositions.size(); };
-  double getVolume() const { return std::pow(boxSide, 3); };
-  double getBoxSide() const { return boxSide; };
-  double getTime() const { return time; };
-  double getTime0() const { return t0; };
-  double getDeltaT() const { return time - t0; };
+  size_t getNParticles() const { return lastCollPositions.size(); }
+  double getVolume() const { return std::pow(boxSide, 3); }
+  double getBoxSide() const { return boxSide; }
+  double getTime() const { return time; }
+  double getTime0() const { return t0; }
+  double getDeltaT() const { return time - t0; }
   TH1D getSpeedH() const { return speedsH; }
   double getMeanFreePath() const;
 
-  bool operator==(const TdStats&) const;
+  bool operator==(TdStats const&) const;
 
-  TdStats(const TdStats& s);
-  TdStats& operator=(const TdStats&);
+  TdStats(TdStats const& s);
+  TdStats& operator=(TdStats const&);
   TdStats(TdStats&& s) noexcept;
   TdStats& operator=(TdStats&&) noexcept;
 
   ~TdStats() = default;
 
  private:
-  void addPulse(const GasData& data);
+  void addPulse(GasData const& data);
 
   std::array<double, 6> wallPulses{};  // cumulated pulse for each wall
 

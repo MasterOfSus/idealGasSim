@@ -4,6 +4,7 @@
 #include "RenderStyle.hpp"
 
 namespace GS {
+
 class GasData;
 
 class Camera {
@@ -14,22 +15,22 @@ class Camera {
          unsigned height = 1080);
 
   // setters and getters
-  void setFocus(Vector3f const& focusPoint) { this->focusPoint = focusPoint; };
+  void setFocus(Vector3f const& focusPoint) { this->focusPoint = focusPoint; }
   void setSightVector(Vector3f const& sightVector);
   void setAspectRatio(float ratio);
   void setPlaneDistance(float distance);
   void setFOV(float FOV);  // field of view setting (in degrees)
   void setResolution(unsigned height, unsigned width);
 
-  Vector3f const& getFocus() const { return focusPoint; };
-  Vector3f const& getSight() const { return sightVector; };
+  Vector3f const& getFocus() const { return focusPoint; }
+  Vector3f const& getSight() const { return sightVector; }
   float getAspectRatio() const {
     return static_cast<float>(width) / static_cast<float>(height);
-  };
-  float getPlaneDistance() const { return planeDistance; };
-  float getFOV() const { return fov; };
-  int getHeight() const { return height; };
-  int getWidth() const { return width; };
+  }
+  float getPlaneDistance() const { return planeDistance; }
+  float getFOV() const { return fov; }
+  unsigned getHeight() const { return height; }
+  unsigned getWidth() const { return width; }
 
   // useful functions
   Vector3f getPointProjection(Vector3f const& point) const;

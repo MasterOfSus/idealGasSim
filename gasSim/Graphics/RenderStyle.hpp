@@ -9,20 +9,20 @@ namespace GS {
 
 class RenderStyle {
  public:
-  const std::string& getWallsOpts() const { return wallsOpts; };
-  void setWallsOpts(const std::string& opts);
-  const sf::Color& getWallsColor() const { return wallsColor; };
-  void setWallsColor(const sf::Color& color) { wallsColor = color; };
-  const sf::Color& getWOutlineColor() const { return wOutlineColor; };
-  void setWOutlineColor(const sf::Color& color) { wOutlineColor = color; };
+  std::string const& getWallsOpts() const { return wallsOpts; }
+  void setWallsOpts(std::string const& opts);
+  sf::Color getWallsColor() const { return wallsColor; }
+  void setWallsColor(sf::Color color) { wallsColor = color; }
+  sf::Color getWOutlineColor() const { return wOutlineColor; }
+  void setWOutlineColor(sf::Color color) { wOutlineColor = color; }
 
-  const sf::Texture& getPartTexture() const { return partTexture; };
-  void setPartTexture(const sf::Texture& texture) { partTexture = texture; };
+  sf::Texture const& getPartTexture() const { return partTexture; }
+  void setPartTexture(sf::Texture const& texture) { partTexture = texture; }
 
-  const sf::Color& getBGColor() const { return background; };
-  void setBGColor(const sf::Color& color) { background = color; };
+  sf::Color getBGColor() const { return background; }
+  void setBGColor(sf::Color color) { background = color; }
 
-  RenderStyle(const sf::Texture& texture) : partTexture(texture){};
+  RenderStyle(sf::Texture const& texture) : partTexture(texture) {}
 
   RenderStyle() = delete;
 

@@ -83,7 +83,7 @@ GS::Gas::Gas(unsigned particlesN, double temperature, double boxSide,
   }
 
   if (particlesN) {
-    int npPerSide{static_cast<int>(std::ceil(cbrt(particlesN)))};
+    size_t npPerSide{static_cast<size_t>(std::ceil(cbrt(particlesN)))};
     double pR{Particle::getRadius()};
     double latticeUnit{(boxSide - 2 * pR) * 0.99 / npPerSide};
 
@@ -95,11 +95,11 @@ GS::Gas::Gas(unsigned particlesN, double temperature, double boxSide,
         sqrt(30. / M_PI * temperature /
              Particle::getMass());  // should be correct expression
 
-    auto latticePosition = [=](int i) {
+    auto latticePosition = [=](size_t i) {
       // compute integer lattice coordinate
-      int pI{i % npPerSide};
-      int pJ{(i / npPerSide) % npPerSide};
-      int pK{i / (npPerSide * npPerSide)};
+      size_t pI{i % npPerSide};
+      size_t pJ{(i / npPerSide) % npPerSide};
+      size_t pK{i / (npPerSide * npPerSide)};
 
       double x{(pI * latticeUnit) + pR + boxSide * 0.05};
       double y{(pJ * latticeUnit) + pR + boxSide * 0.05};
@@ -211,7 +211,7 @@ auto trIndex(size_t i, size_t nEls) {
           std::sqrt(-8 * i + 4 * nEls * (nEls - 1) - 7) / 2. - 0.5))};
   size_t colIndex{i + rowIndex + 1 - nEls * (nEls - 1) / 2 +
                   (nEls - rowIndex) * ((nEls - rowIndex) - 1) / 2};
-  return std::pair<int, int>(rowIndex, colIndex);
+  return std::pair<size_t, size_t>(rowIndex, colIndex);
 }
 
 GS::PPCollision GS::Gas::firstPPColl() {
@@ -247,7 +247,7 @@ GS::PPCollision GS::Gas::firstPPColl() {
     PPCollision c{INFINITY, nullptr, nullptr};
     size_t endIndex{checksPerThread + extraChecks};
     for (size_t i{0}; i < endIndex; ++i) {
-      std::pair<int, int> trI{trIndex(i, nP)};
+      std::pair<size_t, size_t> trI{trIndex(i, nP)};
       getBestPPCollision(c, particles.data() + trI.first,
                          particles.data() + trI.second);
     }
@@ -262,7 +262,7 @@ GS::PPCollision GS::Gas::firstPPColl() {
       size_t i{thrI * checksPerThread + extraChecks};
       size_t endIndex{(thrI + 1) * checksPerThread + extraChecks};
       for (; i < endIndex; ++i) {
-        std::pair<int, int> trI{trIndex(i, nP)};
+        std::pair<size_t, size_t> trI{trIndex(i, nP)};
         getBestPPCollision(c, particles.data() + trI.first,
                            particles.data() + trI.second);
       }

@@ -11,7 +11,9 @@ std::deque<GasData> SimOutput::getData() {
 }
 */
 
-void GS::SimDataPipeline::setFramerate(double framerate) {
+namespace GS {
+
+void SimDataPipeline::setFramerate(double framerate) {
   if (framerate <= 0) {
     throw std::invalid_argument("Non-positive framerate provided.");
   } else {
@@ -19,8 +21,8 @@ void GS::SimDataPipeline::setFramerate(double framerate) {
   }
 }
 
-GS::SimDataPipeline::SimDataPipeline(size_t statSize, double framerate,
-                                     const TH1D& speedsHTemplate)
+SimDataPipeline::SimDataPipeline(size_t statSize, double framerate,
+                                 TH1D const& speedsHTemplate)
     : statSize(statSize), speedsHTemplate(speedsHTemplate) {
   setFramerate(framerate);
   if (speedsHTemplate.IsZombie()) {
@@ -32,19 +34,19 @@ GS::SimDataPipeline::SimDataPipeline(size_t statSize, double framerate,
   assert(speedsHTemplate.GetNbinsX() != 0);
 }
 
-size_t GS::SimDataPipeline::getRawDataSize() {
+size_t SimDataPipeline::getRawDataSize() {
   std::lock_guard<std::mutex> dataGuard(rawDataMtx);
   return rawData.size();
 }
 
 bool isNegligible(double epsilon, double x);  // implemented in TdStats.cpp
 
-void GS::SimDataPipeline::addData(std::vector<GasData>&& data) {
+void SimDataPipeline::addData(std::vector<GasData>&& data) {
   if (data.size()) {
     dataDone.store(false);
     double prevDTime;
     bool firstD{true};
-    for (const GasData& d : data) {
+    for (GasData const& d : data) {
       if (!nParticles.has_value()) {
         nParticles = d.getParticles().size();
         assert(nParticles.value());
@@ -77,7 +79,7 @@ void GS::SimDataPipeline::addData(std::vector<GasData>&& data) {
   }
 }
 
-void GS::SimDataPipeline::processData(bool mfpMemory) {
+void SimDataPipeline::processData(bool mfpMemory) {
   processing.store(true);
   std::vector<GasData> data{};
   std::unique_lock<std::mutex> rawDataLock(rawDataMtx, std::defer_lock);
@@ -129,9 +131,8 @@ void GS::SimDataPipeline::processData(bool mfpMemory) {
   processing.store(false);
 }
 
-void GS::SimDataPipeline::processData(const Camera& camera,
-                                      const RenderStyle& style,
-                                      bool mfpMemory) {
+void SimDataPipeline::processData(Camera const& camera,
+                                  RenderStyle const& style, bool mfpMemory) {
   processing.store(true);
   // std::cout << "Started processing data.\n";
   std::vector<GasData> data{};
@@ -171,7 +172,7 @@ void GS::SimDataPipeline::processData(const Camera& camera,
         sThread = std::thread([this, &data, mfpMemory]() {
           try {
             processStats(data, mfpMemory);
-          } catch (const std::exception& e) {
+          } catch (std::exception const& e) {
             // std::cerr << "Error in stats thread: " << e.what() << std::endl;
             std::terminate();
           }
@@ -180,15 +181,19 @@ void GS::SimDataPipeline::processData(const Camera& camera,
         gThread = std::thread([this, &data, &camera, &style]() {
           try {
             processGraphics(data, camera, style);
-          } catch (const std::exception& e) {
+          } catch (std::exception const& e) {
             // std::cerr << "Error in graphics thread: " << e.what() <<
             // std::endl;
             std::terminate();
           }
         });
 
-        if (sThread.joinable()) sThread.join();
-        if (gThread.joinable()) gThread.join();
+        if (sThread.joinable()) {
+          sThread.join();
+        }
+        if (gThread.joinable()) {
+          gThread.join();
+        }
       }  // guard scope end
       addedResults.store(true);
       outputCv.notify_all();
@@ -202,9 +207,9 @@ void GS::SimDataPipeline::processData(const Camera& camera,
 
 // read VERY carefully during reread, weird naming changes might hvae fucked up
 // everything
-void GS::SimDataPipeline::processGraphics(const std::vector<GasData>& data,
-                                          const Camera& camera,
-                                          const RenderStyle& style) {
+void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
+                                      Camera const& camera,
+                                      RenderStyle const& style) {
   // std::cout << "Processing graphics... ";
   // std::cout.flush();
   std::vector<std::pair<sf::Texture, double>> tempRenders{};
@@ -232,7 +237,7 @@ void GS::SimDataPipeline::processGraphics(const std::vector<GasData>& data,
     gTimeL += gDeltaTL;
   }
 
-  for (const GasData& dat : data) {
+  for (GasData const& dat : data) {
     while (gTimeL + gDeltaTL <= dat.getTime()) {
       // std::cout << "Drawing gas at time " << *gTime_ + gDeltaT_ << std::endl;
       gTimeL += gDeltaTL;
@@ -249,8 +254,8 @@ void GS::SimDataPipeline::processGraphics(const std::vector<GasData>& data,
   // std::cout << "done!\n";
 }
 
-void GS::SimDataPipeline::processStats(const std::vector<GasData>& data,
-                                       bool mfpMemory) {
+void SimDataPipeline::processStats(std::vector<GasData> const& data,
+                                   bool mfpMemory) {
   // std::cout << "Started processing stats.\n";
   std::vector<TdStats> tempStats{};
 
@@ -293,7 +298,7 @@ void GS::SimDataPipeline::processStats(const std::vector<GasData>& data,
                std::make_move_iterator(tempStats.end()));
 }
 
-std::vector<GS::TdStats> GS::SimDataPipeline::getStats(bool emptyQueue) {
+std::vector<TdStats> SimDataPipeline::getStats(bool emptyQueue) {
   if (emptyQueue) {
     std::deque<TdStats> tempStats;
     std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
@@ -313,7 +318,7 @@ std::vector<GS::TdStats> GS::SimDataPipeline::getStats(bool emptyQueue) {
   }
 }
 
-std::vector<sf::Texture> GS::SimDataPipeline::getRenders(bool emptyQueue) {
+std::vector<sf::Texture> SimDataPipeline::getRenders(bool emptyQueue) {
   std::vector<sf::Texture> tempRenders{};
   if (emptyQueue) {
     std::lock_guard<std::mutex> rendersGuard{rendersMtx};
@@ -332,7 +337,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getRenders(bool emptyQueue) {
   return tempRenders;
 }
 
-void GS::SimDataPipeline::setStatChunkSize(size_t s) {
+void SimDataPipeline::setStatChunkSize(size_t s) {
   if (s) {
     statChunkSize.store(s);
   } else {
@@ -340,10 +345,12 @@ void GS::SimDataPipeline::setStatChunkSize(size_t s) {
   }
 }
 
-void GS::SimDataPipeline::setStatSize(size_t s) {
+void SimDataPipeline::setStatSize(size_t s) {
   if (s) {
     statSize.store(s);
   } else {
     throw(std::invalid_argument("Provided null stat size."));
   }
 }
+
+}  // namespace GS

@@ -5,12 +5,12 @@
 
 // auxiliary getPIndex function
 
-inline int getPIndex(const GS::Particle* p, const GS::Gas& gas) {
+inline int getPIndex(GS::Particle const* p, GS::Gas const& gas) {
   return p - gas.getParticles().data();
 }
 
 // expects a solved collision as argument
-GS::GasData::GasData(const Gas& gas, const Collision* collision) {
+GS::GasData::GasData(Gas const& gas, Collision const* collision) {
   if (!(gas.getParticles().data() <= collision->getP1() &&
         collision->getP1() <=
             gas.getParticles().data() + gas.getParticles().size()))
@@ -18,7 +18,7 @@ GS::GasData::GasData(const Gas& gas, const Collision* collision) {
         "Collision first particle does not belong to gas.");
   else {
     if (collision->getType() == 'p') {
-      const PPCollision* coll{static_cast<const PPCollision*>(collision)};
+      PPCollision const* coll{static_cast<PPCollision const*>(collision)};
       if (!(gas.getParticles().data() <= coll->getP2() &&
             coll->getP2() <=
                 gas.getParticles().data() + gas.getParticles().size())) {
@@ -42,7 +42,7 @@ GS::GasData::GasData(const Gas& gas, const Collision* collision) {
       // getPIndex(collision->getFirstParticle(), gas) << '\n';
       p1Index = getPIndex(collision->getP1(), gas);
       p2Index = NAN;
-      const PWCollision* coll{static_cast<const PWCollision*>(collision)};
+      PWCollision const* coll{static_cast<PWCollision const*>(collision)};
       wall = coll->getWall();
     }
   }
@@ -57,7 +57,7 @@ char GS::GasData::getCollType() const {
   }
 }
 
-const GS::Particle& GS::GasData::getP2() const {
+GS::Particle const& GS::GasData::getP2() const {
   if (getCollType() == 'w')
     throw std::logic_error("Asked for p2 in wall collision");
   else
@@ -78,7 +78,7 @@ GS::Wall GS::GasData::getWall() const {
     return wall;
 }
 
-bool GS::GasData::operator==(const GasData& data) const {
+bool GS::GasData::operator==(GasData const& data) const {
   return particles == data.particles && t0 == data.t0 && time == data.time &&
          boxSide == data.boxSide && p1Index == data.p1Index &&
          p2Index == data.p2Index && wall == data.wall;

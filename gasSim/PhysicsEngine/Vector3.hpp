@@ -26,24 +26,22 @@ struct Vector3 {  // a three-dimensional vector
     y += v.y;
     z += v.z;
     return *this;
-  };
+  }
   Vector3& operator-=(Vector3 const& v) {
     x -= v.x;
     y -= v.y;
     z -= v.z;
     return *this;
-  };
+  }
 
   Vector3 operator*(FP c) const { return {x * c, y * c, z * c}; }
   Vector3 operator/(FP c) const { return {x / c, y / c, z / c}; }
 
-  bool operator==(Vector3 const& v) { return x == v.x && y = v.y && z = v.z; };
-  bool operator!=(Vector3 const& v) {
-    return x != v.x || y != v.y || z != v.z;
-  };
+  bool operator==(Vector3 const& v) { return x == v.x && y = v.y && z = v.z; }
+  bool operator!=(Vector3 const& v) { return x != v.x || y != v.y || z != v.z; }
 
-  double norm() const { return sqrt(x * x + y * y + z * z); };
-  void normalize() { *this = *this / norm(); };
+  double norm() const { return sqrt(x * x + y * y + z * z); }
+  void normalize() { *this = *this / norm(); }
 };
 
 template <typename FP>
