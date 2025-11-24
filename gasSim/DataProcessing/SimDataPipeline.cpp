@@ -88,11 +88,11 @@ void SimDataPipeline::processData(bool mfpMemory) {
     rawDataCv.wait_for(rawDataLock, std::chrono::milliseconds(100), [this] {
       return rawData.size() > statSize.load() || dataDone.load();
     });
-    size_t itStatSize{statSize.load()};  // stat size for this iteration
-    if (dataDone && rawData.size() < itStatSize) {
+    size_t statSize{this->statSize.load()};  // stat size for this iteration
+    if (dataDone && rawData.size() < statSize) {
       break;
     }
-    size_t nStats{rawData.size() / itStatSize};
+    size_t nStats{rawData.size() / statSize};
     {  // chunkSize nspc
       size_t chunkSize = statChunkSize.load();
       if (chunkSize) {
@@ -108,10 +108,10 @@ void SimDataPipeline::processData(bool mfpMemory) {
         std::lock_guard<std::mutex> outputGuard{outputMtx};
         data.insert(
             data.end(), std::make_move_iterator(rawData.begin()),
-            std::make_move_iterator(rawData.begin() + nStats * itStatSize));
+            std::make_move_iterator(rawData.begin() + nStats * statSize));
         assert(data.size());
         // std::cout << "GasData count = " << data.size() << std::endl;
-        rawData.erase(rawData.begin(), rawData.begin() + nStats * itStatSize);
+        rawData.erase(rawData.begin(), rawData.begin() + nStats * statSize);
         rawDataLock.unlock();
 
         // std::cout << "Data size: " << data.size() << "; ";
@@ -144,12 +144,12 @@ void SimDataPipeline::processData(Camera const& camera,
     });
     // std::cout << "Done status: " << done_ << ". RawData emptiness: " <<
     // rawData_.empty() << std::endl;
-    size_t itStatSize{statSize.load()};  // stat size for this iteration
-    if (dataDone.load() && rawData.size() < itStatSize) {
+    size_t statSize{this->statSize.load()};  // stat size for this iteration
+    if (dataDone.load() && rawData.size() < statSize) {
       break;
     }
 
-    size_t nStats{rawData.size() / itStatSize};
+    size_t nStats{rawData.size() / statSize};
     size_t chunkSize{statChunkSize.load()};
     if (chunkSize) {
       nStats = nStats > chunkSize ? chunkSize : nStats;
@@ -158,9 +158,9 @@ void SimDataPipeline::processData(Camera const& camera,
     if (nStats) {
       data.insert(
           data.end(), std::make_move_iterator(rawData.begin()),
-          std::make_move_iterator(rawData.begin() + nStats * itStatSize));
+          std::make_move_iterator(rawData.begin() + nStats * statSize));
       assert(data.size());
-      rawData.erase(rawData.begin(), rawData.begin() + nStats * itStatSize);
+      rawData.erase(rawData.begin(), rawData.begin() + nStats * statSize);
       rawDataLock.unlock();
 
       std::thread sThread;
@@ -215,34 +215,34 @@ void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
   std::vector<std::pair<sf::Texture, double>> tempRenders{};
 
   // setting local time variables
-  double gTimeL;
-  double gDeltaTL{gDeltaT.load()};
+  double gTime;
+  double gDeltaT{this->gDeltaT.load()};
   {  // guard scope
     std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
-    if (!gTime.has_value()) {
-      gTime = data[0].getT0() - gDeltaT;
+    if (!this->gTime.has_value()) {
+      this->gTime = data[0].getT0() - gDeltaT;
     }
-    assert(gDeltaTL > 0.);
+    assert(gDeltaT > 0.);
     if (data.size()) {
-      assert(gTime <= data[0].getT0());
+      assert(this->gTime <= data[0].getT0());
     }
-    gTimeL = *gTime;
+    gTime = *this->gTime;
   }  // guard scope
   sf::RenderTexture picture;
 
   tempRenders.reserve(
-      (data.back().getTime() - data.front().getTime()) / gDeltaTL + 1);
+      (data.back().getTime() - data.front().getTime()) / gDeltaT + 1);
 
-  while (gTimeL + gDeltaTL < data[0].getT0()) {
-    gTimeL += gDeltaTL;
+  while (gTime + gDeltaT < data[0].getT0()) {
+    gTime += gDeltaT;
   }
 
   for (GasData const& dat : data) {
-    while (gTimeL + gDeltaTL <= dat.getTime()) {
+    while (gTime + gDeltaT <= dat.getTime()) {
       // std::cout << "Drawing gas at time " << *gTime_ + gDeltaT_ << std::endl;
-      gTimeL += gDeltaTL;
-      drawGas(dat, camera, picture, style, gTimeL - dat.getTime());
-      renders.emplace_back(picture.getTexture(), gTimeL);
+      gTime += gDeltaT;
+      drawGas(dat, camera, picture, style, gTime - dat.getTime());
+      renders.emplace_back(picture.getTexture(), gTime);
     }
   }
 
@@ -250,7 +250,7 @@ void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
   renders.insert(renders.end(), std::make_move_iterator(tempRenders.begin()),
                  std::make_move_iterator(tempRenders.end()));
   std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
-  gTime = gTimeL;
+  this->gTime = gTime;
   // std::cout << "done!\n";
 }
 
@@ -259,35 +259,35 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
   // std::cout << "Started processing stats.\n";
   std::vector<TdStats> tempStats{};
 
-  size_t statSizeL = statSize.load();  // local statSize for this call
-  assert(!(data.size() % statSizeL));
+  size_t statSize = this->statSize.load();  // local statSize for this call
+  assert(!(data.size() % statSize));
 
-  tempStats.reserve(data.size() / statSizeL);
+  tempStats.reserve(data.size() / statSize);
 
   // std::cout << "Reached pre-loop\n";
   if (mfpMemory) {
     std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
-    for (unsigned i{0}; i < data.size() / statSizeL; ++i) {
+    for (unsigned i{0}; i < data.size() / statSize; ++i) {
       TdStats stat{tempStats.size()
-                       ? TdStats{data[i * statSizeL], TdStats(tempStats.back())}
+                       ? TdStats{data[i * statSize], TdStats(tempStats.back())}
                    : lastStat.has_value()
-                       ? TdStats{data[i * statSizeL], std::move(*lastStat)}
-                       : TdStats{data[i * statSizeL], speedsHTemplate}};
+                       ? TdStats{data[i * statSize], std::move(*lastStat)}
+                       : TdStats{data[i * statSize], speedsHTemplate}};
       // std::cerr << "Bin number for lastStat_ speedsH_ = " <<
       // lastStat_->getSpeedH().GetNbinsX() << std::endl; std::cerr << "Bin
       // number for speedsHTemplate_ = " << speedsHTemplate_.GetNbinsX() <<
       // std::endl;
-      for (unsigned j{1}; j < statSizeL; ++j) {
-        stat.addData(data[i * statSizeL + j]);
+      for (unsigned j{1}; j < statSize; ++j) {
+        stat.addData(data[i * statSize + j]);
       }
       tempStats.emplace_back(std::move(stat));
     }
     lastStat = tempStats.back();
   } else {
-    for (size_t i{0}; i < data.size() / statSizeL; ++i) {
-      TdStats stat{data[i * statSizeL], speedsHTemplate};
-      for (size_t j{1}; j < statSizeL; ++j) {
-        stat.addData(data[i * statSizeL + j]);
+    for (size_t i{0}; i < data.size() / statSize; ++i) {
+      TdStats stat{data[i * statSize], speedsHTemplate};
+      for (size_t j{1}; j < statSize; ++j) {
+        stat.addData(data[i * statSize + j]);
       }
       tempStats.emplace_back(std::move(stat));
     }

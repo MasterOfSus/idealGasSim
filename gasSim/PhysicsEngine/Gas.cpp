@@ -7,11 +7,11 @@
 #include <stdexcept>
 #include <thread>
 
-#include "Collision.hpp"
-#include "Particle.hpp"
-#include "Vector3.hpp"
+#include "../DataProcessing/SimDataPipeline.hpp"
 
-bool GS::Gas::contains(const Particle& p) {
+namespace GS {
+
+bool Gas::contains(Particle const& p) {
   if (particles.size()) {
     double r = p.getRadius();
     Vector3d pos = p.position;
@@ -32,7 +32,7 @@ void for_each_couple(Iterator first, Iterator last, Function f) {
   }
 }
 
-GS::Gas::Gas(std::vector<GS::Particle>&& particles, double boxSide, double time)
+Gas::Gas(std::vector<Particle>&& particles, double boxSide, double time)
     : particles{particles}, boxSide{boxSide}, time{time} {
   // skipping particles size verification, delegating to methods to provide
   // correct behaviour, ecc.
@@ -40,7 +40,7 @@ GS::Gas::Gas(std::vector<GS::Particle>&& particles, double boxSide, double time)
     throw std::invalid_argument("Non-positive box side provided");
   }
 
-  std::for_each(particles.begin(), particles.end(), [&](const Particle& p) {
+  std::for_each(particles.begin(), particles.end(), [&](Particle const& p) {
     if (!contains(p)) {
       particles.clear();
       throw std::invalid_argument("Provided particle is not inside of vector");
@@ -48,7 +48,7 @@ GS::Gas::Gas(std::vector<GS::Particle>&& particles, double boxSide, double time)
   });
 
   for_each_couple(particles.begin(), particles.end(),
-                  [&](const Particle& p1, const Particle& p2) {
+                  [&](Particle const& p1, Particle const& p2) {
                     if (overlap(p1, p2)) {
                       particles.clear();
                       throw std::invalid_argument("Overlapping particles");
@@ -56,7 +56,7 @@ GS::Gas::Gas(std::vector<GS::Particle>&& particles, double boxSide, double time)
                   });
 }
 
-auto unifRandVec{[](const double maxNorm) {
+auto unifRandVec{[](double maxNorm) {
   double theta;
   double phi;
   double rho;
@@ -68,11 +68,11 @@ auto unifRandVec{[](const double maxNorm) {
   theta = baseDist(eng) * 2. * M_PI;
   phi = -M_PI / 2. + baseDist(eng) * M_PI;
   rho = baseDist(eng) * maxNorm;
-  return GS::Vector3d({rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta),
+  return Vector3d({rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta),
                        rho * sin(phi)});
 }};
 
-GS::Gas::Gas(unsigned particlesN, double temperature, double boxSide,
+Gas::Gas(size_t particlesN, double temperature, double boxSide,
              double time)
     : boxSide(boxSide), time{time} {
   if (temperature < 0.) {
@@ -107,7 +107,7 @@ GS::Gas::Gas(unsigned particlesN, double temperature, double boxSide,
       return Vector3d{x, y, z};
     };
 
-    unsigned index{0};
+    size_t index{0};
     std::generate_n(
         std::back_inserter(particles), particlesN - 1, [=, &index]() {
           Particle p{{latticePosition(index)}, unifRandVec(maxSpeed)};
@@ -122,7 +122,7 @@ GS::Gas::Gas(unsigned particlesN, double temperature, double boxSide,
     d.normalize();
     double missingEnergy{3 * particlesN * temperature -
                          std::accumulate(particles.begin(), particles.end(), 0.,
-                                         [](double& acc, const Particle& p) {
+                                         [](double& acc, Particle const& p) {
                                            acc +=
                                                p.speed.norm() * p.speed.norm();
                                          }) *
@@ -134,7 +134,7 @@ GS::Gas::Gas(unsigned particlesN, double temperature, double boxSide,
   }
 }
 
-GS::PWCollision GS::Gas::firstPWColl() {
+PWCollision Gas::firstPWColl() {
   auto getCollision{[&, this](double position, double speed, Wall negWall,
                               Wall posWall, Particle* p) -> PWCollision {
     double time = (speed < 0)
@@ -176,13 +176,13 @@ GS::PWCollision GS::Gas::firstPWColl() {
   return firstColl;
 }
 
-double collisionTime(GS::Particle const& p1, GS::Particle const& p2) {
-  GS::Vector3d relPos = p1.position - p2.position;
-  GS::Vector3d relSpd = p1.speed - p2.speed;
+double collisionTime(Particle const& p1, Particle const& p2) {
+  Vector3d relPos = p1.position - p2.position;
+  Vector3d relSpd = p1.speed - p2.speed;
 
   double a = relSpd * relSpd;
   double b = relPos * relSpd;
-  double c = (relPos * relPos) - 4 * std::pow(GS::Particle::getRadius(), 2);
+  double c = (relPos * relPos) - 4 * std::pow(Particle::getRadius(), 2);
 
   double result = INFINITY;
 
@@ -203,7 +203,7 @@ double collisionTime(GS::Particle const& p1, GS::Particle const& p2) {
   return result;
 }
 
-// triangular intexing function for set of n elements
+// triangular indexing function for set of n elements
 auto trIndex(size_t i, size_t nEls) {
   size_t rowIndex{
       nEls - 2 -
@@ -214,7 +214,7 @@ auto trIndex(size_t i, size_t nEls) {
   return std::pair<size_t, size_t>(rowIndex, colIndex);
 }
 
-GS::PPCollision GS::Gas::firstPPColl() {
+PPCollision Gas::firstPPColl() {
   // collision compare lambda
   auto getBestPPCollision{[](PPCollision& c, Particle* p1, Particle* p2) {
     Vector3d relPos{p1->position - p2->position};
@@ -235,7 +235,7 @@ GS::PPCollision GS::Gas::firstPPColl() {
 
   size_t nChecks{nP * (nP - 1) / 2};
 
-  unsigned nThreads{std::thread::hardware_concurrency()};
+  size_t nThreads{std::thread::hardware_concurrency()};
   size_t checksPerThread{nChecks / nThreads};
   size_t extraChecks{nChecks % nThreads};
 
@@ -271,19 +271,58 @@ GS::PPCollision GS::Gas::firstPPColl() {
   }
 
   for (std::thread& t : threads) {
-    if (t.joinable()) t.join();
+    if (t.joinable()) {
+			t.join();
+		}
   }
 
   return *std::min_element(bestColls.begin(), bestColls.end(),
-                           [](const PPCollision& c1, const PPCollision& c2) {
+                           [](PPCollision const& c1, PPCollision const& c2) {
                              return c1.getTime() < c2.getTime();
                            });
 }
 
-void GS::Gas::move(double dt) {
+void Gas::move(double dt) {
   assert(dt != INFINITY);
   assert(dt >= 0);
   std::for_each(particles.begin(), particles.end(),
                 [dt](Particle& p) { p.position += p.speed * dt; });
   time += dt;
 }
+
+void Gas::simulate(size_t itN, SimDataPipeline& output) {
+  // should modify to not insert first gasData into SimOutput
+
+	std::vector<GasData> tempOutput {};
+	tempOutput.reserve(output.getStatSize());
+
+  for (size_t i{0}; i < itN;) {
+    // std::cout << "Started " << i << "th iteration.\n";
+		for (size_t j {0}; j < output.getStatSize() && i < itN; ++j, ++i) {
+    	PPCollision pColl{firstPPColl()};
+    	PWCollision wColl{firstPWColl()};
+    	Collision* firstColl{nullptr};
+
+    	if (pColl.getTime() < wColl.getTime()) {
+      	firstColl = &pColl;
+			} else {
+      	firstColl = &wColl;
+			}
+			
+    	move(firstColl->getTime());
+
+    	firstColl->solve();
+
+    	tempOutput.emplace_back(GasData(*this, firstColl));
+		}
+  	output.addData(std::move(tempOutput));
+		tempOutput.clear();
+	}
+
+  output.setDone();
+  // std::cout << "Elapsed simulation time: " <<
+  // output.getData().back().getTime() - output.getData()[0].getTime() <<
+  // std::endl;
+}
+
+} // namespace GS

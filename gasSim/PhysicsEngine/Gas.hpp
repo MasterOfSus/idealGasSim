@@ -18,14 +18,14 @@ class Gas {
   // parametric constructor with particles distributed
   // in a cubical lattice and uniform distribution for
   // speed norm and direction
-  Gas(unsigned particlesN, double temperature, double boxSide,
+  Gas(size_t particlesN, double temperature, double boxSide,
       double time = 0.);
 
   const std::vector<Particle>& getParticles() const { return particles; }
   double getBoxSide() const { return boxSide; }
   double getTime() const { return time; }
 
-  void simulate(unsigned iterationsN, SimDataPipeline& SimOutput);
+  void simulate(size_t iterationsN, SimDataPipeline& SimOutput);
   // int getPIndex(const Particle* p); // what?
   // void operator=(const Gas& gas); // WHAT??
 
