@@ -10,20 +10,20 @@ class GasData;
 class Camera {
  public:
   // parametric constructor
-  Camera(Vector3f const& focusPosition, Vector3f const& sightVector,
+  Camera(GSVectorF const& focusPosition, GSVectorF const& sightVector,
          float planeDistance = 1.f, float fov = 90.f, unsigned width = 1920,
          unsigned height = 1080);
 
   // setters and getters
-  void setFocus(Vector3f const& focusPoint) { this->focusPoint = focusPoint; }
-  void setSightVector(Vector3f const& sightVector);
+  void setFocus(GSVectorF const& focusPoint) { this->focusPoint = focusPoint; }
+  void setSightVector(GSVectorF const& sightVector);
   void setAspectRatio(float ratio);
   void setPlaneDistance(float distance);
   void setFOV(float FOV);  // field of view setting (in degrees)
   void setResolution(unsigned height, unsigned width);
 
-  Vector3f const& getFocus() const { return focusPoint; }
-  Vector3f const& getSight() const { return sightVector; }
+  GSVectorF const& getFocus() const { return focusPoint; }
+  GSVectorF const& getSight() const { return sightVector; }
   float getAspectRatio() const {
     return static_cast<float>(width) / static_cast<float>(height);
   }
@@ -33,10 +33,10 @@ class Camera {
   unsigned getWidth() const { return width; }
 
   // useful functions
-  Vector3f getPointProjection(Vector3f const& point) const;
-  std::vector<Vector3f> projectParticles(std::vector<Particle> const& particles,
+  GSVectorF getPointProjection(GSVectorF const& point) const;
+  std::vector<GSVectorF> projectParticles(std::vector<Particle> const& particles,
                                          double deltaT = 0.) const;
-  std::vector<Vector3f> projectParticles(GasData const& data,
+  std::vector<GSVectorF> projectParticles(GasData const& data,
                                          double deltaT) const;
 
   // auxiliary member functions
@@ -45,8 +45,8 @@ class Camera {
   float getNPixels(float length) const;
 
  private:
-  Vector3f focusPoint;
-  Vector3f sightVector;
+  GSVectorF focusPoint;
+  GSVectorF sightVector;
   float planeDistance;
   float fov;
 

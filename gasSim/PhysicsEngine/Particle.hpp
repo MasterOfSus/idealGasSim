@@ -3,13 +3,13 @@
 
 #include <atomic>
 
-#include "Vector3.hpp"
+#include "GSVector.hpp"
 
 namespace GS {
 
 struct Particle {
-  Vector3d position;
-  Vector3d speed;
+  GSVectorD position;
+  GSVectorD speed;
 
   static double getMass() { return mass.load(); }
   static void setMass(double m) { mass.store(m); }

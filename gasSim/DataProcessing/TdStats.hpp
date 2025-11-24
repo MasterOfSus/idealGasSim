@@ -42,7 +42,7 @@ class TdStats {
 
   std::array<double, 6> wallPulses{};  // cumulated pulse for each wall
 
-  std::vector<Vector3d> lastCollPositions{};
+  std::vector<GSVectorD> lastCollPositions{};
   double
       T;  // almost invariant as per conservation of kinetic energy in every hit
 

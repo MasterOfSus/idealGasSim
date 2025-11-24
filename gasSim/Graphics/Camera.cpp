@@ -14,7 +14,7 @@ namespace GS {
 
 // Getters and setters
 
-void Camera::setSightVector(Vector3f const& sightVector) {
+void Camera::setSightVector(GSVectorF const& sightVector) {
   if (sightVector.norm() > 0.f) {
     this->sightVector = sightVector / sightVector.norm();
   } else {
@@ -52,7 +52,7 @@ void Camera::setAspectRatio(
   }
 }
 
-Camera::Camera(Vector3f const& focusPosition, Vector3f const& sightVector,
+Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVector,
                float planeDistance, float FOV, unsigned width, unsigned height)
     : focusPoint(focusPosition) {
   setSightVector(sightVector);
@@ -72,27 +72,27 @@ float Camera::getNPixels(float length) const {
   return std::abs(length) / getPixelSide();
 }
 
-Vector3f Camera::getPointProjection(Vector3f const& point) const {
-  Vector3f focus{getFocus()};
-  Vector3f sight{getSight()};
-  Vector3f a{focus +
+GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
+  GSVectorF focus{getFocus()};
+  GSVectorF sight{getSight()};
+  GSVectorF a{focus +
              (focus - point) / ((focus - point) * sight) * getPlaneDistance()};
   // a = intersection of line passing through point and focus and the
   // perspective plane
 
-  Vector3f b{a - (focus + sight * getPlaneDistance())};
+  GSVectorF b{a - (focus + sight * getPlaneDistance())};
   // b = a relative to perspective plane ref. sys.
 
   // making an orthonormal base for the camera, m and o lying on the persp.
   // plane, sight for the normal vector
-  Vector3f m;
+  GSVectorF m;
   if (sight.x == 0. && sight.y == 0.)
     m = {0., sight.z, 0.};
   else {
     m = {sight.y, -sight.x, 0.f};
     m = m / m.norm();
   }
-  Vector3f o{cross(m, sight)};
+  GSVectorF o{cross(m, sight)};
   m = m / getPixelSide();
   o = o / getPixelSide();
 
@@ -106,14 +106,14 @@ Vector3f Camera::getPointProjection(Vector3f const& point) const {
   };
 }
 
-std::vector<Vector3f> Camera::projectParticles(
+std::vector<GSVectorF> Camera::projectParticles(
     std::vector<Particle> const& particles, double deltaT) const {
-  std::vector<Vector3f> projections{};
-  Vector3f proj{};
+  std::vector<GSVectorF> projections{};
+  GSVectorF proj{};
 
   for (Particle const& particle : particles) {
     proj = getPointProjection(
-        static_cast<Vector3f>(particle.position + particle.speed * deltaT));
+        static_cast<GSVectorF>(particle.position + particle.speed * deltaT));
     // selecting scaling factor so that the particle is in front of the camera
     if (proj.z <= 1.f && proj.z > 0.f) {
       projections.emplace_back(proj);
@@ -122,7 +122,7 @@ std::vector<Vector3f> Camera::projectParticles(
   return projections;
 }
 
-inline Vector3d preCollSpeed(Vector3d& v, Wall wall) {
+inline GSVectorD preCollSpeed(GSVectorD& v, Wall wall) {
   switch (wall) {
     case Wall::Left:
     case Wall::Right:
@@ -142,16 +142,16 @@ inline Vector3d preCollSpeed(Vector3d& v, Wall wall) {
   return v;
 }
 
-inline void preCollSpeed(Vector3d& v1, Vector3d& v2, Vector3d const& n) {
-  Vector3d v10{v1};
+inline void preCollSpeed(GSVectorD& v1, GSVectorD& v2, GSVectorD const& n) {
+  GSVectorD v10{v1};
   v1 -= n * (n * (v1 - v2));
   v2 -= n * (n * (v2 - v10));
 }
 
-std::vector<Vector3f> Camera::projectParticles(GasData const& data,
+std::vector<GSVectorF> Camera::projectParticles(GasData const& data,
                                                double deltaT) const {
-  std::vector<Vector3f> projections{};
-  Vector3f proj{};
+  std::vector<GSVectorF> projections{};
+  GSVectorF proj{};
 
   std::vector<Particle> const& particles{data.getParticles()};
 
@@ -159,7 +159,7 @@ std::vector<Vector3f> Camera::projectParticles(GasData const& data,
     size_t p1I{data.getP1Index()};
 
     for (size_t i{0}; i < p1I; ++i) {
-      proj = getPointProjection(static_cast<Vector3f>(
+      proj = getPointProjection(static_cast<GSVectorF>(
           particles[i].position + particles[i].speed * deltaT));
       // selecting scaling factor so that the particle is in front of the camera
       if (proj.z <= 1.f && proj.z > 0.f) {
@@ -168,10 +168,10 @@ std::vector<Vector3f> Camera::projectParticles(GasData const& data,
     }
 
     {
-      Vector3d speed{particles[p1I].speed};
+      GSVectorD speed{particles[p1I].speed};
 
       proj = getPointProjection(
-          static_cast<Vector3f>(particles[p1I].position +
+          static_cast<GSVectorF>(particles[p1I].position +
                                 preCollSpeed(speed, data.getWall()) * deltaT));
       if (proj.z <= 1.f && proj.z > 0.f) {
         projections.emplace_back(proj);
@@ -179,7 +179,7 @@ std::vector<Vector3f> Camera::projectParticles(GasData const& data,
     }
 
     for (size_t i{p1I + 1}; i < particles.size(); ++i) {
-      proj = getPointProjection(static_cast<Vector3f>(
+      proj = getPointProjection(static_cast<GSVectorF>(
           particles[i].position + particles[i].speed * deltaT));
       if (proj.z <= 1.f && proj.z > 0.f) {
         projections.emplace_back(proj);
@@ -190,17 +190,17 @@ std::vector<Vector3f> Camera::projectParticles(GasData const& data,
     size_t p1I{data.getP1Index()};
     size_t p2I{data.getP2Index()};
 
-    Vector3d v1{data.getP1().speed};
-    Vector3d v2{data.getP2().speed};
+    GSVectorD v1{data.getP1().speed};
+    GSVectorD v2{data.getP2().speed};
 
     {
-      Vector3d n{data.getP1().position - data.getP2().position};
+      GSVectorD n{data.getP1().position - data.getP2().position};
       n = n / n.norm();
       preCollSpeed(v1, v2, n);
     }
 
     size_t pIs[2]{p1I, p2I};
-    Vector3d vs[2]{v1, v2};
+    GSVectorD vs[2]{v1, v2};
 
     if (p2I < p1I) {
       pIs[0] = p2I;
@@ -210,7 +210,7 @@ std::vector<Vector3f> Camera::projectParticles(GasData const& data,
     }
 
     for (size_t i{0}; i < pIs[0]; ++i) {
-      proj = getPointProjection(static_cast<Vector3f>(
+      proj = getPointProjection(static_cast<GSVectorF>(
           particles[i].position + particles[i].speed * deltaT));
       // selecting scaling factor so that the particle is in front of the camera
       if (proj.z <= 1.f && proj.z > 0.f) {
@@ -219,13 +219,13 @@ std::vector<Vector3f> Camera::projectParticles(GasData const& data,
     }
 
     proj = getPointProjection(
-        static_cast<Vector3f>(particles[pIs[0]].position + vs[0] * deltaT));
+        static_cast<GSVectorF>(particles[pIs[0]].position + vs[0] * deltaT));
     if (proj.z <= 1.f && proj.z > 0.f) {
       projections.emplace_back(proj);
     }
 
     for (size_t i{pIs[0] + 1}; i < pIs[1]; ++i) {
-      proj = getPointProjection(static_cast<Vector3f>(
+      proj = getPointProjection(static_cast<GSVectorF>(
           particles[i].position + particles[i].speed * deltaT));
       // selecting scaling factor so that the particle is in front of the camera
       if (proj.z <= 1.f && proj.z > 0.f) {
@@ -234,13 +234,13 @@ std::vector<Vector3f> Camera::projectParticles(GasData const& data,
     }
 
     proj = getPointProjection(
-        static_cast<Vector3f>(particles[pIs[1]].position + vs[1] * deltaT));
+        static_cast<GSVectorF>(particles[pIs[1]].position + vs[1] * deltaT));
     if (proj.z <= 1.f && proj.z > 0.f) {
       projections.emplace_back(proj);
     }
 
     for (size_t i{pIs[1] + 1}; i < particles.size(); ++i) {
-      proj = getPointProjection(static_cast<Vector3f>(
+      proj = getPointProjection(static_cast<GSVectorF>(
           particles[i].position + particles[i].speed * deltaT));
       // selecting scaling factor so that the particle is in front of the camera
       if (proj.z <= 1.f && proj.z > 0.f) {
@@ -256,11 +256,11 @@ void drawParticles(Gas const& gas, Camera const& camera,
                    double deltaT) {
   sf::VertexArray particles(sf::Quads, 4 * gas.getParticles().size());
   sf::Vector2u tSize{style.getPartTexture().getSize()};
-  std::vector<Vector3f> projections =
+  std::vector<GSVectorF> projections =
       camera.projectParticles(gas.getParticles(), deltaT);
   std::sort(std::execution::par, projections.begin(), projections.end(),
-            [](Vector3f const& a, Vector3f const& b) { return a.z < b.z; });
-  for (Vector3f const& proj : projections) {
+            [](GSVectorF const& a, GSVectorF const& b) { return a.z < b.z; });
+  for (GSVectorF const& proj : projections) {
     float r{camera.getNPixels(Particle::getRadius()) * proj.z};
     sf::Vector2f vertexes[4]{{proj.x - r, proj.y + r},
                              {proj.x + r, proj.y + r},
@@ -282,10 +282,10 @@ void drawParticles(GasData const& data, Camera const& camera,
   sf::VertexArray particles(sf::Quads, 4 * data.getParticles().size());
   sf::Vector2u tSize{style.getPartTexture().getSize()};
 
-  std::vector<Vector3f> projections = camera.projectParticles(data, deltaT);
+  std::vector<GSVectorF> projections = camera.projectParticles(data, deltaT);
   std::sort(std::execution::par, projections.begin(), projections.end(),
-            [](Vector3f const& a, Vector3f const& b) { return a.z < b.z; });
-  for (Vector3f const& proj : projections) {
+            [](GSVectorF const& a, GSVectorF const& b) { return a.z < b.z; });
+  for (GSVectorF const& proj : projections) {
     float r{camera.getNPixels(Particle::getRadius()) * proj.z};
     sf::Vector2f vertexes[4]{{proj.x - r, proj.y + r},
                              {proj.x + r, proj.y + r},
@@ -302,38 +302,38 @@ void drawParticles(GasData const& data, Camera const& camera,
 }
 
 template <typename GasLike>
-std::array<Vector3f, 6> gasWallData(GasLike const& gasLike, char wall) {
+std::array<GSVectorF, 6> gasWallData(GasLike const& gasLike, char wall) {
   float side{static_cast<float>(gasLike.getBoxSide())};
   // brute forcing the cubical gas container face, with its center and normal
   // vector
   switch (wall) {
     case 'u':
-      return {Vector3f(0.f, 0.f, side), {side, 0.f, side},
+      return {GSVectorF(0.f, 0.f, side), {side, 0.f, side},
               {side, side, side},       {0.f, side, side},
               {0.f, 0.f, 1.f},          {side / 2.f, side / 2.f, side}};
       break;
     case 'd':
-      return {Vector3f(0.f, 0.f, 0.f), {side, 0.f, 0.f},
+      return {GSVectorF(0.f, 0.f, 0.f), {side, 0.f, 0.f},
               {side, side, 0.f},       {0.f, side, 0.f},
               {0.f, 0.f, -1.f},        {side / 2.f, side / 2.f, 0.f}};
       break;
     case 'l':
-      return {Vector3f(0.f, 0.f, 0.f), {0.f, side, 0.f},
+      return {GSVectorF(0.f, 0.f, 0.f), {0.f, side, 0.f},
               {0.f, side, side},       {0.f, 0.f, side},
               {-1.f, 0.f, 0.f},        {0.f, side / 2.f, side / 2.f}};
       break;
     case 'r':
-      return {Vector3f(side, 0.f, 0.f), {side, side, 0.f},
+      return {GSVectorF(side, 0.f, 0.f), {side, side, 0.f},
               {side, side, side},       {side, 0.f, side},
               {1.f, 0.f, 0.f},          {side, side / 2.f, side / 2.f}};
       break;
     case 'f':
-      return {Vector3f(0.f, 0.f, 0.f), {side, 0.f, 0.f},
+      return {GSVectorF(0.f, 0.f, 0.f), {side, 0.f, 0.f},
               {side, 0.f, side},       {0.f, 0.f, side},
               {0.f, -1.f, 0.f},        {side / 2.f, 0.f, side / 2.f}};
       break;
     case 'b':
-      return {Vector3f(0.f, side, 0.f), {side, side, 0.f},
+      return {GSVectorF(0.f, side, 0.f), {side, side, 0.f},
               {side, side, side},       {0.f, side, side},
               {0.f, 1.f, 0.f},          {side / 2.f, side, side / 2.f}};
       break;
@@ -341,8 +341,8 @@ std::array<Vector3f, 6> gasWallData(GasLike const& gasLike, char wall) {
   return {};
 }
 
-template std::array<Vector3f, 6> gasWallData<Gas>(Gas const& gas, char wall);
-template std::array<Vector3f, 6> gasWallData<GasData>(GasData const& gasData,
+template std::array<GSVectorF, 6> gasWallData<Gas>(Gas const& gas, char wall);
+template std::array<GSVectorF, 6> gasWallData<GasData>(GasData const& gasData,
                                                       char wall);
 
 // the speeds after the collision are reversed, so a particle who just had a
@@ -352,10 +352,10 @@ template std::array<Vector3f, 6> gasWallData<GasData>(GasData const& gasData,
 template <typename GasLike>
 void drawWalls(GasLike const& gas, const Camera& camera,
                sf::RenderTexture& texture, RenderStyle const& style) {
-  std::array<Vector3f, 6> wallData{};
-  Vector3f wallN{};
-  Vector3f wallCenter{};
-  std::array<Vector3f, 4> wallVerts{};
+  std::array<GSVectorF, 6> wallData{};
+  GSVectorF wallN{};
+  GSVectorF wallCenter{};
+  std::array<GSVectorF, 4> wallVerts{};
 
   sf::ConvexShape wallProj;
   wallProj.setFillColor(style.getWallsColor());
@@ -373,9 +373,9 @@ void drawWalls(GasLike const& gas, const Camera& camera,
     {  // i scope
       size_t i{};
       // add all accepted point projections to proj (the wall's projection)
-      for (Vector3f const& vertex : wallVerts) {
+      for (GSVectorF const& vertex : wallVerts) {
         wallProj.setPointCount(i + 1);
-        Vector3f proj = camera.getPointProjection(vertex);
+        GSVectorF proj = camera.getPointProjection(vertex);
         if (proj.z < 1.f && proj.z > 0.f) {
           wallProj.setPoint(i, {proj.x, proj.y});
           ++i;

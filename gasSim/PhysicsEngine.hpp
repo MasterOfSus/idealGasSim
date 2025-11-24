@@ -4,6 +4,6 @@
 #include "PhysicsEngine/Collision.hpp"
 #include "PhysicsEngine/Gas.hpp"
 #include "PhysicsEngine/Particle.hpp"
-#include "PhysicsEngine/Vector3.hpp"
+#include "PhysicsEngine/GSVector.hpp"
 
 #endif

@@ -1,8 +1,6 @@
-
+#include <stdexcept>
 
 #include "TdStats.hpp"
-
-#include <stdexcept>
 
 // Auxiliary addPulse private function, assumes solved collision for input
 
@@ -47,7 +45,7 @@ void TdStats::addPulse(GasData const& data) {
 
 TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
     : wallPulses{},
-      lastCollPositions(std::vector<Vector3d>(firstState.getParticles().size(),
+      lastCollPositions(std::vector<GSVectorD>(firstState.getParticles().size(),
                                               {0., 0., 0.})),
       freePaths{},
       t0(firstState.getT0()),
@@ -120,18 +118,18 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
 
     if (data.getCollType() == 'w') {
       addPulse(data);
-      if (lastCollPositions[data.getP1Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP1Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP1().position - lastCollPositions[data.getP1Index()])
                 .norm());
       }
     } else if (data.getCollType() == 'p') {
-      if (lastCollPositions[data.getP1Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP1Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP1().position - lastCollPositions[data.getP1Index()])
                 .norm());
       }
-      if (lastCollPositions[data.getP2Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP2Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP2().position - lastCollPositions[data.getP2Index()])
                 .norm());
@@ -207,18 +205,18 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
 
     if (data.getCollType() == 'w') {
       addPulse(data);
-      if (lastCollPositions[data.getP1Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP1Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP1().position - lastCollPositions[data.getP1Index()])
                 .norm());
       }
     } else if (data.getCollType() == 'p') {
-      if (lastCollPositions[data.getP1Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP1Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP1().position - lastCollPositions[data.getP1Index()])
                 .norm());
       }
-      if (lastCollPositions[data.getP2Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP2Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP2().position - lastCollPositions[data.getP2Index()])
                 .norm());
@@ -307,7 +305,7 @@ void TdStats::addData(GasData const& data) {
     if (data.getCollType() == 'w') {
       addPulse(data);
 
-      if (lastCollPositions[data.getP1Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP1Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP1().position - lastCollPositions[data.getP1Index()])
                 .norm());
@@ -316,12 +314,12 @@ void TdStats::addData(GasData const& data) {
       lastCollPositions[data.getP1Index()] = data.getP1().position;
 
     } else {
-      if (lastCollPositions[data.getP1Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP1Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP1().position - lastCollPositions[data.getP1Index()])
                 .norm());
       }
-      if (lastCollPositions[data.getP2Index()] != Vector3d({0., 0., 0.})) {
+      if (lastCollPositions[data.getP2Index()] != GSVectorD({0., 0., 0.})) {
         freePaths.emplace_back(
             (data.getP2().position - lastCollPositions[data.getP2Index()])
                 .norm());

@@ -14,7 +14,7 @@ namespace GS {
 bool Gas::contains(Particle const& p) {
   if (particles.size()) {
     double r = p.getRadius();
-    Vector3d pos = p.position;
+    GSVectorD pos = p.position;
     return (r <= pos.x && pos.x <= boxSide - r && r <= pos.y &&
             pos.y <= boxSide - r && r <= pos.z && pos.z <= boxSide - r &&
             &particles.front() <= &p && &p <= &particles.back());
@@ -68,7 +68,7 @@ auto unifRandVec{[](double maxNorm) {
   theta = baseDist(eng) * 2. * M_PI;
   phi = -M_PI / 2. + baseDist(eng) * M_PI;
   rho = baseDist(eng) * maxNorm;
-  return Vector3d({rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta),
+  return GSVectorD({rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta),
                        rho * sin(phi)});
 }};
 
@@ -104,7 +104,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
       double x{(pI * latticeUnit) + pR + boxSide * 0.05};
       double y{(pJ * latticeUnit) + pR + boxSide * 0.05};
       double z{(pK * latticeUnit) + pR + boxSide * 0.05};
-      return Vector3d{x, y, z};
+      return GSVectorD{x, y, z};
     };
 
     size_t index{0};
@@ -118,7 +118,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
     // ensure as exact a final temperature as possible
     // use first particle's direction to avoid having
     // to generate theta and phi again
-    Vector3d d{particles.front().speed};
+    GSVectorD d{particles.front().speed};
     d.normalize();
     double missingEnergy{3 * particlesN * temperature -
                          std::accumulate(particles.begin(), particles.end(), 0.,
@@ -129,7 +129,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
                              Particle::getMass() / 2.};
     particles.emplace_back(
         Particle({latticePosition(particlesN - 1),
-                  Vector3d({d.y, d.x, d.z}) *
+                  GSVectorD({d.y, d.x, d.z}) *
                       sqrt(2. * missingEnergy / Particle::getMass())}));
   }
 }
@@ -177,8 +177,8 @@ PWCollision Gas::firstPWColl() {
 }
 
 double collisionTime(Particle const& p1, Particle const& p2) {
-  Vector3d relPos = p1.position - p2.position;
-  Vector3d relSpd = p1.speed - p2.speed;
+  GSVectorD relPos = p1.position - p2.position;
+  GSVectorD relSpd = p1.speed - p2.speed;
 
   double a = relSpd * relSpd;
   double b = relPos * relSpd;
@@ -217,8 +217,8 @@ auto trIndex(size_t i, size_t nEls) {
 PPCollision Gas::firstPPColl() {
   // collision compare lambda
   auto getBestPPCollision{[](PPCollision& c, Particle* p1, Particle* p2) {
-    Vector3d relPos{p1->position - p2->position};
-    Vector3d relSpd{p1->speed - p2->speed};
+    GSVectorD relPos{p1->position - p2->position};
+    GSVectorD relSpd{p1->speed - p2->speed};
     if (relPos * relSpd <= 0.) {
       double cTime{collisionTime(*p1, *p2)};
       if (cTime < c.getTime()) {

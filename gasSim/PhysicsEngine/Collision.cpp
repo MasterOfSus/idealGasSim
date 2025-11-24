@@ -37,9 +37,9 @@ PPCollision::PPCollision(double time, Particle* p1, Particle* p2)
 
 void PPCollision::solve() {
   Particle* p1{getP1()};
-  Vector3d d{p1->position - p2->position};
+  GSVectorD d{p1->position - p2->position};
   d.normalize();
-  Vector3d v{p1->speed - p2->speed};
+  GSVectorD v{p1->speed - p2->speed};
   double proj = d * v;
 
   p1->speed -= d * proj;
