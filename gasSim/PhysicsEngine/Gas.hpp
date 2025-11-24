@@ -25,6 +25,7 @@ class Gas {
   double getBoxSide() const { return boxSide; }
   double getTime() const { return time; }
 
+	void simulate(size_t iterationsN);
   void simulate(size_t iterationsN, SimDataPipeline& SimOutput);
   // int getPIndex(const Particle* p); // what?
   // void operator=(const Gas& gas); // WHAT??

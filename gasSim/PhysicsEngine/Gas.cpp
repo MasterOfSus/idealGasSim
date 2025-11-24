@@ -290,8 +290,26 @@ void Gas::move(double dt) {
   time += dt;
 }
 
+void Gas::simulate(size_t itN) {
+  for (size_t i{0}; i < itN; ++i) {
+    // std::cout << "Started " << i << "th iteration.\n";
+		PPCollision pColl{firstPPColl()};
+		PWCollision wColl{firstPWColl()};
+		Collision* firstColl{nullptr};
+
+		if (pColl.getTime() < wColl.getTime()) {
+			firstColl = &pColl;
+		} else {
+			firstColl = &wColl;
+		}
+		
+		move(firstColl->getTime());
+
+		firstColl->solve();
+	}
+}
+
 void Gas::simulate(size_t itN, SimDataPipeline& output) {
-  // should modify to not insert first gasData into SimOutput
 
 	std::vector<GasData> tempOutput {};
 	tempOutput.reserve(output.getStatSize());
