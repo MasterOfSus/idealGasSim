@@ -37,12 +37,18 @@ struct GSVector {  // a three-dimensional vector
   GSVector operator*(FP c) const { return {x * c, y * c, z * c}; }
   GSVector operator/(FP c) const { return {x / c, y / c, z / c}; }
 
-  bool operator==(GSVector const& v) { return x == v.x && y = v.y && z = v.z; }
-  bool operator!=(GSVector const& v) { return x != v.x || y != v.y || z != v.z; }
 
   double norm() const { return sqrt(x * x + y * y + z * z); }
   void normalize() { *this = *this / norm(); }
 };
+
+template<typename FP>
+bool operator==(GSVector<FP> const& v1, GSVector<FP> const& v2) {
+	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
+}
+
+template <typename FP>
+bool operator!=(GSVector<FP> const& v1, GSVector<FP> const& v2) { return v1.x != v2.x || v1.y != v2.y || v1.z != v2.z; }
 
 template <typename FP>
 GSVector<FP> operator+(GSVector<FP> v1, GSVector<FP> const& v2) {

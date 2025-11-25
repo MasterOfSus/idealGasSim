@@ -22,7 +22,9 @@ struct Particle {
   static std::atomic<double> mass;
 };
 
+bool operator==(Particle const& p1, Particle const& p2);
 bool overlap(Particle const& p1, Particle const& p2);
+double energy (Particle const& p);
 
 }  // namespace GS
 

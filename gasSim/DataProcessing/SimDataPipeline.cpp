@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "SimDataPipeline.hpp"
 
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -277,12 +279,16 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
       // lastStat_->getSpeedH().GetNbinsX() << std::endl; std::cerr << "Bin
       // number for speedsHTemplate_ = " << speedsHTemplate_.GetNbinsX() <<
       // std::endl;
+			std::cerr << "stat state: t0 = " << stat.getTime0() << std::endl;
       for (unsigned j{1}; j < statSize; ++j) {
         stat.addData(data[i * statSize + j]);
       }
+			std::cerr << "stat state: t0 = " << stat.getTime0() << std::endl;
       tempStats.emplace_back(std::move(stat));
     }
+		std::cerr << "stats back state: t0 = " << tempStats.back().getTime0() << std::endl;
     lastStat = tempStats.back();
+		std::cerr << "lastStat state: t0 = " << lastStat->getTime0() << ", t = " << lastStat->getTime() << std::endl;
   } else {
     for (size_t i{0}; i < data.size() / statSize; ++i) {
       TdStats stat{data[i * statSize], speedsHTemplate};

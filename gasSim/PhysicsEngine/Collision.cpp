@@ -21,12 +21,15 @@ void PWCollision::solve() {
     case Wall::Left:
     case Wall::Right:
       p->speed.x = -p->speed.x;
+			break;
     case Wall::Front:
     case Wall::Back:
       p->speed.y = -p->speed.y;
+			break;
     case Wall::Top:
     case Wall::Bottom:
       p->speed.z = -p->speed.z;
+			break;
     default:
       throw std::logic_error("Provided unknown wall type.");
   }

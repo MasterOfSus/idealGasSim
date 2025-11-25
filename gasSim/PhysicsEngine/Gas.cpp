@@ -116,17 +116,25 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
         });
 
     // ensure as exact a final temperature as possible
-    // use first particle's direction to avoid having
+    // use first particle's jumbled direction to avoid having
     // to generate theta and phi again
     GSVectorD d{particles.front().speed};
     d.normalize();
-    double missingEnergy{3 * particlesN * temperature -
+    double missingEnergy{3. * particlesN * temperature / 2. -
                          std::accumulate(particles.begin(), particles.end(), 0.,
-                                         [](double& acc, Particle const& p) {
-                                           acc +=
-                                               p.speed.norm() * p.speed.norm();
-                                         }) *
-                             Particle::getMass() / 2.};
+                                         [](double acc, Particle const& p) {
+                                           return acc +=
+                                               energy(p);
+                                         }) / Particle::getMass()};
+		if (missingEnergy < 0.) {
+			for (Particle& p: particles) {
+				missingEnergy += energy(p);
+				p.speed = {0., 0., 0.};
+				if (missingEnergy > 0.) {
+					break;
+				}
+			}
+		}
     particles.emplace_back(
         Particle({latticePosition(particlesN - 1),
                   GSVectorD({d.y, d.x, d.z}) *

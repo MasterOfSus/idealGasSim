@@ -1,4 +1,6 @@
+#include <iomanip>
 #include <stdexcept>
+#include <iostream>
 
 #include "TdStats.hpp"
 
@@ -28,7 +30,7 @@ void TdStats::addPulse(GasData const& data) {
       wallPulses[5] += Particle::getMass() * 2. * data.getP1().speed.z;
       break;
     default:
-      throw std::invalid_argument("VOID wall type provided");
+      throw std::invalid_argument("addPulse: VOID wall type provided");
   }
 }
 
@@ -47,6 +49,11 @@ TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
     : wallPulses{},
       lastCollPositions(std::vector<GSVectorD>(firstState.getParticles().size(),
                                               {0., 0., 0.})),
+ 		  T {std::accumulate(
+         firstState.getParticles().begin(), firstState.getParticles().end(),
+         0.,
+         [](double x, Particle const& p) { return x + energy(p); }) *
+     		 2. / getNParticles() / 3.},
       freePaths{},
       t0(firstState.getT0()),
       time(firstState.getTime()),
@@ -59,11 +66,6 @@ TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
   }
   speedsH = speedsHTemplate;
   speedsH.SetDirectory(nullptr);
-  T = std::accumulate(
-          firstState.getParticles().begin(), firstState.getParticles().end(),
-          0.,
-          [](double x, Particle const& p) { return x + p.speed * p.speed; }) *
-      Particle::getMass() / getNParticles() / 3.;
   if (firstState.getCollType() == 'w') {
     addPulse(firstState);
   } else if (firstState.getCollType() == 'p') {
@@ -83,9 +85,8 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
     : wallPulses{},
       T{std::accumulate(
             data.getParticles().begin(), data.getParticles().end(), 0.,
-            [](double x, Particle const& p) { return x + p.speed * p.speed; }) *
-            Particle::getMass() / data.getParticles().size() / 3. -
-        prevStats.getTemp()},
+            [](double x, Particle const& p) { return x + energy(p); }) *
+            2. / data.getParticles().size() / 3.},
       freePaths{},
       t0{data.getT0()},
       time{data.getTime()},
@@ -100,7 +101,9 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
   } else if (data.getTime() < prevStats.getTime()) {
     throw std::invalid_argument(
         "Gas with time smaller than stats time provided");
-  } else if (!isNegligible(T, prevStats.getTemp())) {
+  } else if (!isNegligible(T - prevStats.getTemp(), prevStats.getTemp())) {
+		std::cout << std::fixed << std::setprecision(16);
+		std::cout << "Error: non matching temperatures: " << T << " vs stats " << prevStats.getTemp() << std::endl;
     throw std::invalid_argument(
         "Gas and stats with non-matching temperatures provided");
   } else {
@@ -148,9 +151,8 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
     : wallPulses{},
       T{std::accumulate(
             data.getParticles().begin(), data.getParticles().end(), 0.,
-            [](double x, Particle const& p) { return x + p.speed * p.speed; }) *
-            Particle::getMass() / data.getParticles().size() / 3. -
-        prevStats.getTemp()},
+            [](double x, Particle const& p) { return x + energy(p); }) *
+            2. / data.getParticles().size() / 3.},
       freePaths{},
       t0(data.getT0()),
       time(data.getTime()),
@@ -165,7 +167,9 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
   } else if (data.getTime() < prevStats.getTime()) {
     throw std::invalid_argument(
         "Gas with time smaller than stats time provided");
-  } else if (!isNegligible(T, prevStats.getTemp())) {
+  } else if (!isNegligible(T - prevStats.getTemp(), prevStats.getTemp())) {
+		std::cout << std::fixed << std::setprecision(16);
+		std::cout << "Error: non matching temperatures: " << T << " vs stats " << prevStats.getTemp() << std::endl;
     throw std::invalid_argument(
         "Gas and stats with non-matching temperatures provided");
   } else {
@@ -255,10 +259,10 @@ TdStats::TdStats(TdStats&& s) noexcept
   s.speedsH.SetDirectory(nullptr);
   s.wallPulses = {};
   s.lastCollPositions.clear();
-  s.T = 0;
+  s.T = 0.;
   s.freePaths.clear();
-  t0 = NAN;
-  time = NAN;
+  s.t0 = NAN;
+  s.time = NAN;
 }
 
 TdStats& TdStats::operator=(TdStats const& s) {

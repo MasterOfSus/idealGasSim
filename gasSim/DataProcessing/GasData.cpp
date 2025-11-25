@@ -1,6 +1,7 @@
 #include "GasData.hpp"
 
 #include <cassert>
+#include <cstdint>
 #include <stdexcept>
 
 // auxiliary getPIndex function
@@ -41,7 +42,7 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
       // std::cout << "Adding p1_ at index " <<
       // getPIndex(collision->getFirstParticle(), gas) << '\n';
       p1Index = getPIndex(collision->getP1(), gas);
-      p2Index = NAN;
+      p2Index = SIZE_MAX;
       PWCollision const* coll{static_cast<PWCollision const*>(collision)};
       wall = coll->getWall();
     }
@@ -51,9 +52,9 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
 char GS::GasData::getCollType() const {
   assert(p1Index >= 0 && p1Index <= static_cast<size_t>(particles.size()));
   if (wall == Wall::VOID) {
-    return 'w';
-  } else {
     return 'p';
+  } else {
+    return 'w';
   }
 }
 

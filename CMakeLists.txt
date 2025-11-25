@@ -1,56 +1,76 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.28.3)
 project(idealGasSim VERSION 0.1.0)
 
-# abilita il supporto per i test, tra cui l'opzione BUILD_TESTING usata sotto
-include(CTest)
+add_executable(idealGasSim main.cpp)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# LIBRARY
 
-# richiedi l'uso di C++17, senza estensioni non-standard offerte dal compilatore usato 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# abilita warning
-string(APPEND CMAKE_CXX_FLAGS " -Wall -Wextra ")
-# sfml
-string(APPEND CMAKE_CXX_FLAGS " -lsfml-graphics -lsfml-window -lsfml-system ")
-
-# abilita:
-# - l'address sanitizer e l'undefined-behaviour sanitizer
-# - _LIBCPP_ENABLE_ASSERTIONS=1 (utilizzato da clang)
-# - _GLIBCXX_ASSERTIONS (utilizzato da gcc)
-#in debug mode
-string(APPEND CMAKE_CXX_FLAGS_DEBUG " -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer")
-string(APPEND CMAKE_EXE_LINKER_FLAGS_DEBUG " -fsanitize=address,undefined -fno-omit-frame-pointer ")
-
-add_executable(gasSimDemo)
-target_sources(gasSimDemo
+add_library(gasSimLib SHARED)
+target_sources(gasSimLib
 	PRIVATE
-		main.cpp
+		gasSim/PhysicsEngine/Particle.cpp 
+		gasSim/PhysicsEngine/Collision.cpp 
+		gasSim/PhysicsEngine/Gas.cpp
+		gasSim/Graphics/RenderStyle.cpp 
+		gasSim/Graphics/Camera.cpp
+		gasSim/DataProcessing/GasData.cpp 
+		gasSim/DataProcessing/TdStats.cpp 
+		gasSim/DataProcessing/SimDataPipeline.cpp
+		gasSim/DataProcessing/SDPgetVideo.cpp
+		gasSim/Input/Input.cpp
+
+	PUBLIC
+		FILE_SET HEADERS
+		BASE_DIRS
+			gasSim
+		FILES
+			gasSim/PhysicsEngine/GSVector.hpp 
+			gasSim/PhysicsEngine/Particle.hpp 
+			gasSim/PhysicsEngine/Collision.hpp 
+			gasSim/PhysicsEngine/Gas.hpp
+			gasSim/Graphics/RenderStyle.hpp 
+			gasSim/Graphics/Camera.hpp
+			gasSim/DataProcessing/GasData.hpp 
+			gasSim/DataProcessing/TdStats.hpp 
+			gasSim/DataProcessing/SimDataPipeline.hpp
+			gasSim/Input/Input.hpp
+	
 )
 
-add_library(idealGasSim)
-target_sources(idealGasSim
+target_link_libraries(idealGasSim
 	PRIVATE
-		
+		gasSimLib
 )
 
-# Find SFML
-find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
+# COMPILER OPTIONS
 
-# Link SFML
-target_link_libraries(demo PRIVATE sfml-graphics sfml-window sfml-system)
+target_compile_options(gasSimLib PRIVATE -Wall -Wextra)
+target_compile_options(idealGasSim PRIVATE -Wall -Wextra)
 
-# se il testing e' abilitato...
-#   per disabilitare il testing, passare -DBUILD_TESTING=OFF a cmake durante la fase di configurazione
-if (BUILD_TESTING)
+target_compile_options(idealGasSim PRIVATE
+    $<$<CONFIG:Debug>:-D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer>
+)
 
-  # aggiungi l'eseguibile sample.t
-	add_executable(unitTests gasSim/physicsEngine.cpp gasSim/graphics.cpp gasSim/statistics.cpp gasSim/output.cpp gasSim/input.cpp unitTesting/unitTests.cpp)
-  # aggiungi l'eseguibile sample.t alla lista dei test
-  add_test(NAME unitTests COMMAND unitTests)
-	target_link_libraries(unitTests PRIVATE sfml-graphics sfml-window sfml-system)
+target_link_options(idealGasSim PRIVATE
+    $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer>
+)
 
-endif()
+target_link_libraries(idealGasSim PRIVATE
+    sfml-graphics
+    sfml-window
+    sfml-system
+    pthread
+    Core Imt RIO Net Hist Graf Graf3d Gpad ROOTVecOps Tree TreePlayer Rint
+    Postscript Matrix Physics MathCore Thread ROOTNTuple MultiProc
+    ROOTDataFrame ROOTNTupleUtil
+    tbb
+)
+
+target_include_directories(idealGasSim PRIVATE
+    ./root/include
+)
+
+target_link_directories(idealGasSim PRIVATE
+    ./root/lib
+)
 
