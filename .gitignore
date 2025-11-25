@@ -1,7 +1,7 @@
 .vscode
 mainSketch
-unitTesting/unitTests
 build
+unitTesting/unitTests
 .cache
 unitTesting/compileResults.txt
 root
