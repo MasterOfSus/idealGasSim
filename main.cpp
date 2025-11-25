@@ -1,3 +1,11 @@
+#include <chrono>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <thread>
+
+#include "gasSim/Libs/INIReader.h"
+
 #include <TF1.h>
 #include <TFile.h>
 #include <TGraph.h>
@@ -10,18 +18,14 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
-#include <chrono>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <thread>
 
 #include "gasSim/DataProcessing.hpp"
+#include "gasSim/Input.hpp"
 
 std::atomic<double> GS::Particle::radius{1.};
 std::atomic<double> GS::Particle::mass{1.};
 
-GS::Vector3d stovec(std::string s) {
+GS::GSVectorD stovec(std::string s) {
   // checking for braces and erasing the first one
   if (s.front() != '{' || s.back() != '}') {
     throw std::invalid_argument("Missing opening and closing braces.");
@@ -88,8 +92,8 @@ GS::VideoOpts stovideoopts(std::string s) {
 int main(int argc, const char* argv[]) {
   try {
     std::cout << "Welcome. Starting idealGasSim gas simulation.\n";
-    auto opts{GS::input::optParse(argc, argv)};
-    if (GS::input::optControl(argc, opts)) {
+    auto opts{GS::optParse(argc, argv)};
+    if (GS::optControl(argc, opts)) {
       return 0;
     }
     std::string path = opts.count("config") != 0
@@ -144,7 +148,7 @@ int main(int argc, const char* argv[]) {
                                          : throw std::invalid_argument(
                                                "Provided negative nStats.")),
         cFile.GetFloat("output", "framerate", 60.f), speedsHTemplate};
-    GS::Gas gas{static_cast<int>(
+    GS::Gas gas{static_cast<size_t>(
                     cFile.GetInteger("simulation parameters", "nParticles", 1)),
                 cFile.GetFloat("simulation parameters", "targetT", 1),
                 cFile.GetFloat("simulation parameters", "boxSide", 1.)};
@@ -184,12 +188,12 @@ int main(int argc, const char* argv[]) {
 
     // std::cout << "Started simulation thread." << std::endl;
 
-    GS::Vector3f camPos{static_cast<GS::Vector3f>(stovec(cFile.Get(
+    GS::GSVectorF camPos{static_cast<GS::GSVectorF>(stovec(cFile.Get(
         "rendering", "camPos",
         (std::ostringstream() << "{" << gasSide * 1.5 << ", " << gasSide * 1.25
                               << ", " << gasSide * 0.75 << '}')
             .str())))};
-    GS::Vector3f camSight{static_cast<GS::Vector3f>(stovec(cFile.Get(
+    GS::GSVectorF camSight{static_cast<GS::GSVectorF>(stovec(cFile.Get(
         "rendering", "camSight",
         (std::ostringstream()
          << "{" << gasSide * 0.5 - camPos.x << ", " << gasSide * 0.5 - camPos.y
@@ -223,8 +227,8 @@ int main(int argc, const char* argv[]) {
                       camSight,
                       cFile.GetFloat("render", "camLength", 1.f),
                       cFile.GetFloat("render", "fov", 90.f),
-                      (int)gasSize.x,
-                      (int)gasSize.y};
+                      gasSize.x,
+                      gasSize.y};
 
     // std::cout << "Starting textures loading." << std::endl;
 
