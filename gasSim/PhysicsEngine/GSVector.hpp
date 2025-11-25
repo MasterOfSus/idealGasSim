@@ -68,6 +68,11 @@ FP operator*(GSVector<FP> const& v1, GSVector<FP> const& v2) {
 }
 
 template <typename FP>
+GSVector<FP> operator*(FP x, GSVector<FP> v) {
+	return v*x;
+}
+
+template <typename FP>
 GSVector<FP> cross(GSVector<FP> const& v1, GSVector<FP> const& v2) {
   return {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
           v1.x * v2.y - v1.y * v2.x};

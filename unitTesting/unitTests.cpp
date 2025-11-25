@@ -6,62 +6,26 @@
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
-#include "../gasSim/graphics.hpp"
+#include "../gasSim/Graphics.hpp"
 #include "doctest.h"
 // #include "input.hpp"
-#include "../gasSim/algorithms.hpp"
-#include "../gasSim/output.hpp"
-#include "../gasSim/physicsEngine.hpp"
-#include "../gasSim/statistics.hpp"
+#include "../gasSim/Input.hpp"
+#include "../gasSim/PhysicsEngine.hpp"
+#include "../gasSim/DataProcessing.hpp"
 
-double gasSim::Particle::mass = 10;
-double gasSim::Particle::radius = 1;
+std::atomic<double> GS::Particle::mass = 10;
+std::atomic<double> GS::Particle::radius = 1;
 
-std::ostream &operator<<(std::ostream &os, gasSim::PhysVectorD const &v) {
+std::ostream &operator<<(std::ostream &os, GS::GSVectorD const &v) {
   return os << "{" << v.x << ", " << v.y << ", " << v.z << "}";
 }
 
-TEST_CASE("Testing for_any_couple") {
-  std::vector<int> num{1, 2, 3, 4};
-
-  SUBCASE("Correct generation of couples") {
-    std::vector<std::set<int>> couples{};
-    // Usiamo std::set perchè non importa l'ordine
-
-    gasSim::for_each_couple(num.begin(), num.end(),
-                            [&](int a, int b) { couples.push_back({a, b}); });
-
-    std::vector<std::set<int>> actualCouples{{1, 2}, {1, 3}, {1, 4},
-                                             {2, 3}, {2, 4}, {3, 4}};
-    CHECK(couples == actualCouples);
-  }
-  SUBCASE("Empty input vector") {
-    std::vector<int> emptyNum{};
-    std::vector<std::set<int>> couples{};
-
-    gasSim::for_each_couple(emptyNum.begin(), emptyNum.end(),
-                            [&](int a, int b) { couples.push_back({a, b}); });
-
-    CHECK(couples.empty());
-  }
-  SUBCASE("Single element vector") {
-    std::vector<int> singleNum{5};
-    std::vector<std::set<int>> couples{};
-
-    gasSim::for_each_couple(singleNum.begin(), singleNum.end(),
-                            [&](int a, int b) { couples.push_back({a, b}); });
-
-    CHECK(couples.empty());
-  }
-}
-
-TEST_CASE("Testing PhysVectorD") {
-  gasSim::PhysVectorD vec1{1.1, -2.11, 56.253};
-  gasSim::PhysVectorD vec2{12.3, 0.12, -6.3};
-  // gasSim::PhysVectorD weirdFloatVector{-5.5f, 100000.f, 4.3f};
-  // gasSim::PhysVectorD weirdIntVector{-5, 6, 3};
-  gasSim::PhysVectorD randVec{gasSim::unifRandVector(5)};
-  // gasSim::PhysVectorD randomvec2(67.);
+TEST_CASE("Testing GSVectorD") {
+  GS::GSVectorD vec1{1.1, -2.11, 56.253};
+  GS::GSVectorD vec2{12.3, 0.12, -6.3};
+  // GS::GSVectorD weirdFloatVector{-5.5f, 100000.f, 4.3f};
+  // GS::GSVectorD weirdIntVector{-5, 6, 3};
+  // GS::GSVectorD randomvec2(67.);
   SUBCASE("Constructor") {
     CHECK(vec1.x == 1.1);
     CHECK(vec1.y == -2.11);
@@ -74,30 +38,25 @@ TEST_CASE("Testing PhysVectorD") {
     CHECK(vec1 == vec1);
     CHECK(vec2 == vec2);
   }
-  SUBCASE("Random constructor") {
-    gasSim::PhysVectorD randVec2{gasSim::unifRandVector(5)};
-    CHECK(randVec.norm() <= 5);
-    CHECK(randVec2 != randVec);
-  }
   SUBCASE("Sum") {
-    gasSim::PhysVectorD sum{vec1 + vec2};
-    gasSim::PhysVectorD actualSum{13.4, -1.99, 49.953};
+    GS::GSVectorD sum{vec1 + vec2};
+    GS::GSVectorD actualSum{13.4, -1.99, 49.953};
     CHECK(doctest::Approx(sum.x) == actualSum.x);
     CHECK(doctest::Approx(sum.y) == actualSum.y);
     CHECK(doctest::Approx(sum.z) == actualSum.z);
   }
   SUBCASE("Subtraction") {
-    gasSim::PhysVectorD subtraction{vec2 - vec1};
-    gasSim::PhysVectorD actualSubtraction{11.2, 2.23, -62.553};
+    GS::GSVectorD subtraction{vec2 - vec1};
+    GS::GSVectorD actualSubtraction{11.2, 2.23, -62.553};
     CHECK(doctest::Approx(subtraction.x) == actualSubtraction.x);
     CHECK(doctest::Approx(subtraction.y) == actualSubtraction.y);
     CHECK(doctest::Approx(subtraction.z) == actualSubtraction.z);
   }
   SUBCASE("Product") {
     double l{0.25};
-    gasSim::PhysVectorD product1{vec1 * l};
-    gasSim::PhysVectorD product2{l * vec1};
-    gasSim::PhysVectorD actualProduct{0.275, -0.5275, 14.06325};
+    GS::GSVectorD product1{vec1 * l};
+    GS::GSVectorD product2{l * vec1};
+    GS::GSVectorD actualProduct{0.275, -0.5275, 14.06325};
 
     CHECK(doctest::Approx(product1.x) == actualProduct.x);
     CHECK(doctest::Approx(product1.y) == actualProduct.y);
@@ -106,16 +65,16 @@ TEST_CASE("Testing PhysVectorD") {
   }
   SUBCASE("Division") {
     double l{10};
-    gasSim::PhysVectorD division{vec1 / l};
-    gasSim::PhysVectorD actualDivision{0.11, -0.211, 5.6253};
+    GS::GSVectorD division{vec1 / l};
+    GS::GSVectorD actualDivision{0.11, -0.211, 5.6253};
     CHECK(doctest::Approx(division.x) == actualDivision.x);
     CHECK(doctest::Approx(division.y) == actualDivision.y);
     CHECK(doctest::Approx(division.z) == actualDivision.z);
   }
   SUBCASE("Division by zero") {
     double l{0};
-    gasSim::PhysVectorD division{vec1 / l};
-    gasSim::PhysVectorD actualDivision{INFINITY, -INFINITY, INFINITY};
+    GS::GSVectorD division{vec1 / l};
+    GS::GSVectorD actualDivision{INFINITY, -INFINITY, INFINITY};
 
     CHECK(division == actualDivision);
   }
@@ -130,7 +89,7 @@ TEST_CASE("Testing PhysVectorD") {
   SUBCASE("Norm") { CHECK(vec1.norm() == doctest::Approx(56.3033)); }
   SUBCASE("Normalize") {
     vec1.normalize();
-    gasSim::PhysVectorD normalizeVec1{0.019537, -0.0374756, 0.999107};
+    GS::GSVectorD normalizeVec1{0.019537, -0.0374756, 0.999107};
     CHECK(doctest::Approx(vec1.x) == normalizeVec1.x);
     CHECK(doctest::Approx(vec1.y) == normalizeVec1.y);
     CHECK(doctest::Approx(vec1.z) == normalizeVec1.z);
@@ -139,42 +98,42 @@ TEST_CASE("Testing PhysVectorD") {
 
 TEST_CASE("Testing Particle") {
   SUBCASE("Default constructor") {
-    gasSim::PhysVectorD zeroVec{0, 0, 0};
-    gasSim::PhysVectorD vec1{7.94, 3.60, 4.27};
-    gasSim::PhysVectorD vec2{4.85, 8.94, 5.71};
+    GS::GSVectorD zeroVec{0, 0, 0};
+    GS::GSVectorD vec1{7.94, 3.60, 4.27};
+    GS::GSVectorD vec2{4.85, 8.94, 5.71};
 
-    gasSim::Particle part1;
-    gasSim::Particle part2{vec1, vec2};
+    GS::Particle part1;
+    GS::Particle part2{vec1, vec2};
     CHECK(part1.position == zeroVec);
     CHECK(part1.speed == zeroVec);
     CHECK(part2.position == vec1);
     CHECK(part2.speed == vec2);
   }
   SUBCASE("particles overlap") {
-    gasSim::Particle part1{{5.28, 9.14, 0.36}, {3.49, 2.05, 7.18}};
-    gasSim::Particle part2{{6.94, 3.50, 7.18}, {0.16, 9.38, 4.57}};
-    gasSim::Particle overlapPart{{5.30, 9.05, 0.37}, {1.29, 7.03, 8.45}};
+    GS::Particle part1{{5.28, 9.14, 0.36}, {3.49, 2.05, 7.18}};
+    GS::Particle part2{{6.94, 3.50, 7.18}, {0.16, 9.38, 4.57}};
+    GS::Particle overlapPart{{5.30, 9.05, 0.37}, {1.29, 7.03, 8.45}};
 
-    CHECK(gasSim::overlap(part1, part2) == false);
-    CHECK(gasSim::overlap(part1, overlapPart) == true);
+    CHECK(GS::overlap(part1, part2) == false);
+    CHECK(GS::overlap(part1, overlapPart) == true);
   }
 }
 TEST_CASE("Testing WallCollision") {
   double time{4};
 
-  gasSim::PhysVectorD vec1{10, 10, 0};
-  gasSim::PhysVectorD vec2{0, 0, 10};
-  gasSim::Particle part1{vec1, vec2};
+  GS::GSVectorD vec1{10, 10, 0};
+  GS::GSVectorD vec2{0, 0, 10};
+  GS::Particle part1{vec1, vec2};
 
-  gasSim::WallCollision coll{time, &part1, gasSim::Wall::Top};
+  GS::WallCollision coll{time, &part1, GS::Wall::Top};
   SUBCASE("Constructor") {
     CHECK(coll.getFirstParticle()->position == vec1);
     CHECK(coll.getFirstParticle()->speed == vec2);
-    CHECK(coll.getWall() == gasSim::Wall::Top);
+    CHECK(coll.getWall() == GS::Wall::Top);
   }
   SUBCASE("Change the particles") {
-    gasSim::PhysVectorD actualPosition{4, 0, 4};
-    gasSim::PhysVectorD actualSpeed{1.34, 0.04, 9.3924};
+    GS::GSVectorD actualPosition{4, 0, 4};
+    GS::GSVectorD actualSpeed{1.34, 0.04, 9.3924};
     coll.getFirstParticle()->position.x = 4;
     coll.getFirstParticle()->position.y = 0;
     coll.getFirstParticle()->position.z = 4;
@@ -190,15 +149,15 @@ TEST_CASE("Testing WallCollision") {
 TEST_CASE("Testing PartCollision") {
   double time{4};
 
-  gasSim::PhysVectorD vec1{4.23, -5.34, 6.45};
-  gasSim::PhysVectorD vec2{5.46, -4.35, 3.24};
-  gasSim::Particle part1{vec1, vec2};
+  GS::GSVectorD vec1{4.23, -5.34, 6.45};
+  GS::GSVectorD vec2{5.46, -4.35, 3.24};
+  GS::Particle part1{vec1, vec2};
 
-  gasSim::PhysVectorD vec3{13.4, -1.99, 49.953};
-  gasSim::PhysVectorD vec4{0.11, 0.211, 5.6253};
-  gasSim::Particle part2{vec3, vec4};
+  GS::GSVectorD vec3{13.4, -1.99, 49.953};
+  GS::GSVectorD vec4{0.11, 0.211, 5.6253};
+  GS::Particle part2{vec3, vec4};
 
-  gasSim::PartCollision coll{time, &part1, &part2};
+  GS::PartCollision coll{time, &part1, &part2};
   SUBCASE("Constructor") {
     CHECK(coll.getFirstParticle()->position == vec1);
     CHECK(coll.getFirstParticle()->speed == vec2);
@@ -206,8 +165,8 @@ TEST_CASE("Testing PartCollision") {
     CHECK(coll.getSecondParticle()->speed == vec4);
   }
   SUBCASE("Change the particles") {
-    gasSim::PhysVectorD actualPosition{4, 0, 4};
-    gasSim::PhysVectorD actualSpeed{1.34, 0.04, 9.3924};
+    GS::GSVectorD actualPosition{4, 0, 4};
+    GS::GSVectorD actualSpeed{1.34, 0.04, 9.3924};
     coll.getFirstParticle()->position.x = 4;
     coll.getFirstParticle()->position.y = 0;
     coll.getFirstParticle()->position.z = 4;
@@ -223,34 +182,34 @@ TEST_CASE("Testing PartCollision") {
 }
 TEST_CASE("Testing collisionTime") {
   SUBCASE("1") {
-    gasSim::Particle part1{{0, 0, 0}, {1, 1, 1}};
-    gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
-    CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 2.84529);
+    GS::Particle part1{{0, 0, 0}, {1, 1, 1}};
+    GS::Particle part2{{4, 4, 4}, {0, 0, 0}};
+    CHECK(doctest::Approx(GS::collisionTime(part1, part2)) == 2.84529);
   }
   SUBCASE("2") {
-    gasSim::PhysVectorD pos1{20992.06862014, -19664.47218241, 6281.158218151};
-    gasSim::PhysVectorD speed1{-2.098936862014, 1.966557218241,
+    GS::GSVectorD pos1{20992.06862014, -19664.47218241, 6281.158218151};
+    GS::GSVectorD speed1{-2.098936862014, 1.966557218241,
                                -0.6282474445917};
     speed1 = speed1 * 1E4;
 
-    gasSim::PhysVectorD pos2{3.299915613847, 2.900102791466, -0.6838802535057};
-    gasSim::PhysVectorD speed2{0.8438615274498, -1.027914662675,
+    GS::GSVectorD pos2{3.299915613847, 2.900102791466, -0.6838802535057};
+    GS::GSVectorD speed2{0.8438615274498, -1.027914662675,
                                1.080195225286};
     speed2 = speed2 * 1E-4;
-    gasSim::Particle part1{pos1, speed1};
-    gasSim::Particle part2{pos2, speed2};
-    CHECK(doctest::Approx(gasSim::collisionTime(part1, part2)) == 1);
+    GS::Particle part1{pos1, speed1};
+    GS::Particle part2{pos2, speed2};
+    CHECK(doctest::Approx(GS::collisionTime(part1, part2)) == 1);
   }
   SUBCASE("3") {
-    gasSim::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};
-    gasSim::Particle part2{{3.43, 7.54, 6.04}, {7.05, 8.86, -9.04}};
-    CHECK(gasSim::collisionTime(part1, part2) == INFINITY);
+    GS::Particle part1{{4.82, 1.66, 0.43}, {-6.11, -6.79, 9.18}};
+    GS::Particle part2{{3.43, 7.54, 6.04}, {7.05, 8.86, -9.04}};
+    CHECK(GS::collisionTime(part1, part2) == INFINITY);
   }
 }
 TEST_CASE("Testing calculateWallColl") {
   SUBCASE("1") {
-    gasSim::Particle part{{0.1, 0.1, 5}, {10, 0, 0}};
-    gasSim::WallCollision coll{gasSim::calculateWallColl(part, 10)};
+    GS::Particle part{{0.1, 0.1, 5}, {10, 0, 0}};
+    GS::WallCollision coll{GS::calculateWallColl(part, 10)};
     CHECK(doctest::Approx(coll.getTime()) == 0.89);
     CHECK(coll.getFirstParticle() == &part);
   }
@@ -261,34 +220,34 @@ TEST_CASE("Testing Gas constructor") {
   double temp{1.};
   int partNum{100};
 
-  gasSim::Gas gas{partNum, temp, side};
+  GS::Gas gas{partNum, temp, side};
   SUBCASE("Random constructor") {
     CHECK(gas.getBoxSide() == side);
     CHECK(gas.getTime() == 0);
     CHECK(gas.getParticles().size() == partNum);
   }
   SUBCASE("Constructor from gas") {
-    gasSim::Gas copyGas{gas};
+    GS::Gas copyGas{gas};
     CHECK(copyGas.getBoxSide() == side);
     CHECK(copyGas.getParticles().size() == partNum);
   }
   SUBCASE("Constructor from parameters") {
-    gasSim::Particle part1{{8.10, 2.36, 4.75}, {3.83, 3.23, 5.76}};
-    gasSim::Particle part2{{4.26, 1.24, 1.22}, {5.92, 5.98, 7.65}};
-    gasSim::Particle part3{{2.10, 8.50, 4.32}, {8.92, 7.55, 5.48}};
+    GS::Particle part1{{8.10, 2.36, 4.75}, {3.83, 3.23, 5.76}};
+    GS::Particle part2{{4.26, 1.24, 1.22}, {5.92, 5.98, 7.65}};
+    GS::Particle part3{{2.10, 8.50, 4.32}, {8.92, 7.55, 5.48}};
 
-    gasSim::Particle overlapPart{{7.87, 2.39, 5.00}, {5, 6, 7}};
-    std::vector<gasSim::Particle> badParts1{
+    GS::Particle overlapPart{{7.87, 2.39, 5.00}, {5, 6, 7}};
+    std::vector<GS::Particle> badParts1{
         part1, part2, part3, overlapPart};  // Particelle che si conpenetrano
-    CHECK_THROWS_AS(gasSim::Gas(badParts1, side), std::invalid_argument);
+    CHECK_THROWS_AS(GS::Gas(badParts1, side), std::invalid_argument);
 
-    gasSim::Particle outPart{{1E3 + 1E-4, 7.89, 3.46}, {}};
-    std::vector<gasSim::Particle> badParts2{
+    GS::Particle outPart{{1E3 + 1E-4, 7.89, 3.46}, {}};
+    std::vector<GS::Particle> badParts2{
         part1, outPart, part2, part3};  // Particelle che si conpenetrano
-    CHECK_THROWS_AS(gasSim::Gas(badParts2, side), std::invalid_argument);
+    CHECK_THROWS_AS(GS::Gas(badParts2, side), std::invalid_argument);
 
-    std::vector<gasSim::Particle> goodParts{part1, part2, part3};
-    CHECK_NOTHROW(gasSim::Gas goodGas{goodParts, side});
+    std::vector<GS::Particle> goodParts{part1, part2, part3};
+    CHECK_NOTHROW(GS::Gas goodGas{goodParts, side});
   }
 
   /*
@@ -297,7 +256,7 @@ TEST_CASE("Testing Gas constructor") {
      auto firstIt = Gas.getParticles().begin(),
           lastIt = Gas.getParticles().end();
 
-     std::for_each(firstIt, lastIt, [=](const gasSim::Particle& p) {
+     std::for_each(firstIt, lastIt, [=](const GS::Particle& p) {
        CHECK(p.speed.norm() <= maxSpeed);
      });
    }
@@ -310,18 +269,18 @@ TEST_CASE("Testing Gas constructor") {
 TEST_CASE("Testing Gas, 1 iteration") {
   SUBCASE("Simple collision 2 particles") {
     double side{1E3};
-    gasSim::Particle part1{{1, 1, 1}, {1, 1, 1}};
-    gasSim::Particle part2{{4, 4, 4}, {0, 0, 0}};
-    std::vector<gasSim::Particle> vec{part1, part2};
-    gasSim::Gas gas{vec, side};
-    gasSim::SimOutput output{1, 1.};
+    GS::Particle part1{{1, 1, 1}, {1, 1, 1}};
+    GS::Particle part2{{4, 4, 4}, {0, 0, 0}};
+    std::vector<GS::Particle> vec{part1, part2};
+    GS::Gas gas{vec, side};
+    GS::SimOutput output{1, 1.};
     gas.simulate(1, output);
 
     auto newVec{gas.getParticles()};
     double life{gas.getTime()};
 
-    gasSim::Particle part1F{{2.84529, 2.84529, 2.84529}, {0, 0, 0}};
-    gasSim::Particle part2F{{4, 4, 4}, {1, 1, 1}};
+    GS::Particle part1F{{2.84529, 2.84529, 2.84529}, {0, 0, 0}};
+    GS::Particle part2F{{4, 4, 4}, {1, 1, 1}};
 
     CHECK(doctest::Approx(life) == 1.8452995);
 
@@ -343,16 +302,16 @@ TEST_CASE("Testing Gas, 1 iteration") {
   }
   SUBCASE("Simple collision particle to wall") {
     double side{1E3};
-    gasSim::Particle part{{1, 500, 500}, {35.9, 0, 0}};
-    std::vector<gasSim::Particle> vec{part};
+    GS::Particle part{{1, 500, 500}, {35.9, 0, 0}};
+    std::vector<GS::Particle> vec{part};
 
-    gasSim::Gas gas{vec, side};
-    gasSim::SimOutput output{1, 1.};
+    GS::Gas gas{vec, side};
+    GS::SimOutput output{1, 1.};
     gas.simulate(1, output);
 
     auto newVec{gas.getParticles()};
     double life{gas.getTime()};
-    gasSim::Particle partF{{1E3 - 1, 500, 500}, {-35.9, 0, 0}};
+    GS::Particle partF{{1E3 - 1, 500, 500}, {-35.9, 0, 0}};
 
     CHECK(doctest::Approx(life) == 27.7994429);
 
@@ -366,48 +325,48 @@ TEST_CASE("Testing Gas, 1 iteration") {
   }
 }
 TEST_CASE("Testing Gas 2") {
-  // gasSim::randomVector(-1);
+  // GS::randomVector(-1);
   /*
-  gasSim::Particle p1{{0,0,0}, {1,1,1}};
-  gasSim::Particle p2{{0,0,0.09}, {5,6,7}};
-  std::vector<gasSim::Particle> badParticles{p1,p2};
-  gasSim::Gas badGas{badParticles, 5}; */
+  GS::Particle p1{{0,0,0}, {1,1,1}};
+  GS::Particle p2{{0,0,0.09}, {5,6,7}};
+  std::vector<GS::Particle> badParticles{p1,p2};
+  GS::Gas badGas{badParticles, 5}; */
 }
 
 // STATISTICS TESTING
 
 TEST_CASE("Testing the GasData class") {
-  std::vector<gasSim::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
-  std::vector<gasSim::Particle> moreParticles{
+  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+  std::vector<GS::Particle> moreParticles{
       {{2., 3., 4.}, {1., 0., 0.}},
       {{5., 3., 7.}, {0., 0., 0.}},
       {{5., 6., 7.}, {0., -1., 0.}},
   };
-  gasSim::Gas gas{particles, 4.};
-  gasSim::Gas moreGas{moreParticles, 12.};
+  GS::Gas gas{particles, 4.};
+  GS::Gas moreGas{moreParticles, 12.};
 
-  gasSim::SimOutput output{1, 1.};
+  GS::SimOutput output{1, 1.};
   gas.simulate(1, output);
-  gasSim::WallCollision collision{
-      1. / 3., const_cast<gasSim::Particle *>(gas.getParticles().data()),
-      gasSim::Wall::Back};
-  gasSim::GasData data{gas, &collision};
+  GS::WallCollision collision{
+      1. / 3., const_cast<GS::Particle *>(gas.getParticles().data()),
+      GS::Wall::Back};
+  GS::GasData data{gas, &collision};
 
-  gasSim::SimOutput moreOutput{1, 1.};
+  GS::SimOutput moreOutput{1, 1.};
   moreGas.simulate(1, moreOutput);
-  gasSim::PartCollision moreCollision{
-      1., const_cast<gasSim::Particle *>(&moreGas.getParticles()[1]),
-      const_cast<gasSim::Particle *>(&moreGas.getParticles()[2])};
-  gasSim::GasData moreData{moreGas, &moreCollision};
+  GS::PartCollision moreCollision{
+      1., const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
+      const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
+  GS::GasData moreData{moreGas, &moreCollision};
 
   SUBCASE("Testing the constructor and getters") {
     CHECK(gas.getParticles() == data.getParticles());
     CHECK(data.getTime() == gas.getTime());
     CHECK(data.getBoxSide() == gas.getBoxSide());
     CHECK(data.getP1Index() == 0);
-    // CHECK(gasSim::Particle(data.getP1()) ==
-    // gasSim::Particle(data.getParticles()[data.getP1Index()]));
-    CHECK(data.getWall() == gasSim::Wall::Back);
+    // CHECK(GS::Particle(data.getP1()) ==
+    // GS::Particle(data.getParticles()[data.getP1Index()]));
+    CHECK(data.getWall() == GS::Wall::Back);
     CHECK(data.getCollType() == 'w');
     CHECK(moreGas.getParticles() == moreData.getParticles());
     CHECK(moreData.getTime() == moreGas.getTime());
@@ -423,22 +382,22 @@ TEST_CASE("Testing the GasData class") {
 }
 
 TEST_CASE("Testing the TdStats class") {
-  std::vector<gasSim::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
-  std::vector<gasSim::Particle> moreParticles{
+  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+  std::vector<GS::Particle> moreParticles{
       {{2., 3., 4.}, {1., 0., 0.}},
       {{5., 3., 7.}, {0., 0., 0.}},
       {{5., 6., 7.}, {0., -1., 0.}},
   };
-  gasSim::Gas gas{particles, 4.};
-  gasSim::Gas moreGas{moreParticles, 12.};
-  gasSim::SimOutput output{5, 1.};
+  GS::Gas gas{particles, 4.};
+  GS::Gas moreGas{moreParticles, 12.};
+  GS::SimOutput output{5, 1.};
   gas.simulate(5, output);
   // std::cout << "Started processing data.\n";
   output.processData();
   // std::cout << "Finished processing data.\n";
   SUBCASE("Testing the constructor") {
-    gasSim::TdStats stats{output.getStats()[0]};
-    // CHECK(stats.getSpeeds() == std::vector<gasSim::PhysVectorD>{
+    GS::TdStats stats{output.getStats()[0]};
+    // CHECK(stats.getSpeeds() == std::vector<GS::GSVectorD>{
     //                                {1., 0., 0.}, {0., 0., 0.}, {0., -1.,
     //                                0.}});
     CHECK(stats.getBoxSide() == 4.);
@@ -447,33 +406,33 @@ TEST_CASE("Testing the TdStats class") {
     CHECK(stats.getNParticles() == 1);
   }
   SUBCASE("Testing getters") {
-    gasSim::TdStats stats{output.getStats()[0]};
+    GS::TdStats stats{output.getStats()[0]};
     CHECK(stats.getTemp() == 135.625);
-    CHECK(stats.getPressure(gasSim::Wall::Front) == 5. / 2.);
-    CHECK(stats.getPressure(gasSim::Wall::Back) == 5. / 2.);
-    CHECK(stats.getPressure(gasSim::Wall::Right) == 10. / 6.);
-    CHECK(stats.getPressure(gasSim::Wall::Left) == 10. / 6.);
-    CHECK(stats.getPressure(gasSim::Wall::Top) == 10. / 16.);
-    CHECK(stats.getPressure(gasSim::Wall::Bottom) == 0.);
+    CHECK(stats.getPressure(GS::Wall::Front) == 5. / 2.);
+    CHECK(stats.getPressure(GS::Wall::Back) == 5. / 2.);
+    CHECK(stats.getPressure(GS::Wall::Right) == 10. / 6.);
+    CHECK(stats.getPressure(GS::Wall::Left) == 10. / 6.);
+    CHECK(stats.getPressure(GS::Wall::Top) == 10. / 16.);
+    CHECK(stats.getPressure(GS::Wall::Bottom) == 0.);
     // CHECK(stats.getSpeeds() ==
-    //      std::vector<gasSim::PhysVectorD>{{2., 3., -0.75}});
+    //      std::vector<GS::GSVectorD>{{2., 3., -0.75}});
     CHECK(stats.getTime0() == 0.);
     CHECK(stats.getTime() == 1.5);
     CHECK(stats.getDeltaT() == 1.5);
     CHECK(stats.getMeanFreePath() == doctest::Approx(4.2964998799 / 4.));
-    gasSim::SimOutput moreOutput{5, 1.};
+    GS::SimOutput moreOutput{5, 1.};
     moreGas.simulate(5, moreOutput);
     moreOutput.processData();
-    gasSim::TdStats moreStats{moreOutput.getStats()[0]};
+    GS::TdStats moreStats{moreOutput.getStats()[0]};
     CHECK(moreStats.getTemp() == 20. / 3.);
-    CHECK(moreStats.getPressure(gasSim::Wall::Front) == 10. / (11. * 72.));
-    CHECK(moreStats.getPressure(gasSim::Wall::Left) == 0);
-    CHECK(moreStats.getPressure(gasSim::Wall::Back) == 10. / (11. * 72.));
-    CHECK(moreStats.getPressure(gasSim::Wall::Right) == 10. / (11. * 72.));
-    CHECK(moreStats.getPressure(gasSim::Wall::Top) == 0.);
-    CHECK(moreStats.getPressure(gasSim::Wall::Bottom) == 0.);
+    CHECK(moreStats.getPressure(GS::Wall::Front) == 10. / (11. * 72.));
+    CHECK(moreStats.getPressure(GS::Wall::Left) == 0);
+    CHECK(moreStats.getPressure(GS::Wall::Back) == 10. / (11. * 72.));
+    CHECK(moreStats.getPressure(GS::Wall::Right) == 10. / (11. * 72.));
+    CHECK(moreStats.getPressure(GS::Wall::Top) == 0.);
+    CHECK(moreStats.getPressure(GS::Wall::Bottom) == 0.);
     /*CHECK(moreStats.getSpeeds() ==
-          std::vector<gasSim::PhysVectorD>{
+          std::vector<GS::GSVectorD>{
               {-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
               {1., 0., 0.},  {0., 0., 0.},  {0., -1., 0.},
               {1., 0., 0.},  {0., -1., 0.}, {0., 0., 0.},
@@ -487,58 +446,58 @@ TEST_CASE("Testing the TdStats class") {
 }
 
 TEST_CASE("Testing the SimOutput class") {
-  std::vector<gasSim::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
-  std::vector<gasSim::Particle> moreParticles{
+  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+  std::vector<GS::Particle> moreParticles{
       {{2., 3., 4.}, {1., 0., 0.}},
       {{5., 3., 7.}, {0., 0., 0.}},
       {{5., 6., 7.}, {0., -1., 0.}},
   };
-  gasSim::Gas gas{particles, 4.};
-  gasSim::Gas moreGas{moreParticles, 12.};
+  GS::Gas gas{particles, 4.};
+  GS::Gas moreGas{moreParticles, 12.};
 
-  gasSim::SimOutput output{1, 1.};
+  GS::SimOutput output{1, 1.};
   gas.simulate(1, output);
-  gasSim::TdStats testStats{output.getData()[0]};
-  gasSim::WallCollision collision{
-      1. / 3., const_cast<gasSim::Particle *>(gas.getParticles().data()),
-      gasSim::Wall::Back};
+  GS::TdStats testStats{output.getData()[0]};
+  GS::WallCollision collision{
+      1. / 3., const_cast<GS::Particle *>(gas.getParticles().data()),
+      GS::Wall::Back};
   // make data array, with the first collision as first element
-  std::vector<gasSim::GasData> data{{gas, &collision}};
+  std::vector<GS::GasData> data{{gas, &collision}};
   gas.simulate(1, output);
   // simulate and add two more collision to the data vector
   collision = {1. / 6.,
-               const_cast<gasSim::Particle *>(gas.getParticles().data()),
-               gasSim::Wall::Left};
+               const_cast<GS::Particle *>(gas.getParticles().data()),
+               GS::Wall::Left};
   data.push_back({gas, &collision});
   gas.simulate(1, output);
   collision = {1. / 6.,
-               const_cast<gasSim::Particle *>(gas.getParticles().data()),
-               gasSim::Wall::Front};
+               const_cast<GS::Particle *>(gas.getParticles().data()),
+               GS::Wall::Front};
   data.push_back({gas, &collision});
 
   // do the same with moreGas, with a data array
-  gasSim::SimOutput moreOutput{1, 1.};
+  GS::SimOutput moreOutput{1, 1.};
   moreGas.simulate(1, moreOutput);
-  gasSim::TdStats moreTestStats{moreOutput.getData()[0]};
-  gasSim::PartCollision moreCollision{
-      1., const_cast<gasSim::Particle *>(&moreGas.getParticles()[1]),
-      const_cast<gasSim::Particle *>(&moreGas.getParticles()[2])};
-  std::vector<gasSim::GasData> moreData{{moreGas, &moreCollision}};
+  GS::TdStats moreTestStats{moreOutput.getData()[0]};
+  GS::PartCollision moreCollision{
+      1., const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
+      const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
+  std::vector<GS::GasData> moreData{{moreGas, &moreCollision}};
   moreGas.simulate(1, moreOutput);
-  collision = {2., const_cast<gasSim::Particle *>(&moreGas.getParticles()[1]),
-               gasSim::Wall::Front};
+  collision = {2., const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
+               GS::Wall::Front};
   moreData.push_back({moreGas, &collision});
   moreGas.simulate(1, moreOutput);
   moreCollision = {2.,
-                   const_cast<gasSim::Particle *>(&moreGas.getParticles()[1]),
-                   const_cast<gasSim::Particle *>(&moreGas.getParticles()[2])};
+                   const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
+                   const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
   moreData.push_back({moreGas, &collision});
 
   // fill the testOutputs with the data inside of the data array and check that
   // the rawData_ array inside of the class is equal to the array passed
 
   SUBCASE("Testing the constructor and the addData() method") {
-    gasSim::SimOutput testOutput{3, 1.};
+    GS::SimOutput testOutput{3, 1.};
     testOutput.addData(data[0]);
     for (int i{1}; i < 3; ++i) {
       testOutput.addData(data[i]);
@@ -552,7 +511,7 @@ TEST_CASE("Testing the SimOutput class") {
     CHECK(equal);
     CHECK(data.size() == testOutput.getData().size());
 
-    gasSim::SimOutput moreTestOutput{3, 1.};
+    GS::SimOutput moreTestOutput{3, 1.};
     moreTestOutput.addData(moreData[0]);
     for (int i{1}; i < 3; ++i) {
       moreTestOutput.addData(moreData[i]);
@@ -567,7 +526,7 @@ TEST_CASE("Testing the SimOutput class") {
     CHECK(equal);
 
     SUBCASE("Testing the processData() method") {
-      gasSim::Camera camera{{0., 0., 0.}, {1., 0., 0.}, 1, 90., 100, 100};
+      GS::Camera camera{{0., 0., 0.}, {1., 0., 0.}, 1, 90., 100, 100};
       testOutput.processData(camera, true);
       /*
       std::cout << "TestOutput stats comparison with TestStats:\n" <<
@@ -581,8 +540,8 @@ TEST_CASE("Testing the SimOutput class") {
       testStats.getTime() <<
       "\nmean free paths: oMFP = " << testOutput.getStats()[0].getMeanFreePath()
       << ", tMFP = " << testStats.getMeanFreePath() <<
-      "\nfront pressure: oPf = " << testStats.getPressure(gasSim::Wall::Front)
-      << ", tPf = " << testStats.getPressure(gasSim::Wall::Front) << std::endl
+      "\nfront pressure: oPf = " << testStats.getPressure(GS::Wall::Front)
+      << ", tPf = " << testStats.getPressure(GS::Wall::Front) << std::endl
       << std::endl;
       */
       CHECK(testOutput.getStats()[0] == testStats);
@@ -616,12 +575,12 @@ TEST_CASE("Testing the SimOutput class") {
 // GRAPHICS TESTING
 
 TEST_CASE("Testing the RenderStyle class") {
-  gasSim::RenderStyle defStyle{};
+  GS::RenderStyle defStyle{};
   sf::Texture pImage;
   pImage.loadFromFile("./resources/ball.jpg");
   sf::CircleShape pProj{1., 20};
   pProj.setTexture(&pImage);
-  gasSim::RenderStyle realStyle{pProj};
+  GS::RenderStyle realStyle{pProj};
   SUBCASE("Constructor") {
     CHECK(defStyle.getBGColor() == sf::Color::White);
     CHECK(defStyle.getWallsOpts() == "udlrfb");
@@ -647,14 +606,14 @@ TEST_CASE("Testing the RenderStyle class") {
 }
 
 TEST_CASE("Testing the camera class") {
-  gasSim::PhysVectorF focus{0., 0., 0.};
-  gasSim::PhysVectorF sightVector{1., 0., 0.};
+  GS::GSVectorF focus{0., 0., 0.};
+  GS::GSVectorF sightVector{1., 0., 0.};
   float distance{1.};
   float fov{90.};
   int width{200};
   int height{200};
-  gasSim::Camera camera{focus, sightVector, distance, fov, width, height};
-  gasSim::Camera camera2{camera};
+  GS::Camera camera{focus, sightVector, distance, fov, width, height};
+  GS::Camera camera2{camera};
   SUBCASE("Constructor") {
     CHECK(camera.getFocus() == focus);
     CHECK(camera.getSight() == sightVector);
@@ -664,8 +623,8 @@ TEST_CASE("Testing the camera class") {
     CHECK(camera.getFOV() == fov);
     CHECK(camera.getAspectRatio() == 1.);
   }
-  gasSim::PhysVectorF newFocus{-1., -1., 1.};
-  gasSim::PhysVectorF newSight{1., 1., 0.5};
+  GS::GSVectorF newFocus{-1., -1., 1.};
+  GS::GSVectorF newSight{1., 1., 0.5};
   float newDistance{1.5};
   float newFov{70.};
   int newWidth{1000};
@@ -711,49 +670,49 @@ TEST_CASE("Testing the camera class") {
           doctest::Approx(2. / 0.002101).epsilon(0.01));
   }
 
-  gasSim::PhysVectorD p1{2., 1., 0.};
-  gasSim::PhysVectorD p2{-2., 3., -3.};
-  gasSim::PhysVectorD p3{-100., 12., -30.};
-  gasSim::PhysVectorD p4{2., 2., 2.5};
+  GS::GSVectorD p1{2., 1., 0.};
+  GS::GSVectorD p2{-2., 3., -3.};
+  GS::GSVectorD p3{-100., 12., -30.};
+  GS::GSVectorD p4{2., 2., 2.5};
 
-  gasSim::PhysVectorD speed{0., 0., 0.};
+  GS::GSVectorD speed{0., 0., 0.};
 
-  gasSim::Particle part1{p1, speed};
-  gasSim::Particle part2{p2, speed};
-  gasSim::Particle part3{p3, speed};
-  gasSim::Particle part4{p4, speed};
-  std::vector<gasSim::Particle> particles{part1, part2, part3, part4};
+  GS::Particle part1{p1, speed};
+  GS::Particle part2{p2, speed};
+  GS::Particle part3{p3, speed};
+  GS::Particle part4{p4, speed};
+  std::vector<GS::Particle> particles{part1, part2, part3, part4};
 
-  std::vector<gasSim::PhysVectorF> projections{};
+  std::vector<GS::GSVectorF> projections{};
 
-  gasSim::PhysVectorF projection{};
+  GS::GSVectorF projection{};
 
   SUBCASE("Projection functions") {
     projection =
-        camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p1));
+        camera.getPointProjection(static_cast<GS::GSVectorF>(p1));
     projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(168.309f + 500.f));
     CHECK(projection.y == doctest::Approx(-504.927f + 800.f));
     CHECK(projection.z == doctest::Approx(0.5f));
     projection =
-        camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p2));
+        camera.getPointProjection(static_cast<GS::GSVectorF>(p2));
     // projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(-3786.95f + 500.f));
     CHECK(projection.y == doctest::Approx(-4796.80f + 800.f));
     CHECK(projection.z == doctest::Approx(2.25f));
     projection =
-        camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p3));
+        camera.getPointProjection(static_cast<GS::GSVectorF>(p3));
     // projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(835.74f + 500.f));
     CHECK(projection.y == doctest::Approx(94.51f + 800.f));
     CHECK(projection.z == doctest::Approx(-0.022167f));
     projection =
-        camera.getPointProjection(static_cast<gasSim::PhysVectorF>(p4));
+        camera.getPointProjection(static_cast<GS::GSVectorF>(p4));
     projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(0. + 500.f));
     CHECK(projection.y == doctest::Approx(0. + 800.f));
     CHECK(projection.z == doctest::Approx(1.f / 3.f));
-    std::vector<gasSim::PhysVectorF> realProjs{
+    std::vector<GS::GSVectorF> realProjs{
         camera.projectParticles(particles)};
     for (int i{0}; i < 2; ++i) {
       CHECK(projections[i] == realProjs[i]);

@@ -108,9 +108,9 @@ int main(int argc, const char* argv[]) {
               << path << std::endl;
 
     GS::Particle::setMass(
-        cFile.GetReal("simulation parameters", "particleMass", 1.));
+        cFile.GetReal("simulation parameters", "pMass", 1.));
     GS::Particle::setRadius(
-        cFile.GetReal("simulation parameters", "particleRadius", 1.));
+        cFile.GetReal("simulation parameters", "pRadius", 1.));
 
     TFile inputFile{TFile(
         (std::ostringstream()
