@@ -6,8 +6,10 @@
 #include <random>
 #include <stdexcept>
 #include <thread>
+#include <iostream>
 
 #include "../DataProcessing/SimDataPipeline.hpp"
+#include "GSVector.hpp"
 
 namespace GS {
 
@@ -15,8 +17,8 @@ bool Gas::contains(Particle const& p) {
   if (particles.size()) {
     double r = p.getRadius();
     GSVectorD pos = p.position;
-    return (r <= pos.x && pos.x <= boxSide - r && r <= pos.y &&
-            pos.y <= boxSide - r && r <= pos.z && pos.z <= boxSide - r &&
+    return (r < pos.x && pos.x < boxSide - r && r < pos.y &&
+            pos.y < boxSide - r && r < pos.z && pos.z < boxSide - r &&
             &particles.front() <= &p && &p <= &particles.back());
   } else {
     return false;
@@ -34,23 +36,22 @@ void for_each_couple(Iterator first, Iterator last, Function f) {
 
 Gas::Gas(std::vector<Particle>&& particles, double boxSide, double time)
     : particles{particles}, boxSide{boxSide}, time{time} {
-  // skipping particles size verification, delegating to methods to provide
-  // correct behaviour, ecc.
   if (boxSide <= 0) {
+		this->boxSide = 1.;
     throw std::invalid_argument("Non-positive box side provided");
   }
 
-  std::for_each(particles.begin(), particles.end(), [&](Particle const& p) {
+  std::for_each(this->particles.begin(), this->particles.end(), [&](Particle const& p) {
     if (!contains(p)) {
-      particles.clear();
-      throw std::invalid_argument("Provided particle is not inside of vector");
+      this->particles.clear();
+      throw std::invalid_argument("Provided at least one particle not inside of gas box.");
     }
   });
 
-  for_each_couple(particles.begin(), particles.end(),
+  for_each_couple(this->particles.begin(), this->particles.end(),
                   [&](Particle const& p1, Particle const& p2) {
                     if (overlap(p1, p2)) {
-                      particles.clear();
+                      this->particles.clear();
                       throw std::invalid_argument("Overlapping particles");
                     }
                   });
@@ -62,8 +63,8 @@ auto unifRandVec{[](double maxNorm) {
   double rho;
   static std::default_random_engine eng(std::random_device{}());
   static std::uniform_real_distribution<double> baseDist(0, 1);
-  if (maxNorm <= 0) {
-    throw std::invalid_argument("maxNorm must be greater than 0");
+  if (maxNorm < 0) {
+    throw std::invalid_argument("maxNorm must be non-negative");
   }
   theta = baseDist(eng) * 2. * M_PI;
   phi = -M_PI / 2. + baseDist(eng) * M_PI;
@@ -85,9 +86,9 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
   if (particlesN) {
     size_t npPerSide{static_cast<size_t>(std::ceil(cbrt(particlesN)))};
     double pR{Particle::getRadius()};
-    double latticeUnit{(boxSide - 2 * pR) * 0.99 / npPerSide};
+    double latticeUnit{ (boxSide * 0.95 - 2 * pR) / (npPerSide - 1) };
 
-    if (latticeUnit <= 2 * pR) {
+    if (latticeUnit <= 2. * pR) {
       throw std::runtime_error("Particle number too large to fit into box");
     }
 
@@ -101,9 +102,9 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
       size_t pJ{(i / npPerSide) % npPerSide};
       size_t pK{i / (npPerSide * npPerSide)};
 
-      double x{(pI * latticeUnit) + pR + boxSide * 0.05};
-      double y{(pJ * latticeUnit) + pR + boxSide * 0.05};
-      double z{(pK * latticeUnit) + pR + boxSide * 0.05};
+      double x{(pI * latticeUnit) + pR + 0.025 * boxSide};
+      double y{(pJ * latticeUnit) + pR + 0.025 * boxSide};
+      double z{(pK * latticeUnit) + pR + 0.025 * boxSide};
       return GSVectorD{x, y, z};
     };
 
@@ -116,16 +117,14 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
         });
 
     // ensure as exact a final temperature as possible
-    // use first particle's jumbled direction to avoid having
-    // to generate theta and phi again
-    GSVectorD d{particles.front().speed};
-    d.normalize();
+		GSVectorD direction {unifRandVec(1.)};
+		direction.normalize();
     double missingEnergy{3. * particlesN * temperature / 2. -
                          std::accumulate(particles.begin(), particles.end(), 0.,
                                          [](double acc, Particle const& p) {
                                            return acc +=
                                                energy(p);
-                                         }) / Particle::getMass()};
+                                         })};
 		if (missingEnergy < 0.) {
 			for (Particle& p: particles) {
 				missingEnergy += energy(p);
@@ -137,9 +136,13 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
 		}
     particles.emplace_back(
         Particle({latticePosition(particlesN - 1),
-                  GSVectorD({d.y, d.x, d.z}) *
+                  direction *
                       sqrt(2. * missingEnergy / Particle::getMass())}));
-  }
+  } else {
+		if (temperature) {
+			throw std::invalid_argument("Asked to reach a temperature with zero particles");
+		}
+	}
 }
 
 PWCollision Gas::firstPWColl() {
@@ -310,10 +313,29 @@ void Gas::simulate(size_t itN) {
 		} else {
 			firstColl = &wColl;
 		}
-		
-		move(firstColl->getTime());
 
-		firstColl->solve();
+		double collTime {firstColl->getTime()};
+		
+		if (std::isfinite(collTime) && collTime >= 0.) {
+			move(firstColl->getTime());
+			firstColl->solve();
+		} else if (particles.size() == 0) {
+			throw std::runtime_error("Called simulate on an empty gas");
+		} else if (collTime < 0.) {
+			throw std::runtime_error("Negative collision time found, aborting");
+		} else if (!std::isfinite(collTime)) {
+			bool allSpeeds0 {true};
+			for (Particle const& p: particles) {
+				if (allSpeeds0 && p.speed.norm() != 0) {
+					allSpeeds0 = false;
+				}
+			}
+			if (allSpeeds0) {
+				throw std::runtime_error("Called simulate on gas with no moving particles");
+			} else {
+				throw std::runtime_error("Unexplained non finite collision time found, aborting");
+			}
+		}
 	}
 }
 
@@ -335,11 +357,29 @@ void Gas::simulate(size_t itN, SimDataPipeline& output) {
       	firstColl = &wColl;
 			}
 			
-    	move(firstColl->getTime());
+			double collTime {firstColl->getTime()};
 
-    	firstColl->solve();
-
-    	tempOutput.emplace_back(GasData(*this, firstColl));
+			if (std::isfinite(collTime) && collTime >= 0.) {
+				move(firstColl->getTime());
+				firstColl->solve();
+				tempOutput.emplace_back(GasData(*this, firstColl));
+			} else if (particles.size() == 0) {
+				throw std::runtime_error("Called simulate on an empty gas");
+			} else if (collTime < 0.) {
+				throw std::runtime_error("Negative collision time found, aborting");
+			} else if (!std::isfinite(collTime)) {
+				bool allSpeeds0 {true};
+				for (Particle const& p: particles) {
+					if (allSpeeds0 && p.speed.norm() != 0) {
+						allSpeeds0 = false;
+					}
+				}
+				if (allSpeeds0) {
+					throw std::runtime_error("Called simulate on gas with no moving particles");
+				} else {
+					throw std::runtime_error("Unexplained non finite collision time found, aborting");
+				}
+			}
 		}
   	output.addData(std::move(tempOutput));
 		tempOutput.clear();

@@ -7,7 +7,7 @@ bool operator==(Particle const& p1, Particle const& p2) {
 }
 
 bool overlap(Particle const& p1, Particle const& p2) {
-  return (p1.position - p2.position).norm() < Particle::getRadius();
+  return (p1.position - p2.position).norm() < 2. * Particle::getRadius();
 }
 
 double energy(Particle const& p) {

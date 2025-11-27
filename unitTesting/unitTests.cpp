@@ -1,11 +1,21 @@
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/VideoMode.hpp>
 #include <cmath>
+#include <iterator>
 #include <stdexcept>
 #include <vector>
+#include <random>
+
+#include <TFile.h>
+#include <TGraph.h>
+#include <TMultiGraph.h>
 
 #include "SFML/Graphics.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
+#include "testingAddons.hpp"
 #include "../gasSim/Graphics.hpp"
 #include "doctest.h"
 // #include "input.hpp"
@@ -117,69 +127,12 @@ TEST_CASE("Testing Particle") {
     CHECK(GS::overlap(part1, part2) == false);
     CHECK(GS::overlap(part1, overlapPart) == true);
   }
+	SUBCASE("energy") {
+		GS::Particle p1{{1., 0., 2.}, {3., -2., 6.}};
+		CHECK(doctest::Approx(energy(p1)) == p1.getMass() * 24.5);
+	}
 }
-TEST_CASE("Testing WallCollision") {
-  double time{4};
 
-  GS::GSVectorD vec1{10, 10, 0};
-  GS::GSVectorD vec2{0, 0, 10};
-  GS::Particle part1{vec1, vec2};
-
-  GS::WallCollision coll{time, &part1, GS::Wall::Top};
-  SUBCASE("Constructor") {
-    CHECK(coll.getFirstParticle()->position == vec1);
-    CHECK(coll.getFirstParticle()->speed == vec2);
-    CHECK(coll.getWall() == GS::Wall::Top);
-  }
-  SUBCASE("Change the particles") {
-    GS::GSVectorD actualPosition{4, 0, 4};
-    GS::GSVectorD actualSpeed{1.34, 0.04, 9.3924};
-    coll.getFirstParticle()->position.x = 4;
-    coll.getFirstParticle()->position.y = 0;
-    coll.getFirstParticle()->position.z = 4;
-    coll.getFirstParticle()->speed = actualSpeed;
-    CHECK(part1.position == actualPosition);
-    CHECK(part1.speed == actualSpeed);
-  }
-  SUBCASE("Resolve Collision") {
-    coll.solve();
-    // Da aggiungere il check del risolutore corretto
-  }
-}
-TEST_CASE("Testing PartCollision") {
-  double time{4};
-
-  GS::GSVectorD vec1{4.23, -5.34, 6.45};
-  GS::GSVectorD vec2{5.46, -4.35, 3.24};
-  GS::Particle part1{vec1, vec2};
-
-  GS::GSVectorD vec3{13.4, -1.99, 49.953};
-  GS::GSVectorD vec4{0.11, 0.211, 5.6253};
-  GS::Particle part2{vec3, vec4};
-
-  GS::PartCollision coll{time, &part1, &part2};
-  SUBCASE("Constructor") {
-    CHECK(coll.getFirstParticle()->position == vec1);
-    CHECK(coll.getFirstParticle()->speed == vec2);
-    CHECK(coll.getSecondParticle()->position == vec3);
-    CHECK(coll.getSecondParticle()->speed == vec4);
-  }
-  SUBCASE("Change the particles") {
-    GS::GSVectorD actualPosition{4, 0, 4};
-    GS::GSVectorD actualSpeed{1.34, 0.04, 9.3924};
-    coll.getFirstParticle()->position.x = 4;
-    coll.getFirstParticle()->position.y = 0;
-    coll.getFirstParticle()->position.z = 4;
-    /* why are we accessing a private member through its pointer to change its
-    value? credo sia un refuso, prima non valutavamo il metodo solve()
-                coll.getSecondParticle()->speed.x = actualSpeed.x;
-                coll.getSecondParticle()->speed.y = actualSpeed.y;
-                coll.getSecondParticle()->speed.z = actualSpeed.z;
-
-                CHECK(coll.getFirstParticle()->position == actualPosition);
-    CHECK(coll.getSecondParticle()->speed == actualSpeed);*/
-  }
-}
 TEST_CASE("Testing collisionTime") {
   SUBCASE("1") {
     GS::Particle part1{{0, 0, 0}, {1, 1, 1}};
@@ -206,81 +159,103 @@ TEST_CASE("Testing collisionTime") {
     CHECK(GS::collisionTime(part1, part2) == INFINITY);
   }
 }
-TEST_CASE("Testing calculateWallColl") {
-  SUBCASE("1") {
-    GS::Particle part{{0.1, 0.1, 5}, {10, 0, 0}};
-    GS::WallCollision coll{GS::calculateWallColl(part, 10)};
-    CHECK(doctest::Approx(coll.getTime()) == 0.89);
-    CHECK(coll.getFirstParticle() == &part);
-  }
-}
 
 TEST_CASE("Testing Gas constructor") {
-  double side{1E3};
-  double temp{1.};
-  int partNum{100};
+	SUBCASE("Throwing behaviour") {
+		// Negative and null box side
+		CHECK_THROWS(GS::Gas(0, 1., -1.));
+		CHECK_THROWS(GS::Gas(0, 2., 0.));
+		// Negative and null temperature
+		CHECK_THROWS(GS::Gas(1, 0., 1.));
+		CHECK_THROWS(GS::Gas(1, -4., 1.));
+		// The maximum amount of particles and one over it
+		// Theoretically 18^3 should be accepted but isn't because of double approximation,
+		// better to be safe than sorry and not round down by any means, therefore depending
+		// on value the theoretical maximum number might not be accepted, like here
+		GS::Particle::setRadius(.5);
+		CHECK_THROWS(GS::Gas(18 * 18 * 18, 1., 20.));
+		CHECK_NOTHROW(GS::Gas(18 * 18 * 18 - 1, 1., 20.));
+		GS::Particle::setRadius(1.);
+		std::vector<GS::Particle> goodPs {
+			{{1.01, 1.01, 1.01}, {1., 0., -1.}},
+			{{2.01, 3.99, 1.01}, {1., 2., 3.}},
+			{{3.01, 3.99, 3.01}, {1., 5., 6.}}
+		};
+		std::vector<GS::Particle> almostGoodPs {
+			{{1., 1., 1.}, {1., 0., -1.}},
+			{{2., 4., 1.}, {1., 2., 3.}},
+			{{3., 4., 3.}, {1., 5., 6.}}
+		};
+		double boxSide {5.};
+		double time {1.};
+		GS::Gas goodGas;
+		CHECK_NOTHROW(goodGas = GS::Gas(std::vector<GS::Particle>(goodPs), boxSide, time));
+		CHECK_THROWS(GS::Gas(std::vector<GS::Particle>(almostGoodPs), boxSide, time));
+		CHECK(goodGas.getParticles() == goodPs);
+		CHECK(goodGas.getBoxSide() == 5.);
+		std::vector<GS::Particle> badPs {
+			{{1.1, 2., 3.}, {1., 1., 2.}}, // !!!
+			{{1.1, 2.5, 3.99}, {1., 2., 0.}}, // !!!
+			{{3.99, 3.99, 3.99}, {1., 5., 6.}}
+		}; // overlap issue
+		GS::Gas badGas;
+		CHECK_THROWS(badGas = GS::Gas(std::move(badPs), boxSide, time));
 
-  GS::Gas gas{partNum, temp, side};
-  SUBCASE("Random constructor") {
-    CHECK(gas.getBoxSide() == side);
-    CHECK(gas.getTime() == 0);
-    CHECK(gas.getParticles().size() == partNum);
-  }
-  SUBCASE("Constructor from gas") {
-    GS::Gas copyGas{gas};
-    CHECK(copyGas.getBoxSide() == side);
-    CHECK(copyGas.getParticles().size() == partNum);
-  }
-  SUBCASE("Constructor from parameters") {
-    GS::Particle part1{{8.10, 2.36, 4.75}, {3.83, 3.23, 5.76}};
-    GS::Particle part2{{4.26, 1.24, 1.22}, {5.92, 5.98, 7.65}};
-    GS::Particle part3{{2.10, 8.50, 4.32}, {8.92, 7.55, 5.48}};
+		std::vector<GS::Particle> moreBadPs {
+			{{}, {}}
+		}; // outside of box
+		CHECK_THROWS(badGas = GS::Gas(std::move(moreBadPs), boxSide, time));
+	}
+	SUBCASE("Random constructor") {
+		GS::Gas rndGas {10, 10., 10.};
+		CHECK(rndGas.getParticles().size() == 10);
+		CHECK(doctest::Approx(std::accumulate(
+					rndGas.getParticles().begin(),
+					rndGas.getParticles().end(), 0.,
+					[] (double x, GS::Particle const& p) {
+						return x + GS::energy(p);
+					} 
+					) * 2. / 3. / 10. ) == 10.);
+		GS::Gas rndGas1 {1, 10., 10.};
+		CHECK(rndGas1.getParticles().size() == 1);
+		CHECK(doctest::Approx(GS::energy(rndGas1.getParticles()[0]) * 2. / 3.) == 10.);
+		GS::Gas rndGas0 {0, 0., 10.};
+		CHECK(rndGas0.getParticles().size() == 0);
+	}
+}
 
-    GS::Particle overlapPart{{7.87, 2.39, 5.00}, {5, 6, 7}};
-    std::vector<GS::Particle> badParts1{
-        part1, part2, part3, overlapPart};  // Particelle che si conpenetrano
-    CHECK_THROWS_AS(GS::Gas(badParts1, side), std::invalid_argument);
+TH1D defaultH {};
 
-    GS::Particle outPart{{1E3 + 1E-4, 7.89, 3.46}, {}};
-    std::vector<GS::Particle> badParts2{
-        part1, outPart, part2, part3};  // Particelle che si conpenetrano
-    CHECK_THROWS_AS(GS::Gas(badParts2, side), std::invalid_argument);
-
-    std::vector<GS::Particle> goodParts{part1, part2, part3};
-    CHECK_NOTHROW(GS::Gas goodGas{goodParts, side});
-  }
-
-  /*
-   SUBCASE("Speed check") {
-     double maxSpeed = 4. / 3. * temp;
-     auto firstIt = Gas.getParticles().begin(),
-          lastIt = Gas.getParticles().end();
-
-     std::for_each(firstIt, lastIt, [=](const GS::Particle& p) {
-       CHECK(p.speed.norm() <= maxSpeed);
-     });
-   }
-   SUBCASE("Find first Particle Collsion") {
-     Gas.firstPartCollision(INFINITY);
-   }
-   SUBCASE("Resolve Collision") { Gas.gasLoop(1); }*/
+TEST_CASE("Testing Gas::simulate method") {
+	SUBCASE("Throwing behaviour") {
+		GS::Gas empty {};
+    GS::SimDataPipeline output{1, 1., defaultH};
+		CHECK_THROWS(empty.simulate(1));
+		CHECK_THROWS(empty.simulate(5));
+		CHECK_THROWS(empty.simulate(1, output));
+		CHECK_THROWS(empty.simulate(4, output));
+		GS::Gas zeroKelvin {5, 0., 10, -2.};
+		CHECK_THROWS(empty.simulate(1));
+		CHECK_THROWS(empty.simulate(7));
+		CHECK_THROWS(empty.simulate(1, output));
+		CHECK_THROWS(empty.simulate(3, output));
+	}
 }
 
 TEST_CASE("Testing Gas, 1 iteration") {
   SUBCASE("Simple collision 2 particles") {
     double side{1E3};
-    GS::Particle part1{{1, 1, 1}, {1, 1, 1}};
-    GS::Particle part2{{4, 4, 4}, {0, 0, 0}};
+    GS::Particle part1{{2, 2, 2}, {1, 1, 1}};
+    GS::Particle part2{{5, 5, 5}, {0, 0, 0}};
     std::vector<GS::Particle> vec{part1, part2};
-    GS::Gas gas{vec, side};
-    GS::SimOutput output{1, 1.};
-    gas.simulate(1, output);
+    GS::Gas gas{std::vector<GS::Particle>(vec), side};
+    gas.simulate(1);
 
     auto newVec{gas.getParticles()};
     double life{gas.getTime()};
 
-    GS::Particle part1F{{2.84529, 2.84529, 2.84529}, {0, 0, 0}};
-    GS::Particle part2F{{4, 4, 4}, {1, 1, 1}};
+    GS::Particle part1F{{3.84529, 3.84529, 3.84529}, {0, 0, 0}};
+    GS::Particle part2F{{5, 5, 5}, {1, 1, 1}};
 
     CHECK(doctest::Approx(life) == 1.8452995);
 
@@ -302,18 +277,18 @@ TEST_CASE("Testing Gas, 1 iteration") {
   }
   SUBCASE("Simple collision particle to wall") {
     double side{1E3};
-    GS::Particle part{{1, 500, 500}, {35.9, 0, 0}};
+    GS::Particle part{{2, 500, 500}, {35.9, 0, 0}};
     std::vector<GS::Particle> vec{part};
 
-    GS::Gas gas{vec, side};
-    GS::SimOutput output{1, 1.};
+    GS::Gas gas{std::vector<GS::Particle>(vec), side};
+    GS::SimDataPipeline output{1, 1., defaultH};
     gas.simulate(1, output);
 
     auto newVec{gas.getParticles()};
     double life{gas.getTime()};
     GS::Particle partF{{1E3 - 1, 500, 500}, {-35.9, 0, 0}};
 
-    CHECK(doctest::Approx(life) == 27.7994429);
+    CHECK(doctest::Approx(life) == 27.77158774373);
 
     CHECK(doctest::Approx(newVec[0].position.x) == partF.position.x);
     CHECK(doctest::Approx(newVec[0].position.y) == partF.position.y);
@@ -324,284 +299,30 @@ TEST_CASE("Testing Gas, 1 iteration") {
     CHECK(doctest::Approx(newVec[0].speed.z) == partF.speed.z);
   }
 }
-TEST_CASE("Testing Gas 2") {
-  // GS::randomVector(-1);
-  /*
-  GS::Particle p1{{0,0,0}, {1,1,1}};
-  GS::Particle p2{{0,0,0.09}, {5,6,7}};
-  std::vector<GS::Particle> badParticles{p1,p2};
-  GS::Gas badGas{badParticles, 5}; */
-}
-
-// STATISTICS TESTING
-
-TEST_CASE("Testing the GasData class") {
-  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
-  std::vector<GS::Particle> moreParticles{
-      {{2., 3., 4.}, {1., 0., 0.}},
-      {{5., 3., 7.}, {0., 0., 0.}},
-      {{5., 6., 7.}, {0., -1., 0.}},
-  };
-  GS::Gas gas{particles, 4.};
-  GS::Gas moreGas{moreParticles, 12.};
-
-  GS::SimOutput output{1, 1.};
-  gas.simulate(1, output);
-  GS::WallCollision collision{
-      1. / 3., const_cast<GS::Particle *>(gas.getParticles().data()),
-      GS::Wall::Back};
-  GS::GasData data{gas, &collision};
-
-  GS::SimOutput moreOutput{1, 1.};
-  moreGas.simulate(1, moreOutput);
-  GS::PartCollision moreCollision{
-      1., const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
-      const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
-  GS::GasData moreData{moreGas, &moreCollision};
-
-  SUBCASE("Testing the constructor and getters") {
-    CHECK(gas.getParticles() == data.getParticles());
-    CHECK(data.getTime() == gas.getTime());
-    CHECK(data.getBoxSide() == gas.getBoxSide());
-    CHECK(data.getP1Index() == 0);
-    // CHECK(GS::Particle(data.getP1()) ==
-    // GS::Particle(data.getParticles()[data.getP1Index()]));
-    CHECK(data.getWall() == GS::Wall::Back);
-    CHECK(data.getCollType() == 'w');
-    CHECK(moreGas.getParticles() == moreData.getParticles());
-    CHECK(moreData.getTime() == moreGas.getTime());
-    CHECK(moreData.getBoxSide() == moreGas.getBoxSide());
-    CHECK(moreData.getP1Index() == 1);
-    CHECK(moreData.getP2Index() == 2);
-    CHECK(moreData.getCollType() == 'p');
-  }
-  SUBCASE("Testing getter throws") {
-    CHECK_THROWS(data.getP2());
-    CHECK_THROWS(moreData.getWall());
-  }
-}
-
-TEST_CASE("Testing the TdStats class") {
-  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
-  std::vector<GS::Particle> moreParticles{
-      {{2., 3., 4.}, {1., 0., 0.}},
-      {{5., 3., 7.}, {0., 0., 0.}},
-      {{5., 6., 7.}, {0., -1., 0.}},
-  };
-  GS::Gas gas{particles, 4.};
-  GS::Gas moreGas{moreParticles, 12.};
-  GS::SimOutput output{5, 1.};
-  gas.simulate(5, output);
-  // std::cout << "Started processing data.\n";
-  output.processData();
-  // std::cout << "Finished processing data.\n";
-  SUBCASE("Testing the constructor") {
-    GS::TdStats stats{output.getStats()[0]};
-    // CHECK(stats.getSpeeds() == std::vector<GS::GSVectorD>{
-    //                                {1., 0., 0.}, {0., 0., 0.}, {0., -1.,
-    //                                0.}});
-    CHECK(stats.getBoxSide() == 4.);
-    CHECK(stats.getVolume() == 64.);
-    CHECK(stats.getDeltaT() == 1.5);
-    CHECK(stats.getNParticles() == 1);
-  }
-  SUBCASE("Testing getters") {
-    GS::TdStats stats{output.getStats()[0]};
-    CHECK(stats.getTemp() == 135.625);
-    CHECK(stats.getPressure(GS::Wall::Front) == 5. / 2.);
-    CHECK(stats.getPressure(GS::Wall::Back) == 5. / 2.);
-    CHECK(stats.getPressure(GS::Wall::Right) == 10. / 6.);
-    CHECK(stats.getPressure(GS::Wall::Left) == 10. / 6.);
-    CHECK(stats.getPressure(GS::Wall::Top) == 10. / 16.);
-    CHECK(stats.getPressure(GS::Wall::Bottom) == 0.);
-    // CHECK(stats.getSpeeds() ==
-    //      std::vector<GS::GSVectorD>{{2., 3., -0.75}});
-    CHECK(stats.getTime0() == 0.);
-    CHECK(stats.getTime() == 1.5);
-    CHECK(stats.getDeltaT() == 1.5);
-    CHECK(stats.getMeanFreePath() == doctest::Approx(4.2964998799 / 4.));
-    GS::SimOutput moreOutput{5, 1.};
-    moreGas.simulate(5, moreOutput);
-    moreOutput.processData();
-    GS::TdStats moreStats{moreOutput.getStats()[0]};
-    CHECK(moreStats.getTemp() == 20. / 3.);
-    CHECK(moreStats.getPressure(GS::Wall::Front) == 10. / (11. * 72.));
-    CHECK(moreStats.getPressure(GS::Wall::Left) == 0);
-    CHECK(moreStats.getPressure(GS::Wall::Back) == 10. / (11. * 72.));
-    CHECK(moreStats.getPressure(GS::Wall::Right) == 10. / (11. * 72.));
-    CHECK(moreStats.getPressure(GS::Wall::Top) == 0.);
-    CHECK(moreStats.getPressure(GS::Wall::Bottom) == 0.);
-    /*CHECK(moreStats.getSpeeds() ==
-          std::vector<GS::GSVectorD>{
-              {-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
-              {1., 0., 0.},  {0., 0., 0.},  {0., -1., 0.},
-              {1., 0., 0.},  {0., -1., 0.}, {0., 0., 0.},
-              {1., 0., 0.},  {0., 1., 0.},  {0., 0., 0.},
-              {1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},
-              {-1., 0., 0.},
-              {0., 0., 0.},
-              {0., -1., 0.}});*/
-    CHECK(moreStats.getMeanFreePath() == 2.5);
-  }
-}
-
-TEST_CASE("Testing the SimOutput class") {
-  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
-  std::vector<GS::Particle> moreParticles{
-      {{2., 3., 4.}, {1., 0., 0.}},
-      {{5., 3., 7.}, {0., 0., 0.}},
-      {{5., 6., 7.}, {0., -1., 0.}},
-  };
-  GS::Gas gas{particles, 4.};
-  GS::Gas moreGas{moreParticles, 12.};
-
-  GS::SimOutput output{1, 1.};
-  gas.simulate(1, output);
-  GS::TdStats testStats{output.getData()[0]};
-  GS::WallCollision collision{
-      1. / 3., const_cast<GS::Particle *>(gas.getParticles().data()),
-      GS::Wall::Back};
-  // make data array, with the first collision as first element
-  std::vector<GS::GasData> data{{gas, &collision}};
-  gas.simulate(1, output);
-  // simulate and add two more collision to the data vector
-  collision = {1. / 6.,
-               const_cast<GS::Particle *>(gas.getParticles().data()),
-               GS::Wall::Left};
-  data.push_back({gas, &collision});
-  gas.simulate(1, output);
-  collision = {1. / 6.,
-               const_cast<GS::Particle *>(gas.getParticles().data()),
-               GS::Wall::Front};
-  data.push_back({gas, &collision});
-
-  // do the same with moreGas, with a data array
-  GS::SimOutput moreOutput{1, 1.};
-  moreGas.simulate(1, moreOutput);
-  GS::TdStats moreTestStats{moreOutput.getData()[0]};
-  GS::PartCollision moreCollision{
-      1., const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
-      const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
-  std::vector<GS::GasData> moreData{{moreGas, &moreCollision}};
-  moreGas.simulate(1, moreOutput);
-  collision = {2., const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
-               GS::Wall::Front};
-  moreData.push_back({moreGas, &collision});
-  moreGas.simulate(1, moreOutput);
-  moreCollision = {2.,
-                   const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
-                   const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
-  moreData.push_back({moreGas, &collision});
-
-  // fill the testOutputs with the data inside of the data array and check that
-  // the rawData_ array inside of the class is equal to the array passed
-
-  SUBCASE("Testing the constructor and the addData() method") {
-    GS::SimOutput testOutput{3, 1.};
-    testOutput.addData(data[0]);
-    for (int i{1}; i < 3; ++i) {
-      testOutput.addData(data[i]);
-      testStats.addData(data[i]);
-    }
-    testOutput.setDone();
-
-    bool equal{std::equal(data.begin(), data.end(),
-                          testOutput.getData().begin(),
-                          testOutput.getData().end())};
-    CHECK(equal);
-    CHECK(data.size() == testOutput.getData().size());
-
-    GS::SimOutput moreTestOutput{3, 1.};
-    moreTestOutput.addData(moreData[0]);
-    for (int i{1}; i < 3; ++i) {
-      moreTestOutput.addData(moreData[i]);
-      moreTestStats.addData(moreData[i]);
-    }
-    moreTestOutput.setDone();
-
-    equal = std::equal(moreData.begin(), moreData.end(),
-                       moreTestOutput.getData().begin(),
-                       moreTestOutput.getData().end()) &&
-            moreData.size() == moreTestOutput.getData().size();
-    CHECK(equal);
-
-    SUBCASE("Testing the processData() method") {
-      GS::Camera camera{{0., 0., 0.}, {1., 0., 0.}, 1, 90., 100, 100};
-      testOutput.processData(camera, true);
-      /*
-      std::cout << "TestOutput stats comparison with TestStats:\n" <<
-      "Count of stats instances in output after processData: " <<
-      testOutput.getStats().size() <<
-      "\nTemperature: oT = " << testOutput.getStats()[0].getTemp() << ", tT = "
-      << testStats.getTemp() <<
-      "\nt0: ot0 = " << testOutput.getStats()[0].getTime0() << ", tt0 = " <<
-      testStats.getTime0() <<
-      "\nt: ot = " << testOutput.getStats()[0].getTime() << ", tt = " <<
-      testStats.getTime() <<
-      "\nmean free paths: oMFP = " << testOutput.getStats()[0].getMeanFreePath()
-      << ", tMFP = " << testStats.getMeanFreePath() <<
-      "\nfront pressure: oPf = " << testStats.getPressure(GS::Wall::Front)
-      << ", tPf = " << testStats.getPressure(GS::Wall::Front) << std::endl
-      << std::endl;
-      */
-      CHECK(testOutput.getStats()[0] == testStats);
-      CHECK(testOutput.getRenders().size() ==
-            testStats.getTime() * testOutput.getFramerate());
-      CHECK(testOutput.getData().size() == 0);
-
-      moreTestOutput.processData(camera, true);
-      /*
-      std::cout << "moreTestOutput stats comparison with moreTestStats:\n" <<
-      "Count of stats instances in output after processData: " <<
-      moreTestOutput.getStats().size() <<
-      "\nTemperature: oT = " << moreTestOutput.getStats()[0].getTemp() << ", tT
-      = " << moreTestStats.getTemp() <<
-      "\nt0: ot0 = " << moreTestOutput.getStats()[0].getTime0() << ", tt0 = " <<
-      moreTestStats.getTime0() <<
-      "\nt: ot = " << moreTestOutput.getStats()[0].getTime() << ", tt = " <<
-      moreTestStats.getTime() <<
-      "\nmean free paths: oMFP = " <<
-      moreTestOutput.getStats()[0].getMeanFreePath() << ", tMFP = " <<
-      moreTestStats.getMeanFreePath() << std::endl << std::endl;
-      */
-      CHECK(moreTestOutput.getStats()[0] == moreTestStats);
-      CHECK(moreTestOutput.getRenders().size() ==
-            moreTestStats.getTime() * moreTestOutput.getFramerate());
-      CHECK(moreTestOutput.getData().size() == 0);
-    }
-  }
-}
 
 // GRAPHICS TESTING
 
 TEST_CASE("Testing the RenderStyle class") {
-  GS::RenderStyle defStyle{};
   sf::Texture pImage;
-  pImage.loadFromFile("./resources/ball.jpg");
-  sf::CircleShape pProj{1., 20};
-  pProj.setTexture(&pImage);
-  GS::RenderStyle realStyle{pProj};
+  pImage.loadFromFile("./assets/ball.jpg");
+  GS::RenderStyle style{pImage};
   SUBCASE("Constructor") {
-    CHECK(defStyle.getBGColor() == sf::Color::White);
-    CHECK(defStyle.getWallsOpts() == "udlrfb");
-    CHECK(defStyle.getWallsColor() == sf::Color(0, 0, 0, 64));
-    CHECK(defStyle.getWOutlineColor() == sf::Color::Black);
-    CHECK(defStyle.getPartProj().getFillColor() == sf::Color::Red);
-    CHECK(realStyle.getPartProj().getTexture() == &pImage);
+    CHECK(style.getBGColor() == sf::Color::White);
+    CHECK(style.getWallsOpts() == "udlrfb");
+    CHECK(style.getWallsColor() == sf::Color(0, 0, 0, 64));
+    CHECK(style.getWOutlineColor() == sf::Color::Black);
   }
-  defStyle.setBGColor(sf::Color::Transparent);
-  defStyle.setWallsOpts("fb");
-  defStyle.setWOutlineColor(sf::Color::Blue);
-  defStyle.setWallsColor(sf::Color::Cyan);
-  defStyle.setPartProj(pProj);
+  style.setBGColor(sf::Color::Transparent);
+  style.setWallsOpts("fb");
+  style.setWOutlineColor(sf::Color::Blue);
+  style.setWallsColor(sf::Color::Cyan);
   SUBCASE("Setters") {
-    CHECK_THROWS(defStyle.setWallsOpts("amogus"));
+    CHECK_THROWS(style.setWallsOpts("amogus"));
 
-    CHECK(defStyle.getBGColor() == sf::Color::Transparent);
-    CHECK(defStyle.getWallsOpts() == "fb");
-    CHECK(defStyle.getWOutlineColor() == sf::Color::Blue);
-    CHECK(defStyle.getWallsColor() == sf::Color::Cyan);
-    CHECK(defStyle.getPartProj().getTexture() == pProj.getTexture());
+    CHECK(style.getBGColor() == sf::Color::Transparent);
+    CHECK(style.getWallsOpts() == "fb");
+    CHECK(style.getWOutlineColor() == sf::Color::Blue);
+    CHECK(style.getWallsColor() == sf::Color::Cyan);
   }
 }
 
@@ -610,8 +331,8 @@ TEST_CASE("Testing the camera class") {
   GS::GSVectorF sightVector{1., 0., 0.};
   float distance{1.};
   float fov{90.};
-  int width{200};
-  int height{200};
+  unsigned width{200};
+  unsigned height{200};
   GS::Camera camera{focus, sightVector, distance, fov, width, height};
   GS::Camera camera2{camera};
   SUBCASE("Constructor") {
@@ -627,8 +348,8 @@ TEST_CASE("Testing the camera class") {
   GS::GSVectorF newSight{1., 1., 0.5};
   float newDistance{1.5};
   float newFov{70.};
-  int newWidth{1000};
-  int newHeight{1600};
+  unsigned newWidth{1000};
+	unsigned newHeight{1600};
   float newRatio{16. / 9.};
   camera.setFocus(newFocus);
   camera.setSightVector(newSight);
@@ -641,8 +362,7 @@ TEST_CASE("Testing the camera class") {
     CHECK_THROWS(camera.setFOV(0.));
     CHECK_THROWS(camera.setPlaneDistance(-15.));
     CHECK_THROWS(camera.setPlaneDistance(0.));
-    CHECK_THROWS(camera.setResolution(-1, 10));
-    CHECK_THROWS(camera.setResolution(0., -1));
+    CHECK_THROWS(camera.setResolution(0, 1));
     CHECK_THROWS(camera.setSightVector({0., 0., 0.}));
     CHECK_THROWS(camera.setAspectRatio(-15.));
     CHECK_THROWS(camera.setAspectRatio(0.));
@@ -720,5 +440,337 @@ TEST_CASE("Testing the camera class") {
   }
 }
 
-TEST_CASE("Testing wall projections") {}
+// STATISTICS TESTING
+
+TEST_CASE("Testing the TdStats class and simOutput processStats function") {
+  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+  std::vector<GS::Particle> moreParticles{
+      {{2., 3., 4.}, {1., 0., 0.}},
+      {{5., 3., 7.}, {0., 0., 0.}},
+      {{5., 6., 7.}, {0., -1., 0.}},
+  };
+  GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
+  GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
+  GS::SimDataPipeline output{5, 1., defaultH};
+  gas.simulate(5, output);
+  // std::cout << "Started processing data.\n";
+  output.processData();
+  // std::cout << "Finished processing data.\n";
+  SUBCASE("Testing the constructor") {
+    GS::TdStats stats{output.getStats()[0]};
+    // CHECK(stats.getSpeeds() == std::vector<GS::GSVectorD>{
+    //                                {1., 0., 0.}, {0., 0., 0.}, {0., -1.,
+    //                                0.}});
+    CHECK(stats.getBoxSide() == 4.);
+    CHECK(stats.getVolume() == 64.);
+    CHECK(stats.getDeltaT() == 1.5);
+    CHECK(stats.getNParticles() == 1);
+  }
+  SUBCASE("Testing getters") {
+    GS::TdStats stats{output.getStats()[0]};
+    CHECK(doctest::Approx(stats.getTemp()) == 45.208333333333);
+    CHECK(stats.getPressure(GS::Wall::Front) == 5. / 2.);
+    CHECK(stats.getPressure(GS::Wall::Back) == 5. / 2.);
+    CHECK(stats.getPressure(GS::Wall::Right) == 10. / 6.);
+    CHECK(stats.getPressure(GS::Wall::Left) == 10. / 6.);
+    CHECK(stats.getPressure(GS::Wall::Top) == 10. / 16.);
+    CHECK(stats.getPressure(GS::Wall::Bottom) == 0.);
+    // CHECK(stats.getSpeeds() ==
+    //      std::vector<GS::GSVectorD>{{2., 3., -0.75}});
+    CHECK(stats.getTime0() == 0.);
+    CHECK(stats.getTime() == 1.5);
+    CHECK(stats.getDeltaT() == 1.5);
+    CHECK(stats.getMeanFreePath() == doctest::Approx(4.2964998799 / 4.));
+    GS::SimDataPipeline moreOutput{5, 1., defaultH};
+    moreGas.simulate(5, moreOutput);
+    moreOutput.processData();
+    GS::TdStats moreStats{moreOutput.getStats()[0]};
+    CHECK(moreStats.getTemp() == 20. / 3. / 3.);
+    CHECK(moreStats.getPressure(GS::Wall::Front) == 10. / (11. * 72.));
+    CHECK(moreStats.getPressure(GS::Wall::Left) == 0);
+    CHECK(moreStats.getPressure(GS::Wall::Back) == 10. / (11. * 72.));
+    CHECK(moreStats.getPressure(GS::Wall::Right) == 10. / (11. * 72.));
+    CHECK(moreStats.getPressure(GS::Wall::Top) == 0.);
+    CHECK(moreStats.getPressure(GS::Wall::Bottom) == 0.);
+    /*CHECK(moreStats.getSpeeds() ==
+          std::vector<GS::GSVectorD>{
+              {-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
+              {1., 0., 0.},  {0., 0., 0.},  {0., -1., 0.},
+              {1., 0., 0.},  {0., -1., 0.}, {0., 0., 0.},
+              {1., 0., 0.},  {0., 1., 0.},  {0., 0., 0.},
+              {1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},
+              {-1., 0., 0.},
+              {0., 0., 0.},
+              {0., -1., 0.}});*/
+    CHECK(moreStats.getMeanFreePath() == 2.5);
+  }
+}
+
+TEST_CASE("Loosely testing the SimDataPipeline class") {
+	SUBCASE("Throwing behaviour") {
+		// Null statsize
+		CHECK_THROWS(GS::SimDataPipeline(0, 1., defaultH));
+		// Null and negative framerate
+		CHECK_THROWS(GS::SimDataPipeline(1, 0., defaultH));
+		CHECK_THROWS(GS::SimDataPipeline(1, -10., defaultH));
+		GS::SimDataPipeline output {1, 1., defaultH};
+		// Setting various parameters to invalid values
+		CHECK_THROWS(output.setStatChunkSize(0));
+		CHECK_THROWS(output.setFramerate(0.));
+		CHECK_THROWS(output.setFramerate(-15.));
+		CHECK_THROWS(output.setStatSize(0));
+	}
+	std::cout << "Execute simulation test demos? (y/n) ";
+	char response;
+	std::cin >> response;
+	if (response == 'y') {
+		TFile input {"assets/input.root"};
+		TH1D speedsHTemplate {*(TH1D*)input.Get("speedsHTemplate")};
+		GS::SimDataPipeline output {1, 24., speedsHTemplate};
+		GS::Gas gas {10, 100., 30., -5.};
+		output.setStatChunkSize(10);
+		gas.simulate(100);
+		sf::Texture ball;
+		ball.loadFromFile("assets/ball.jpg");
+		sf::Texture placeHolder;
+		placeHolder.loadFromFile("assets/placeholder.png");
+		GS::RenderStyle style {ball};
+		GS::Camera camera {
+			{15, 12.5, 7.5},
+			{-10, -7.5, -2.5},
+			1., 90.,
+			720, 300
+		};
+		output.processData(camera, style);
+		SUBCASE("Running getVideo a bit and showing output") {
+			TList* graphsList = new TList();
+			TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+			TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+			TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+			if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
+				throw std::runtime_error(
+						"Couldn't find one or more graphs in provided root file.");
+			}
+			graphsList->Add(pGraphs);
+			graphsList->Add(kBGraph);
+			graphsList->Add(mfpGraph);
+			CHECK_THROWS(output.getVideo(GS::VideoOpts::all, {600, 800}, placeHolder, *graphsList));
+			std::vector<sf::Texture> video {output.getVideo(GS::VideoOpts::all, {800, 600}, placeHolder, *graphsList, true)};
+			// display in a window
+			sf::RenderWindow window {sf::VideoMode(800, 600), "getVideo display"};
+			window.setFramerateLimit(24);
+			sf::Event e;
+			sf::Sprite auxS;
+			for (sf::Texture& t: video) {
+				while (window.pollEvent(e)) {
+					if (e.type == sf::Event::Closed) {
+						window.close();
+					}
+				}
+				if (window.isOpen()) {
+					auxS.setTexture(t);
+					window.draw(auxS);
+					window.display();
+				} else {
+					break;
+				}
+			}
+			pGraphs->Delete();
+			kBGraph->Delete();
+			mfpGraph->Delete();
+			graphsList->Delete();
+		}
+		GS::SimDataPipeline singleOutput {1, 24., speedsHTemplate};
+		GS::Gas onePGas {1, 50., 20., -9.};
+		gas.simulate(10, singleOutput);
+		// same
+		singleOutput.processData();
+		SUBCASE("Running getVideo on single particle gas and showing output") {
+			// display in a window
+			TList* graphsList = new TList();
+			TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+			TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+			TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+			if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
+				throw std::runtime_error(
+						"Couldn't find one or more graphs in provided root file.");
+			}
+			graphsList->Add(pGraphs);
+			graphsList->Add(kBGraph);
+			graphsList->Add(mfpGraph);
+			CHECK_THROWS(output.getVideo(GS::VideoOpts::justStats, {600, 800}, placeHolder, *graphsList));
+			std::vector<sf::Texture> video {singleOutput.getVideo(GS::VideoOpts::justStats, {800, 600}, placeHolder, *graphsList, true)};
+			// display in a window
+			sf::RenderWindow window {sf::VideoMode(800, 600), "getVideo display"};
+			window.setFramerateLimit(24);
+			sf::Event e;
+			sf::Sprite auxS;
+			for (sf::Texture& t: video) {
+				while (window.pollEvent(e)) {
+					if (e.type == sf::Event::Closed) {
+						window.close();
+					}
+				}
+				if (window.isOpen()) {
+					auxS.setTexture(t);
+					window.draw(auxS);
+					window.display();
+				} else {
+					break;
+				}
+			}
+			pGraphs->Delete();
+			kBGraph->Delete();
+			mfpGraph->Delete();
+			graphsList->Delete();
+		}
+		std::cout << "Done, going to next test case." << std::endl;
+	} else {
+		std::cout << "OK. Going to next text case." << std::endl;
+	}
+}
+
+TEST_CASE("Bullying SimDataPipeline by calling all its methods at random intervals from multiple threads") {
+	char response;
+	std::cout << "Execute SimDataPipeline stress test? (y/n)";
+	std::cin >> response;
+	while (response == 'y') {
+		std::cout << "Loading resources." << std::endl;
+		std::atomic<bool> stop {false};
+		GS::Gas g {10, 50., 20.};
+		TFile input {"assets/input.root"};
+		TH1D speedsHTemplate {*(TH1D*)input.Get("speedsHTemplate")};
+		GS::SimDataPipeline output {10, 24., speedsHTemplate};
+		GS::Gas gas {10, 100., 30., -5.};
+		output.setStatChunkSize(1);
+		std::cout << "Simulating." << std::endl;
+		gas.simulate(100);
+		output.setDone();
+		std::cout << "Done simulating. Loading extra resources." << std::endl;
+		sf::Texture ball;
+		ball.loadFromFile("assets/ball.jpg");
+		sf::Texture placeHolder;
+		placeHolder.loadFromFile("assets/placeholder.png");
+		GS::RenderStyle style {ball};
+		GS::Camera camera {
+			{30, 25, 15},
+			{-20, -15, -5},
+			1., 90.,
+			720, 300
+		};
+		TList* graphsList = new TList();
+		TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+		TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+		TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+		if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
+			throw std::runtime_error(
+					"Couldn't find one or more graphs in provided root file.");
+		}
+		graphsList->Add(pGraphs);
+		graphsList->Add(kBGraph);
+		graphsList->Add(mfpGraph);
+
+		std::cout << "Done loading. Adding disturbances to manager." << std::endl;
+
+		GS::randomThreadsMgr manager {};
+		manager.add(
+			[&] {
+				output.getRawDataSize();
+			}
+		);
+		manager.add(
+			[&] {
+				output.getFramerate();
+			}
+		);
+		manager.add([&] { output.getStatSize(); });
+		manager.add([&] {output.getStatChunkSize(); });
+		manager.add([&] { output.isProcessing(); });
+		manager.add([&] { output.isDone(); });
+		manager.add([&] {
+			thread_local std::mt19937 r {std::random_device{}()};
+			std::uniform_int_distribution<unsigned> emptyQueueD {0, 1};
+			output.getStats(emptyQueueD(r));
+		});
+		manager.add([&] {
+				thread_local std::mt19937 r {std::random_device{}()};
+				std::uniform_int_distribution<unsigned> emptyQueueD {0, 1};
+				output.getRenders(emptyQueueD(r));
+			}
+		);
+		manager.add([&] {
+			thread_local std::mt19937 r {std::random_device{}()};
+			std::uniform_int_distribution<unsigned> emptyQueueD {1, 5};
+			output.setStatSize(emptyQueueD(r));
+		});
+
+		std::cout << "Starting disturbances." << std::endl;
+		manager.start();
+
+		std::cout << "Starting processing." << std::endl;
+		std::thread processThread {
+			[&] {
+				output.processData(camera, style, true);
+			}
+		};
+
+		sf::RenderWindow window {sf::VideoMode(800, 600), "getVideo display"};
+		sf::Sprite auxS;
+		std::thread getVideoThread {
+			[&] {
+				std::vector<sf::Texture> video {};
+				sf::Event e;
+				std::cout << "Starting display." << std::endl;
+				while (true) {
+					thread_local std::mt19937 r {std::random_device{}()};
+					std::uniform_int_distribution<unsigned> optD {0, 4};
+					std::uniform_int_distribution<unsigned> emptyQueueD {0, 1};
+
+					std::cout << "Calling getVideo." << std::endl;
+					video = output.getVideo(GS::VideoOpts(optD(r)), {800, 600}, placeHolder, *graphsList, emptyQueueD(r));
+					if (video.size()) {
+						std::cout << "Video size = " << video.size() << ", displaying." << std::endl;
+						for (sf::Texture& t: video) {
+							while (window.pollEvent(e)) {
+								if (e.type == sf::Event::Closed) {
+									window.close();
+									return;
+								}
+							}
+							if (window.isOpen()) {
+								auxS.setTexture(t, true);
+								window.draw(auxS);
+							}
+						}
+					} else {
+						std::cout << "Video empty, checking if output is done." << std::endl;
+						if (output.isDone() && output.getRawDataSize() < output.getStatSize() && !output.isProcessing()) {
+							std::cout << "Closing. Bye!" << std::endl;
+							window.close();
+							return;
+						}
+					}
+				}
+			}
+		};
+
+		std::cout << "Joining process and video threads." << std::endl;
+		if (processThread.joinable()) {
+			processThread.join();
+		}
+		if (getVideoThread.joinable()) {
+			getVideoThread.join();
+		}
+		std::cout << "Joining disturbances." << std::endl;
+		manager.finish();
+		std::cout << "Repeat SimDataPipeline stress test? (y/n) ";
+		std::cin >> response;
+		pGraphs->Delete();
+		kBGraph->Delete();
+		mfpGraph->Delete();
+		graphsList->Delete();
+	}
+	std::cout << "Bye!" << std::endl;
+}
+
 // ciucciami le Particelle

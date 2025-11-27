@@ -66,7 +66,7 @@ void RGBA32toRGBA8(UInt_t const* rgbaBffr, size_t w, size_t h,
 }
 
 std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
-    VideoOpts opt, sf::Vector2i windowSize, sf::Texture placeholder,
+    VideoOpts opt, sf::Vector2i windowSize, sf::Texture const& placeholder,
     TList& outputGraphs, bool emptyStats,
     std::function<void(TH1D&, VideoOpts)> fitLambda,
     std::array<std::function<void()>, 4> drawLambdas) {

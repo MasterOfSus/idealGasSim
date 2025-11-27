@@ -39,6 +39,9 @@ void Camera::setFOV(const float FOV) {  // in degrees
 }
 
 void Camera::setResolution(unsigned height, unsigned width) {
+	if (!height || !width) {
+		throw std::invalid_argument("Provided null height or width.");
+	}
   this->height = height;
   this->width = width;
 }

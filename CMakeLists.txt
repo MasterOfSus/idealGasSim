@@ -42,16 +42,40 @@ target_link_libraries(idealGasSim
 		gasSimLib
 )
 
+# Testing
+add_executable(gasSimTests)
+target_sources(gasSimTests
+	PRIVATE
+		unitTesting/unitTests.cpp
+		unitTesting/testingAddons.cpp
+	PUBLIC
+		FILE_SET HEADERS
+		BASE_DIRS unitTesting
+		FILES unitTesting/testingAddons.hpp
+)
+
+target_link_libraries(gasSimTests
+	PRIVATE
+		gasSimLib
+)
+
 # COMPILER OPTIONS
 
 target_compile_options(gasSimLib PRIVATE -Wall -Wextra)
 target_compile_options(idealGasSim PRIVATE -Wall -Wextra)
+target_compile_options(gasSimTests PRIVATE -Wall -Wextra)
 
 target_compile_options(idealGasSim PRIVATE
     $<$<CONFIG:Debug>:-D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer>
 )
+target_compile_options(gasSimTests PRIVATE
+    $<$<CONFIG:Debug>:-D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer>
+)
 
 target_link_options(idealGasSim PRIVATE
+    $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer>
+)
+target_link_options(gasSimTests PRIVATE
     $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer>
 )
 
@@ -65,12 +89,27 @@ target_link_libraries(idealGasSim PRIVATE
     ROOTDataFrame ROOTNTupleUtil
     tbb
 )
+target_link_libraries(gasSimTests PRIVATE
+    sfml-graphics
+    sfml-window
+    sfml-system
+    pthread
+    Core Imt RIO Net Hist Graf Graf3d Gpad ROOTVecOps Tree TreePlayer Rint
+    Postscript Matrix Physics MathCore Thread ROOTNTuple MultiProc
+    ROOTDataFrame ROOTNTupleUtil
+    tbb
+)
 
 target_include_directories(idealGasSim PRIVATE
     ./root/include
+)
+target_include_directories(gasSimTests PRIVATE
+	./root/include
 )
 
 target_link_directories(idealGasSim PRIVATE
     ./root/lib
 )
-
+target_link_directories(gasSimTests PRIVATE
+	./root/lib
+)
