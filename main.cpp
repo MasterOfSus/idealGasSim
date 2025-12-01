@@ -148,6 +148,9 @@ int main(int argc, const char* argv[]) {
                                          : throw std::invalid_argument(
                                                "Provided negative nStats.")),
         cFile.GetFloat("output", "framerate", 60.f), speedsHTemplate};
+		sf::Font font;
+		font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
+		output.setFont(font);
     GS::Gas gas{static_cast<size_t>(
                     cFile.GetInteger("simulation parameters", "nParticles", 1)),
                 cFile.GetFloat("simulation parameters", "targetT", 1),

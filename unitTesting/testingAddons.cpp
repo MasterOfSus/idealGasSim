@@ -1,11 +1,13 @@
 #include "testingAddons.hpp"
+#include <cstdlib>
+#include <exception>
 #include <random>
 #include <stdexcept>
 
 namespace GS {
 	void randomThreadsMgr::add(std::function<void()> f) {
 		threads.emplace_back(
-			[this, &f] () {
+			[this, f = std::move(f)] () {
 				thread_local std::mt19937 r {std::random_device{}()};
 				std::uniform_int_distribution<unsigned> d {0, 10000};
 				while (stop.load()) {
@@ -23,8 +25,10 @@ namespace GS {
 						f();
 					} catch (std::runtime_error const& e){
 						abort.store(true);
+						std::terminate();
 					} catch (std::invalid_argument const& e) {
 						abort.store(true);
+						std::terminate();
 					}
 				}
 			}
@@ -37,6 +41,7 @@ namespace GS {
 				t.join();
 			}
 		}
+		threads.clear();
 	}
 	void randomThreadsMgr::start() {
 		stop.store(false);

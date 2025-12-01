@@ -1,32 +1,35 @@
+#include <TFile.h>
+#include <TGraph.h>
+#include <TMultiGraph.h>
+
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <cmath>
 #include <iterator>
-#include <stdexcept>
-#include <vector>
+#include <mutex>
 #include <random>
-
-#include <TFile.h>
-#include <TGraph.h>
-#include <TMultiGraph.h>
+#include <stdexcept>
+#include <thread>
+#include <vector>
 
 #include "SFML/Graphics.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
-#include "testingAddons.hpp"
 #include "../gasSim/Graphics.hpp"
 #include "doctest.h"
+#include "testingAddons.hpp"
 // #include "input.hpp"
+#include "../gasSim/DataProcessing.hpp"
 #include "../gasSim/Input.hpp"
 #include "../gasSim/PhysicsEngine.hpp"
-#include "../gasSim/DataProcessing.hpp"
 
 std::atomic<double> GS::Particle::mass = 10;
 std::atomic<double> GS::Particle::radius = 1;
 
-std::ostream &operator<<(std::ostream &os, GS::GSVectorD const &v) {
+std::ostream& operator<<(std::ostream& os, GS::GSVectorD const& v) {
   return os << "{" << v.x << ", " << v.y << ", " << v.z << "}";
 }
 
@@ -127,10 +130,10 @@ TEST_CASE("Testing Particle") {
     CHECK(GS::overlap(part1, part2) == false);
     CHECK(GS::overlap(part1, overlapPart) == true);
   }
-	SUBCASE("energy") {
-		GS::Particle p1{{1., 0., 2.}, {3., -2., 6.}};
-		CHECK(doctest::Approx(energy(p1)) == p1.getMass() * 24.5);
-	}
+  SUBCASE("energy") {
+    GS::Particle p1{{1., 0., 2.}, {3., -2., 6.}};
+    CHECK(doctest::Approx(energy(p1)) == p1.getMass() * 24.5);
+  }
 }
 
 TEST_CASE("Testing collisionTime") {
@@ -141,13 +144,11 @@ TEST_CASE("Testing collisionTime") {
   }
   SUBCASE("2") {
     GS::GSVectorD pos1{20992.06862014, -19664.47218241, 6281.158218151};
-    GS::GSVectorD speed1{-2.098936862014, 1.966557218241,
-                               -0.6282474445917};
+    GS::GSVectorD speed1{-2.098936862014, 1.966557218241, -0.6282474445917};
     speed1 = speed1 * 1E4;
 
     GS::GSVectorD pos2{3.299915613847, 2.900102791466, -0.6838802535057};
-    GS::GSVectorD speed2{0.8438615274498, -1.027914662675,
-                               1.080195225286};
+    GS::GSVectorD speed2{0.8438615274498, -1.027914662675, 1.080195225286};
     speed2 = speed2 * 1E-4;
     GS::Particle part1{pos1, speed1};
     GS::Particle part2{pos2, speed2};
@@ -161,85 +162,81 @@ TEST_CASE("Testing collisionTime") {
 }
 
 TEST_CASE("Testing Gas constructor") {
-	SUBCASE("Throwing behaviour") {
-		// Negative and null box side
-		CHECK_THROWS(GS::Gas(0, 1., -1.));
-		CHECK_THROWS(GS::Gas(0, 2., 0.));
-		// Negative and null temperature
-		CHECK_THROWS(GS::Gas(1, 0., 1.));
-		CHECK_THROWS(GS::Gas(1, -4., 1.));
-		// The maximum amount of particles and one over it
-		// Theoretically 18^3 should be accepted but isn't because of double approximation,
-		// better to be safe than sorry and not round down by any means, therefore depending
-		// on value the theoretical maximum number might not be accepted, like here
-		GS::Particle::setRadius(.5);
-		CHECK_THROWS(GS::Gas(18 * 18 * 18, 1., 20.));
-		CHECK_NOTHROW(GS::Gas(18 * 18 * 18 - 1, 1., 20.));
-		GS::Particle::setRadius(1.);
-		std::vector<GS::Particle> goodPs {
-			{{1.01, 1.01, 1.01}, {1., 0., -1.}},
-			{{2.01, 3.99, 1.01}, {1., 2., 3.}},
-			{{3.01, 3.99, 3.01}, {1., 5., 6.}}
-		};
-		std::vector<GS::Particle> almostGoodPs {
-			{{1., 1., 1.}, {1., 0., -1.}},
-			{{2., 4., 1.}, {1., 2., 3.}},
-			{{3., 4., 3.}, {1., 5., 6.}}
-		};
-		double boxSide {5.};
-		double time {1.};
-		GS::Gas goodGas;
-		CHECK_NOTHROW(goodGas = GS::Gas(std::vector<GS::Particle>(goodPs), boxSide, time));
-		CHECK_THROWS(GS::Gas(std::vector<GS::Particle>(almostGoodPs), boxSide, time));
-		CHECK(goodGas.getParticles() == goodPs);
-		CHECK(goodGas.getBoxSide() == 5.);
-		std::vector<GS::Particle> badPs {
-			{{1.1, 2., 3.}, {1., 1., 2.}}, // !!!
-			{{1.1, 2.5, 3.99}, {1., 2., 0.}}, // !!!
-			{{3.99, 3.99, 3.99}, {1., 5., 6.}}
-		}; // overlap issue
-		GS::Gas badGas;
-		CHECK_THROWS(badGas = GS::Gas(std::move(badPs), boxSide, time));
+  SUBCASE("Throwing behaviour") {
+    // Negative and null box side
+    CHECK_THROWS(GS::Gas(0, 1., -1.));
+    CHECK_THROWS(GS::Gas(0, 2., 0.));
+    // Negative and null temperature
+    CHECK_THROWS(GS::Gas(1, 0., 1.));
+    CHECK_THROWS(GS::Gas(1, -4., 1.));
+    // The maximum amount of particles and one over it
+    // Theoretically 18^3 should be accepted but isn't because of double
+    // approximation, better to be safe than sorry and not round down by any
+    // means, therefore depending on value the theoretical maximum number might
+    // not be accepted, like here
+    GS::Particle::setRadius(.5);
+    CHECK_THROWS(GS::Gas(18 * 18 * 18, 1., 20.));
+    CHECK_NOTHROW(GS::Gas(18 * 18 * 18 - 1, 1., 20.));
+    GS::Particle::setRadius(1.);
+    std::vector<GS::Particle> goodPs{{{1.01, 1.01, 1.01}, {1., 0., -1.}},
+                                     {{2.01, 3.99, 1.01}, {1., 2., 3.}},
+                                     {{3.01, 3.99, 3.01}, {1., 5., 6.}}};
+    std::vector<GS::Particle> almostGoodPs{{{1., 1., 1.}, {1., 0., -1.}},
+                                           {{2., 4., 1.}, {1., 2., 3.}},
+                                           {{3., 4., 3.}, {1., 5., 6.}}};
+    double boxSide{5.};
+    double time{1.};
+    GS::Gas goodGas;
+    CHECK_NOTHROW(
+        goodGas = GS::Gas(std::vector<GS::Particle>(goodPs), boxSide, time));
+    CHECK_THROWS(
+        GS::Gas(std::vector<GS::Particle>(almostGoodPs), boxSide, time));
+    CHECK(goodGas.getParticles() == goodPs);
+    CHECK(goodGas.getBoxSide() == 5.);
+    std::vector<GS::Particle> badPs{
+        {{1.1, 2., 3.}, {1., 1., 2.}},        // !!!
+        {{1.1, 2.5, 3.99}, {1., 2., 0.}},     // !!!
+        {{3.99, 3.99, 3.99}, {1., 5., 6.}}};  // overlap issue
+    GS::Gas badGas;
+    CHECK_THROWS(badGas = GS::Gas(std::move(badPs), boxSide, time));
 
-		std::vector<GS::Particle> moreBadPs {
-			{{}, {}}
-		}; // outside of box
-		CHECK_THROWS(badGas = GS::Gas(std::move(moreBadPs), boxSide, time));
-	}
-	SUBCASE("Random constructor") {
-		GS::Gas rndGas {10, 10., 10.};
-		CHECK(rndGas.getParticles().size() == 10);
-		CHECK(doctest::Approx(std::accumulate(
-					rndGas.getParticles().begin(),
-					rndGas.getParticles().end(), 0.,
-					[] (double x, GS::Particle const& p) {
-						return x + GS::energy(p);
-					} 
-					) * 2. / 3. / 10. ) == 10.);
-		GS::Gas rndGas1 {1, 10., 10.};
-		CHECK(rndGas1.getParticles().size() == 1);
-		CHECK(doctest::Approx(GS::energy(rndGas1.getParticles()[0]) * 2. / 3.) == 10.);
-		GS::Gas rndGas0 {0, 0., 10.};
-		CHECK(rndGas0.getParticles().size() == 0);
-	}
+    std::vector<GS::Particle> moreBadPs{{{}, {}}};  // outside of box
+    CHECK_THROWS(badGas = GS::Gas(std::move(moreBadPs), boxSide, time));
+  }
+  SUBCASE("Random constructor") {
+    GS::Gas rndGas{10, 10., 10.};
+    CHECK(rndGas.getParticles().size() == 10);
+    CHECK(doctest::Approx(std::accumulate(rndGas.getParticles().begin(),
+                                          rndGas.getParticles().end(), 0.,
+                                          [](double x, GS::Particle const& p) {
+                                            return x + GS::energy(p);
+                                          }) *
+                          2. / 3. / 10.) == 10.);
+    GS::Gas rndGas1{1, 10., 10.};
+    CHECK(rndGas1.getParticles().size() == 1);
+    CHECK(doctest::Approx(GS::energy(rndGas1.getParticles()[0]) * 2. / 3.) ==
+          10.);
+    GS::Gas rndGas0{0, 0., 10.};
+    CHECK(rndGas0.getParticles().size() == 0);
+  }
 }
 
-TH1D defaultH {};
+TH1D defaultH{};
 
 TEST_CASE("Testing Gas::simulate method") {
-	SUBCASE("Throwing behaviour") {
-		GS::Gas empty {};
+  SUBCASE("Throwing behaviour") {
+    GS::Gas empty{};
     GS::SimDataPipeline output{1, 1., defaultH};
-		CHECK_THROWS(empty.simulate(1));
-		CHECK_THROWS(empty.simulate(5));
-		CHECK_THROWS(empty.simulate(1, output));
-		CHECK_THROWS(empty.simulate(4, output));
-		GS::Gas zeroKelvin {5, 0., 10, -2.};
-		CHECK_THROWS(empty.simulate(1));
-		CHECK_THROWS(empty.simulate(7));
-		CHECK_THROWS(empty.simulate(1, output));
-		CHECK_THROWS(empty.simulate(3, output));
-	}
+    CHECK_THROWS(empty.simulate(1));
+    CHECK_THROWS(empty.simulate(5));
+    CHECK_THROWS(empty.simulate(1, output));
+    CHECK_THROWS(empty.simulate(4, output));
+    GS::Gas zeroKelvin{5, 0., 10, -2.};
+    CHECK_THROWS(empty.simulate(1));
+    CHECK_THROWS(empty.simulate(7));
+    CHECK_THROWS(empty.simulate(1, output));
+    CHECK_THROWS(empty.simulate(3, output));
+  }
 }
 
 TEST_CASE("Testing Gas, 1 iteration") {
@@ -304,7 +301,7 @@ TEST_CASE("Testing Gas, 1 iteration") {
 
 TEST_CASE("Testing the RenderStyle class") {
   sf::Texture pImage;
-  pImage.loadFromFile("./assets/ball.jpg");
+  pImage.loadFromFile("assets/lightBall.png");
   GS::RenderStyle style{pImage};
   SUBCASE("Constructor") {
     CHECK(style.getBGColor() == sf::Color::White);
@@ -349,7 +346,7 @@ TEST_CASE("Testing the camera class") {
   float newDistance{1.5};
   float newFov{70.};
   unsigned newWidth{1000};
-	unsigned newHeight{1600};
+  unsigned newHeight{1600};
   float newRatio{16. / 9.};
   camera.setFocus(newFocus);
   camera.setSightVector(newSight);
@@ -408,32 +405,27 @@ TEST_CASE("Testing the camera class") {
   GS::GSVectorF projection{};
 
   SUBCASE("Projection functions") {
-    projection =
-        camera.getPointProjection(static_cast<GS::GSVectorF>(p1));
+    projection = camera.getPointProjection(static_cast<GS::GSVectorF>(p1));
     projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(168.309f + 500.f));
     CHECK(projection.y == doctest::Approx(-504.927f + 800.f));
     CHECK(projection.z == doctest::Approx(0.5f));
-    projection =
-        camera.getPointProjection(static_cast<GS::GSVectorF>(p2));
+    projection = camera.getPointProjection(static_cast<GS::GSVectorF>(p2));
     // projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(-3786.95f + 500.f));
     CHECK(projection.y == doctest::Approx(-4796.80f + 800.f));
     CHECK(projection.z == doctest::Approx(2.25f));
-    projection =
-        camera.getPointProjection(static_cast<GS::GSVectorF>(p3));
+    projection = camera.getPointProjection(static_cast<GS::GSVectorF>(p3));
     // projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(835.74f + 500.f));
     CHECK(projection.y == doctest::Approx(94.51f + 800.f));
     CHECK(projection.z == doctest::Approx(-0.022167f));
-    projection =
-        camera.getPointProjection(static_cast<GS::GSVectorF>(p4));
+    projection = camera.getPointProjection(static_cast<GS::GSVectorF>(p4));
     projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(0. + 500.f));
     CHECK(projection.y == doctest::Approx(0. + 800.f));
     CHECK(projection.z == doctest::Approx(1.f / 3.f));
-    std::vector<GS::GSVectorF> realProjs{
-        camera.projectParticles(particles)};
+    std::vector<GS::GSVectorF> realProjs{camera.projectParticles(particles)};
     for (int i{0}; i < 2; ++i) {
       CHECK(projections[i] == realProjs[i]);
     }
@@ -507,270 +499,392 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
 }
 
 TEST_CASE("Loosely testing the SimDataPipeline class") {
-	SUBCASE("Throwing behaviour") {
-		// Null statsize
-		CHECK_THROWS(GS::SimDataPipeline(0, 1., defaultH));
-		// Null and negative framerate
-		CHECK_THROWS(GS::SimDataPipeline(1, 0., defaultH));
-		CHECK_THROWS(GS::SimDataPipeline(1, -10., defaultH));
-		GS::SimDataPipeline output {1, 1., defaultH};
-		// Setting various parameters to invalid values
-		CHECK_THROWS(output.setStatChunkSize(0));
-		CHECK_THROWS(output.setFramerate(0.));
-		CHECK_THROWS(output.setFramerate(-15.));
-		CHECK_THROWS(output.setStatSize(0));
-	}
-	std::cout << "Execute simulation test demos? (y/n) ";
-	char response;
-	std::cin >> response;
-	if (response == 'y') {
-		TFile input {"assets/input.root"};
-		TH1D speedsHTemplate {*(TH1D*)input.Get("speedsHTemplate")};
-		GS::SimDataPipeline output {1, 24., speedsHTemplate};
-		GS::Gas gas {10, 100., 30., -5.};
-		output.setStatChunkSize(10);
-		gas.simulate(100);
-		sf::Texture ball;
-		ball.loadFromFile("assets/ball.jpg");
-		sf::Texture placeHolder;
-		placeHolder.loadFromFile("assets/placeholder.png");
-		GS::RenderStyle style {ball};
-		GS::Camera camera {
-			{15, 12.5, 7.5},
-			{-10, -7.5, -2.5},
-			1., 90.,
-			720, 300
-		};
-		output.processData(camera, style);
-		SUBCASE("Running getVideo a bit and showing output") {
-			TList* graphsList = new TList();
-			TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
-			TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
-			TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
-			if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
-				throw std::runtime_error(
-						"Couldn't find one or more graphs in provided root file.");
-			}
-			graphsList->Add(pGraphs);
-			graphsList->Add(kBGraph);
-			graphsList->Add(mfpGraph);
-			CHECK_THROWS(output.getVideo(GS::VideoOpts::all, {600, 800}, placeHolder, *graphsList));
-			std::vector<sf::Texture> video {output.getVideo(GS::VideoOpts::all, {800, 600}, placeHolder, *graphsList, true)};
-			// display in a window
-			sf::RenderWindow window {sf::VideoMode(800, 600), "getVideo display"};
-			window.setFramerateLimit(24);
-			sf::Event e;
-			sf::Sprite auxS;
-			for (sf::Texture& t: video) {
-				while (window.pollEvent(e)) {
-					if (e.type == sf::Event::Closed) {
-						window.close();
-					}
-				}
-				if (window.isOpen()) {
-					auxS.setTexture(t);
-					window.draw(auxS);
-					window.display();
-				} else {
-					break;
-				}
-			}
-			pGraphs->Delete();
-			kBGraph->Delete();
-			mfpGraph->Delete();
-			graphsList->Delete();
-		}
-		GS::SimDataPipeline singleOutput {1, 24., speedsHTemplate};
-		GS::Gas onePGas {1, 50., 20., -9.};
-		gas.simulate(10, singleOutput);
-		// same
-		singleOutput.processData();
-		SUBCASE("Running getVideo on single particle gas and showing output") {
-			// display in a window
-			TList* graphsList = new TList();
-			TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
-			TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
-			TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
-			if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
-				throw std::runtime_error(
-						"Couldn't find one or more graphs in provided root file.");
-			}
-			graphsList->Add(pGraphs);
-			graphsList->Add(kBGraph);
-			graphsList->Add(mfpGraph);
-			CHECK_THROWS(output.getVideo(GS::VideoOpts::justStats, {600, 800}, placeHolder, *graphsList));
-			std::vector<sf::Texture> video {singleOutput.getVideo(GS::VideoOpts::justStats, {800, 600}, placeHolder, *graphsList, true)};
-			// display in a window
-			sf::RenderWindow window {sf::VideoMode(800, 600), "getVideo display"};
-			window.setFramerateLimit(24);
-			sf::Event e;
-			sf::Sprite auxS;
-			for (sf::Texture& t: video) {
-				while (window.pollEvent(e)) {
-					if (e.type == sf::Event::Closed) {
-						window.close();
-					}
-				}
-				if (window.isOpen()) {
-					auxS.setTexture(t);
-					window.draw(auxS);
-					window.display();
-				} else {
-					break;
-				}
-			}
-			pGraphs->Delete();
-			kBGraph->Delete();
-			mfpGraph->Delete();
-			graphsList->Delete();
-		}
-		std::cout << "Done, going to next test case." << std::endl;
-	} else {
-		std::cout << "OK. Going to next text case." << std::endl;
-	}
+  SUBCASE("Throwing behaviour") {
+    // Null statsize
+    CHECK_THROWS(GS::SimDataPipeline(0, 1., defaultH));
+    // Null and negative framerate
+    CHECK_THROWS(GS::SimDataPipeline(1, 0., defaultH));
+    CHECK_THROWS(GS::SimDataPipeline(1, -10., defaultH));
+    GS::SimDataPipeline output{1, 1., defaultH};
+    // Setting various parameters to invalid values
+    CHECK_THROWS(output.setStatChunkSize(0));
+    CHECK_THROWS(output.setFramerate(0.));
+    CHECK_THROWS(output.setFramerate(-15.));
+    CHECK_THROWS(output.setStatSize(0));
+  }
+  static bool i{0};
+  SUBCASE("Simulation test demos") {
+    std::string texts[2]{
+        "Execute multiple particle rendering + graphs demo? (y/n) ",
+        "Execute single particle just graphs demo? (y/n) "};
+    std::cout << texts[i];
+    char response;
+    std::cin >> response;
+    if (response == 'y') {
+      std::cout << "Loading resources." << std::endl;
+      TFile input{"assets/input.root"};
+      TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
+      GS::SimDataPipeline output{1, 24., speedsHTemplate};
+      GS::Gas gas{10, 100., 30., -5.};
+      output.setStatChunkSize(10);
+      gas.simulate(30, output);
+      output.setDone();
+      sf::Texture ball;
+      ball.loadFromFile("assets/lightBall.png");
+      sf::Texture placeHolder;
+      placeHolder.loadFromFile("assets/placeholder.png");
+      sf::Font font;
+      font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
+      output.setFont(font);
+      GS::RenderStyle style{ball};
+      GS::Camera camera{{45, 37.5, 25}, {-30, -20, -6}, 1., 90., 720, 300};
+      std::cout << "Resources loaded, starting processing." << std::endl;
+      output.processData(camera, style);
+      std::cout << "Done processing, starting getVideo session." << std::endl;
+      SUBCASE("Running getVideo a bit and showing output") {
+        std::cout << "Loading resources for getVideo." << std::endl;
+        TList* graphsList = new TList();
+        TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+        TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+        TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+        if (pGraphs->IsZombie() || kBGraph->IsZombie() ||
+            mfpGraph->IsZombie()) {
+          throw std::runtime_error(
+              "Couldn't find one or more graphs in provided root file.");
+        }
+        graphsList->Add(pGraphs);
+        graphsList->Add(kBGraph);
+        graphsList->Add(mfpGraph);
+        std::cout << "Resources loaded. Running throw checks." << std::endl;
+        SUBCASE("Throwing behaviour with window size") {
+          CHECK_THROWS(output.getVideo(GS::VideoOpts::all, {600, 700},
+                                       placeHolder, *graphsList));
+          CHECK_THROWS(output.getVideo(GS::VideoOpts::all, {900, 500},
+                                       placeHolder, *graphsList));
+          CHECK_THROWS(output.getVideo(GS::VideoOpts::justStats, {500, 700},
+                                       placeHolder, *graphsList));
+          CHECK_THROWS(output.getVideo(GS::VideoOpts::justStats, {700, 500},
+                                       placeHolder, *graphsList));
+          TList empty{};
+          CHECK_THROWS(output.getVideo(GS::VideoOpts::all, {800, 600},
+                                       placeHolder, empty));
+        }
+        std::cout << "Calling getVideo." << std::endl;
+        std::vector<sf::Texture> video{output.getVideo(
+            GS::VideoOpts::all, {800, 600}, placeHolder, *graphsList, true)};
+        // display in a window
+        std::cout << "Starting display of video with " << video.size()
+                  << " frames." << std::endl;
+        sf::RenderWindow window{sf::VideoMode(800, 600), "getVideo display"};
+        window.setFramerateLimit(24);
+        sf::Event e;
+        sf::Sprite auxS;
+        while (response == 'y') {
+          for (sf::Texture& t : video) {
+            while (window.pollEvent(e)) {
+              if (e.type == sf::Event::Closed) {
+                window.close();
+              }
+            }
+            if (window.isOpen()) {
+              auxS.setTexture(t);
+              window.draw(auxS);
+              window.display();
+            } else {
+              break;
+            }
+          }
+          std::cout << "Replay? (y/n) ";
+          std::cin >> response;
+        }
+        std::cout << "Closing window." << std::endl;
+        window.close();
+        std::cout << "Deleting TObjects." << std::endl;
+        graphsList->Delete();
+        i = true;
+      }
+      std::cout << "Starting single particle getVideo." << std::endl;
+      GS::SimDataPipeline singleOutput{1, 24., speedsHTemplate};
+      GS::Gas onePGas{1, 50., 20., -9.};
+      onePGas.simulate(10, singleOutput);
+      singleOutput.setDone();
+      // same
+      std::cout << "Done simulating, processing data." << std::endl;
+      singleOutput.processData();
+      SUBCASE("Running getVideo on single particle gas and showing output") {
+        std::cout << "Loading getVideo resources." << std::endl;
+        // display in a window
+        TList* graphsList = new TList();
+        TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+        TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+        TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+        if (pGraphs->IsZombie() || kBGraph->IsZombie() ||
+            mfpGraph->IsZombie()) {
+          throw std::runtime_error(
+              "Couldn't find one or more graphs in provided root file.");
+        }
+        graphsList->Add(pGraphs);
+        graphsList->Add(kBGraph);
+        graphsList->Add(mfpGraph);
+        CHECK_THROWS(singleOutput.getVideo(GS::VideoOpts::justStats, {600, 400},
+                                           placeHolder, *graphsList));
+        CHECK_THROWS(singleOutput.getVideo(GS::VideoOpts::justStats, {400, 600},
+                                           placeHolder, *graphsList));
+        std::vector<sf::Texture> video{
+            singleOutput.getVideo(GS::VideoOpts::justStats, {600, 600},
+                                  placeHolder, *graphsList, true)};
+        // display in a window
+        sf::RenderWindow window{sf::VideoMode(600, 600), "getVideo display"};
+        window.setFramerateLimit(24);
+        sf::Event e;
+        sf::Sprite auxS;
+        while (response == 'y') {
+          for (sf::Texture& t : video) {
+            while (window.pollEvent(e)) {
+              if (e.type == sf::Event::Closed) {
+                window.close();
+              }
+            }
+            if (window.isOpen()) {
+              auxS.setTexture(t);
+              window.draw(auxS);
+              window.display();
+            } else {
+              break;
+            }
+          }
+          std::cout << "Replay? (y/n) ";
+          std::cin >> response;
+        }
+        window.close();
+        graphsList->Delete();
+      }
+      std::cout << "Done, going to next test case." << std::endl;
+    } else {
+      std::cout << "OK. Going to next text case." << std::endl;
+    }
+  }
 }
 
-TEST_CASE("Bullying SimDataPipeline by calling all its methods at random intervals from multiple threads") {
-	char response;
-	std::cout << "Execute SimDataPipeline stress test? (y/n)";
-	std::cin >> response;
-	while (response == 'y') {
-		std::cout << "Loading resources." << std::endl;
-		std::atomic<bool> stop {false};
-		GS::Gas g {10, 50., 20.};
-		TFile input {"assets/input.root"};
-		TH1D speedsHTemplate {*(TH1D*)input.Get("speedsHTemplate")};
-		GS::SimDataPipeline output {10, 24., speedsHTemplate};
-		GS::Gas gas {10, 100., 30., -5.};
-		output.setStatChunkSize(1);
-		std::cout << "Simulating." << std::endl;
-		gas.simulate(100);
-		output.setDone();
-		std::cout << "Done simulating. Loading extra resources." << std::endl;
-		sf::Texture ball;
-		ball.loadFromFile("assets/ball.jpg");
-		sf::Texture placeHolder;
-		placeHolder.loadFromFile("assets/placeholder.png");
-		GS::RenderStyle style {ball};
-		GS::Camera camera {
-			{30, 25, 15},
-			{-20, -15, -5},
-			1., 90.,
-			720, 300
-		};
-		TList* graphsList = new TList();
-		TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
-		TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
-		TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
-		if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
-			throw std::runtime_error(
-					"Couldn't find one or more graphs in provided root file.");
-		}
-		graphsList->Add(pGraphs);
-		graphsList->Add(kBGraph);
-		graphsList->Add(mfpGraph);
+TEST_CASE(
+    "Bullying SimDataPipeline by calling all its methods at random intervals "
+    "from multiple threads") {
+  char response;
+  std::cout << "Execute SimDataPipeline stress test? (y/n) ";
+  std::cin >> response;
+  sf::Font font;
+  font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
+  while (response == 'y') {
+    std::cout << "Loading resources." << std::endl;
+    std::atomic<bool> stop{false};
+    GS::Gas g{10, 50., 20.};
+    TFile input{"assets/input.root"};
+    TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
+    GS::SimDataPipeline output{10, 24., speedsHTemplate};
+    GS::Gas gas{10, 100., 30., -5.};
+    output.setStatChunkSize(1);
+    output.setFont(font);
+    std::cout << "Simulating." << std::endl;
+    std::thread simThread{[&] {
+      gas.simulate(100, output);
+      output.setDone();
+    }};
+    std::cout << "Done simulating. Loading extra resources." << std::endl;
+    sf::Texture ball;
+    ball.loadFromFile("assets/lightBall.png");
+    sf::Texture placeHolder;
+    placeHolder.loadFromFile("assets/placeholder.png");
+    GS::RenderStyle style{ball};
+    GS::Camera camera{{30, 25, 15}, {-20, -15, -5}, 1., 90., 720, 300};
+    TList* graphsList = new TList();
+    TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+    TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+    TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+    if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
+      throw std::runtime_error(
+          "Couldn't find one or more graphs in provided root file.");
+    }
+    graphsList->Add(pGraphs);
+    graphsList->Add(kBGraph);
+    graphsList->Add(mfpGraph);
 
-		std::cout << "Done loading. Adding disturbances to manager." << std::endl;
+    std::cout << "Done loading. Adding disturbances to manager." << std::endl;
 
-		GS::randomThreadsMgr manager {};
-		manager.add(
-			[&] {
-				output.getRawDataSize();
+    std::mutex coutMtx;
+
+    GS::randomThreadsMgr manager{};
+    manager.add([&] {
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling getRawDataSize()" << std::endl;
+      }
+      output.getRawDataSize();
+    });
+    manager.add([&] {
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling getFramerate" << std::endl;
+      }
+      output.getFramerate();
+    });
+    manager.add([&] {
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling getStatSize()" << std::endl;
+      }
+      output.getStatSize();
+    });
+    manager.add([&] {
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling getStatChunkSize()" << std::endl;
+      }
+      output.getStatChunkSize();
+    });
+    manager.add([&] {
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling isProcessing()" << std::endl;
+      }
+      output.isProcessing();
+    });
+    manager.add([&] {
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling isDone()" << std::endl;
+      }
+      output.isDone();
+    });
+    manager.add([&] {
+      thread_local std::mt19937 r{std::random_device{}()};
+      std::uniform_int_distribution<unsigned> emptyQueueD{0, 1};
+			bool emptyQueue {static_cast<bool>(emptyQueueD(r))};
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling getStats(" << emptyQueue << ")" << std::endl;
+      }
+      output.getStats(emptyQueue);
+    });
+    manager.add([&] {
+      thread_local std::mt19937 r{std::random_device{}()};
+      std::uniform_int_distribution<unsigned> emptyQueueD{0, 1};
+			bool emptyQueue {static_cast<bool>(emptyQueueD(r))};
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling getRenders(" << emptyQueue << ")" << std::endl;
+      }
+      output.getRenders(emptyQueueD(r));
+    });
+    manager.add([&] {
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling setStatSize()" << std::endl;
+      }
+      thread_local std::mt19937 r{std::random_device{}()};
+      std::uniform_int_distribution<unsigned> emptyQueueD{1, 5};
+      output.setStatSize(emptyQueueD(r));
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "statSize set to " + std::to_string(output.getStatSize()) << std::endl;
+      }
+    });
+
+    {
+      std::lock_guard<std::mutex> coutGuard{coutMtx};
+      std::cout << "Starting disturbances." << std::endl;
+    }
+    manager.start();
+
+    {
+      std::lock_guard<std::mutex> coutGuard{coutMtx};
+      std::cout << "Starting processing." << std::endl;
+    }
+    std::thread processThread{[&] {
+			output.processData(camera, style, true);
+			{
+				std::lock_guard<std::mutex> coutGuard {coutMtx};
+				std::cout << "Done processing." << std::endl;
 			}
-		);
-		manager.add(
-			[&] {
-				output.getFramerate();
-			}
-		);
-		manager.add([&] { output.getStatSize(); });
-		manager.add([&] {output.getStatChunkSize(); });
-		manager.add([&] { output.isProcessing(); });
-		manager.add([&] { output.isDone(); });
-		manager.add([&] {
-			thread_local std::mt19937 r {std::random_device{}()};
-			std::uniform_int_distribution<unsigned> emptyQueueD {0, 1};
-			output.getStats(emptyQueueD(r));
-		});
-		manager.add([&] {
-				thread_local std::mt19937 r {std::random_device{}()};
-				std::uniform_int_distribution<unsigned> emptyQueueD {0, 1};
-				output.getRenders(emptyQueueD(r));
-			}
-		);
-		manager.add([&] {
-			thread_local std::mt19937 r {std::random_device{}()};
-			std::uniform_int_distribution<unsigned> emptyQueueD {1, 5};
-			output.setStatSize(emptyQueueD(r));
-		});
+		}};
 
-		std::cout << "Starting disturbances." << std::endl;
-		manager.start();
+    sf::RenderWindow window{sf::VideoMode(800, 600), "getVideo display"};
+    window.setFramerateLimit(24);
+    sf::Sprite auxS;
+    std::vector<sf::Texture> video{};
+    sf::Event e;
+    {
+      std::lock_guard<std::mutex> coutGuard{coutMtx};
+      std::cout << "Starting display." << std::endl;
+    }
+    while (true) {
+      thread_local std::mt19937 r{std::random_device{}()};
+      std::uniform_int_distribution<unsigned> optD{0, 3};
+      std::uniform_int_distribution<unsigned> emptyQueueD{0, 1};
 
-		std::cout << "Starting processing." << std::endl;
-		std::thread processThread {
-			[&] {
-				output.processData(camera, style, true);
-			}
-		};
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Calling getVideo." << std::endl;
+      }
+      video.clear();
+      video = output.getVideo(GS::VideoOpts(optD(r)), {800, 600}, placeHolder,
+                              *graphsList, emptyQueueD(r));
+      if (video.size()) {
+        {
+          std::lock_guard<std::mutex> coutGuard{coutMtx};
+          std::cout << "Video size = " + std::to_string(video.size()) +
+                           std::string(", displaying.")
+                    << std::endl;
+        }
+        for (sf::Texture& t : video) {
+          while (window.pollEvent(e)) {
+            if (e.type == sf::Event::Closed) {
+              window.close();
+              break;
+            }
+          }
+          if (window.isOpen()) {
+            auxS.setTexture(t, true);
+            window.draw(auxS);
+            window.display();
+          }
+        }
+      } else {
+        {
+          std::lock_guard<std::mutex> coutGuard{coutMtx};
+          std::cout << "Video empty, checking if output is done." << std::endl;
+        }
+        if (output.isDone() && output.getRawDataSize() < output.getStatSize() &&
+            !output.isProcessing()) {
+          {
+            std::lock_guard<std::mutex> coutGuard{coutMtx};
+            std::cout << "Closing. Bye!" << std::endl;
+          }
+          window.close();
+          break;
+        }
+      }
+    }
 
-		sf::RenderWindow window {sf::VideoMode(800, 600), "getVideo display"};
-		sf::Sprite auxS;
-		std::thread getVideoThread {
-			[&] {
-				std::vector<sf::Texture> video {};
-				sf::Event e;
-				std::cout << "Starting display." << std::endl;
-				while (true) {
-					thread_local std::mt19937 r {std::random_device{}()};
-					std::uniform_int_distribution<unsigned> optD {0, 4};
-					std::uniform_int_distribution<unsigned> emptyQueueD {0, 1};
-
-					std::cout << "Calling getVideo." << std::endl;
-					video = output.getVideo(GS::VideoOpts(optD(r)), {800, 600}, placeHolder, *graphsList, emptyQueueD(r));
-					if (video.size()) {
-						std::cout << "Video size = " << video.size() << ", displaying." << std::endl;
-						for (sf::Texture& t: video) {
-							while (window.pollEvent(e)) {
-								if (e.type == sf::Event::Closed) {
-									window.close();
-									return;
-								}
-							}
-							if (window.isOpen()) {
-								auxS.setTexture(t, true);
-								window.draw(auxS);
-							}
-						}
-					} else {
-						std::cout << "Video empty, checking if output is done." << std::endl;
-						if (output.isDone() && output.getRawDataSize() < output.getStatSize() && !output.isProcessing()) {
-							std::cout << "Closing. Bye!" << std::endl;
-							window.close();
-							return;
-						}
-					}
-				}
-			}
-		};
-
-		std::cout << "Joining process and video threads." << std::endl;
-		if (processThread.joinable()) {
-			processThread.join();
-		}
-		if (getVideoThread.joinable()) {
-			getVideoThread.join();
-		}
-		std::cout << "Joining disturbances." << std::endl;
-		manager.finish();
-		std::cout << "Repeat SimDataPipeline stress test? (y/n) ";
-		std::cin >> response;
-		pGraphs->Delete();
-		kBGraph->Delete();
-		mfpGraph->Delete();
-		graphsList->Delete();
-	}
-	std::cout << "Bye!" << std::endl;
+    {
+      std::lock_guard<std::mutex> coutGuard{coutMtx};
+      std::cout << "Joining process and video threads." << std::endl;
+    }
+    if (simThread.joinable()) {
+      simThread.join();
+    }
+    if (processThread.joinable()) {
+      processThread.join();
+    }
+    {
+      std::lock_guard<std::mutex> coutGuard{coutMtx};
+      std::cout << "Joining disturbances. Waiting ten seconds for all threads to finish." << std::endl;
+    }
+    manager.finish();
+		std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cout << "Repeat SimDataPipeline stress test? (y/n) ";
+    std::cin >> response;
+    graphsList->Delete();
+  };
+  std::cout << "Bye!" << std::endl;
 }
-
 // ciucciami le Particelle

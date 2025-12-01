@@ -1,111 +1,1451 @@
-stat state: t0 = 0
-stat state: t0 = 0
-stats back state: t0 = 0
-lastStat state: t0 = 0, t = 1.71059
 
 Started getVideo, call number 1
 Got to data extraction phase.
-stat state: t0 = 1.71059
-stat state: t0 = 1.71059
-stats back state: t0 = 1.71059
-lastStat state: t0 = 1.71059, t = 4.58852
-Initialized gTime with value 4.583333, gDeltaT with value 0.0166667
-Found sizes: renders_ = 276, stats_ = 2
+Initialized gTime with value 0.716667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 44, stats_ = 6
 Found getRendersT0 = 0, stats beginning = 0; set fTime_ to -0.0166667
 Set fTime_. Now fTime_.has_value() returns 1 with value = -0.0166667
 Starting vector segments extraction.
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = -0.0166667 with stats_ front Time0 = 0 and Time = 1.71059
-Found gStartI = 0, gEndI = 276, with gSize = 0
-Extracted vectors. Result sizes: stats size = 2, renders size = 276
+fTime_ value = -0.0166667 with stats_ front Time0 = 0 and Time = 0.268314
+Found gStartI = 0, gEndI = 44, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 44
 Got to second phase.
-stat state: t0 = 4.58852
-stat state: t0 = 4.58852
-stats back state: t0 = 4.58852
-lastStat state: t0 = 4.58852, t = 6.88995
 Got to phase 3.
 Working vector sizes:
-Renders: 276
-Stats:2
-stat state: t0 = 6.88995
-stat state: t0 = 6.88995
-stats back state: t0 = 6.88995
-lastStat state: t0 = 6.88995, t = 8.77897
+Renders: 44
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = -0.0166667, s.t0 = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 
+Switching to s = 1: fTime = 0.266667, s.t0 = 0.268314 18 19 20 21 
+Switching to s = 2: fTime = 0.333333, s.t0 = 0.346525 22 23 24 25 
+Switching to s = 3: fTime = 0.4, s.t0 = 0.400098 26 27 28 29 30 31 
+Switching to s = 4: fTime = 0.5, s.t0 = 0.502711 32 33 34 35 36 37 38 
+Switching to s = 5: fTime = 0.616667, s.t0 = 0.626422 39 40 41 42 43 44 
+Done, returning.
 
 Started getVideo, call number 2
 Got to data extraction phase.
-stat state: t0 = 8.77897
-stat state: t0 = 8.77897
-stats back state: t0 = 8.77897
-lastStat state: t0 = 8.77897, t = 12.0178
-stat state: t0 = 12.0178
-stat state: t0 = 12.0178
-stats back state: t0 = 12.0178
-lastStat state: t0 = 12.0178, t = 14.4402
-Initialized gTime with value 14.433333, gDeltaT with value 0.0166667
-Found sizes: renders_ = 591, stats_ = 4
+Initialized gTime with value 1.833333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 67, stats_ = 10
 Starting vector segments extraction.
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 4.58333 with stats_ front Time0 = 4.58852 and Time = 6.88995
-Found gStartI = 0, gEndI = 591, with gSize = 0
-Extracted vectors. Result sizes: stats size = 4, renders size = 591
+fTime_ value = 0.716667 with stats_ front Time0 = 0.727586 and Time = 0.78935
+Found gStartI = 0, gEndI = 67, with gSize = 0
+Extracted vectors. Result sizes: stats size = 10, renders size = 67
 Got to second phase.
 Got to phase 3.
 Working vector sizes:
-Renders: 591
-Stats:4
-stat state: t0 = 14.4402
-stat state: t0 = 14.4402
-stats back state: t0 = 14.4402
-lastStat state: t0 = 14.4402, t = 16.8889
-stat state: t0 = 16.8889
-stat state: t0 = 16.8889
-stats back state: t0 = 16.8889
-lastStat state: t0 = 16.8889, t = 19.2665
+Renders: 67
+Stats:10
+Inserting frames: 
+Switching to s = 0: fTime = 0.716667, s.t0 = 0.727586 1 2 3 4 
+Switching to s = 1: fTime = 0.783333, s.t0 = 0.78935 5 6 7 8 9 
+Switching to s = 2: fTime = 0.866667, s.t0 = 0.875963 10 11 12 13 14 15 16 17 18 
+Switching to s = 3: fTime = 1.01667, s.t0 = 1.01682 19 20 21 22 23 24 25 26 
+Switching to s = 4: fTime = 1.15, s.t0 = 1.1649 27 28 29 30 
+Switching to s = 5: fTime = 1.21667, s.t0 = 1.2268 31 32 33 34 35 36 37 38 39 
+Switching to s = 6: fTime = 1.36667, s.t0 = 1.37777 40 41 42 43 44 
+Switching to s = 7: fTime = 1.45, s.t0 = 1.46031 45 46 47 48 49 50 51 52 53 54 55 
+Switching to s = 8: fTime = 1.63333, s.t0 = 1.63501 56 57 58 59 60 61 62 
+Switching to s = 9: fTime = 1.75, s.t0 = 1.76052 63 64 65 66 67 
+Done, returning.
 
 Started getVideo, call number 3
 Got to data extraction phase.
-stat state: t0 = 19.2665
-stat state: t0 = 19.2665
-stats back state: t0 = 19.2665
-lastStat state: t0 = 19.2665, t = 21.729
-Initialized gTime with value 21.716667, gDeltaT with value 0.0166667
-Found sizes: renders_ = 437, stats_ = 3
+Initialized gTime with value 2.750000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 55, stats_ = 7
 Starting vector segments extraction.
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 14.4333 with stats_ front Time0 = 14.4402 and Time = 16.8889
-Found gStartI = 0, gEndI = 437, with gSize = 0
-Extracted vectors. Result sizes: stats size = 3, renders size = 437
+fTime_ value = 1.83333 with stats_ front Time0 = 1.84885 and Time = 1.992
+Found gStartI = 0, gEndI = 55, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 55
 Got to second phase.
-stat state: t0 = 21.729
-stat state: t0 = 21.729
-stats back state: t0 = 21.729
-lastStat state: t0 = 21.729, t = 24.2555
 Got to phase 3.
 Working vector sizes:
-Renders: 437
-Stats:3
+Renders: 55
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 1.83333, s.t0 = 1.84885 1 2 3 4 5 6 7 8 9 
+Switching to s = 1: fTime = 1.98333, s.t0 = 1.992 10 11 12 13 14 
+Switching to s = 2: fTime = 2.06667, s.t0 = 2.07397 15 16 17 18 19 20 21 22 
+Switching to s = 3: fTime = 2.2, s.t0 = 2.21579 23 24 25 26 27 28 29 30 
+Switching to s = 4: fTime = 2.33333, s.t0 = 2.34482 31 32 33 34 35 36 37 38 39 40 41 
+Switching to s = 5: fTime = 2.51667, s.t0 = 2.52837 42 43 44 45 46 47 48 
+Switching to s = 6: fTime = 2.63333, s.t0 = 2.64071 49 50 51 52 53 54 55 
+Done, returning.
 
 Started getVideo, call number 4
 Got to data extraction phase.
-Initialized gTime with value 24.250000, gDeltaT with value 0.0166667
-Found sizes: renders_ = 152, stats_ = 1
+Initialized gTime with value 3.483333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 44, stats_ = 8
 Starting vector segments extraction.
 There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
 Found sStartI = 0
-fTime_ value = 21.7167 with stats_ front Time0 = 21.729 and Time = 24.2555
-Found gStartI = 0, gEndI = 152, with gSize = 0
-Extracted vectors. Result sizes: stats size = 1, renders size = 152
+fTime_ value = 2.75 with stats_ front Time0 = 2.76329 and Time = 2.83706
+Found gStartI = 0, gEndI = 44, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 44
 Got to second phase.
 Got to phase 3.
 Working vector sizes:
-Renders: 152
-Stats:1
+Renders: 44
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 2.75, s.t0 = 2.76329 1 2 3 4 5 
+Switching to s = 1: fTime = 2.83333, s.t0 = 2.83706 6 7 8 9 10 
+Switching to s = 2: fTime = 2.91667, s.t0 = 2.92716 11 12 13 14 
+Switching to s = 3: fTime = 2.98333, s.t0 = 2.99799 15 16 17 18 19 20 
+Switching to s = 4: fTime = 3.08333, s.t0 = 3.09333 21 22 23 24 25 26 27 28 
+Switching to s = 5: fTime = 3.21667, s.t0 = 3.22026 29 30 31 32 33 
+Switching to s = 6: fTime = 3.3, s.t0 = 3.3037 34 35 36 37 38 39 40 
+Switching to s = 7: fTime = 3.41667, s.t0 = 3.43237 41 42 43 44 
+Done, returning.
 
 Started getVideo, call number 5
 Got to data extraction phase.
-Initialized gTime with value 24.250000, gDeltaT with value 0.0166667
-Found empty stats and renders, returning empty vector.
+Initialized gTime with value 4.700000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 73, stats_ = 10
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 3.48333 with stats_ front Time0 = 3.48876 and Time = 3.57583
+Found gStartI = 0, gEndI = 73, with gSize = 0
+Extracted vectors. Result sizes: stats size = 10, renders size = 73
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 73
+Stats:10
+Inserting frames: 
+Switching to s = 0: fTime = 3.48333, s.t0 = 3.48876 1 2 3 4 5 
+Switching to s = 1: fTime = 3.56667, s.t0 = 3.57583 6 7 8 9 10 11 12 
+Switching to s = 2: fTime = 3.68333, s.t0 = 3.6884 13 14 15 16 17 18 19 20 
+Switching to s = 3: fTime = 3.81667, s.t0 = 3.82181 21 22 23 24 25 26 27 28 29 30 
+Switching to s = 4: fTime = 3.98333, s.t0 = 3.98866 31 32 33 34 35 36 37 38 39 40 
+Switching to s = 5: fTime = 4.15, s.t0 = 4.16327 41 42 43 44 45 46 47 
+Switching to s = 6: fTime = 4.26667, s.t0 = 4.28129 48 49 50 51 52 53 54 
+Switching to s = 7: fTime = 4.38333, s.t0 = 4.39425 55 56 57 58 59 60 61 
+Switching to s = 8: fTime = 4.5, s.t0 = 4.51652 62 63 64 65 66 67 68 
+Switching to s = 9: fTime = 4.61667, s.t0 = 4.6297 69 70 71 72 73 
+Done, returning.
+
+Started getVideo, call number 6
+Got to data extraction phase.
+Initialized gTime with value 5.766667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 64, stats_ = 9
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 4.7 with stats_ front Time0 = 4.70038 and Time = 4.83379
+Found gStartI = 0, gEndI = 64, with gSize = 0
+Extracted vectors. Result sizes: stats size = 9, renders size = 64
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 64
+Stats:9
+Inserting frames: 
+Switching to s = 0: fTime = 4.7, s.t0 = 4.70038 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 4.83333, s.t0 = 4.83379 9 10 11 12 13 
+Switching to s = 2: fTime = 4.91667, s.t0 = 4.91922 14 15 16 17 18 19 
+Switching to s = 3: fTime = 5.01667, s.t0 = 5.03261 20 21 22 23 24 25 26 27 28 
+Switching to s = 4: fTime = 5.16667, s.t0 = 5.17942 29 30 31 32 33 34 35 36 37 38 39 
+Switching to s = 5: fTime = 5.35, s.t0 = 5.35215 40 41 42 43 44 45 
+Switching to s = 6: fTime = 5.45, s.t0 = 5.45402 46 47 48 49 50 51 52 
+Switching to s = 7: fTime = 5.56667, s.t0 = 5.5738 53 54 55 56 57 58 
+Switching to s = 8: fTime = 5.66667, s.t0 = 5.67826 59 60 61 62 63 64 
+Done, returning.
+
+Started getVideo, call number 7
+Got to data extraction phase.
+Initialized gTime with value 6.650000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 53, stats_ = 7
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 5.76667 with stats_ front Time0 = 5.78312 and Time = 5.9159
+Found gStartI = 0, gEndI = 53, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 53
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 53
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 5.76667, s.t0 = 5.78312 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 5.9, s.t0 = 5.9159 9 10 11 12 13 
+Switching to s = 2: fTime = 5.98333, s.t0 = 5.99218 14 15 16 17 18 19 20 21 22 
+Switching to s = 3: fTime = 6.13333, s.t0 = 6.14749 23 24 25 26 27 28 29 30 31 
+Switching to s = 4: fTime = 6.28333, s.t0 = 6.28983 32 33 34 35 36 37 38 
+Switching to s = 5: fTime = 6.4, s.t0 = 6.40982 39 40 41 42 43 44 45 46 
+Switching to s = 6: fTime = 6.53333, s.t0 = 6.53768 47 48 49 50 51 52 53 
+Done, returning.
+
+Started getVideo, call number 8
+Got to data extraction phase.
+Initialized gTime with value 7.216667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 34, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 6.65 with stats_ front Time0 = 6.65011 and Time = 6.73644
+Found gStartI = 0, gEndI = 34, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 34
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 34
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 6.65, s.t0 = 6.65011 1 2 3 4 5 
+Switching to s = 1: fTime = 6.73333, s.t0 = 6.73644 6 7 8 9 
+Switching to s = 2: fTime = 6.8, s.t0 = 6.80197 10 11 12 13 14 15 16 
+Switching to s = 3: fTime = 6.91667, s.t0 = 6.92639 17 18 19 
+Switching to s = 4: fTime = 6.96667, s.t0 = 6.98057 20 21 22 23 24 25 26 27 28 
+Switching to s = 5: fTime = 7.11667, s.t0 = 7.12023 29 30 31 32 33 34 
+Done, returning.
+
+Started getVideo, call number 9
+Got to data extraction phase.
+Initialized gTime with value 7.816667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 36, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 7.21667 with stats_ front Time0 = 7.21671 and Time = 7.36434
+Found gStartI = 0, gEndI = 36, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 36
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 36
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 7.21667, s.t0 = 7.21671 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 7.35, s.t0 = 7.36434 9 10 11 12 13 
+Switching to s = 2: fTime = 7.43333, s.t0 = 7.44863 14 15 16 17 18 19 20 
+Switching to s = 3: fTime = 7.55, s.t0 = 7.55613 21 22 23 24 25 26 27 
+Switching to s = 4: fTime = 7.66667, s.t0 = 7.67639 28 29 30 31 32 33 34 
+Switching to s = 5: fTime = 7.78333, s.t0 = 7.79089 35 36 
+Done, returning.
+
+Started getVideo, call number 10
+Got to data extraction phase.
+Initialized gTime with value 8.783333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 58, stats_ = 7
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 7.81667 with stats_ front Time0 = 7.8301 and Time = 7.9613
+Found gStartI = 0, gEndI = 58, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 58
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 58
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 7.81667, s.t0 = 7.8301 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 7.95, s.t0 = 7.9613 9 10 11 12 13 14 15 16 17 
+Switching to s = 2: fTime = 8.1, s.t0 = 8.10593 18 19 20 21 22 23 24 
+Switching to s = 3: fTime = 8.21667, s.t0 = 8.22773 25 26 27 28 29 30 
+Switching to s = 4: fTime = 8.31667, s.t0 = 8.33254 31 32 33 34 35 36 37 
+Switching to s = 5: fTime = 8.43333, s.t0 = 8.44461 38 39 40 41 42 43 44 45 
+Switching to s = 6: fTime = 8.56667, s.t0 = 8.5748 46 47 48 49 50 51 52 53 54 55 56 57 58 
+Done, returning.
+
+Started getVideo, call number 11
+Got to data extraction phase.
+Initialized gTime with value 9.883333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 66, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 8.78333 with stats_ front Time0 = 8.7898 and Time = 8.93818
+Found gStartI = 0, gEndI = 66, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 66
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 66
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 8.78333, s.t0 = 8.7898 1 2 3 4 5 6 7 8 9 
+Switching to s = 1: fTime = 8.93333, s.t0 = 8.93818 10 11 12 13 
+Switching to s = 2: fTime = 9, s.t0 = 9.00989 14 15 16 17 18 19 20 21 22 23 24 25 26 
+Switching to s = 3: fTime = 9.21667, s.t0 = 9.21987 27 28 29 30 31 32 33 34 35 
+Switching to s = 4: fTime = 9.36667, s.t0 = 9.36925 36 37 38 39 40 41 42 43 44 45 
+Switching to s = 5: fTime = 9.53333, s.t0 = 9.53503 46 47 48 49 50 51 52 53 
+Switching to s = 6: fTime = 9.66667, s.t0 = 9.67216 54 55 56 57 58 59 60 
+Switching to s = 7: fTime = 9.78333, s.t0 = 9.78757 61 62 63 64 65 66 
+Done, returning.
+
+Started getVideo, call number 12
+Got to data extraction phase.
+Initialized gTime with value 10.633333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 45, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 9.88333 with stats_ front Time0 = 9.89979 and Time = 9.98011
+Found gStartI = 0, gEndI = 45, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 45
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 45
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 9.88333, s.t0 = 9.89979 1 2 3 4 5 
+Switching to s = 1: fTime = 9.96667, s.t0 = 9.98011 6 7 8 9 10 11 12 13 14 
+Switching to s = 2: fTime = 10.1167, s.t0 = 10.1287 15 16 17 18 19 20 21 22 
+Switching to s = 3: fTime = 10.25, s.t0 = 10.2665 23 24 25 26 27 28 
+Switching to s = 4: fTime = 10.35, s.t0 = 10.3611 29 30 31 32 33 34 
+Switching to s = 5: fTime = 10.45, s.t0 = 10.4642 35 36 
+Switching to s = 6: fTime = 10.4833, s.t0 = 10.4947 37 38 39 40 
+Switching to s = 7: fTime = 10.55, s.t0 = 10.564 41 42 43 44 45 
+Done, returning.
+
+Started getVideo, call number 13
+Got to data extraction phase.
+Initialized gTime with value 11.300000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 40, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 10.6333 with stats_ front Time0 = 10.6481 and Time = 10.7303
+Found gStartI = 0, gEndI = 40, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 40
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 40
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 10.6333, s.t0 = 10.6481 1 2 3 4 5 
+Switching to s = 1: fTime = 10.7167, s.t0 = 10.7303 6 7 8 9 10 11 12 13 14 15 16 
+Switching to s = 2: fTime = 10.9, s.t0 = 10.9026 17 18 19 20 21 22 23 
+Switching to s = 3: fTime = 11.0167, s.t0 = 11.0311 24 25 26 27 28 29 
+Switching to s = 4: fTime = 11.1167, s.t0 = 11.1327 30 31 32 33 34 35 36 37 38 39 40 
+Done, returning.
+
+Started getVideo, call number 14
+Got to data extraction phase.
+Initialized gTime with value 11.783333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 29, stats_ = 4
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 11.3 with stats_ front Time0 = 11.3043 and Time = 11.4949
+Found gStartI = 0, gEndI = 29, with gSize = 0
+Extracted vectors. Result sizes: stats size = 4, renders size = 29
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 29
+Stats:4
+Inserting frames: 
+Switching to s = 0: fTime = 11.3, s.t0 = 11.3043 1 2 3 4 5 6 7 8 9 10 11 
+Switching to s = 1: fTime = 11.4833, s.t0 = 11.4949 12 13 14 
+Switching to s = 2: fTime = 11.5333, s.t0 = 11.5489 15 16 17 18 19 20 
+Switching to s = 3: fTime = 11.6333, s.t0 = 11.6405 21 22 23 24 25 26 27 28 29 
+Done, returning.
+
+Started getVideo, call number 15
+Got to data extraction phase.
+Initialized gTime with value 12.200000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 25, stats_ = 4
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 11.7833 with stats_ front Time0 = 11.7984 and Time = 11.8942
+Found gStartI = 0, gEndI = 25, with gSize = 0
+Extracted vectors. Result sizes: stats size = 4, renders size = 25
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 25
+Stats:4
+Inserting frames: 
+Switching to s = 0: fTime = 11.7833, s.t0 = 11.7984 1 2 3 4 5 6 
+Switching to s = 1: fTime = 11.8833, s.t0 = 11.8942 7 8 9 10 11 12 
+Switching to s = 2: fTime = 11.9833, s.t0 = 11.9969 13 14 15 16 17 18 19 20 21 22 
+Switching to s = 3: fTime = 12.15, s.t0 = 12.1606 23 24 25 
+Done, returning.
+
+Started getVideo, call number 16
+Got to data extraction phase.
+Initialized gTime with value 12.783333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 35, stats_ = 4
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 12.2 with stats_ front Time0 = 12.2122 and Time = 12.3466
+Found gStartI = 0, gEndI = 35, with gSize = 0
+Extracted vectors. Result sizes: stats size = 4, renders size = 35
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 35
+Stats:4
+Inserting frames: 
+Switching to s = 0: fTime = 12.2, s.t0 = 12.2122 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 12.3333, s.t0 = 12.3466 9 10 11 12 13 14 15 16 17 18 19 20 
+Switching to s = 2: fTime = 12.5333, s.t0 = 12.5387 21 22 23 24 25 26 
+Switching to s = 3: fTime = 12.6333, s.t0 = 12.6382 27 28 29 30 31 32 33 34 35 
+Done, returning.
+
+Started getVideo, call number 17
+Got to data extraction phase.
+Initialized gTime with value 13.216667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 26, stats_ = 4
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 12.7833 with stats_ front Time0 = 12.796 and Time = 12.9002
+Found gStartI = 0, gEndI = 26, with gSize = 0
+Extracted vectors. Result sizes: stats size = 4, renders size = 26
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 26
+Stats:4
+Inserting frames: 
+Switching to s = 0: fTime = 12.7833, s.t0 = 12.796 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 12.9, s.t0 = 12.9002 8 9 10 11 
+Switching to s = 2: fTime = 12.9667, s.t0 = 12.9698 12 13 14 15 16 17 
+Switching to s = 3: fTime = 13.0667, s.t0 = 13.0743 18 19 20 21 22 23 24 25 26 
+Done, returning.
+
+Started getVideo, call number 18
+Got to data extraction phase.
+Initialized gTime with value 13.600000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 23, stats_ = 3
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 13.2167 with stats_ front Time0 = 13.2183 and Time = 13.3288
+Found gStartI = 0, gEndI = 23, with gSize = 0
+Extracted vectors. Result sizes: stats size = 3, renders size = 23
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 23
+Stats:3
+Inserting frames: 
+Switching to s = 0: fTime = 13.2167, s.t0 = 13.2183 1 2 3 4 5 6 
+Switching to s = 1: fTime = 13.3167, s.t0 = 13.3288 7 8 9 10 11 12 13 14 15 16 
+Switching to s = 2: fTime = 13.4833, s.t0 = 13.4911 17 18 19 20 21 22 23 
+Done, returning.
+
+Started getVideo, call number 19
+Got to data extraction phase.
+Initialized gTime with value 14.100000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 30, stats_ = 4
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 13.6 with stats_ front Time0 = 13.6006 and Time = 13.6954
+Found gStartI = 0, gEndI = 30, with gSize = 0
+Extracted vectors. Result sizes: stats size = 4, renders size = 30
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 30
+Stats:4
+Inserting frames: 
+Switching to s = 0: fTime = 13.6, s.t0 = 13.6006 1 2 3 4 5 
+Switching to s = 1: fTime = 13.6833, s.t0 = 13.6954 6 7 8 9 10 11 
+Switching to s = 2: fTime = 13.7833, s.t0 = 13.7983 12 13 14 15 16 17 18 19 
+Switching to s = 3: fTime = 13.9167, s.t0 = 13.9215 20 21 22 23 24 25 26 27 28 29 30 
+Done, returning.
+
+Started getVideo, call number 20
+Got to data extraction phase.
+Initialized gTime with value 14.650000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 33, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 14.1 with stats_ front Time0 = 14.1091 and Time = 14.1978
+Found gStartI = 0, gEndI = 33, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 33
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 33
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 14.1, s.t0 = 14.1091 1 2 3 4 5 
+Switching to s = 1: fTime = 14.1833, s.t0 = 14.1978 6 7 8 9 10 11 12 13 
+Switching to s = 2: fTime = 14.3167, s.t0 = 14.3237 14 15 16 17 18 
+Switching to s = 3: fTime = 14.4, s.t0 = 14.4101 19 20 21 22 23 
+Switching to s = 4: fTime = 14.4833, s.t0 = 14.4983 24 25 26 27 28 29 30 31 32 33 
+Done, returning.
+
+Started getVideo, call number 21
+Got to data extraction phase.
+Initialized gTime with value 15.183333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 32, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 14.65 with stats_ front Time0 = 14.6545 and Time = 14.7263
+Found gStartI = 0, gEndI = 32, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 32
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 32
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 14.65, s.t0 = 14.6545 1 2 3 4 
+Switching to s = 1: fTime = 14.7167, s.t0 = 14.7263 5 6 7 8 
+Switching to s = 2: fTime = 14.7833, s.t0 = 14.7925 9 10 11 12 13 14 15 16 17 
+Switching to s = 3: fTime = 14.9333, s.t0 = 14.942 18 19 20 21 22 23 24 25 26 
+Switching to s = 4: fTime = 15.0833, s.t0 = 15.0849 27 28 29 30 31 32 
+Done, returning.
+
+Started getVideo, call number 22
+Got to data extraction phase.
+Initialized gTime with value 15.850000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 40, stats_ = 7
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 15.1833 with stats_ front Time0 = 15.1964 and Time = 15.3071
+Found gStartI = 0, gEndI = 40, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 40
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 40
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 15.1833, s.t0 = 15.1964 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 15.3, s.t0 = 15.3071 8 9 10 11 
+Switching to s = 2: fTime = 15.3667, s.t0 = 15.383 12 13 14 15 16 17 
+Switching to s = 3: fTime = 15.4667, s.t0 = 15.4751 18 19 20 21 22 23 24 
+Switching to s = 4: fTime = 15.5833, s.t0 = 15.5942 25 26 27 28 
+Switching to s = 5: fTime = 15.65, s.t0 = 15.6611 29 30 31 32 33 
+Switching to s = 6: fTime = 15.7333, s.t0 = 15.7454 34 35 36 37 38 39 40 
+Done, returning.
+
+Started getVideo, call number 23
+Got to data extraction phase.
+Initialized gTime with value 16.433333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 35, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 15.85 with stats_ front Time0 = 15.8518 and Time = 15.9825
+Found gStartI = 0, gEndI = 35, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 35
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 35
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 15.85, s.t0 = 15.8518 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 15.9667, s.t0 = 15.9825 8 9 10 11 12 13 
+Switching to s = 2: fTime = 16.0667, s.t0 = 16.0754 14 15 16 17 18 19 20 21 
+Switching to s = 3: fTime = 16.2, s.t0 = 16.2006 22 23 24 25 26 27 28 
+Switching to s = 4: fTime = 16.3167, s.t0 = 16.323 29 30 31 32 33 34 35 
+Done, returning.
+
+Started getVideo, call number 24
+Got to data extraction phase.
+Initialized gTime with value 16.983333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 33, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 16.4333 with stats_ front Time0 = 16.4342 and Time = 16.5625
+Found gStartI = 0, gEndI = 33, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 33
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 33
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 16.4333, s.t0 = 16.4342 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 16.55, s.t0 = 16.5625 8 9 10 11 
+Switching to s = 2: fTime = 16.6167, s.t0 = 16.6195 12 13 14 15 16 17 18 
+Switching to s = 3: fTime = 16.7333, s.t0 = 16.7401 19 20 21 22 23 24 25 
+Switching to s = 4: fTime = 16.85, s.t0 = 16.8536 26 27 28 29 30 31 32 33 
+Done, returning.
+
+Started getVideo, call number 25
+Got to data extraction phase.
+Initialized gTime with value 17.616667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 38, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 16.9833 with stats_ front Time0 = 16.999 and Time = 17.0517
+Found gStartI = 0, gEndI = 38, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 38
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 38
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 16.9833, s.t0 = 16.999 1 2 3 4 
+Switching to s = 1: fTime = 17.05, s.t0 = 17.0517 5 6 7 8 9 
+Switching to s = 2: fTime = 17.1333, s.t0 = 17.1412 10 11 12 13 14 
+Switching to s = 3: fTime = 17.2167, s.t0 = 17.2315 15 16 17 18 19 20 21 
+Switching to s = 4: fTime = 17.3333, s.t0 = 17.3334 22 23 24 25 26 27 28 29 30 
+Switching to s = 5: fTime = 17.4833, s.t0 = 17.4909 31 32 33 34 35 36 37 38 
+Done, returning.
+
+Started getVideo, call number 26
+Got to data extraction phase.
+Initialized gTime with value 18.316667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 42, stats_ = 7
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 17.6167 with stats_ front Time0 = 17.6217 and Time = 17.7256
+Found gStartI = 0, gEndI = 42, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 42
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 42
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 17.6167, s.t0 = 17.6217 1 2 3 4 5 6 
+Switching to s = 1: fTime = 17.7167, s.t0 = 17.7256 7 8 9 10 11 12 
+Switching to s = 2: fTime = 17.8167, s.t0 = 17.8294 13 14 15 16 
+Switching to s = 3: fTime = 17.8833, s.t0 = 17.8974 17 18 19 20 21 
+Switching to s = 4: fTime = 17.9667, s.t0 = 17.976 22 23 24 25 
+Switching to s = 5: fTime = 18.0333, s.t0 = 18.0446 26 27 28 29 30 31 32 33 34 
+Switching to s = 6: fTime = 18.1833, s.t0 = 18.1934 35 36 37 38 39 40 41 42 
+Done, returning.
+
+Started getVideo, call number 27
+Got to data extraction phase.
+Initialized gTime with value 19.050000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 44, stats_ = 7
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 18.3167 with stats_ front Time0 = 18.3195 and Time = 18.4208
+Found gStartI = 0, gEndI = 44, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 44
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 44
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 18.3167, s.t0 = 18.3195 1 2 3 4 5 6 
+Switching to s = 1: fTime = 18.4167, s.t0 = 18.4208 7 8 9 10 
+Switching to s = 2: fTime = 18.4833, s.t0 = 18.4953 11 12 13 14 15 16 
+Switching to s = 3: fTime = 18.5833, s.t0 = 18.5878 17 18 19 20 21 22 23 24 
+Switching to s = 4: fTime = 18.7167, s.t0 = 18.7254 25 26 27 28 29 30 
+Switching to s = 5: fTime = 18.8167, s.t0 = 18.8315 31 32 33 34 35 36 
+Switching to s = 6: fTime = 18.9167, s.t0 = 18.9327 37 38 39 40 41 42 43 44 
+Done, returning.
+
+Started getVideo, call number 28
+Got to data extraction phase.
+Initialized gTime with value 19.916667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 52, stats_ = 7
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 19.05 with stats_ front Time0 = 19.0657 and Time = 19.2389
+Found gStartI = 0, gEndI = 52, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 52
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 52
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 19.05, s.t0 = 19.0657 1 2 3 4 5 6 7 8 9 10 11 
+Switching to s = 1: fTime = 19.2333, s.t0 = 19.2389 12 13 14 15 16 17 18 19 20 21 
+Switching to s = 2: fTime = 19.4, s.t0 = 19.4011 22 23 24 25 26 27 
+Switching to s = 3: fTime = 19.5, s.t0 = 19.5094 28 29 30 31 
+Switching to s = 4: fTime = 19.5667, s.t0 = 19.5777 32 33 34 35 36 37 38 39 
+Switching to s = 5: fTime = 19.7, s.t0 = 19.7074 40 41 42 43 44 
+Switching to s = 6: fTime = 19.7833, s.t0 = 19.7913 45 46 47 48 49 50 51 52 
+Done, returning.
+
+Started getVideo, call number 29
+Got to data extraction phase.
+Initialized gTime with value 20.783333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 52, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 19.9167 with stats_ front Time0 = 19.9266 and Time = 20.1121
+Found gStartI = 0, gEndI = 52, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 52
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 52
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 19.9167, s.t0 = 19.9266 1 2 3 4 5 6 7 8 9 10 11 
+Switching to s = 1: fTime = 20.1, s.t0 = 20.1121 12 13 14 15 16 17 18 
+Switching to s = 2: fTime = 20.2167, s.t0 = 20.2269 19 20 21 22 
+Switching to s = 3: fTime = 20.2833, s.t0 = 20.2878 23 24 25 26 
+Switching to s = 4: fTime = 20.35, s.t0 = 20.3615 27 28 29 30 31 32 33 34 
+Switching to s = 5: fTime = 20.4833, s.t0 = 20.4881 35 36 37 
+Switching to s = 6: fTime = 20.5333, s.t0 = 20.5484 38 39 40 41 42 43 
+Switching to s = 7: fTime = 20.6333, s.t0 = 20.6337 44 45 46 47 48 49 50 51 52 
+Done, returning.
+
+Started getVideo, call number 30
+Got to data extraction phase.
+Initialized gTime with value 21.900000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 67, stats_ = 10
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 20.7833 with stats_ front Time0 = 20.7947 and Time = 20.8964
+Found gStartI = 0, gEndI = 67, with gSize = 0
+Extracted vectors. Result sizes: stats size = 10, renders size = 67
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 67
+Stats:10
+Inserting frames: 
+Switching to s = 0: fTime = 20.7833, s.t0 = 20.7947 1 2 3 4 5 6 
+Switching to s = 1: fTime = 20.8833, s.t0 = 20.8964 7 8 9 10 11 12 13 
+Switching to s = 2: fTime = 21, s.t0 = 21.002 14 15 16 17 
+Switching to s = 3: fTime = 21.0667, s.t0 = 21.0779 18 19 20 21 
+Switching to s = 4: fTime = 21.1333, s.t0 = 21.1422 22 23 24 25 26 27 28 29 30 31 
+Switching to s = 5: fTime = 21.3, s.t0 = 21.3086 32 33 34 35 36 37 38 
+Switching to s = 6: fTime = 21.4167, s.t0 = 21.4262 39 40 41 42 43 44 
+Switching to s = 7: fTime = 21.5167, s.t0 = 21.5245 45 46 47 48 49 50 
+Switching to s = 8: fTime = 21.6167, s.t0 = 21.627 51 52 53 54 55 56 57 58 
+Switching to s = 9: fTime = 21.75, s.t0 = 21.7661 59 60 61 62 63 64 65 66 67 
+Done, returning.
+
+Started getVideo, call number 31
+Got to data extraction phase.
+Initialized gTime with value 22.900000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 60, stats_ = 10
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 21.9 with stats_ front Time0 = 21.9091 and Time = 22.0546
+Found gStartI = 0, gEndI = 60, with gSize = 0
+Extracted vectors. Result sizes: stats size = 10, renders size = 60
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 60
+Stats:10
+Inserting frames: 
+Switching to s = 0: fTime = 21.9, s.t0 = 21.9091 1 2 3 4 5 6 7 8 9 
+Switching to s = 1: fTime = 22.05, s.t0 = 22.0546 10 11 12 13 14 15 16 17 
+Switching to s = 2: fTime = 22.1833, s.t0 = 22.1954 18 19 20 21 22 23 24 25 
+Switching to s = 3: fTime = 22.3167, s.t0 = 22.3228 26 27 28 29 
+Switching to s = 4: fTime = 22.3833, s.t0 = 22.3844 30 31 32 33 34 
+Switching to s = 5: fTime = 22.4667, s.t0 = 22.4698 35 36 37 38 39 40 41 
+Switching to s = 6: fTime = 22.5833, s.t0 = 22.5923 42 43 44 45 46 47 48 
+Switching to s = 7: fTime = 22.7, s.t0 = 22.7086 49 50 51 52 
+Switching to s = 8: fTime = 22.7667, s.t0 = 22.7685 53 54 
+Switching to s = 9: fTime = 22.8, s.t0 = 22.8142 55 56 57 58 59 60 
+Done, returning.
+
+Started getVideo, call number 32
+Got to data extraction phase.
+Initialized gTime with value 23.800000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 54, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 22.9 with stats_ front Time0 = 22.9068 and Time = 23.0241
+Found gStartI = 0, gEndI = 54, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 54
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 54
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 22.9, s.t0 = 22.9068 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 23.0167, s.t0 = 23.0241 8 9 10 11 
+Switching to s = 2: fTime = 23.0833, s.t0 = 23.0969 12 13 14 15 
+Switching to s = 3: fTime = 23.15, s.t0 = 23.1654 16 17 18 19 20 21 22 23 24 25 
+Switching to s = 4: fTime = 23.3167, s.t0 = 23.3228 26 27 28 29 30 31 32 
+Switching to s = 5: fTime = 23.4333, s.t0 = 23.4338 33 34 35 36 37 38 
+Switching to s = 6: fTime = 23.5333, s.t0 = 23.5335 39 40 41 42 43 44 45 
+Switching to s = 7: fTime = 23.65, s.t0 = 23.6574 46 47 48 49 50 51 52 53 54 
+Done, returning.
+
+Started getVideo, call number 33
+Got to data extraction phase.
+Initialized gTime with value 24.716667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 55, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 23.8 with stats_ front Time0 = 23.8117 and Time = 23.9124
+Found gStartI = 0, gEndI = 55, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 55
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 55
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 23.8, s.t0 = 23.8117 1 2 3 4 5 6 
+Switching to s = 1: fTime = 23.9, s.t0 = 23.9124 7 8 9 10 11 12 13 14 15 
+Switching to s = 2: fTime = 24.05, s.t0 = 24.0572 16 17 18 19 20 21 22 
+Switching to s = 3: fTime = 24.1667, s.t0 = 24.1763 23 24 25 26 27 
+Switching to s = 4: fTime = 24.25, s.t0 = 24.26 28 29 30 31 32 33 34 35 
+Switching to s = 5: fTime = 24.3833, s.t0 = 24.3914 36 37 38 39 40 41 42 43 44 45 
+Switching to s = 6: fTime = 24.55, s.t0 = 24.561 46 47 48 49 50 
+Switching to s = 7: fTime = 24.6333, s.t0 = 24.6369 51 52 53 54 55 
+Done, returning.
+
+Started getVideo, call number 34
+Got to data extraction phase.
+Initialized gTime with value 25.383333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 40, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 24.7167 with stats_ front Time0 = 24.73 and Time = 24.8333
+Found gStartI = 0, gEndI = 40, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 40
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 40
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 24.7167, s.t0 = 24.73 1 2 3 4 5 6 
+Switching to s = 1: fTime = 24.8167, s.t0 = 24.8333 7 8 9 10 11 12 13 
+Switching to s = 2: fTime = 24.9333, s.t0 = 24.9388 14 15 16 17 18 
+Switching to s = 3: fTime = 25.0167, s.t0 = 25.0243 19 20 21 22 23 24 
+Switching to s = 4: fTime = 25.1167, s.t0 = 25.119 25 26 27 28 29 30 31 
+Switching to s = 5: fTime = 25.2333, s.t0 = 25.2499 32 33 34 35 36 37 38 39 40 
+Done, returning.
+
+Started getVideo, call number 35
+Got to data extraction phase.
+Initialized gTime with value 25.883333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 30, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 25.3833 with stats_ front Time0 = 25.3866 and Time = 25.4666
+Found gStartI = 0, gEndI = 30, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 30
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 30
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 25.3833, s.t0 = 25.3866 1 2 3 4 
+Switching to s = 1: fTime = 25.45, s.t0 = 25.4666 5 6 7 8 9 10 11 12 13 14 
+Switching to s = 2: fTime = 25.6167, s.t0 = 25.6298 15 16 17 18 19 
+Switching to s = 3: fTime = 25.7, s.t0 = 25.7028 20 21 22 23 24 25 
+Switching to s = 4: fTime = 25.8, s.t0 = 25.8011 26 27 28 29 30 
+Done, returning.
+
+Started getVideo, call number 36
+Got to data extraction phase.
+Initialized gTime with value 26.633333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 45, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 25.8833 with stats_ front Time0 = 25.8857 and Time = 26.0187
+Found gStartI = 0, gEndI = 45, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 45
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 45
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 25.8833, s.t0 = 25.8857 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 26.0167, s.t0 = 26.0187 9 10 11 12 13 14 15 16 17 
+Switching to s = 2: fTime = 26.1667, s.t0 = 26.1759 18 19 20 21 22 23 24 25 26 
+Switching to s = 3: fTime = 26.3167, s.t0 = 26.3274 27 28 29 30 31 32 33 34 35 36 37 
+Switching to s = 4: fTime = 26.5, s.t0 = 26.5035 38 39 40 41 42 43 44 45 
+Done, returning.
+
+Started getVideo, call number 37
+Got to data extraction phase.
+Initialized gTime with value 27.350000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 43, stats_ = 7
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 26.6333 with stats_ front Time0 = 26.6425 and Time = 26.728
+Found gStartI = 0, gEndI = 43, with gSize = 0
+Extracted vectors. Result sizes: stats size = 7, renders size = 43
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 43
+Stats:7
+Inserting frames: 
+Switching to s = 0: fTime = 26.6333, s.t0 = 26.6425 1 2 3 4 5 
+Switching to s = 1: fTime = 26.7167, s.t0 = 26.728 6 7 8 9 10 11 12 13 
+Switching to s = 2: fTime = 26.85, s.t0 = 26.8557 14 15 16 17 18 19 
+Switching to s = 3: fTime = 26.95, s.t0 = 26.9586 20 21 22 23 24 
+Switching to s = 4: fTime = 27.0333, s.t0 = 27.049 25 26 27 28 29 30 31 
+Switching to s = 5: fTime = 27.15, s.t0 = 27.1601 32 33 34 35 36 
+Switching to s = 6: fTime = 27.2333, s.t0 = 27.2466 37 38 39 40 41 42 43 
+Done, returning.
+
+Started getVideo, call number 38
+Got to data extraction phase.
+Initialized gTime with value 27.816667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 28, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 27.35 with stats_ front Time0 = 27.3526 and Time = 27.4563
+Found gStartI = 0, gEndI = 28, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 28
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 28
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 27.35, s.t0 = 27.3526 1 2 3 4 5 6 
+Switching to s = 1: fTime = 27.45, s.t0 = 27.4563 7 8 9 10 11 12 13 14 
+Switching to s = 2: fTime = 27.5833, s.t0 = 27.5871 15 16 17 
+Switching to s = 3: fTime = 27.6333, s.t0 = 27.6442 18 19 20 21 22 
+Switching to s = 4: fTime = 27.7167, s.t0 = 27.7312 23 24 25 26 27 28 
+Done, returning.
+
+Started getVideo, call number 39
+Got to data extraction phase.
+Initialized gTime with value 28.333333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 31, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 27.8167 with stats_ front Time0 = 27.8176 and Time = 27.901
+Found gStartI = 0, gEndI = 31, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 31
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 31
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 27.8167, s.t0 = 27.8176 1 2 3 4 5 
+Switching to s = 1: fTime = 27.9, s.t0 = 27.901 6 7 8 
+Switching to s = 2: fTime = 27.95, s.t0 = 27.9585 9 10 11 12 
+Switching to s = 3: fTime = 28.0167, s.t0 = 28.021 13 14 15 16 17 18 19 20 
+Switching to s = 4: fTime = 28.15, s.t0 = 28.1526 21 22 23 
+Switching to s = 5: fTime = 28.2, s.t0 = 28.2147 24 25 26 27 28 29 30 31 
+Done, returning.
+
+Started getVideo, call number 40
+Got to data extraction phase.
+Initialized gTime with value 29.133333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 48, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 28.3333 with stats_ front Time0 = 28.3365 and Time = 28.4185
+Found gStartI = 0, gEndI = 48, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 48
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 48
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 28.3333, s.t0 = 28.3365 1 2 3 4 5 
+Switching to s = 1: fTime = 28.4167, s.t0 = 28.4185 6 7 8 9 10 11 12 13 14 
+Switching to s = 2: fTime = 28.5667, s.t0 = 28.5759 15 16 17 18 19 20 21 22 23 24 
+Switching to s = 3: fTime = 28.7333, s.t0 = 28.7475 25 26 27 28 29 30 31 32 33 
+Switching to s = 4: fTime = 28.8833, s.t0 = 28.8875 34 35 36 37 38 39 40 41 42 
+Switching to s = 5: fTime = 29.0333, s.t0 = 29.0474 43 44 45 46 47 48 
+Done, returning.
+
+Started getVideo, call number 41
+Got to data extraction phase.
+Initialized gTime with value 29.750000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 37, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 29.1333 with stats_ front Time0 = 29.1355 and Time = 29.221
+Found gStartI = 0, gEndI = 37, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 37
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 37
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 29.1333, s.t0 = 29.1355 1 2 3 4 5 
+Switching to s = 1: fTime = 29.2167, s.t0 = 29.221 6 7 8 9 10 11 12 13 14 15 16 17 18 
+Switching to s = 2: fTime = 29.4333, s.t0 = 29.4374 19 20 21 22 
+Switching to s = 3: fTime = 29.5, s.t0 = 29.5141 23 24 25 26 27 
+Switching to s = 4: fTime = 29.5833, s.t0 = 29.5977 28 29 30 31 32 33 
+Switching to s = 5: fTime = 29.6833, s.t0 = 29.6977 34 35 36 37 
+Done, returning.
+
+Started getVideo, call number 42
+Got to data extraction phase.
+Initialized gTime with value 30.266667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 31, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 29.75 with stats_ front Time0 = 29.7659 and Time = 29.8624
+Found gStartI = 0, gEndI = 31, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 31
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 31
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 29.75, s.t0 = 29.7659 1 2 3 4 5 6 
+Switching to s = 1: fTime = 29.85, s.t0 = 29.8624 7 8 9 10 11 12 13 
+Switching to s = 2: fTime = 29.9667, s.t0 = 29.9698 14 15 16 17 18 
+Switching to s = 3: fTime = 30.05, s.t0 = 30.053 19 20 21 22 23 24 
+Switching to s = 4: fTime = 30.15, s.t0 = 30.1541 25 26 27 28 29 30 31 
+Done, returning.
+
+Started getVideo, call number 43
+Got to data extraction phase.
+Initialized gTime with value 30.783333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 31, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 30.2667 with stats_ front Time0 = 30.2794 and Time = 30.3945
+Found gStartI = 0, gEndI = 31, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 31
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 31
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 30.2667, s.t0 = 30.2794 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 30.3833, s.t0 = 30.3945 8 9 10 11 12 13 
+Switching to s = 2: fTime = 30.4833, s.t0 = 30.4933 14 15 16 17 18 19 
+Switching to s = 3: fTime = 30.5833, s.t0 = 30.5954 20 21 22 23 24 25 
+Switching to s = 4: fTime = 30.6833, s.t0 = 30.684 26 27 28 29 30 31 
+Done, returning.
+
+Started getVideo, call number 44
+Got to data extraction phase.
+Initialized gTime with value 31.366667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 35, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 30.7833 with stats_ front Time0 = 30.7993 and Time = 30.9434
+Found gStartI = 0, gEndI = 35, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 35
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 35
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 30.7833, s.t0 = 30.7993 1 2 3 4 5 6 7 8 9 
+Switching to s = 1: fTime = 30.9333, s.t0 = 30.9434 10 11 12 13 14 
+Switching to s = 2: fTime = 31.0167, s.t0 = 31.0221 15 16 17 18 19 20 
+Switching to s = 3: fTime = 31.1167, s.t0 = 31.126 21 22 23 24 25 26 27 28 
+Switching to s = 4: fTime = 31.25, s.t0 = 31.266 29 30 31 32 33 34 35 
+Done, returning.
+
+Started getVideo, call number 45
+Got to data extraction phase.
+Initialized gTime with value 32.233333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 52, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 31.3667 with stats_ front Time0 = 31.3813 and Time = 31.4609
+Found gStartI = 0, gEndI = 52, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 52
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 52
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 31.3667, s.t0 = 31.3813 1 2 3 4 5 
+Switching to s = 1: fTime = 31.45, s.t0 = 31.4609 6 7 8 9 10 11 12 13 14 
+Switching to s = 2: fTime = 31.6, s.t0 = 31.6052 15 16 17 
+Switching to s = 3: fTime = 31.65, s.t0 = 31.6584 18 19 20 21 22 
+Switching to s = 4: fTime = 31.7333, s.t0 = 31.7412 23 24 25 26 27 28 29 30 31 32 33 
+Switching to s = 5: fTime = 31.9167, s.t0 = 31.9212 34 35 36 37 38 39 40 
+Switching to s = 6: fTime = 32.0333, s.t0 = 32.0449 41 42 43 44 45 46 47 
+Switching to s = 7: fTime = 32.15, s.t0 = 32.1523 48 49 50 51 52 
+Done, returning.
+
+Started getVideo, call number 46
+Got to data extraction phase.
+Initialized gTime with value 32.850000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 37, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 32.2333 with stats_ front Time0 = 32.236 and Time = 32.3438
+Found gStartI = 0, gEndI = 37, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 37
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 37
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 32.2333, s.t0 = 32.236 1 2 3 4 5 6 
+Switching to s = 1: fTime = 32.3333, s.t0 = 32.3438 7 8 9 10 11 
+Switching to s = 2: fTime = 32.4167, s.t0 = 32.4307 12 13 14 15 16 17 18 19 
+Switching to s = 3: fTime = 32.55, s.t0 = 32.5601 20 21 
+Switching to s = 4: fTime = 32.5833, s.t0 = 32.5947 22 23 24 25 26 27 
+Switching to s = 5: fTime = 32.6833, s.t0 = 32.6963 28 29 30 31 32 33 34 35 36 37 
+Done, returning.
+
+Started getVideo, call number 47
+Got to data extraction phase.
+Initialized gTime with value 33.666667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 49, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 32.85 with stats_ front Time0 = 32.8506 and Time = 33.0054
+Found gStartI = 0, gEndI = 49, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 49
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 49
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 32.85, s.t0 = 32.8506 1 2 3 4 5 6 7 8 9 
+Switching to s = 1: fTime = 33, s.t0 = 33.0054 10 11 12 13 14 15 16 17 
+Switching to s = 2: fTime = 33.1333, s.t0 = 33.1411 18 19 20 21 22 23 
+Switching to s = 3: fTime = 33.2333, s.t0 = 33.2373 24 25 26 27 28 29 
+Switching to s = 4: fTime = 33.3333, s.t0 = 33.3405 30 31 32 33 34 35 
+Switching to s = 5: fTime = 33.4333, s.t0 = 33.4346 36 37 38 39 40 
+Switching to s = 6: fTime = 33.5167, s.t0 = 33.5186 41 42 43 44 
+Switching to s = 7: fTime = 33.5833, s.t0 = 33.5985 45 46 47 48 49 
+Done, returning.
+
+Started getVideo, call number 48
+Got to data extraction phase.
+Initialized gTime with value 34.566667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 54, stats_ = 8
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 33.6667 with stats_ front Time0 = 33.6787 and Time = 33.7817
+Found gStartI = 0, gEndI = 54, with gSize = 0
+Extracted vectors. Result sizes: stats size = 8, renders size = 54
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 54
+Stats:8
+Inserting frames: 
+Switching to s = 0: fTime = 33.6667, s.t0 = 33.6787 1 2 3 4 5 6 
+Switching to s = 1: fTime = 33.7667, s.t0 = 33.7817 7 8 9 10 11 
+Switching to s = 2: fTime = 33.85, s.t0 = 33.8639 12 13 14 15 16 17 18 19 20 21 22 23 
+Switching to s = 3: fTime = 34.05, s.t0 = 34.059 24 25 26 27 28 29 30 
+Switching to s = 4: fTime = 34.1667, s.t0 = 34.1678 31 32 33 34 35 36 
+Switching to s = 5: fTime = 34.2667, s.t0 = 34.2667 37 38 39 40 41 
+Switching to s = 6: fTime = 34.35, s.t0 = 34.3613 42 43 44 45 46 
+Switching to s = 7: fTime = 34.4333, s.t0 = 34.4369 47 48 49 50 51 52 53 54 
+Done, returning.
+
+Started getVideo, call number 49
+Got to data extraction phase.
+Initialized gTime with value 35.216667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 39, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 34.5667 with stats_ front Time0 = 34.5693 and Time = 34.62
+Found gStartI = 0, gEndI = 39, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 39
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 39
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 34.5667, s.t0 = 34.5693 1 2 3 
+Switching to s = 1: fTime = 34.6167, s.t0 = 34.62 4 5 6 
+Switching to s = 2: fTime = 34.6667, s.t0 = 34.6772 7 8 9 10 11 12 13 14 15 
+Switching to s = 3: fTime = 34.8167, s.t0 = 34.8202 16 17 18 19 20 
+Switching to s = 4: fTime = 34.9, s.t0 = 34.912 21 22 23 24 25 26 27 
+Switching to s = 5: fTime = 35.0167, s.t0 = 35.0318 28 29 30 31 32 33 34 35 36 37 38 39 
+Done, returning.
+
+Started getVideo, call number 50
+Got to data extraction phase.
+Initialized gTime with value 35.866667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 39, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 35.2167 with stats_ front Time0 = 35.2234 and Time = 35.3306
+Found gStartI = 0, gEndI = 39, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 39
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 39
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 35.2167, s.t0 = 35.2234 1 2 3 4 5 6 
+Switching to s = 1: fTime = 35.3167, s.t0 = 35.3306 7 8 9 
+Switching to s = 2: fTime = 35.3667, s.t0 = 35.3825 10 11 12 13 14 15 16 17 18 19 
+Switching to s = 3: fTime = 35.5333, s.t0 = 35.5387 20 21 22 23 24 25 
+Switching to s = 4: fTime = 35.6333, s.t0 = 35.6379 26 27 28 29 30 
+Switching to s = 5: fTime = 35.7167, s.t0 = 35.7256 31 32 33 34 35 36 37 38 39 
+Done, returning.
+
+Started getVideo, call number 51
+Got to data extraction phase.
+Initialized gTime with value 36.566667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 42, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 35.8667 with stats_ front Time0 = 35.8697 and Time = 35.9864
+Found gStartI = 0, gEndI = 42, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 42
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 42
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 35.8667, s.t0 = 35.8697 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 35.9833, s.t0 = 35.9864 8 9 10 11 12 13 
+Switching to s = 2: fTime = 36.0833, s.t0 = 36.0914 14 15 16 17 18 19 20 
+Switching to s = 3: fTime = 36.2, s.t0 = 36.2121 21 22 23 24 25 26 
+Switching to s = 4: fTime = 36.3, s.t0 = 36.311 27 28 29 30 31 32 33 34 35 36 
+Switching to s = 5: fTime = 36.4667, s.t0 = 36.4772 37 38 39 40 41 42 
+Done, returning.
+
+Started getVideo, call number 52
+Got to data extraction phase.
+Initialized gTime with value 37.066667, gDeltaT with value 0.0166667
+Found sizes: renders_ = 30, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 36.5667 with stats_ front Time0 = 36.5734 and Time = 36.724
+Found gStartI = 0, gEndI = 30, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 30
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 30
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 36.5667, s.t0 = 36.5734 1 2 3 4 5 6 7 8 9 
+Switching to s = 1: fTime = 36.7167, s.t0 = 36.724 10 11 12 13 14 15 16 
+Switching to s = 2: fTime = 36.8333, s.t0 = 36.8398 17 18 19 20 21 22 
+Switching to s = 3: fTime = 36.9333, s.t0 = 36.9412 23 24 25 26 27 
+Switching to s = 4: fTime = 37.0167, s.t0 = 37.0208 28 29 30 
+Done, returning.
+
+Started getVideo, call number 53
+Got to data extraction phase.
+Initialized gTime with value 37.583333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 31, stats_ = 6
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 37.0667 with stats_ front Time0 = 37.0802 and Time = 37.1397
+Found gStartI = 0, gEndI = 31, with gSize = 0
+Extracted vectors. Result sizes: stats size = 6, renders size = 31
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 31
+Stats:6
+Inserting frames: 
+Switching to s = 0: fTime = 37.0667, s.t0 = 37.0802 1 2 3 4 
+Switching to s = 1: fTime = 37.1333, s.t0 = 37.1397 5 6 7 8 9 
+Switching to s = 2: fTime = 37.2167, s.t0 = 37.2316 10 11 12 13 14 15 16 
+Switching to s = 3: fTime = 37.3333, s.t0 = 37.3444 17 18 19 20 21 22 23 24 
+Switching to s = 4: fTime = 37.4667, s.t0 = 37.4815 25 26 27 
+Switching to s = 5: fTime = 37.5167, s.t0 = 37.5268 28 29 30 31 
+Done, returning.
+
+Started getVideo, call number 54
+Got to data extraction phase.
+Initialized gTime with value 38.050000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 28, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 37.5833 with stats_ front Time0 = 37.5944 and Time = 37.6729
+Found gStartI = 0, gEndI = 28, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 28
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 28
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 37.5833, s.t0 = 37.5944 1 2 3 4 5 
+Switching to s = 1: fTime = 37.6667, s.t0 = 37.6729 6 7 8 9 10 11 
+Switching to s = 2: fTime = 37.7667, s.t0 = 37.7729 12 13 14 15 16 
+Switching to s = 3: fTime = 37.85, s.t0 = 37.8624 17 18 19 20 
+Switching to s = 4: fTime = 37.9167, s.t0 = 37.9308 21 22 23 24 25 26 27 28 
+Done, returning.
+
+Started getVideo, call number 55
+Got to data extraction phase.
+Initialized gTime with value 38.583333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 32, stats_ = 4
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 38.05 with stats_ front Time0 = 38.0657 and Time = 38.1905
+Found gStartI = 0, gEndI = 32, with gSize = 0
+Extracted vectors. Result sizes: stats size = 4, renders size = 32
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 32
+Stats:4
+Inserting frames: 
+Switching to s = 0: fTime = 38.05, s.t0 = 38.0657 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 38.1833, s.t0 = 38.1905 9 10 11 12 13 14 15 16 17 18 
+Switching to s = 2: fTime = 38.35, s.t0 = 38.3555 19 20 21 22 23 24 25 26 27 28 29 
+Switching to s = 3: fTime = 38.5333, s.t0 = 38.5347 30 31 32 
+Done, returning.
+
+Started getVideo, call number 56
+Got to data extraction phase.
+Initialized gTime with value 39.100000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 31, stats_ = 5
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 38.5833 with stats_ front Time0 = 38.5951 and Time = 38.6757
+Found gStartI = 0, gEndI = 31, with gSize = 0
+Extracted vectors. Result sizes: stats size = 5, renders size = 31
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 31
+Stats:5
+Inserting frames: 
+Switching to s = 0: fTime = 38.5833, s.t0 = 38.5951 1 2 3 4 5 
+Switching to s = 1: fTime = 38.6667, s.t0 = 38.6757 6 7 8 9 10 11 12 
+Switching to s = 2: fTime = 38.7833, s.t0 = 38.7953 13 14 15 16 17 18 19 
+Switching to s = 3: fTime = 38.9, s.t0 = 38.9144 20 21 22 23 24 25 26 27 
+Switching to s = 4: fTime = 39.0333, s.t0 = 39.0461 28 29 30 31 
+Done, returning.
+
+Started getVideo, call number 57
+Got to data extraction phase.
+Initialized gTime with value 39.483333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 23, stats_ = 3
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 39.1 with stats_ front Time0 = 39.1162 and Time = 39.2932
+Found gStartI = 0, gEndI = 23, with gSize = 0
+Extracted vectors. Result sizes: stats size = 3, renders size = 23
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 23
+Stats:3
+Inserting frames: 
+Switching to s = 0: fTime = 39.1, s.t0 = 39.1162 1 2 3 4 5 6 7 8 9 10 11 
+Switching to s = 1: fTime = 39.2833, s.t0 = 39.2932 12 13 14 15 16 17 18 
+Switching to s = 2: fTime = 39.4, s.t0 = 39.4036 19 20 21 22 23 
+Done, returning.
+
+Started getVideo, call number 58
+Got to data extraction phase.
+Initialized gTime with value 39.800000, gDeltaT with value 0.0166667
+Found sizes: renders_ = 19, stats_ = 3
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 39.4833 with stats_ front Time0 = 39.4925 and Time = 39.6038
+Found gStartI = 0, gEndI = 19, with gSize = 0
+Extracted vectors. Result sizes: stats size = 3, renders size = 19
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 19
+Stats:3
+Inserting frames: 
+Switching to s = 0: fTime = 39.4833, s.t0 = 39.4925 1 2 3 4 5 6 7 
+Switching to s = 1: fTime = 39.6, s.t0 = 39.6038 8 9 10 11 12 13 14 15 
+Switching to s = 2: fTime = 39.7333, s.t0 = 39.7367 16 17 18 19 
+Done, returning.
+
+Started getVideo, call number 59
+Got to data extraction phase.
+Initialized gTime with value 40.133333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 20, stats_ = 3
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 39.8 with stats_ front Time0 = 39.814 and Time = 39.8955
+Found gStartI = 0, gEndI = 20, with gSize = 0
+Extracted vectors. Result sizes: stats size = 3, renders size = 20
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 20
+Stats:3
+Inserting frames: 
+Switching to s = 0: fTime = 39.8, s.t0 = 39.814 1 2 3 4 5 
+Switching to s = 1: fTime = 39.8833, s.t0 = 39.8955 6 7 8 9 10 11 
+Switching to s = 2: fTime = 39.9833, s.t0 = 39.998 12 13 14 15 16 17 18 19 20 
+Done, returning.
+
+Started getVideo, call number 60
+Got to data extraction phase.
+Initialized gTime with value 40.533333, gDeltaT with value 0.0166667
+Found sizes: renders_ = 24, stats_ = 3
+Starting vector segments extraction.
+There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!
+Found sStartI = 0
+fTime_ value = 40.1333 with stats_ front Time0 = 40.1359 and Time = 40.2709
+Found gStartI = 0, gEndI = 24, with gSize = 0
+Extracted vectors. Result sizes: stats size = 3, renders size = 24
+Got to second phase.
+Got to phase 3.
+Working vector sizes:
+Renders: 24
+Stats:3
+Inserting frames: 
+Switching to s = 0: fTime = 40.1333, s.t0 = 40.1359 1 2 3 4 5 6 7 8 
+Switching to s = 1: fTime = 40.2667, s.t0 = 40.2709 9 10 11 12 13 14 15 16 
+Switching to s = 2: fTime = 40.4, s.t0 = 40.4003 17 18 19 20 21 22 23 24 
+Done, returning.
+X Error of failed request:  BadAccess (attempt to access private resource denied)
+  Major opcode of failed request:  150 (GLX)
+  Minor opcode of failed request:  5 (X_GLXMakeCurrent)
+  Serial number of failed request:  66683
+  Current serial number in output stream:  66683

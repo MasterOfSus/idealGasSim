@@ -92,9 +92,9 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
       time{data.getTime()},
       boxSide{data.getBoxSide()} {
   if (data.getParticles().size() != prevStats.getNParticles()) {
-    // std::cout << "data.getParticles size = " << data.getParticles().size() <<
-    // " != " << prevStats.getNParticles() << " prevStats.getNParticles." <<
-    // std::endl;
+    std::cerr << "data.getParticles size = " << data.getParticles().size() <<
+    " != " << prevStats.getNParticles() << " prevStats.getNParticles." <<
+    std::endl;
     throw std::invalid_argument("Data with different particle number provided");
   } else if (data.getBoxSide() != prevStats.getBoxSide()) {
     throw std::invalid_argument("Data with different box side provided");
@@ -266,11 +266,14 @@ TdStats::TdStats(TdStats&& s) noexcept
 }
 
 TdStats& TdStats::operator=(TdStats const& s) {
+	if (this == &s) {
+		return *this;
+	}
   wallPulses = s.wallPulses;
   lastCollPositions = s.lastCollPositions;
   T = s.T;
   freePaths = s.freePaths;
-  speedsH = s.speedsH;
+  speedsH = TH1D(s.speedsH);
   speedsH.SetDirectory(nullptr);
   t0 = s.t0;
   time = s.time;
@@ -280,7 +283,7 @@ TdStats& TdStats::operator=(TdStats const& s) {
 
 TdStats& TdStats::operator=(TdStats&& s) noexcept {
   wallPulses = std::move(s.wallPulses);
-  wallPulses = {};
+  s.wallPulses = {};
   lastCollPositions = std::move(s.lastCollPositions);
   s.lastCollPositions.clear();
   T = s.T;

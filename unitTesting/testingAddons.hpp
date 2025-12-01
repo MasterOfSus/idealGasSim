@@ -13,7 +13,7 @@ namespace GS {
 		void add(std::function<void()> f);
 		void start();
 		std::atomic<bool> stop {true};
-		std::atomic<bool> abort {true};
+		std::atomic<bool> abort {false};
 	};
 }
 

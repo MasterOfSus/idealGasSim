@@ -91,6 +91,13 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
     if (latticeUnit <= 2. * pR) {
       throw std::runtime_error("Particle number too large to fit into box");
     }
+		if (!std::isfinite(latticeUnit)) {
+			if (particlesN == 1) {
+				latticeUnit = 0.;
+			} else {
+				throw std::runtime_error("Computed non-finite cubical lattice unit, aborting");
+			}
+		}
 
     double maxSpeed =
         sqrt(30. / M_PI * temperature /
@@ -146,7 +153,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
 }
 
 PWCollision Gas::firstPWColl() {
-  auto getCollision{[&, this](double position, double speed, Wall negWall,
+  auto getPWCollision{[&, this](double position, double speed, Wall negWall,
                               Wall posWall, Particle* p) -> PWCollision {
     double time = (speed < 0)
                       ? (position - Particle::getRadius()) / (-speed)
@@ -157,11 +164,11 @@ PWCollision Gas::firstPWColl() {
 
   auto getWallColl{[&](Particle* p) {
     PWCollision result =
-        getCollision(p->position.x, p->speed.x, Wall::Left, Wall::Right, p);
+        getPWCollision(p->position.x, p->speed.x, Wall::Left, Wall::Right, p);
     PWCollision collY =
-        getCollision(p->position.y, p->speed.y, Wall::Front, Wall::Back, p);
+        getPWCollision(p->position.y, p->speed.y, Wall::Front, Wall::Back, p);
     PWCollision collZ =
-        getCollision(p->position.z, p->speed.z, Wall::Bottom, Wall::Top, p);
+        getPWCollision(p->position.z, p->speed.z, Wall::Bottom, Wall::Top, p);
 
     if (result.getTime() > collY.getTime()) {
       result = collY;
@@ -181,8 +188,8 @@ PWCollision Gas::firstPWColl() {
       firstColl = c;
     }
   });
-  if (!firstColl.getP1()) {
-    throw std::runtime_error("Tried to find a collision for an empty gas");
+  if (!firstColl.getP1() && !particles.size()) {
+   	throw std::runtime_error("Tried to get wall collision for an empty gas");
   }
   return firstColl;
 }

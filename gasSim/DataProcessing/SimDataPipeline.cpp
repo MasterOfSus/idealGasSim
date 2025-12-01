@@ -306,15 +306,17 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
 
 std::vector<TdStats> SimDataPipeline::getStats(bool emptyQueue) {
   if (emptyQueue) {
-    std::deque<TdStats> tempStats;
+    std::deque<TdStats> tempStats {};
     std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
     // hopefully locks stats for less time by swapping, then converting to
     // vector after releasing lock
     {  // lock scope
       std::lock_guard<std::mutex> statsGuard{statsMtx};
-      lastStat = stats.back();
-      tempStats = std::exchange(stats, {});
-      stats.clear();
+			if (stats.size()) {
+      	lastStat = stats.back();
+      	tempStats = std::move(stats);
+      	stats.clear();
+			}
     }  // lock scope end
     return std::vector<TdStats>(std::make_move_iterator(tempStats.begin()),
                                 std::make_move_iterator(tempStats.end()));
@@ -357,6 +359,14 @@ void SimDataPipeline::setStatSize(size_t s) {
   } else {
     throw(std::invalid_argument("Provided null stat size."));
   }
+}
+
+void SimDataPipeline::setFont(sf::Font const& f) {
+	if (f.getInfo().family.empty()) {
+		throw std::invalid_argument("Provided empty font");
+	} else {
+		font = f;
+	}
 }
 
 }  // namespace GS
