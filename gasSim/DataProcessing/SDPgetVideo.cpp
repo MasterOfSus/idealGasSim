@@ -19,8 +19,8 @@
 
 #include "SimDataPipeline.hpp"
 
-// Hi, my name's Liam, I was the person who wrote this, and I just wanted to say
-// that I'm sorry for everything
+// Hi, my name's Liam, I was the person who wrote this,
+// I just wanted to say that I'm sorry for everything
 
 namespace GS {
 
@@ -466,7 +466,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             // std::cout << "Inserting placeholder.";
             box.setScale(windowSize.x / (float)placeholder.getSize().x,
                          windowSize.y / (float)placeholder.getSize().y);
-            box.setTexture(placeholder);
+            box.setTexture(placeholder, true);
             frame.draw(box);
 						frame.draw(timeText);
             frame.display();
@@ -529,7 +529,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           box.setScale(windowSize.x * 0.5 / (float)placeholder.getSize().x,
                        windowSize.y * 0.5 / (float)placeholder.getSize().y);
           box.setPosition(windowSize.x * 0.5, windowSize.y);
-          box.setTexture(placeholder);
+          box.setTexture(placeholder, true);
           frame.draw(box);
 
           frame.display();
@@ -660,7 +660,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               } else {
                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
                              gasSize.y / (float)placeholder.getSize().y);
-                box.setTexture(placeholder);
+                box.setTexture(placeholder, true);
                 frame.draw(box);
 								frame.draw(timeText);
                 frame.display();
@@ -733,7 +733,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               } else {
                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
                              gasSize.y / (float)placeholder.getSize().y);
-                box.setTexture(placeholder);
+                box.setTexture(placeholder, true);
                 frame.draw(box);
 								frame.draw(timeText);
                 frame.display();
@@ -801,7 +801,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 								std::cerr << "Inserting placeholder." << std::endl;
                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
                              gasSize.y / (float)placeholder.getSize().y);
-                box.setTexture(placeholder);
+                box.setTexture(placeholder, true);
                 frame.draw(box);
 								frame.draw(timeText);
                 frame.display();
@@ -879,7 +879,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             } else {
               box.setScale(gasSize.x / (float)placeholder.getSize().x,
                            gasSize.y / (float)placeholder.getSize().y);
-              box.setTexture(placeholder);
+              box.setTexture(placeholder, true);
               frame.draw(box);
 							frame.draw(timeText);
               frame.display();
@@ -964,9 +964,9 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 							frame.draw(timeText);
               frame.display();
             } else {
-              box.setTexture(placeholder);
               box.setScale(gasSize.x / (float)placeholder.getSize().x,
                            gasSize.y / (float)placeholder.getSize().y);
+              box.setTexture(placeholder, true);
               frame.draw(box);
 							frame.draw(timeText);
               frame.display();
@@ -1029,7 +1029,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           } else {
             box.setScale(gasSize.x / (float)placeholder.getSize().x,
                          gasSize.y / (float)placeholder.getSize().y);
-            box.setTexture(placeholder);
+            box.setTexture(placeholder, true);
             frame.draw(box);
 						frame.draw(timeText);
             frame.display();
