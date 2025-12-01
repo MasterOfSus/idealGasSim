@@ -16,7 +16,9 @@ double maxwellian(Double_t* x, Double_t* pars) {
 
 void makeInputFile () {
 	TFile* inputFile = new TFile("inputs/input.root", "RECREATE", "inputFile");
-	TH1D* speedsHTemplate = new TH1D("speedsHTemplate", "Squared velocities distribution", 30, 0., 50.);
+	TH1D* speedsHTemplate = new TH1D("speedsHTemplate", "Squared velocities distribution", 30, 0., 30.);
+	speedsHTemplate->GetXaxis()->SetTitle("Speed norm (m/s)");
+	speedsHTemplate->GetYaxis()->SetTitle("Count");
 	speedsHTemplate->SetFillColor(kViolet - 6);
 	speedsHTemplate->SetLineColor(kGreen + 3);
 	TList* graphsList = new TList(); 
@@ -27,6 +29,8 @@ void makeInputFile () {
 		g->SetLineColor(i + 1);
 		pGraphs->Add(g);
 	}	
+	pGraphs->GetXaxis()->SetTitle("Time (s)");
+	pGraphs->GetYaxis()->SetTitle("Pressure (N/m^{2})");
 	TGraph* g = new TGraph();
 	g->SetLineColor(1);
 	g->SetLineWidth(2);
@@ -35,6 +39,8 @@ void makeInputFile () {
 	TGraph* kBGraph = new TGraph();
 	kBGraph->SetName("kBGraph");
 	kBGraph->SetTitle("Measured kB");
+	kBGraph->GetXaxis()->SetTitle("Time (s)");
+	kBGraph->GetYaxis()->SetTitle("measured kB (expected 1) (J/T unit (#alpha))");
 	TGraph* mfpGraph = new TGraph();
 	mfpGraph->SetName("mfpGraph");
 	mfpGraph->SetTitle("Mean free path");
@@ -61,12 +67,16 @@ void makeInputFile () {
 	TF1* mfpGraphF {new TF1("mfpGraphF", "[0] - [1]*pow(e, [2]*x)", 0., 1.)};
 	mfpGraphF->SetLineColor(kSpring + 6);
 	mfpGraphF->SetLineWidth(2);
+	mfpGraph->GetXaxis()->SetTitle("Time (s)");
+	mfpGraph->GetYaxis()->SetTitle("Mean free path (m)");
 	TH1D* cumulatedSpeedsH {new TH1D(
 		"cumulatedSpeedsH",
 		"Cumulated speeds norms over whole simulation",
 		speedsHTemplate->GetNbinsX(), speedsHTemplate->GetXaxis()->GetXmin(),
 		speedsHTemplate->GetXaxis()->GetXmax())
 	};
+	cumulatedSpeedsH->GetXaxis()->SetTitle("Speed norm (m/s)");
+	cumulatedSpeedsH->GetYaxis()->SetTitle("Count");
 	std::cout << "Extracted graphsList." << std::endl;
 	TLine* meanLine {new TLine(0, 0, 1, 1)};
 	meanLine->SetLineColor(kOrange);
