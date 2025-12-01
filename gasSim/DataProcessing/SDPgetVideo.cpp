@@ -11,7 +11,6 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 
 #include "SimDataPipeline.hpp"
@@ -67,10 +66,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     TList& outputGraphs, bool emptyStats,
     std::function<void(TH1D&, VideoOpts)> fitLambda,
     std::array<std::function<void()>, 4> drawLambdas) {
-  static int nExec{0};
-  std::cerr << std::endl
-            << "Started getVideo, call number " << ++nExec << std::endl;
-
   if ((opt == VideoOpts::justStats &&
        (windowSize.x < 600 || windowSize.y < 600)) ||
       (opt != VideoOpts::justStats &&
@@ -117,14 +112,12 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     }
   };
 
-  std::cerr << "Got to data extraction phase." << std::endl;
   // extraction of renders and/or stats clusters compatible with
   // processing algorithm
   // fTime_ initialization, either through gTime_ or through stats[0]
   switch (opt) {
     case VideoOpts::justGas: {  // case scope
-      std::cerr << "Case justGas." << std::endl;
-      {  // lock scope
+      {                         // lock scope
         std::lock_guard<std::mutex> rGuard{rendersMtx};
         {  // locks scope 2
           std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
@@ -144,27 +137,18 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       if ((!fTime.has_value() || !isIntMultOf(*gTime - *fTime, gDeltaT))) {
         fTime = getRendersT0(renders) - gDeltaT;
       }
-      std::cerr << "Extracted renders size " << renders.size() << std::endl;
-      std::cerr << "Renders time0 = " << renders.front().second
-                << " and time = " << renders.back().second
-                << " with gTime = " << *gTime << " and fTime = " << *fTime
-                << std::endl;
       break;
     }  // end of case scope
     case VideoOpts::justStats: {  // lock/case scope
-      std::cerr << "Case justStats." << std::endl;
       std::lock_guard<std::mutex> sGuard{statsMtx};
       {  // locks scope 2
         std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
         gTime = this->gTime;
       }  // end of locks scope 2
       gDeltaT = this->gDeltaT.load();
-      std::cerr << "Loaded gTime and gDeltaT." << std::endl;
       if (this->stats.size()) {
-        std::cerr << "Found stats size " << this->stats.size() << std::endl;
         // setting fTime_
         if (!fTime.has_value()) {
-          std::cerr << "Setting fTime." << std::endl;
           if (gTime.has_value()) {
             fTime = *gTime +
                     gDeltaT * std::floor((this->stats[0].getTime0() - *gTime) /
@@ -174,7 +158,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
         }
         if (this->stats.back().getTime() >= *fTime + gDeltaT) {
-          std::cerr << "Extracting stats vector." << std::endl;
           // find first where the next frame's time is before it
           // -> the one before it necessarily "contains" the frame time
           // this pattern used in the rest of this file
@@ -184,37 +167,26 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                                           return value < s.getTime0();
                                         }) -
                        1};
-          std::cerr << "Found sStartI " << sStartI - this->stats.begin()
-                    << std::endl;
           if (sStartI < this->stats.begin()) {
-            std::cerr << "Setting sStartI to stats begin." << std::endl;
             sStartI = this->stats.begin();
           }
           if (emptyStats) {
-            std::cerr << "Moving stats vector." << std::endl;
             stats.insert(stats.end(), std::make_move_iterator(sStartI),
                          std::make_move_iterator(this->stats.end()));
             this->stats.clear();
           } else {
-            std::cerr << "Copying stats vector." << std::endl;
             stats = std::vector<TdStats>{sStartI, this->stats.end()};
           }
         } else {
-          std::cerr
-              << "Found fTime + gDeltaT > stats back time, returning empty."
-              << std::endl;
           return {};
         }
       } else {
-        std::cerr << "Found empty stats_, returning empty vector." << std::endl;
         return {};
       }
       break;
     }  // end of lock/case scope
     case VideoOpts::all:
-      std::cerr << "VideoOpt all." << std::endl;
     case VideoOpts::gasPlusCoords: {  // locks/case scope
-      std::cerr << "VideoOpt gasPlusCoords." << std::endl;
       std::unique_lock<std::mutex> resultsLock{outputMtx};
       outputCv.wait_for(resultsLock, std::chrono::milliseconds(50),
                         [this]() { return addedResults.load(); });
@@ -225,15 +197,10 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         gTime = this->gTime;
       }  // end of lock scope 2
       gDeltaT = this->gDeltaT.load();
-      std::cerr << "Initialized gTime with value "
-                << (gTime.has_value() ? std::to_string(*gTime) : "empty")
-                << ", gDeltaT with value " << gDeltaT << std::endl;
       if (!gTime.has_value()) {
         return {};
       }
       if (this->renders.size() || this->stats.size()) {
-        std::cerr << "Found sizes: renders_ = " << this->renders.size()
-                  << ", stats_ = " << this->stats.size() << std::endl;
         //  dealing with fTime_
         if (!fTime.has_value() || !isIntMultOf(*gTime - *fTime, gDeltaT)) {
           if (!this->stats.size()) {
@@ -250,24 +217,12 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                       gDeltaT * std::floor((this->stats[0].getTime0() -
                                             getRendersT0(this->renders)) /
                                            gDeltaT);
-              std::cerr << "Found getRendersT0 = "
-                        << getRendersT0(this->renders)
-                        << ", stats beginning = " << this->stats[0].getTime0()
-                        << "; set fTime_ to " << *fTime << std::endl;
             } else {
               fTime = getRendersT0(this->renders) - gDeltaT;
-              std::cerr << "Found getRendersT0 = "
-                        << getRendersT0(this->renders)
-                        << ", stats beginning = " << this->stats[0].getTime0()
-                        << "; set fTime_ to " << *fTime << std::endl;
             }
           }
-          std::cerr << "Set fTime_. Now fTime_.has_value() returns "
-                    << fTime.has_value() << " with value = " << fTime.value()
-                    << std::endl;
         }
 
-        std::cerr << "Starting vector segments extraction." << std::endl;
         //  extracting algorithm-compatible vector segments
         if (this->stats.size()) {
           auto sStartI{std::upper_bound(this->stats.begin(), this->stats.end(),
@@ -279,15 +234,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           if (sStartI < this->stats.begin()) {
             sStartI = this->stats.begin();
           }
-          std::cerr << "There's nothing to fear but BIG SCARY MONSTERS "
-                       "AAAAAHHHHH!!!!!!!!\n";
-          std::cerr << "Found sStartI = " << sStartI - this->stats.begin()
-                    << std::endl;
-          std::cerr << "fTime_ value = " << *fTime
-                    << " with stats_ front Time0 = "
-                    << this->stats.front().getTime0()
-                    << " and Time = " << this->stats.front().getTime()
-                    << std::endl;
           if (sStartI != this->stats.end()) {
             auto gStartI{std::upper_bound(this->renders.begin(),
                                           this->renders.end(), *fTime + gDeltaT,
@@ -301,9 +247,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                                         [](double value, auto const& render) {
                                           return value < render.second;
                                         })};
-            std::cerr << "Found gStartI = " << gStartI - this->renders.begin()
-                      << ", gEndI = " << gEndI - this->renders.begin()
-                      << ", with gSize = " << renders.size() << std::endl;
             if (emptyStats) {
               stats.insert(stats.end(), std::make_move_iterator(sStartI),
                            std::make_move_iterator(this->stats.end()));
@@ -316,12 +259,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                            std::make_move_iterator(gEndI));
             this->renders.clear();
           }
-          std::cerr << "Extracted vectors. Result sizes: stats size = "
-                    << stats.size() << ", renders size = " << renders.size()
-                    << std::endl;
           if (!stats.size() && !renders.size()) {
-            std::cerr << "Returning because found both vectors empty."
-                      << std::endl;
             return {};
           }
         } else {
@@ -336,8 +274,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           this->renders.clear();
         }
       } else {
-        std::cerr << "Found empty stats and renders, returning empty vector."
-                  << std::endl;
         return {};
       }
       addedResults.store(false);
@@ -347,8 +283,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     default:
       throw std::invalid_argument("Invalid video option provided.");
   }
-
-  std::cerr << "Got to second phase." << std::endl;
 
   // recurrent variables setup
   // declarations
@@ -440,9 +374,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   }
 
   // processing
-  std::cerr << "Got to phase 3." << std::endl;
-  std::cerr << "Working vector sizes:\nRenders: " << renders.size()
-            << "\nStats:" << stats.size() << std::endl;
   frame.create(windowSize.x, windowSize.y);
   switch (opt) {
     case VideoOpts::justGas: {
@@ -613,12 +544,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                              static_cast<unsigned>(windowSize.y * 0.9)};
         if (stats.size()) {
-          std::cerr << "Found stats size = " << stats.size()
-                    << " the dough smells like my dick man the girls eat it."
-                    << std::endl;
           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
           if (*fTime + gDeltaT < stats.front().getTime0()) {
-            std::cerr << "Inserting empty data" << std::endl;
             for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
               graph->AddPoint(*fTime, -1.);
@@ -631,7 +558,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.clear();
 
             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-            std::cerr << "Calling drawObj, oh boy" << std::endl;
             drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
             drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
@@ -756,13 +682,9 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
           trnsfrImg->Delete();
         } else if (renders.size()) {
-          std::cerr << "Found renders size = " << renders.size()
-                    << " but I never pop erections." << std::endl;
           assert(renders.back().second == gTime);
           if (*fTime + gDeltaT < gTime ||
               isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
-            std::cerr << "Found fTime + gDeltaT " << *fTime + gDeltaT << " < "
-                      << *gTime << ", gTime." << std::endl;
             for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
               graph->AddPoint(*fTime, -1.);
@@ -775,10 +697,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.clear();
 
             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-            std::cerr << "Calling drawObj" << std::endl;
             drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
             drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
-            std::cerr << "Called drawObj" << std::endl;
 
             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
@@ -793,7 +713,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(NText);
             frame.draw(TText);
             box.setPosition(windowSize.x * 0.5, 0.);
-            std::cerr << "Got to actual renders insertion." << std::endl;
             size_t rIndex{0};
             while (*fTime + gDeltaT < gTime ||
                    isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
@@ -802,7 +721,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               assert(isIntMultOf(*gTime - *fTime, gDeltaT));
               if (renders.size() > rIndex &&
                   isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
-                std::cerr << "Inserting render n. " << rIndex << std::endl;
                 box.setScale(
                     gasSize.x / (float)renders[rIndex].first.getSize().x,
                     gasSize.y / (float)renders[rIndex].first.getSize().y);
@@ -811,7 +729,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                 frame.draw(timeText);
                 frame.display();
               } else {
-                std::cerr << "Inserting placeholder." << std::endl;
                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
                              gasSize.y / (float)placeholder.getSize().y);
                 box.setTexture(placeholder, true);
@@ -828,7 +745,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         break;
       }  // case scope end
     case VideoOpts::all: {  // case scope
-      std::cerr << "Inserting frames: ";
       if (renders.size()) {
         assert(fTime <= getRendersT0(renders));
         assert(gTime == renders.back().second);
@@ -837,8 +753,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                            static_cast<unsigned>(windowSize.y * 0.9)};
       if (stats.size()) {
-        std::cerr << "Found stats size = " << stats.size()
-                  << " I don't wanna be around a woman anymo." << std::endl;
         auxTxtr.create(windowSize.x * 0.25, windowSize.y * 0.5);
         if (*fTime + gDeltaT < stats.front().getTime0()) {
           for (size_t i{0}; i < 7; ++i) {
@@ -909,10 +823,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                                     return value < stat.getTime0();
                                   }) -
                  1};
-          std::cerr << std::endl
-                    << "Switching to s = " << s - stats.begin()
-                    << ": fTime = " << *fTime << ", s.t0 = " << s->getTime0()
-                    << " ";
           assert(s >= stats.begin());
           assert(s != stats.end());
           TdStats const& stat{*s};
@@ -935,13 +845,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           kBGraph.AddPoint(stat.getTime(),
                            stat.getPressure() * stat.getVolume() /
                                (stat.getNParticles() * stat.getTemp()));
-          /*
-          std::cerr << "Added kB measurement to graph from starting data: \n"
-          << "Pressure = " << stat.getPressure()
-          << "\nVolume = " << stat.getVolume()
-          << "\nTemperature = " << stat.getTemp()
-          << "\nNParticles = " << stat.getNParticles() << std::endl;
-          */
           TH1D speedH;
           speedH = stat.getSpeedH();
 
@@ -993,12 +896,9 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               frame.display();
             }
             frames.emplace_back(frame.getTexture());
-            std::cerr << rIndex << " ";
           }
         }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
       } else if (renders.size()) {
-        std::cerr << "Found renders size = " << renders.size()
-                  << " they so fucking loud." << std::endl;
         for (size_t i{0}; i < 7; ++i) {
           TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
           graph->AddPoint(*fTime, -1.);
@@ -1066,7 +966,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       throw std::invalid_argument("Invalid video option provided.");
   }
 
-  std::cerr << "\nDone, returning." << std::endl;
   return frames;
 }
 
