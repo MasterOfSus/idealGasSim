@@ -1,12 +1,12 @@
-#include <execution>
-#include <stdexcept>
+#include "Camera.hpp"
 
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
+#include <execution>
+#include <stdexcept>
 
-#include "Camera.hpp"
 #include "../DataProcessing/GasData.hpp"
 
 namespace GS {
@@ -17,7 +17,8 @@ void Camera::setSightVector(GSVectorF const& sightVector) {
   if (sightVector.norm() > 0.f) {
     this->sightVector = sightVector / sightVector.norm();
   } else {
-    throw std::invalid_argument("setSightVector error: O vector cannot be normalized");
+    throw std::invalid_argument(
+        "setSightVector error: O vector cannot be normalized");
   }
 }
 
@@ -25,7 +26,8 @@ void Camera::setPlaneDistance(const float distance) {
   if (distance > 0.f) {
     planeDistance = distance;
   } else {
-    throw std::invalid_argument("setPlaneDistance error: provided non positive distance");
+    throw std::invalid_argument(
+        "setPlaneDistance error: provided non positive distance");
   }
 }
 
@@ -33,14 +35,16 @@ void Camera::setFOV(const float FOV) {  // in degrees
   if (FOV > 0.f && FOV < 180.f) {
     fov = FOV;
   } else {
-    throw std::invalid_argument("setFOV error: provided bad FOV (accepted range: 0.f, 180.f)");
+    throw std::invalid_argument(
+        "setFOV error: provided bad FOV (accepted range: 0.f, 180.f)");
   }
 }
 
 void Camera::setResolution(unsigned height, unsigned width) {
-	if (!height || !width) {
-		throw std::invalid_argument("setResolution error: provided null height or width");
-	}
+  if (!height || !width) {
+    throw std::invalid_argument(
+        "setResolution error: provided null height or width");
+  }
   this->height = height;
   this->width = width;
 }
@@ -50,7 +54,8 @@ void Camera::setAspectRatio(
   if (ratio > 0.f) {
     height = static_cast<unsigned>(width / ratio);
   } else {
-    throw std::invalid_argument("setAspectRatio error: non-positive ratio provided");
+    throw std::invalid_argument(
+        "setAspectRatio error: non-positive ratio provided");
   }
 }
 
@@ -78,7 +83,7 @@ GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
   GSVectorF focus{getFocus()};
   GSVectorF sight{getSight()};
   GSVectorF a{focus +
-             (focus - point) / ((focus - point) * sight) * getPlaneDistance()};
+              (focus - point) / ((focus - point) * sight) * getPlaneDistance()};
   // a = intersection of line passing through point and focus and the
   // perspective plane
 
@@ -151,7 +156,7 @@ inline void preCollSpeed(GSVectorD& v1, GSVectorD& v2, GSVectorD const& n) {
 }
 
 std::vector<GSVectorF> Camera::projectParticles(GasData const& data,
-                                               double deltaT) const {
+                                                double deltaT) const {
   std::vector<GSVectorF> projections{};
   GSVectorF proj{};
 
@@ -174,7 +179,7 @@ std::vector<GSVectorF> Camera::projectParticles(GasData const& data,
 
       proj = getPointProjection(
           static_cast<GSVectorF>(particles[p1I].position +
-                                preCollSpeed(speed, data.getWall()) * deltaT));
+                                 preCollSpeed(speed, data.getWall()) * deltaT));
       if (proj.z <= 1.f && proj.z > 0.f) {
         projections.emplace_back(proj);
       }
@@ -311,33 +316,33 @@ std::array<GSVectorF, 6> gasWallData(GasLike const& gasLike, char wall) {
   switch (wall) {
     case 'u':
       return {GSVectorF(0.f, 0.f, side), {side, 0.f, side},
-              {side, side, side},       {0.f, side, side},
-              {0.f, 0.f, 1.f},          {side / 2.f, side / 2.f, side}};
+              {side, side, side},        {0.f, side, side},
+              {0.f, 0.f, 1.f},           {side / 2.f, side / 2.f, side}};
       break;
     case 'd':
       return {GSVectorF(0.f, 0.f, 0.f), {side, 0.f, 0.f},
-              {side, side, 0.f},       {0.f, side, 0.f},
-              {0.f, 0.f, -1.f},        {side / 2.f, side / 2.f, 0.f}};
+              {side, side, 0.f},        {0.f, side, 0.f},
+              {0.f, 0.f, -1.f},         {side / 2.f, side / 2.f, 0.f}};
       break;
     case 'l':
       return {GSVectorF(0.f, 0.f, 0.f), {0.f, side, 0.f},
-              {0.f, side, side},       {0.f, 0.f, side},
-              {-1.f, 0.f, 0.f},        {0.f, side / 2.f, side / 2.f}};
+              {0.f, side, side},        {0.f, 0.f, side},
+              {-1.f, 0.f, 0.f},         {0.f, side / 2.f, side / 2.f}};
       break;
     case 'r':
       return {GSVectorF(side, 0.f, 0.f), {side, side, 0.f},
-              {side, side, side},       {side, 0.f, side},
-              {1.f, 0.f, 0.f},          {side, side / 2.f, side / 2.f}};
+              {side, side, side},        {side, 0.f, side},
+              {1.f, 0.f, 0.f},           {side, side / 2.f, side / 2.f}};
       break;
     case 'f':
       return {GSVectorF(0.f, 0.f, 0.f), {side, 0.f, 0.f},
-              {side, 0.f, side},       {0.f, 0.f, side},
-              {0.f, -1.f, 0.f},        {side / 2.f, 0.f, side / 2.f}};
+              {side, 0.f, side},        {0.f, 0.f, side},
+              {0.f, -1.f, 0.f},         {side / 2.f, 0.f, side / 2.f}};
       break;
     case 'b':
       return {GSVectorF(0.f, side, 0.f), {side, side, 0.f},
-              {side, side, side},       {0.f, side, side},
-              {0.f, 1.f, 0.f},          {side / 2.f, side, side / 2.f}};
+              {side, side, side},        {0.f, side, side},
+              {0.f, 1.f, 0.f},           {side / 2.f, side, side / 2.f}};
       break;
   };
   return {};
@@ -345,7 +350,7 @@ std::array<GSVectorF, 6> gasWallData(GasLike const& gasLike, char wall) {
 
 template std::array<GSVectorF, 6> gasWallData<Gas>(Gas const& gas, char wall);
 template std::array<GSVectorF, 6> gasWallData<GasData>(GasData const& gasData,
-                                                      char wall);
+                                                       char wall);
 
 // the speeds after the collision are reversed, so a particle who just had a
 // collision needs to be drawn with the speed opposite to the one it has in the

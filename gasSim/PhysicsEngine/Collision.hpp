@@ -17,6 +17,7 @@ struct Collision {
   Collision(double time, Particle* p);
 
   Particle* getP1() { return p1; };
+
  private:
   Particle* p1;
   double time;
@@ -29,6 +30,7 @@ struct PWCollision final : public Collision {
   void solve() override;
 
   PWCollision(double time, Particle* p1, Wall wall);
+
  private:
   Wall wall;
 };
@@ -40,6 +42,7 @@ struct PPCollision final : public Collision {
   void solve() override;
 
   PPCollision(double time, Particle* p1, Particle* p2);
+
  private:
   Particle* p2;
 };

@@ -6,7 +6,8 @@ namespace GS {
 
 Collision::Collision(double time, Particle* p1) : p1{p1}, time{time} {
   if (time < 0.) {
-    throw std::invalid_argument("Collision constructor error: provided negative time");
+    throw std::invalid_argument(
+        "Collision constructor error: provided negative time");
   }
 }
 
@@ -21,17 +22,18 @@ void PWCollision::solve() {
     case Wall::Left:
     case Wall::Right:
       p->speed.x = -p->speed.x;
-			break;
+      break;
     case Wall::Front:
     case Wall::Back:
       p->speed.y = -p->speed.y;
-			break;
+      break;
     case Wall::Top:
     case Wall::Bottom:
       p->speed.z = -p->speed.z;
-			break;
+      break;
     default:
-      throw std::logic_error("PWCollision constructor error: provided invalid wall type.");
+      throw std::logic_error(
+          "PWCollision constructor error: provided invalid wall type.");
   }
 }
 

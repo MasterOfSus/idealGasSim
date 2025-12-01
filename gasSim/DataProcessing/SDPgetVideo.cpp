@@ -1,7 +1,3 @@
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-
 #include <RtypesCore.h>
 #include <TCanvas.h>
 #include <TGraph.h>
@@ -14,6 +10,9 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 
 #include "SimDataPipeline.hpp"
 
@@ -34,7 +33,7 @@ void RGBA32toRGBA8(UInt_t const* rgbaBffr, size_t w, size_t h,
   size_t total{w * h};
   pixels.resize(total * 4);
 
-  for(size_t idx {0}; idx < total; ++idx) {
+  for (size_t idx{0}; idx < total; ++idx) {
     UInt_t rgba = rgbaBffr[idx];
     size_t base = idx * 4;
 
@@ -47,21 +46,20 @@ void RGBA32toRGBA8(UInt_t const* rgbaBffr, size_t w, size_t h,
 // chatGPT wrote this
 
 std::string round2(double x) {
+  static std::ostringstream ss;
+  ss.str("");
+  ss.clear();
+  ss << std::fixed << std::setprecision(2) << x;
 
-    static std::ostringstream ss;
-		ss.str("");
-		ss.clear();
-    ss << std::fixed << std::setprecision(2) << x;
-
-    return ss.str();
+  return ss.str();
 }
 
 std::string scientificNotation(double x, size_t nDigits = 2) {
-	static std::ostringstream ss;
-	ss.str("");
-	ss.clear();
-	ss << std::scientific << std::setprecision(nDigits) << std::uppercase << x;
-	return ss.str();
+  static std::ostringstream ss;
+  ss.str("");
+  ss.clear();
+  ss << std::scientific << std::setprecision(nDigits) << std::uppercase << x;
+  return ss.str();
 }
 
 std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
@@ -69,33 +67,37 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     TList& outputGraphs, bool emptyStats,
     std::function<void(TH1D&, VideoOpts)> fitLambda,
     std::array<std::function<void()>, 4> drawLambdas) {
-  static int nExec {0};
-  std::cerr << std::endl << "Started getVideo, call number " << ++nExec <<
-  std::endl;
+  static int nExec{0};
+  std::cerr << std::endl
+            << "Started getVideo, call number " << ++nExec << std::endl;
 
   if ((opt == VideoOpts::justStats &&
-			(windowSize.x < 600 || windowSize.y < 600)) ||
+       (windowSize.x < 600 || windowSize.y < 600)) ||
       (opt != VideoOpts::justStats &&
-			(windowSize.x < 800 || windowSize.y < 600))) {
-    throw std::invalid_argument("getVideo error: provided window size is too small");
+       (windowSize.x < 800 || windowSize.y < 600))) {
+    throw std::invalid_argument(
+        "getVideo error: provided window size is too small");
   }
 
-	if (outputGraphs.GetSize() < 3) {
-		throw std::invalid_argument("getVideo error: provided graphsList with less than three elements");
-	}
+  if (outputGraphs.GetSize() < 3) {
+    throw std::invalid_argument(
+        "getVideo error: provided graphsList with less than three elements");
+  }
   if (!(outputGraphs.At(0)->IsA() == TMultiGraph::Class() &&
         outputGraphs.At(1)->IsA() == TGraph::Class() &&
         outputGraphs.At(2)->IsA() == TGraph::Class())) {
-    throw std::invalid_argument("getVideo error: provided graphs list with wrong object types");
+    throw std::invalid_argument(
+        "getVideo error: provided graphs list with wrong object types");
   }
 
   if (((TMultiGraph*)outputGraphs.At(0))->GetListOfGraphs()->GetSize() != 7) {
-    throw std::invalid_argument("getVideo error: provided multigraph number of graphs != 7");
+    throw std::invalid_argument(
+        "getVideo error: provided multigraph number of graphs != 7");
   }
 
-	if (font.getInfo().family.empty()) {
-		throw std::runtime_error("getVideo error: called without setting font");
-	}
+  if (font.getInfo().family.empty()) {
+    throw std::runtime_error("getVideo error: called without setting font");
+  }
 
   std::deque<std::pair<sf::Texture, double>> renders{};
   std::vector<TdStats> stats{};
@@ -110,7 +112,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       return *gTime;
     } else {
       throw std::logic_error(
-          "getVideo error: tried to get render time for output with no time set");
+          "getVideo error: tried to get render time for output with no time "
+          "set");
     }
   };
 
@@ -120,8 +123,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   // fTime_ initialization, either through gTime_ or through stats[0]
   switch (opt) {
     case VideoOpts::justGas: {  // case scope
-		std::cerr << "Case justGas." << std::endl;
-      {                         // lock scope
+      std::cerr << "Case justGas." << std::endl;
+      {  // lock scope
         std::lock_guard<std::mutex> rGuard{rendersMtx};
         {  // locks scope 2
           std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
@@ -141,60 +144,66 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       if ((!fTime.has_value() || !isIntMultOf(*gTime - *fTime, gDeltaT))) {
         fTime = getRendersT0(renders) - gDeltaT;
       }
-			std::cerr << "Extracted renders size " << renders.size() << std::endl;
-			std::cerr << "Renders time0 = " << renders.front().second << " and time = " << renders.back().second << " with gTime = " << *gTime << " and fTime = " << *fTime << std::endl;
+      std::cerr << "Extracted renders size " << renders.size() << std::endl;
+      std::cerr << "Renders time0 = " << renders.front().second
+                << " and time = " << renders.back().second
+                << " with gTime = " << *gTime << " and fTime = " << *fTime
+                << std::endl;
       break;
     }  // end of case scope
     case VideoOpts::justStats: {  // lock/case scope
-			std::cerr << "Case justStats." << std::endl;
+      std::cerr << "Case justStats." << std::endl;
       std::lock_guard<std::mutex> sGuard{statsMtx};
       {  // locks scope 2
         std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
         gTime = this->gTime;
       }  // end of locks scope 2
       gDeltaT = this->gDeltaT.load();
-			std::cerr << "Loaded gTime and gDeltaT." << std::endl;
+      std::cerr << "Loaded gTime and gDeltaT." << std::endl;
       if (this->stats.size()) {
-				std::cerr << "Found stats size " << this->stats.size() << std::endl;
+        std::cerr << "Found stats size " << this->stats.size() << std::endl;
         // setting fTime_
         if (!fTime.has_value()) {
-					std::cerr << "Setting fTime." << std::endl;
+          std::cerr << "Setting fTime." << std::endl;
           if (gTime.has_value()) {
-            fTime =
-                *gTime +
-                gDeltaT * std::floor((this->stats[0].getTime0() - *gTime) / gDeltaT);
+            fTime = *gTime +
+                    gDeltaT * std::floor((this->stats[0].getTime0() - *gTime) /
+                                         gDeltaT);
           } else {
             fTime = this->stats.front().getTime0() - gDeltaT;
           }
         }
         if (this->stats.back().getTime() >= *fTime + gDeltaT) {
-					std::cerr << "Extracting stats vector." << std::endl;
-					// find first where the next frame's time is before it 
-					// -> the one before it necessarily "contains" the frame time
+          std::cerr << "Extracting stats vector." << std::endl;
+          // find first where the next frame's time is before it
+          // -> the one before it necessarily "contains" the frame time
           auto sStartI{std::upper_bound(this->stats.begin(), this->stats.end(),
                                         *fTime + gDeltaT,
                                         [](double value, TdStats const& s) {
                                           return value < s.getTime0();
-                                        }) - 1};
-					std::cerr << "Found sStartI " << sStartI - this->stats.begin() << std::endl;
-					if (sStartI < this->stats.begin()) {
-						std::cerr << "Setting sStartI to stats begin." << std::endl;
-						sStartI = this->stats.begin();
-					}
+                                        }) -
+                       1};
+          std::cerr << "Found sStartI " << sStartI - this->stats.begin()
+                    << std::endl;
+          if (sStartI < this->stats.begin()) {
+            std::cerr << "Setting sStartI to stats begin." << std::endl;
+            sStartI = this->stats.begin();
+          }
           if (emptyStats) {
-						std::cerr << "Moving stats vector." << std::endl;
-            stats.insert(stats.end(),
-								std::make_move_iterator(sStartI),
-                std::make_move_iterator(this->stats.end()));
+            std::cerr << "Moving stats vector." << std::endl;
+            stats.insert(stats.end(), std::make_move_iterator(sStartI),
+                         std::make_move_iterator(this->stats.end()));
             this->stats.clear();
           } else {
-						std::cerr << "Copying stats vector." << std::endl;
+            std::cerr << "Copying stats vector." << std::endl;
             stats = std::vector<TdStats>{sStartI, this->stats.end()};
           }
-				} else {
-					std::cerr << "Found fTime + gDeltaT > stats back time, returning empty." << std::endl;
-					return {};
-				}
+        } else {
+          std::cerr
+              << "Found fTime + gDeltaT > stats back time, returning empty."
+              << std::endl;
+          return {};
+        }
       } else {
         std::cerr << "Found empty stats_, returning empty vector." << std::endl;
         return {};
@@ -202,9 +211,9 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       break;
     }  // end of lock/case scope
     case VideoOpts::all:
-			std::cerr << "VideoOpt all." << std::endl;
+      std::cerr << "VideoOpt all." << std::endl;
     case VideoOpts::gasPlusCoords: {  // locks/case scope
-			std::cerr << "VideoOpt gasPlusCoords." << std::endl;
+      std::cerr << "VideoOpt gasPlusCoords." << std::endl;
       std::unique_lock<std::mutex> resultsLock{outputMtx};
       outputCv.wait_for(resultsLock, std::chrono::milliseconds(50),
                         [this]() { return addedResults.load(); });
@@ -215,27 +224,24 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         gTime = this->gTime;
       }  // end of lock scope 2
       gDeltaT = this->gDeltaT.load();
-      std::cerr <<
-                                      "Initialized gTime with value " <<
-                                      (gTime.has_value()?
-      std::to_string(*gTime): "empty") <<
-                                      ", gDeltaT with value " << gDeltaT <<
-                                      std::endl;
+      std::cerr << "Initialized gTime with value "
+                << (gTime.has_value() ? std::to_string(*gTime) : "empty")
+                << ", gDeltaT with value " << gDeltaT << std::endl;
       if (!gTime.has_value()) {
         return {};
       }
       if (this->renders.size() || this->stats.size()) {
         std::cerr << "Found sizes: renders_ = " << this->renders.size()
-        << ", stats_ = " << this->stats.size() << std::endl;
+                  << ", stats_ = " << this->stats.size() << std::endl;
         //  dealing with fTime_
         if (!fTime.has_value() || !isIntMultOf(*gTime - *fTime, gDeltaT)) {
           // std::cerr << "Setting fTime_. Because ";
-          //if (fTime.has_value()) {
-            // std::cerr << "isIntMultOf returned " << isIntMultOf(*gTime -
-            // *fTime_, gDeltaT) << " for gTime - fTime_ = " << *gTime - *fTime_
-            //<< ", gDeltaT = " << gDeltaT;
+          // if (fTime.has_value()) {
+          // std::cerr << "isIntMultOf returned " << isIntMultOf(*gTime -
+          // *fTime_, gDeltaT) << " for gTime - fTime_ = " << *gTime - *fTime_
+          //<< ", gDeltaT = " << gDeltaT;
           //} else {
-            // std::cerr << "fTime_.has_value returned " << fTime_.has_value();
+          // std::cerr << "fTime_.has_value returned " << fTime_.has_value();
           //}
           // std::cerr << std::endl;
           if (!this->stats.size()) {
@@ -252,21 +258,21 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                       gDeltaT * std::floor((this->stats[0].getTime0() -
                                             getRendersT0(this->renders)) /
                                            gDeltaT);
-              std::cerr << "Found getRendersT0 = " << getRendersT0(this->renders)
-                                              << ", stats beginning = " <<
-              this->stats[0].getTime0()
-                                              << "; set fTime_ to " << *fTime
-              << std::endl;
+              std::cerr << "Found getRendersT0 = "
+                        << getRendersT0(this->renders)
+                        << ", stats beginning = " << this->stats[0].getTime0()
+                        << "; set fTime_ to " << *fTime << std::endl;
             } else {
               fTime = getRendersT0(this->renders) - gDeltaT;
-              std::cerr << "Found getRendersT0 = " << getRendersT0(this->renders)
-              << ", stats beginning = " << this->stats[0].getTime0()
-              << "; set fTime_ to " << *fTime << std::endl;
+              std::cerr << "Found getRendersT0 = "
+                        << getRendersT0(this->renders)
+                        << ", stats beginning = " << this->stats[0].getTime0()
+                        << "; set fTime_ to " << *fTime << std::endl;
             }
           }
-          std::cerr << "Set fTime_. Now fTime_.has_value() returns " <<
-          fTime.has_value() << " with value = " << fTime.value() <<
-          std::endl;
+          std::cerr << "Set fTime_. Now fTime_.has_value() returns "
+                    << fTime.has_value() << " with value = " << fTime.value()
+                    << std::endl;
         }
 
         std::cerr << "Starting vector segments extraction." << std::endl;
@@ -276,16 +282,20 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                                         *fTime + gDeltaT,
                                         [](double value, TdStats const& s) {
                                           return value < s.getTime0();
-                                        }) - 1};
-					if (sStartI < this->stats.begin()) {
-						sStartI = this->stats.begin();
-					}
-          std::cerr << "There's nothing to fear but BIG SCARY MONSTERS AAAAAHHHHH!!!!!!!!\n";
-					std::cerr << "Found sStartI = " << sStartI -
-          this->stats.begin() << std::endl; std::cerr << "fTime_ value = " <<
-          *fTime << " with stats_ front Time0 = " <<
-          this->stats.front().getTime0() << " and Time = " <<
-          this->stats.front().getTime() << std::endl;
+                                        }) -
+                       1};
+          if (sStartI < this->stats.begin()) {
+            sStartI = this->stats.begin();
+          }
+          std::cerr << "There's nothing to fear but BIG SCARY MONSTERS "
+                       "AAAAAHHHHH!!!!!!!!\n";
+          std::cerr << "Found sStartI = " << sStartI - this->stats.begin()
+                    << std::endl;
+          std::cerr << "fTime_ value = " << *fTime
+                    << " with stats_ front Time0 = "
+                    << this->stats.front().getTime0()
+                    << " and Time = " << this->stats.front().getTime()
+                    << std::endl;
           if (sStartI != this->stats.end()) {
             auto gStartI{std::upper_bound(this->renders.begin(),
                                           this->renders.end(), *fTime + gDeltaT,
@@ -299,10 +309,9 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                                         [](double value, auto const& render) {
                                           return value < render.second;
                                         })};
-            std::cerr << "Found gStartI = " << gStartI -
-            this->renders.begin()
-            << ", gEndI = " << gEndI - this->renders.begin() << ", with gSize = "
-            << renders.size() << std::endl;
+            std::cerr << "Found gStartI = " << gStartI - this->renders.begin()
+                      << ", gEndI = " << gEndI - this->renders.begin()
+                      << ", with gSize = " << renders.size() << std::endl;
             if (emptyStats) {
               stats.insert(stats.end(), std::make_move_iterator(sStartI),
                            std::make_move_iterator(this->stats.end()));
@@ -319,16 +328,18 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                            std::make_move_iterator(gEndI));
             this->renders.clear();
           }
-          std::cerr << "Extracted vectors. Result sizes: stats size = " <<
-          stats.size() << ", renders size = " << renders.size() << std::endl;
+          std::cerr << "Extracted vectors. Result sizes: stats size = "
+                    << stats.size() << ", renders size = " << renders.size()
+                    << std::endl;
           if (!stats.size() && !renders.size()) {
-						std::cerr << "Returning because found both vectors empty." << std::endl;
+            std::cerr << "Returning because found both vectors empty."
+                      << std::endl;
             return {};
           }
         } else {
           auto gStartI{std::upper_bound(this->renders.begin(),
                                         this->renders.end(), *fTime + gDeltaT,
-                                        [](double value, auto const& render){
+                                        [](double value, auto const& render) {
                                           return value <= render.second;
                                         })};
           // same as above
@@ -338,7 +349,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         }
       } else {
         std::cerr << "Found empty stats and renders, returning empty vector."
-        << std::endl;
+                  << std::endl;
         return {};
       }
       addedResults.store(false);
@@ -362,13 +373,13 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   std::ostringstream Num{};
   sf::Text NText;
   sf::RectangleShape txtBox;
-	sf::Text timeText;
-	timeText.setFont(font);
-	timeText.setCharacterSize(18);
-	timeText.setFillColor(sf::Color::Black);
-	timeText.setOutlineColor(sf::Color::White);
-	timeText.setOutlineThickness(1.);
-	timeText.setPosition(windowSize.x * 0.01, windowSize.y * 0.01);
+  sf::Text timeText;
+  timeText.setFont(font);
+  timeText.setCharacterSize(18);
+  timeText.setFillColor(sf::Color::Black);
+  timeText.setOutlineColor(sf::Color::White);
+  timeText.setOutlineThickness(1.);
+  timeText.setPosition(windowSize.x * 0.01, windowSize.y * 0.01);
   // graphs
   TMultiGraph& pGraphs{*(TMultiGraph*)outputGraphs.At(0)};
   TGraph& kBGraph{*(TGraph*)outputGraphs.At(1)};
@@ -391,14 +402,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     if (drawLambda) {
       drawLambda();
     }
-		cnvs.Modified();
+    cnvs.Modified();
     cnvs.Update();
-		trnsfrImg = TImage::Create();
+    trnsfrImg = TImage::Create();
     trnsfrImg->FromPad(&cnvs);
-		auto* buf {trnsfrImg->GetRgbaArray()};
-		if (!buf) {
-			throw std::runtime_error("Failed to retrieve image RGBA array, aborting");
-		}
+    auto* buf{trnsfrImg->GetRgbaArray()};
+    if (!buf) {
+      throw std::runtime_error("Failed to retrieve image RGBA array, aborting");
+    }
     RGBA32toRGBA8(trnsfrImg->GetRgbaArray(), trnsfrImg->GetWidth(),
                   trnsfrImg->GetHeight(), pixels);
     auxTxtr.update(pixels.data());
@@ -425,7 +436,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         TText = {"T = " + Temp.str() + "K", font, 18};
         TText.setFont(font);
         TText.setFillColor(sf::Color::Black);
-        VText = {"V = " + scientificNotation(stats[0].getVolume()) + "m^3", font, 18};
+        VText = {"V = " + scientificNotation(stats[0].getVolume()) + "m^3",
+                 font, 18};
         VText.setFont(font);
         VText.setFillColor(sf::Color::Black);
         Num << std::fixed << std::setprecision(2) << stats[0].getNParticles();
@@ -443,7 +455,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
   // processing
   std::cerr << "Got to phase 3." << std::endl;
-	std::cerr << "Working vector sizes:\nRenders: " << renders.size() << "\nStats:" << stats.size() << std::endl;
+  std::cerr << "Working vector sizes:\nRenders: " << renders.size()
+            << "\nStats:" << stats.size() << std::endl;
   frame.create(windowSize.x, windowSize.y);
   switch (opt) {
     case VideoOpts::justGas: {
@@ -459,7 +472,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         while (*fTime + gDeltaT < gTime ||
                isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
           *fTime += gDeltaT;
-					timeText.setString("time = " + round2(*fTime));
+          timeText.setString("time = " + round2(*fTime));
           assert(isIntMultOf(*gTime - *fTime, gDeltaT));
           if (renders.size() > rIndex &&
               isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
@@ -469,7 +482,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                 windowSize.y / (float)renders[rIndex].first.getSize().y);
             box.setTexture(renders[rIndex++].first);
             frame.draw(box);
-						frame.draw(timeText);
+            frame.draw(timeText);
             frame.display();
           } else {
             // std::cout << "Inserting placeholder.";
@@ -477,7 +490,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                          windowSize.y / (float)placeholder.getSize().y);
             box.setTexture(placeholder, true);
             frame.draw(box);
-						frame.draw(timeText);
+            frame.draw(timeText);
             frame.display();
           }
           frames.emplace_back(frame.getTexture());
@@ -615,32 +628,34 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       }
       break;
     case VideoOpts::gasPlusCoords:
-			if (renders.size()) {
-      	assert(gTime == renders.back().second);
-      	assert(fTime <= getRendersT0(renders));
-			}
+      if (renders.size()) {
+        assert(gTime == renders.back().second);
+        assert(fTime <= getRendersT0(renders));
+      }
       {  // case scope
-				timeText.setPosition(windowSize.x * 0.51, windowSize.y * 0.01);
+        timeText.setPosition(windowSize.x * 0.51, windowSize.y * 0.01);
         sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                              static_cast<unsigned>(windowSize.y * 0.9)};
         if (stats.size()) {
-					std::cerr << "Found stats size = " << stats.size() << " the dough smells like my dick man the girls eat it."<< std::endl;
+          std::cerr << "Found stats size = " << stats.size()
+                    << " the dough smells like my dick man the girls eat it."
+                    << std::endl;
           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
           if (*fTime + gDeltaT < stats.front().getTime0()) {
-						std::cerr << "Inserting empty data" << std::endl;
+            std::cerr << "Inserting empty data" << std::endl;
             for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
-							graph->AddPoint(*fTime, -1.);
-							graph->AddPoint(stats.front().getTime0(), -1.);
+              graph->AddPoint(*fTime, -1.);
+              graph->AddPoint(stats.front().getTime0(), -1.);
             }
 
-						kBGraph.AddPoint(*fTime, -1.);
-						kBGraph.AddPoint(stats.front().getTime0(), -1.);
+            kBGraph.AddPoint(*fTime, -1.);
+            kBGraph.AddPoint(stats.front().getTime0(), -1.);
 
             frame.clear();
 
             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-						std::cerr << "Calling drawObj, oh boy" << std::endl;
+            std::cerr << "Calling drawObj, oh boy" << std::endl;
             drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
             drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
@@ -661,7 +676,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             size_t rIndex{0};
             while (*fTime + gDeltaT < stats.front().getTime0()) {
               *fTime += gDeltaT;
-							timeText.setString("time = " + round2(*fTime));
+              timeText.setString("time = " + round2(*fTime));
               assert(isIntMultOf(*gTime - *fTime, gDeltaT));
               if (renders.size() > rIndex &&
                   isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
@@ -670,14 +685,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                     gasSize.y / (float)renders[rIndex].first.getSize().y);
                 box.setTexture(renders[rIndex++].first);
                 frame.draw(box);
-								frame.draw(timeText);
+                frame.draw(timeText);
                 frame.display();
               } else {
                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
                              gasSize.y / (float)placeholder.getSize().y);
                 box.setTexture(placeholder, true);
                 frame.draw(box);
-								frame.draw(timeText);
+                frame.draw(timeText);
                 frame.display();
               }
               frames.emplace_back(frame.getTexture());
@@ -686,11 +701,13 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           assert(*fTime + gDeltaT >= stats.front().getTime0());
           size_t rIndex{0};
           while (*fTime + gDeltaT < stats.back().getTime()) {
-            auto s{std::upper_bound(stats.begin(), stats.end(), *fTime + gDeltaT,
-                                    [] (double value, TdStats const& stat) {
+            auto s{std::upper_bound(stats.begin(), stats.end(),
+                                    *fTime + gDeltaT,
+                                    [](double value, TdStats const& stat) {
                                       return value < stat.getTime0();
-                                    }) - 1};
-						assert(s >= stats.begin());
+                                    }) -
+                   1};
+            assert(s >= stats.begin());
             assert(s < stats.end());
             TdStats const& stat{*s};
             // make the graphs picture
@@ -739,7 +756,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             box.setPosition(windowSize.x * 0.5, 0.);  // huh?
             while (*fTime + gDeltaT < stat.getTime()) {
               *fTime += gDeltaT;
-							timeText.setString("time = " + round2(*fTime));
+              timeText.setString("time = " + round2(*fTime));
               assert(isIntMultOf(*gTime - *fTime, gDeltaT));
               if (renders.size() > rIndex &&
                   isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
@@ -748,14 +765,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                     gasSize.y / (float)renders[rIndex].first.getSize().y);
                 box.setTexture(renders[rIndex++].first);
                 frame.draw(box);
-								frame.draw(timeText);
+                frame.draw(timeText);
                 frame.display();
               } else {
                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
                              gasSize.y / (float)placeholder.getSize().y);
                 box.setTexture(placeholder, true);
                 frame.draw(box);
-								frame.draw(timeText);
+                frame.draw(timeText);
                 frame.display();
               }
               frames.emplace_back(frame.getTexture());
@@ -763,11 +780,13 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
           trnsfrImg->Delete();
         } else if (renders.size()) {
-					std::cerr << "Found renders size = " << renders.size() << " but I never pop erections."<< std::endl;
+          std::cerr << "Found renders size = " << renders.size()
+                    << " but I never pop erections." << std::endl;
           assert(renders.back().second == gTime);
           if (*fTime + gDeltaT < gTime ||
               isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
-						std::cerr << "Found fTime + gDeltaT " << *fTime + gDeltaT << " < " << *gTime << ", gTime." << std::endl;
+            std::cerr << "Found fTime + gDeltaT " << *fTime + gDeltaT << " < "
+                      << *gTime << ", gTime." << std::endl;
             for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
               graph->AddPoint(*fTime, -1.);
@@ -780,10 +799,10 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.clear();
 
             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
-						std::cerr << "Calling drawObj" << std::endl;
+            std::cerr << "Calling drawObj" << std::endl;
             drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
             drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
-						std::cerr << "Called drawObj" << std::endl;
+            std::cerr << "Called drawObj" << std::endl;
 
             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
@@ -800,30 +819,30 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             box.setPosition(windowSize.x * 0.5,
                             0.);  // huh, again, seems like I was thinking
                                   // bottom left corner
-						std::cerr << "Got to actual renders insertion." << std::endl;
+            std::cerr << "Got to actual renders insertion." << std::endl;
             size_t rIndex{0};
             while (*fTime + gDeltaT < gTime ||
                    isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
               *fTime += gDeltaT;
-							timeText.setString("time = " + round2(*fTime));
+              timeText.setString("time = " + round2(*fTime));
               assert(isIntMultOf(*gTime - *fTime, gDeltaT));
               if (renders.size() > rIndex &&
                   isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
-								std::cerr << "Inserting render n. " << rIndex << std::endl;
+                std::cerr << "Inserting render n. " << rIndex << std::endl;
                 box.setScale(
                     gasSize.x / (float)renders[rIndex].first.getSize().x,
                     gasSize.y / (float)renders[rIndex].first.getSize().y);
                 box.setTexture(renders[rIndex++].first);
                 frame.draw(box);
-								frame.draw(timeText);
+                frame.draw(timeText);
                 frame.display();
               } else {
-								std::cerr << "Inserting placeholder." << std::endl;
+                std::cerr << "Inserting placeholder." << std::endl;
                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
                              gasSize.y / (float)placeholder.getSize().y);
                 box.setTexture(placeholder, true);
                 frame.draw(box);
-								frame.draw(timeText);
+                frame.draw(timeText);
                 frame.display();
               }
               frames.emplace_back(frame.getTexture());
@@ -835,16 +854,17 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         break;
       }  // case scope end
     case VideoOpts::all: {  // case scope
-			std::cerr << "Inserting frames: ";
-			if (renders.size()) {
-      	assert(fTime <= getRendersT0(renders));
-      	assert(gTime == renders.back().second);
-			}
-			timeText.setPosition(windowSize.x * 0.26, windowSize.y * 0.01);
+      std::cerr << "Inserting frames: ";
+      if (renders.size()) {
+        assert(fTime <= getRendersT0(renders));
+        assert(gTime == renders.back().second);
+      }
+      timeText.setPosition(windowSize.x * 0.26, windowSize.y * 0.01);
       sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                            static_cast<unsigned>(windowSize.y * 0.9)};
       if (stats.size()) {
-				std::cerr << "Found stats size = " << stats.size() << " I don't wanna be around a woman anymo."<< std::endl;
+        std::cerr << "Found stats size = " << stats.size()
+                  << " I don't wanna be around a woman anymo." << std::endl;
         auxTxtr.create(windowSize.x * 0.25, windowSize.y * 0.5);
         if (*fTime + gDeltaT < stats.front().getTime0()) {
           for (size_t i{0}; i < 7; ++i) {
@@ -885,7 +905,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           size_t rIndex{0};
           while (*fTime + gDeltaT < stats.front().getTime0()) {
             *fTime += gDeltaT;
-						timeText.setString("time = " + round2(*fTime));
+            timeText.setString("time = " + round2(*fTime));
             assert(isIntMultOf(*gTime - *fTime, gDeltaT));
             if (renders.size() > rIndex &&
                 isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
@@ -894,30 +914,34 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                   gasSize.y / (float)renders[rIndex].first.getSize().y);
               box.setTexture(renders[rIndex++].first);
               frame.draw(box);
-							frame.draw(timeText);
+              frame.draw(timeText);
               frame.display();
             } else {
               box.setScale(gasSize.x / (float)placeholder.getSize().x,
                            gasSize.y / (float)placeholder.getSize().y);
               box.setTexture(placeholder, true);
               frame.draw(box);
-							frame.draw(timeText);
+              frame.draw(timeText);
               frame.display();
             }
             frames.emplace_back(frame.getTexture());
           }
         }
         size_t rIndex{0};
-				while (*fTime + gDeltaT < stats.back().getTime()) {
+        while (*fTime + gDeltaT < stats.back().getTime()) {
           assert(*fTime + gDeltaT >= stats.front().getTime0());
           auto s{std::upper_bound(stats.begin(), stats.end(), *fTime + gDeltaT,
                                   [gDeltaT](double value, TdStats const& stat) {
                                     return value < stat.getTime0();
-                                  }) - 1};
-					std::cerr << std::endl << "Switching to s = " << s - stats.begin() << ": fTime = " << *fTime << ", s.t0 = " << s->getTime0() << " ";
+                                  }) -
+                 1};
+          std::cerr << std::endl
+                    << "Switching to s = " << s - stats.begin()
+                    << ": fTime = " << *fTime << ", s.t0 = " << s->getTime0()
+                    << " ";
           // std::cerr << "Found stat index = " << s - stats.begin() << " for
           // fTime_ = " << *fTime_ + gDeltaT << std::endl;
-					assert(s >= stats.begin());
+          assert(s >= stats.begin());
           assert(s != stats.end());
           TdStats const& stat{*s};
           // make the graphs picture
@@ -978,7 +1002,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           box.setPosition(windowSize.x * 0.25, 0.);
           while (*fTime + gDeltaT < stat.getTime()) {
             *fTime += gDeltaT;
-						timeText.setString("time = " + round2(*fTime));
+            timeText.setString("time = " + round2(*fTime));
             assert(isIntMultOf(*gTime - *fTime, gDeltaT));
             if (renders.size() > rIndex &&
                 isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
@@ -987,22 +1011,23 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                   gasSize.y / (float)renders[rIndex].first.getSize().y);
               box.setTexture(renders[(rIndex++)].first);
               frame.draw(box);
-							frame.draw(timeText);
+              frame.draw(timeText);
               frame.display();
             } else {
               box.setScale(gasSize.x / (float)placeholder.getSize().x,
                            gasSize.y / (float)placeholder.getSize().y);
               box.setTexture(placeholder, true);
               frame.draw(box);
-							frame.draw(timeText);
+              frame.draw(timeText);
               frame.display();
             }
             frames.emplace_back(frame.getTexture());
-						std::cerr << rIndex << " ";
+            std::cerr << rIndex << " ";
           }
         }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
       } else if (renders.size()) {
-				std::cerr << "Found renders size = " << renders.size() << " they so fucking loud."<< std::endl;
+        std::cerr << "Found renders size = " << renders.size()
+                  << " they so fucking loud." << std::endl;
         for (size_t i{0}; i < 7; ++i) {
           TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
           graph->AddPoint(*fTime, -1.);
@@ -1042,7 +1067,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         while (*fTime + gDeltaT < gTime ||
                isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
           *fTime += gDeltaT;
-					timeText.setString("time = " + round2(*fTime));
+          timeText.setString("time = " + round2(*fTime));
           assert(isIntMultOf(*gTime - *fTime, gDeltaT));
           if (renders.size() > rIndex &&
               isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
@@ -1050,14 +1075,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                          gasSize.y / (float)renders[rIndex].first.getSize().y);
             box.setTexture(renders[rIndex++].first);
             frame.draw(box);
-						frame.draw(timeText);
+            frame.draw(timeText);
             frame.display();
           } else {
             box.setScale(gasSize.x / (float)placeholder.getSize().x,
                          gasSize.y / (float)placeholder.getSize().y);
             box.setTexture(placeholder, true);
             frame.draw(box);
-						frame.draw(timeText);
+            frame.draw(timeText);
             frame.display();
           }
           frames.emplace_back(frame.getTexture());
@@ -1071,7 +1096,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       throw std::invalid_argument("Invalid video option provided.");
   }
 
-	std::cerr << "\nDone, returning." << std::endl;
+  std::cerr << "\nDone, returning." << std::endl;
   return frames;
 }
 

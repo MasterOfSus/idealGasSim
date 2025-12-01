@@ -1,15 +1,14 @@
 #ifndef SIMDATAPIPELINE_HPP
 #define SIMDATAPIPELINE_HPP
 
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
 #include <functional>
 #include <mutex>
 #include <optional>
-
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Font.hpp>
 
 #include "../Graphics.hpp"
 #include "TdStats.hpp"
@@ -49,7 +48,7 @@ class SimDataPipeline {
   bool isDone() { return dataDone.load(); }
   void setDone() { dataDone.store(true); }
 
-	void setFont(sf::Font const& font);
+  void setFont(sf::Font const& font);
 
  private:
   void processStats(std::vector<GasData> const& data, bool mfpMemory);
@@ -85,7 +84,7 @@ class SimDataPipeline {
   std::optional<size_t> nParticles;
 
   const TH1D speedsHTemplate;
-	sf::Font font;
+  sf::Font font;
 };
 }  // namespace GS
 

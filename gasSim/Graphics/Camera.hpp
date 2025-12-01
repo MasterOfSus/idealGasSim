@@ -34,10 +34,10 @@ class Camera {
 
   // useful functions
   GSVectorF getPointProjection(GSVectorF const& point) const;
-  std::vector<GSVectorF> projectParticles(std::vector<Particle> const& particles,
-                                         double deltaT = 0.) const;
+  std::vector<GSVectorF> projectParticles(
+      std::vector<Particle> const& particles, double deltaT = 0.) const;
   std::vector<GSVectorF> projectParticles(GasData const& data,
-                                         double deltaT) const;
+                                          double deltaT) const;
 
   // auxiliary member functions
   float getTopSide() const;

@@ -3,7 +3,7 @@
 namespace GS {
 
 bool operator==(Particle const& p1, Particle const& p2) {
-	return p1.position == p2.position && p1.speed == p2.speed;
+  return p1.position == p2.position && p1.speed == p2.speed;
 }
 
 bool overlap(Particle const& p1, Particle const& p2) {
@@ -11,7 +11,7 @@ bool overlap(Particle const& p1, Particle const& p2) {
 }
 
 double energy(Particle const& p) {
-	return p.speed * p.speed * Particle::getMass() / 2.;
+  return p.speed * p.speed * Particle::getMass() / 2.;
 }
 
-}
+}  // namespace GS

@@ -24,7 +24,7 @@ struct Particle {
 
 bool operator==(Particle const& p1, Particle const& p2);
 bool overlap(Particle const& p1, Particle const& p2);
-double energy (Particle const& p);
+double energy(Particle const& p);
 
 }  // namespace GS
 
