@@ -136,6 +136,69 @@ TEST_CASE("Testing Particle") {
   }
 }
 
+TEST_CASE("Testing WallCollision") {
+  double time{4};
+
+  GS::GSVectorD vec1{10, 10, 0};
+  GS::GSVectorD vec2{0, 0, 10};
+  GS::Particle part1{vec1, vec2};
+
+  GS::PWCollision coll{time, &part1, GS::Wall::Top};
+  SUBCASE("Constructor") {
+    CHECK(coll.getP1()->position == vec1);
+    CHECK(coll.getP1()->speed == vec2);
+    CHECK(coll.getWall() == GS::Wall::Top);
+  }
+  SUBCASE("Change the particles") {
+    GS::GSVectorD actualPosition{4, 0, 4};
+    GS::GSVectorD actualSpeed{1.34, 0.04, 9.3924};
+    coll.getP1()->position.x = 4;
+    coll.getP1()->position.y = 0;
+    coll.getP1()->position.z = 4;
+    coll.getP1()->speed = actualSpeed;
+    CHECK(part1.position == actualPosition);
+    CHECK(part1.speed == actualSpeed);
+  }
+  SUBCASE("Resolve Collision") {
+    coll.solve();
+    // Da aggiungere il check del risolutore corretto
+  }
+}
+TEST_CASE("Testing PartCollision") {
+  double time{4};
+
+  GS::GSVectorD vec1{4.23, -5.34, 6.45};
+  GS::GSVectorD vec2{5.46, -4.35, 3.24};
+  GS::Particle part1{vec1, vec2};
+
+  GS::GSVectorD vec3{13.4, -1.99, 49.953};
+  GS::GSVectorD vec4{0.11, 0.211, 5.6253};
+  GS::Particle part2{vec3, vec4};
+
+  GS::PPCollision coll{time, &part1, &part2};
+  SUBCASE("Constructor") {
+    CHECK(coll.getP1()->position == vec1);
+    CHECK(coll.getP1()->speed == vec2);
+    CHECK(coll.getP2()->position == vec3);
+    CHECK(coll.getP2()->speed == vec4);
+  }
+  SUBCASE("Change the particles") {
+    GS::GSVectorD actualPosition{4, 0, 4};
+    GS::GSVectorD actualSpeed{1.34, 0.04, 9.3924};
+    coll.getP1()->position.x = 4;
+    coll.getP1()->position.y = 0;
+    coll.getP1()->position.z = 4;
+    /* why are we accessing a private member through its pointer to change its
+    value? credo sia un refuso, prima non valutavamo il metodo solve()
+                coll.getSecondParticle()->speed.x = actualSpeed.x;
+                coll.getSecondParticle()->speed.y = actualSpeed.y;
+                coll.getSecondParticle()->speed.z = actualSpeed.z;
+
+                CHECK(coll.getP1()->position == actualPosition);
+    CHECK(coll.getSecondParticle()->speed == actualSpeed);*/
+  }
+}
+
 TEST_CASE("Testing collisionTime") {
   SUBCASE("1") {
     GS::Particle part1{{0, 0, 0}, {1, 1, 1}};
@@ -432,7 +495,51 @@ TEST_CASE("Testing the camera class") {
   }
 }
 
-// STATISTICS TESTING
+// STATISTICS Testing
+
+TEST_CASE("Testing the GasData class") {
+  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+  std::vector<GS::Particle> moreParticles{
+      {{2., 3., 4.}, {1., 0., 0.}},
+      {{5., 3., 7.}, {0., 0., 0.}},
+      {{5., 6., 7.}, {0., -1., 0.}},
+  };
+  GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
+  GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
+
+  gas.simulate(1);
+  GS::PWCollision collision{
+      1. / 3., const_cast<GS::Particle *>(gas.getParticles().data()),
+      GS::Wall::Back};
+  GS::GasData data{gas, &collision};
+
+  moreGas.simulate(1);
+  GS::PPCollision moreCollision{
+      1., const_cast<GS::Particle *>(&moreGas.getParticles()[1]),
+      const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
+  GS::GasData moreData{moreGas, &moreCollision};
+
+  SUBCASE("Testing the constructor and getters") {
+    CHECK(gas.getParticles() == data.getParticles());
+    CHECK(data.getTime() == gas.getTime());
+    CHECK(data.getBoxSide() == gas.getBoxSide());
+    CHECK(data.getP1Index() == 0);
+    // CHECK(GS::Particle(data.getP1()) ==
+    // GS::Particle(data.getParticles()[data.getP1Index()]));
+    CHECK(data.getWall() == GS::Wall::Back);
+    CHECK(data.getCollType() == 'w');
+    CHECK(moreGas.getParticles() == moreData.getParticles());
+    CHECK(moreData.getTime() == moreGas.getTime());
+    CHECK(moreData.getBoxSide() == moreGas.getBoxSide());
+    CHECK(moreData.getP1Index() == 1);
+    CHECK(moreData.getP2Index() == 2);
+    CHECK(moreData.getCollType() == 'p');
+  }
+  SUBCASE("Testing getter throws") {
+    CHECK_THROWS(data.getP2());
+    CHECK_THROWS(moreData.getWall());
+  }
+}
 
 TEST_CASE("Testing the TdStats class and simOutput processStats function") {
   std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
