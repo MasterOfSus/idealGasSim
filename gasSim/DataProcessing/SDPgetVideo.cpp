@@ -27,7 +27,7 @@ bool isIntMultOf(double x, double dt) {
   return isNegligible(x - dt * std::round(x / dt), dt);
 }
 
-// hopefully chatGPT cooked
+// chatGPT wrote pretty much all of this function
 void RGBA32toRGBA8(UInt_t const* rgbaBffr, size_t w, size_t h,
                    std::vector<sf::Uint8>& pixels) {
   size_t total{w * h};
@@ -43,7 +43,7 @@ void RGBA32toRGBA8(UInt_t const* rgbaBffr, size_t w, size_t h,
     pixels[base + 3] = (rgba >> 0) & 0xFF;   // A
   }
 }
-// chatGPT wrote this
+// chatGPT written code ends here
 
 std::string round2(double x) {
   static std::ostringstream ss;
@@ -118,7 +118,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   };
 
   std::cerr << "Got to data extraction phase." << std::endl;
-  //	// extraction of renders and/or stats clusters compatible with
+  // extraction of renders and/or stats clusters compatible with
   // processing algorithm
   // fTime_ initialization, either through gTime_ or through stats[0]
   switch (opt) {
@@ -177,6 +177,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           std::cerr << "Extracting stats vector." << std::endl;
           // find first where the next frame's time is before it
           // -> the one before it necessarily "contains" the frame time
+          // this pattern used in the rest of this file
           auto sStartI{std::upper_bound(this->stats.begin(), this->stats.end(),
                                         *fTime + gDeltaT,
                                         [](double value, TdStats const& s) {
@@ -235,15 +236,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                   << ", stats_ = " << this->stats.size() << std::endl;
         //  dealing with fTime_
         if (!fTime.has_value() || !isIntMultOf(*gTime - *fTime, gDeltaT)) {
-          // std::cerr << "Setting fTime_. Because ";
-          // if (fTime.has_value()) {
-          // std::cerr << "isIntMultOf returned " << isIntMultOf(*gTime -
-          // *fTime_, gDeltaT) << " for gTime - fTime_ = " << *gTime - *fTime_
-          //<< ", gDeltaT = " << gDeltaT;
-          //} else {
-          // std::cerr << "fTime_.has_value returned " << fTime_.has_value();
-          //}
-          // std::cerr << std::endl;
           if (!this->stats.size()) {
             fTime = getRendersT0(this->renders) - gDeltaT;
           } else if (!this->renders.size()) {
@@ -319,11 +311,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             } else {
               stats = std::vector(sStartI, this->stats.end());
             }
-            assert(gStartI <=
-                   gEndI);  // fTime_ should be always <= stats.back().getTime,
-                            // if it is available
-            // used to have a check for gStartI != renders_.end(), if fuckup
-            // check here first
+            assert(gStartI <= gEndI);
             renders.insert(renders.begin(), std::make_move_iterator(gStartI),
                            std::make_move_iterator(gEndI));
             this->renders.clear();
@@ -362,7 +350,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
   std::cerr << "Got to second phase." << std::endl;
 
-  // std::cout << "Started variables setup." << std::endl;
   // recurrent variables setup
   // declarations
   // text
@@ -413,7 +400,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     RGBA32toRGBA8(trnsfrImg->GetRgbaArray(), trnsfrImg->GetWidth(),
                   trnsfrImg->GetHeight(), pixels);
     auxTxtr.update(pixels.data());
-    // auxTxtr.update(auxImg);
     auxSprt.setTexture(auxTxtr, true);
     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
     frame.draw(auxSprt);
@@ -460,15 +446,12 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   frame.create(windowSize.x, windowSize.y);
   switch (opt) {
     case VideoOpts::justGas: {
-      // std::cerr << "JustGas case, operating on vector of size: " <<
-      // renders.size() << std::endl;
       if (renders.size()) {
         assert(isIntMultOf(*fTime - *gTime, gDeltaT));
         assert(gTime == renders.back().second);
         assert(fTime <= getRendersT0(renders));
         box.setPosition(0, 0);
         size_t rIndex{0};
-        // std::cerr << "Inserting frames:" << std::endl;
         while (*fTime + gDeltaT < gTime ||
                isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
           *fTime += gDeltaT;
@@ -476,7 +459,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           assert(isIntMultOf(*gTime - *fTime, gDeltaT));
           if (renders.size() > rIndex &&
               isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
-            // std::cerr << "rIndex = " << rIndex << std::endl;
             box.setScale(
                 windowSize.x / (float)renders[rIndex].first.getSize().x,
                 windowSize.y / (float)renders[rIndex].first.getSize().y);
@@ -485,7 +467,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(timeText);
             frame.display();
           } else {
-            // std::cout << "Inserting placeholder.";
             box.setScale(windowSize.x / (float)placeholder.getSize().x,
                          windowSize.y / (float)placeholder.getSize().y);
             box.setTexture(placeholder, true);
@@ -500,13 +481,10 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       break;
     }
     case VideoOpts::justStats:
-      // std::cerr << "Working with stats of size: " << stats.size() <<
-      // std::endl;
       if (stats.size()) {
         if (*fTime + gDeltaT <
             stats.front()
                 .getTime0()) {  // insert empty data and use placeholder render
-          // std::cerr << "Inserting placeholder." << std::endl;
           auto& stat{stats.front()};
           for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
@@ -524,14 +502,12 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);
           ;
           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.45);
-          // auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
           drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
           drawObj(kBGraph, 0., windowSize.y * 0.55, "APL", drawLambdas[1]);
 
           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
-          // auxImg.create(cnvs.GetWindowWidth(), cnvs.GetWindowHeight());
 
           drawObj(mfpGraph, 0.5, 0.5, "APL", drawLambdas[3]);
 
@@ -753,7 +729,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(NText);
             frame.draw(TText);
             // insert paired renders or placeholders
-            box.setPosition(windowSize.x * 0.5, 0.);  // huh?
+            box.setPosition(windowSize.x * 0.5, 0.);
             while (*fTime + gDeltaT < stat.getTime()) {
               *fTime += gDeltaT;
               timeText.setString("time = " + round2(*fTime));
@@ -816,9 +792,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(VText);
             frame.draw(NText);
             frame.draw(TText);
-            box.setPosition(windowSize.x * 0.5,
-                            0.);  // huh, again, seems like I was thinking
-                                  // bottom left corner
+            box.setPosition(windowSize.x * 0.5, 0.);
             std::cerr << "Got to actual renders insertion." << std::endl;
             size_t rIndex{0};
             while (*fTime + gDeltaT < gTime ||
@@ -939,8 +913,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                     << "Switching to s = " << s - stats.begin()
                     << ": fTime = " << *fTime << ", s.t0 = " << s->getTime0()
                     << " ";
-          // std::cerr << "Found stat index = " << s - stats.begin() << " for
-          // fTime_ = " << *fTime_ + gDeltaT << std::endl;
           assert(s >= stats.begin());
           assert(s != stats.end());
           TdStats const& stat{*s};
@@ -980,7 +952,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           frame.clear();
 
           cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
-          // auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
           drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
           drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
           drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);
@@ -1043,7 +1014,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         frame.clear();
 
         cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
-        // auxImg.create(windowSize.x * 0.25, windowSize.y * 0.5);
         drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
         drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
         drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);

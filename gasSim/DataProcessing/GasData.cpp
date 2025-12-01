@@ -29,7 +29,7 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
       } else {
         particles = gas.getParticles();
         t0 = gas.getTime() - collision->getTime();
-        time = gas.getTime();  // yes
+        time = gas.getTime();
         boxSide = gas.getBoxSide();
         p1Index = getPIndex(coll->getP1(), gas);
         p2Index = getPIndex(coll->getP2(), gas);
@@ -38,10 +38,8 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
     } else {
       particles = gas.getParticles();
       t0 = gas.getTime() - collision->getTime();
-      time = gas.getTime();  // yes
+      time = gas.getTime();
       boxSide = gas.getBoxSide();
-      // std::cout << "Adding p1_ at index " <<
-      // getPIndex(collision->getFirstParticle(), gas) << '\n';
       p1Index = getPIndex(collision->getP1(), gas);
       p2Index = SIZE_MAX;
       PWCollision const* coll{static_cast<PWCollision const*>(collision)};

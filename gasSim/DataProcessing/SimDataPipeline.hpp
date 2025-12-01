@@ -35,7 +35,6 @@ class SimDataPipeline {
       TList& outputGraphs, bool emptyQueue = false,
       std::function<void(TH1D&, VideoOpts)> fitLambda = {},
       std::array<std::function<void()>, 4> drawLambdas = {});
-  // std::deque<GasData> getData();
   size_t getRawDataSize();
   double getFramerate() const { return 1. / gDeltaT.load(); }
   size_t getStatSize() const { return statSize.load(); }

@@ -32,7 +32,6 @@ class Camera {
   unsigned getHeight() const { return height; }
   unsigned getWidth() const { return width; }
 
-  // useful functions
   GSVectorF getPointProjection(GSVectorF const& point) const;
   std::vector<GSVectorF> projectParticles(
       std::vector<Particle> const& particles, double deltaT = 0.) const;

@@ -35,15 +35,6 @@ void TdStats::addPulse(GasData const& data) {
 
 // Constructors
 
-// note to self: to correctly add pulses and pressures, one cannot take all
-// collisions: those collisions which come from a state of non-collision cannot
-// be counted in the time score, therefore one must initialize with t0_ as the
-// time of first collision, not the starting time for the first collision. This
-// behaviour is avoided completely though if the stats instance is not
-// initialized with a first simulation step collision-gas couple. The drawback
-// is minimal anyways, but if the user wishes to have perfectly coherent data he
-// must acknowledge this concept and avoid this behaviour.
-
 TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
     : wallPulses{},
       lastCollPositions(std::vector<GSVectorD>(firstState.getParticles().size(),
@@ -161,9 +152,6 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
       time(data.getTime()),
       boxSide(data.getBoxSide()) {
   if (data.getParticles().size() != prevStats.getNParticles()) {
-    // std::cout << "data.getParticles size = " << data.getParticles().size() <<
-    // " != " << prevStats.getNParticles() << " prevStats.getNParticles." <<
-    // std::endl;
     throw std::invalid_argument(
         "TdStats constructor error: provided data with different particle "
         "number");
@@ -183,14 +171,10 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
       TH1D* defH = new TH1D();
       prevStats.speedsH.Reset("ICES");
       if (speedsHTemplate.IsEqual(defH)) {
-        // std::cerr << "Found default histo, initializing with prevStats
-        // speedsH_.\n";
         speedsH = prevStats.speedsH;
         speedsH.SetDirectory(nullptr);
         speedsH.Reset("ICES");
       } else {
-        // std::cerr << "Found non-default histo template, initializing with
-        // template.\n";
         if (speedsHTemplate.GetEntries() != 0.) {
           delete defH;
           throw std::runtime_error(

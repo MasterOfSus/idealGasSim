@@ -103,9 +103,6 @@ void SimDataPipeline::processData(bool mfpMemory) {
         nStats = nStats > chunkSize ? chunkSize : nStats;
       }
     }  // chunkSize nspcEnd
-    // don't stop make it drop dj blow my speakers up
-    // std::cout << "nStats for this iteration is " << rawData_.size() << "/" <<
-    // statSize_ << " = " << nStats << std::endl;
 
     if (nStats) {
       {  // guard scope begin
@@ -114,16 +111,10 @@ void SimDataPipeline::processData(bool mfpMemory) {
             data.end(), std::make_move_iterator(rawData.begin()),
             std::make_move_iterator(rawData.begin() + nStats * statSize));
         assert(data.size());
-        // std::cout << "GasData count = " << data.size() << std::endl;
         rawData.erase(rawData.begin(), rawData.begin() + nStats * statSize);
         rawDataLock.unlock();
 
-        // std::cout << "Data size: " << data.size() << "; ";
         processStats(data, mfpMemory);
-        /*{
-        std::lock_guard<std::mutex> guard {statsMtx_};
-        //std::cout << "Stats size: " << stats_.size() << std::endl;
-        }*/
       }  // guard scope end
       addedResults.store(true);
       outputCv.notify_all();
@@ -138,7 +129,6 @@ void SimDataPipeline::processData(bool mfpMemory) {
 void SimDataPipeline::processData(Camera const& camera,
                                   RenderStyle const& style, bool mfpMemory) {
   processing.store(true);
-  // std::cout << "Started processing data.\n";
   std::vector<GasData> data{};
   std::unique_lock<std::mutex> rawDataLock{rawDataMtx, std::defer_lock};
   while (true) {
@@ -146,8 +136,6 @@ void SimDataPipeline::processData(Camera const& camera,
     rawDataCv.wait_for(rawDataLock, std::chrono::milliseconds(100), [this] {
       return rawData.size() > statSize.load() || dataDone;
     });
-    // std::cout << "Done status: " << done_ << ". RawData emptiness: " <<
-    // rawData_.empty() << std::endl;
     size_t statSize{this->statSize.load()};  // stat size for this iteration
     if (dataDone.load() && rawData.size() < statSize) {
       break;
@@ -176,7 +164,6 @@ void SimDataPipeline::processData(Camera const& camera,
           try {
             processStats(data, mfpMemory);
           } catch (std::exception const& e) {
-            // std::cerr << "Error in stats thread: " << e.what() << std::endl;
             std::terminate();
           }
         });
@@ -185,8 +172,6 @@ void SimDataPipeline::processData(Camera const& camera,
           try {
             processGraphics(data, camera, style);
           } catch (std::exception const& e) {
-            // std::cerr << "Error in graphics thread: " << e.what() <<
-            // std::endl;
             std::terminate();
           }
         });
@@ -208,13 +193,9 @@ void SimDataPipeline::processData(Camera const& camera,
   processing.store(false);
 }
 
-// read VERY carefully during reread, weird naming changes might hvae fucked up
-// everything
 void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
                                       Camera const& camera,
                                       RenderStyle const& style) {
-  // std::cout << "Processing graphics... ";
-  // std::cout.flush();
   std::vector<std::pair<sf::Texture, double>> tempRenders{};
 
   // setting local time variables
@@ -242,7 +223,6 @@ void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
 
   for (GasData const& dat : data) {
     while (gTime + gDeltaT <= dat.getTime()) {
-      // std::cout << "Drawing gas at time " << *gTime_ + gDeltaT_ << std::endl;
       gTime += gDeltaT;
       drawGas(dat, camera, picture, style, gTime - dat.getTime());
       renders.emplace_back(picture.getTexture(), gTime);
@@ -254,12 +234,10 @@ void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
                  std::make_move_iterator(tempRenders.end()));
   std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
   this->gTime = gTime;
-  // std::cout << "done!\n";
 }
 
 void SimDataPipeline::processStats(std::vector<GasData> const& data,
                                    bool mfpMemory) {
-  // std::cout << "Started processing stats.\n";
   std::vector<TdStats> tempStats{};
 
   size_t statSize = this->statSize.load();  // local statSize for this call
@@ -267,7 +245,6 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
 
   tempStats.reserve(data.size() / statSize);
 
-  // std::cout << "Reached pre-loop\n";
   if (mfpMemory) {
     std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
     for (unsigned i{0}; i < data.size() / statSize; ++i) {
@@ -276,10 +253,6 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
                    : lastStat.has_value()
                        ? TdStats{data[i * statSize], std::move(*lastStat)}
                        : TdStats{data[i * statSize], speedsHTemplate}};
-      // std::cerr << "Bin number for lastStat_ speedsH_ = " <<
-      // lastStat_->getSpeedH().GetNbinsX() << std::endl; std::cerr << "Bin
-      // number for speedsHTemplate_ = " << speedsHTemplate_.GetNbinsX() <<
-      // std::endl;
       for (unsigned j{1}; j < statSize; ++j) {
         stat.addData(data[i * statSize + j]);
       }
@@ -295,7 +268,6 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
       tempStats.emplace_back(std::move(stat));
     }
   }
-  // std::cout << "Done with loop\n";
   std::lock_guard<std::mutex> statsGuard{statsMtx};
   stats.insert(stats.end(), std::make_move_iterator(tempStats.begin()),
                std::make_move_iterator(tempStats.end()));
@@ -305,8 +277,6 @@ std::vector<TdStats> SimDataPipeline::getStats(bool emptyQueue) {
   if (emptyQueue) {
     std::deque<TdStats> tempStats{};
     std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
-    // hopefully locks stats for less time by swapping, then converting to
-    // vector after releasing lock
     {  // lock scope
       std::lock_guard<std::mutex> statsGuard{statsMtx};
       if (stats.size()) {

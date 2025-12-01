@@ -69,7 +69,6 @@ Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVector,
 }
 
 float Camera::getTopSide() const {
-  // finding top side through 2 * tan(FOV/2) * distance
   return 2.f * getPlaneDistance() * tan(getFOV() * (M_PI / 180.f) / 2.f);
 };
 
@@ -109,7 +108,7 @@ GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
       m * b + getWidth() / 2.f, o * b + getHeight() / 2.f,
       (a - focus) * (a - focus) /
           ((a - focus) *
-           (point - focus))  // scaling factor, degen. if > 1 V < 0
+           (point - focus))  // scaling factor, degenerate if > 1 V < 0
   };
 }
 

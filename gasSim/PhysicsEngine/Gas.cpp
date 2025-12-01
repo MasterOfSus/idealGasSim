@@ -109,9 +109,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide, double time)
       }
     }
 
-    double maxSpeed =
-        sqrt(30. / M_PI * temperature /
-             Particle::getMass());  // should be correct expression
+    double maxSpeed = sqrt(30. / M_PI * temperature / Particle::getMass());
 
     auto latticePosition = [=](size_t i) {
       // compute integer lattice coordinate
@@ -321,7 +319,6 @@ void Gas::move(double dt) {
 
 void Gas::simulate(size_t itN) {
   for (size_t i{0}; i < itN; ++i) {
-    // std::cout << "Started " << i << "th iteration.\n";
     PPCollision pColl{firstPPColl()};
     PWCollision wColl{firstPWColl()};
     Collision* firstColl{nullptr};
@@ -367,7 +364,6 @@ void Gas::simulate(size_t itN, SimDataPipeline& output) {
   tempOutput.reserve(output.getStatSize());
 
   for (size_t i{0}; i < itN;) {
-    // std::cout << "Started " << i << "th iteration.\n";
     for (size_t j{0}; j < output.getStatSize() && i < itN; ++j, ++i) {
       PPCollision pColl{firstPPColl()};
       PWCollision wColl{firstPWColl()};
@@ -413,9 +409,6 @@ void Gas::simulate(size_t itN, SimDataPipeline& output) {
   }
 
   output.setDone();
-  // std::cout << "Elapsed simulation time: " <<
-  // output.getData().back().getTime() - output.getData()[0].getTime() <<
-  // std::endl;
 }
 
 }  // namespace GS
