@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <format>
 
 #include <RtypesCore.h>
 #include <TCanvas.h>
@@ -15,7 +14,6 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <execution>
 
 #include "SimDataPipeline.hpp"
 
@@ -58,6 +56,14 @@ std::string round2(double x) {
     return ss.str();
 }
 
+std::string scientificNotation(double x, size_t nDigits = 2) {
+	static std::ostringstream ss;
+	ss.str("");
+	ss.clear();
+	ss << std::scientific << std::setprecision(nDigits) << std::uppercase << x;
+	return ss.str();
+}
+
 std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     VideoOpts opt, sf::Vector2i windowSize, sf::Texture const& placeholder,
     TList& outputGraphs, bool emptyStats,
@@ -71,21 +77,25 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 			(windowSize.x < 600 || windowSize.y < 600)) ||
       (opt != VideoOpts::justStats &&
 			(windowSize.x < 800 || windowSize.y < 600))) {
-    throw std::invalid_argument("Provided window size is too small.");
+    throw std::invalid_argument("getVideo error: provided window size is too small");
   }
 
 	if (outputGraphs.GetSize() < 3) {
-		throw std::invalid_argument("Provided graphsList with less than three elements");
+		throw std::invalid_argument("getVideo error: provided graphsList with less than three elements");
 	}
   if (!(outputGraphs.At(0)->IsA() == TMultiGraph::Class() &&
         outputGraphs.At(1)->IsA() == TGraph::Class() &&
         outputGraphs.At(2)->IsA() == TGraph::Class())) {
-    throw std::invalid_argument("Provided graphs list with wrong object types");
+    throw std::invalid_argument("getVideo error: provided graphs list with wrong object types");
   }
 
   if (((TMultiGraph*)outputGraphs.At(0))->GetListOfGraphs()->GetSize() != 7) {
-    throw std::invalid_argument("Provided multigraph number of graphs != 7");
+    throw std::invalid_argument("getVideo error: provided multigraph number of graphs != 7");
   }
+
+	if (font.getInfo().family.empty()) {
+		throw std::runtime_error("getVideo error: called without setting font");
+	}
 
   std::deque<std::pair<sf::Texture, double>> renders{};
   std::vector<TdStats> stats{};
@@ -100,7 +110,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       return *gTime;
     } else {
       throw std::logic_error(
-          "Tried to get render time for output with no time set.");
+          "getVideo error: tried to get render time for output with no time set");
     }
   };
 
@@ -415,12 +425,11 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         TText = {"T = " + Temp.str() + "K", font, 18};
         TText.setFont(font);
         TText.setFillColor(sf::Color::Black);
-        Vol << std::fixed << std::setprecision(2) << stats[0].getVolume();
-        VText = {"V = " + Vol.str() + "m\u00B3", font, 18};
+        VText = {"V = " + scientificNotation(stats[0].getVolume()) + "m^3", font, 18};
         VText.setFont(font);
         VText.setFillColor(sf::Color::Black);
         Num << std::fixed << std::setprecision(2) << stats[0].getNParticles();
-        NText = {"N = " + Num.str(), font, 18};
+        NText = {" N = " + Num.str(), font, 18};
         NText.setFont(font);
         NText.setFillColor(sf::Color::Black);
         trnsfrImg = TImage::Create();

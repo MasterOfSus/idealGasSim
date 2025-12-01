@@ -1,8 +1,6 @@
 #ifndef COLLISION_HPP
 #define COLLISION_HPP
 
-#include <string>
-
 #include "Particle.hpp"
 
 namespace GS {

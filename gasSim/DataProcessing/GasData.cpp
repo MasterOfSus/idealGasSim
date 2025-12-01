@@ -1,8 +1,7 @@
-#include "GasData.hpp"
-
 #include <cassert>
-#include <cstdint>
 #include <stdexcept>
+
+#include "GasData.hpp"
 
 // auxiliary getPIndex function
 
@@ -16,7 +15,7 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
         collision->getP1() <=
             gas.getParticles().data() + gas.getParticles().size()))
     throw std::invalid_argument(
-        "Collision first particle does not belong to gas.");
+        "GasData constructor error: collision first particle does not belong to gas.");
   else {
     if (collision->getType() == 'p') {
       PPCollision const* coll{static_cast<PPCollision const*>(collision)};
@@ -24,7 +23,7 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
             coll->getP2() <=
                 gas.getParticles().data() + gas.getParticles().size())) {
         throw std::invalid_argument(
-            "Collision second particle does not belong to gas.");
+            "GasData constructor error: collision second particle does not belong to gas.");
       } else {
         particles = gas.getParticles();
         t0 = gas.getTime() - collision->getTime();
@@ -60,21 +59,21 @@ char GS::GasData::getCollType() const {
 
 GS::Particle const& GS::GasData::getP2() const {
   if (getCollType() == 'w')
-    throw std::logic_error("Asked for p2 in wall collision");
+    throw std::logic_error("GasData::getP2 error: asked for p2 in wall collision");
   else
     return particles[p2Index];
 }
 
 size_t GS::GasData::getP2Index() const {
   if (getCollType() == 'w')
-    throw std::logic_error("Asked for p2 index in wall collision");
+    throw std::logic_error("GasData::getP2Index error: asked for p2 index in wall collision");
   else
     return p2Index;
 }
 
 GS::Wall GS::GasData::getWall() const {
   if (getCollType() == 'p')
-    throw std::logic_error("Asked for wall from a particle collision.");
+    throw std::logic_error("GasData::getWall error: asked for wall from a particle collision.");
   else
     return wall;
 }

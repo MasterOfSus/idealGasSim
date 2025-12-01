@@ -1,24 +1,15 @@
-#include <iostream>
-
 #include "SimDataPipeline.hpp"
 
 #include <SFML/Graphics/RenderTexture.hpp>
-#include <execution>
 #include <iterator>
 #include <stdexcept>
 #include <thread>
-/*
-std::deque<GasData> SimOutput::getData() {
-  std::lock_guard<std::mutex> rawDataGuard {rawDataMtx_};
-        return rawData_;
-}
-*/
 
 namespace GS {
 
 void SimDataPipeline::setFramerate(double framerate) {
   if (framerate <= 0) {
-    throw std::invalid_argument("Non-positive framerate provided.");
+    throw std::invalid_argument("setFramerate error: provided non-positive framerate");
   } else {
     gDeltaT.store(1. / framerate);
   }
@@ -28,14 +19,14 @@ SimDataPipeline::SimDataPipeline(size_t statSize, double framerate,
                                  TH1D const& speedsHTemplate)
     : statSize(statSize), speedsHTemplate(speedsHTemplate) {
 	if (!statSize) {
-		throw std::invalid_argument("Provided null statSize");
+		throw std::invalid_argument("SDP constructor error: provided null statSize");
 	}
   setFramerate(framerate);
   if (speedsHTemplate.IsZombie()) {
-    throw std::invalid_argument("Zombie histogram template provided");
+    throw std::invalid_argument("SDP constructor error: provided zombie histogram template");
   }
   if (speedsHTemplate.GetEntries() != 0) {
-    throw std::invalid_argument("Non-empty histogram template provided");
+    throw std::invalid_argument("SDP constructor error: provided non-empty histogram template");
   }
   assert(speedsHTemplate.GetNbinsX() != 0);
 }
@@ -58,12 +49,12 @@ void SimDataPipeline::addData(std::vector<GasData>&& data) {
         assert(nParticles.value());
       } else {
         if (d.getParticles().size() != nParticles) {
-          throw std::invalid_argument("Non-matching particle numbers.");
+          throw std::invalid_argument("SDP addData error: non-matching particle numbers");
         }
       }
       if (!firstD &&
           !isNegligible(d.getT0() - prevDTime, d.getTime() - d.getT0())) {
-        throw std::invalid_argument("Non sequential data vector provided.");
+        throw std::invalid_argument("SDP addData error: provided non sequential data vector");
       }
       prevDTime = d.getTime();
       firstD = false;
@@ -74,7 +65,7 @@ void SimDataPipeline::addData(std::vector<GasData>&& data) {
         if (!isNegligible(data.front().getT0() - rawDataBackTime.value(),
                           data.front().getTime() - data.front().getT0())) {
           throw std::invalid_argument(
-              "Argument time less than latest raw data piece time");
+              "SDP addData error: data time is smaller than latest raw data piece time");
         }
       }
       rawData.insert(rawData.end(), std::make_move_iterator(data.begin()),
@@ -349,7 +340,7 @@ void SimDataPipeline::setStatChunkSize(size_t s) {
   if (s) {
     statChunkSize.store(s);
   } else {
-    throw(std::invalid_argument("Provided null stat chunk size."));
+    throw(std::invalid_argument("setStatChunkSize error: provided null stat chunk size"));
   }
 }
 
@@ -357,13 +348,13 @@ void SimDataPipeline::setStatSize(size_t s) {
   if (s) {
     statSize.store(s);
   } else {
-    throw(std::invalid_argument("Provided null stat size."));
+    throw(std::invalid_argument("setStatSize error: provided null stat size"));
   }
 }
 
 void SimDataPipeline::setFont(sf::Font const& f) {
 	if (f.getInfo().family.empty()) {
-		throw std::invalid_argument("Provided empty font");
+		throw std::invalid_argument("setFont error: provided empty font");
 	} else {
 		font = f;
 	}

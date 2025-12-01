@@ -1,15 +1,13 @@
-#include "Gas.hpp"
-
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <random>
 #include <stdexcept>
 #include <thread>
-#include <iostream>
 
 #include "../DataProcessing/SimDataPipeline.hpp"
 #include "GSVector.hpp"
+
+#include "Gas.hpp"
 
 namespace GS {
 
@@ -38,13 +36,13 @@ Gas::Gas(std::vector<Particle>&& particles, double boxSide, double time)
     : particles{particles}, boxSide{boxSide}, time{time} {
   if (boxSide <= 0) {
 		this->boxSide = 1.;
-    throw std::invalid_argument("Non-positive box side provided");
+    throw std::invalid_argument("Gas constructor error: non-positive box side provided");
   }
 
   std::for_each(this->particles.begin(), this->particles.end(), [&](Particle const& p) {
     if (!contains(p)) {
       this->particles.clear();
-      throw std::invalid_argument("Provided at least one particle not inside of gas box.");
+      throw std::invalid_argument("Gas constructor error: at least one of the provided particles is not inside of gas box.");
     }
   });
 
@@ -52,7 +50,7 @@ Gas::Gas(std::vector<Particle>&& particles, double boxSide, double time)
                   [&](Particle const& p1, Particle const& p2) {
                     if (overlap(p1, p2)) {
                       this->particles.clear();
-                      throw std::invalid_argument("Overlapping particles");
+                      throw std::invalid_argument("Gas constructor error: provided overlapping particles");
                     }
                   });
 }
@@ -64,7 +62,7 @@ auto unifRandVec{[](double maxNorm) {
   static std::default_random_engine eng(std::random_device{}());
   static std::uniform_real_distribution<double> baseDist(0, 1);
   if (maxNorm < 0) {
-    throw std::invalid_argument("maxNorm must be non-negative");
+    throw std::invalid_argument("Random vector generator error: provided negative maxNorm");
   }
   theta = baseDist(eng) * 2. * M_PI;
   phi = -M_PI / 2. + baseDist(eng) * M_PI;
@@ -77,10 +75,10 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
              double time)
     : boxSide(boxSide), time{time} {
   if (temperature < 0.) {
-    throw std::invalid_argument("Negative temperature provided");
+    throw std::invalid_argument("Gas constructor error: provided negative temperature");
   }
   if (boxSide <= 0.) {
-    throw std::invalid_argument("Non-positive boxSide provided");
+    throw std::invalid_argument("Gas constructor error: provided non-positive boxSide");
   }
 
   if (particlesN) {
@@ -89,13 +87,13 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
     double latticeUnit{ (boxSide * 0.95 - 2 * pR) / (npPerSide - 1) };
 
     if (latticeUnit <= 2. * pR) {
-      throw std::runtime_error("Particle number too large to fit into box");
+      throw std::runtime_error("Gas constructor error: provided particle number-radius too large to fit into box");
     }
 		if (!std::isfinite(latticeUnit)) {
 			if (particlesN == 1) {
 				latticeUnit = 0.;
 			} else {
-				throw std::runtime_error("Computed non-finite cubical lattice unit, aborting");
+				throw std::runtime_error("Gas constructor error: computed non-finite cubical lattice unit, aborting");
 			}
 		}
 
@@ -147,7 +145,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide,
                       sqrt(2. * missingEnergy / Particle::getMass())}));
   } else {
 		if (temperature) {
-			throw std::invalid_argument("Asked to reach a temperature with zero particles");
+			throw std::invalid_argument("Gas constructor error: asked to reach a temperature with zero particles");
 		}
 	}
 }
@@ -189,7 +187,7 @@ PWCollision Gas::firstPWColl() {
     }
   });
   if (!firstColl.getP1() && !particles.size()) {
-   	throw std::runtime_error("Tried to get wall collision for an empty gas");
+   	throw std::runtime_error("firstPWColl error: gas is empty");
   }
   return firstColl;
 }
@@ -248,7 +246,7 @@ PPCollision Gas::firstPPColl() {
   size_t nP{particles.size()};
 
   if (!nP) {
-    throw std::runtime_error("Tried to get particle collision from empty gas");
+    throw std::runtime_error("firstPPColl error: tried to get particle collision from empty gas");
   }
 
   size_t nChecks{nP * (nP - 1) / 2};
@@ -327,9 +325,9 @@ void Gas::simulate(size_t itN) {
 			move(firstColl->getTime());
 			firstColl->solve();
 		} else if (particles.size() == 0) {
-			throw std::runtime_error("Called simulate on an empty gas");
+			throw std::runtime_error("Simulate error: called simulate on an empty gas");
 		} else if (collTime < 0.) {
-			throw std::runtime_error("Negative collision time found, aborting");
+			throw std::runtime_error("Simulate error: found negative collision time -> aborting");
 		} else if (!std::isfinite(collTime)) {
 			bool allSpeeds0 {true};
 			for (Particle const& p: particles) {
@@ -338,9 +336,9 @@ void Gas::simulate(size_t itN) {
 				}
 			}
 			if (allSpeeds0) {
-				throw std::runtime_error("Called simulate on gas with no moving particles");
+				throw std::runtime_error("Simulate error: called on gas with no moving particles");
 			} else {
-				throw std::runtime_error("Unexplained non finite collision time found, aborting");
+				throw std::runtime_error("Simulate error: unexplained non finite collision time found -> aborting");
 			}
 		}
 	}
@@ -371,9 +369,9 @@ void Gas::simulate(size_t itN, SimDataPipeline& output) {
 				firstColl->solve();
 				tempOutput.emplace_back(GasData(*this, firstColl));
 			} else if (particles.size() == 0) {
-				throw std::runtime_error("Called simulate on an empty gas");
+				throw std::runtime_error("Simulate error: called simulate on an empty gas");
 			} else if (collTime < 0.) {
-				throw std::runtime_error("Negative collision time found, aborting");
+				throw std::runtime_error("Simulate error: found negative collision time found -> aborting");
 			} else if (!std::isfinite(collTime)) {
 				bool allSpeeds0 {true};
 				for (Particle const& p: particles) {
@@ -382,9 +380,9 @@ void Gas::simulate(size_t itN, SimDataPipeline& output) {
 					}
 				}
 				if (allSpeeds0) {
-					throw std::runtime_error("Called simulate on gas with no moving particles");
+					throw std::runtime_error("Simulate error: called on gas with no moving particles");
 				} else {
-					throw std::runtime_error("Unexplained non finite collision time found, aborting");
+					throw std::runtime_error("Simulate error: unexplained non finite collision time found -> aborting");
 				}
 			}
 		}

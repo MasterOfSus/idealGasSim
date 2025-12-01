@@ -1,13 +1,12 @@
-#include "Camera.hpp"
+#include <execution>
+#include <stdexcept>
 
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
-#include <execution>
-#include <stdexcept>
-#include <thread>
 
+#include "Camera.hpp"
 #include "../DataProcessing/GasData.hpp"
 
 namespace GS {
@@ -18,7 +17,7 @@ void Camera::setSightVector(GSVectorF const& sightVector) {
   if (sightVector.norm() > 0.f) {
     this->sightVector = sightVector / sightVector.norm();
   } else {
-    throw std::invalid_argument("O vector cannot be normalized");
+    throw std::invalid_argument("setSightVector error: O vector cannot be normalized");
   }
 }
 
@@ -26,7 +25,7 @@ void Camera::setPlaneDistance(const float distance) {
   if (distance > 0.f) {
     planeDistance = distance;
   } else {
-    throw std::invalid_argument("Non positive distance.");
+    throw std::invalid_argument("setPlaneDistance error: provided non positive distance");
   }
 }
 
@@ -34,13 +33,13 @@ void Camera::setFOV(const float FOV) {  // in degrees
   if (FOV > 0.f && FOV < 180.f) {
     fov = FOV;
   } else {
-    throw std::invalid_argument("Bad FOV provided");
+    throw std::invalid_argument("setFOV error: provided bad FOV (accepted range: 0.f, 180.f)");
   }
 }
 
 void Camera::setResolution(unsigned height, unsigned width) {
 	if (!height || !width) {
-		throw std::invalid_argument("Provided null height or width.");
+		throw std::invalid_argument("setResolution error: provided null height or width");
 	}
   this->height = height;
   this->width = width;
@@ -51,7 +50,7 @@ void Camera::setAspectRatio(
   if (ratio > 0.f) {
     height = static_cast<unsigned>(width / ratio);
   } else {
-    throw std::invalid_argument("Non-positive ratio provided");
+    throw std::invalid_argument("setAspectRatio error: non-positive ratio provided");
   }
 }
 
@@ -140,7 +139,7 @@ inline GSVectorD preCollSpeed(GSVectorD& v, Wall wall) {
       v.z = -v.z;
       break;
     default:
-      throw std::runtime_error("VOID wall provided");
+      throw std::runtime_error("preCollSpeed error: VOID wall provided");
   }
   return v;
 }

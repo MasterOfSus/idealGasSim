@@ -1,4 +1,3 @@
-#include <iomanip>
 #include <stdexcept>
 #include <iostream>
 
@@ -30,7 +29,7 @@ void TdStats::addPulse(GasData const& data) {
       wallPulses[5] += Particle::getMass() * 2. * data.getP1().speed.z;
       break;
     default:
-      throw std::invalid_argument("addPulse: VOID wall type provided");
+      throw std::invalid_argument("addPulse error: VOID wall type provided");
   }
 }
 
@@ -59,10 +58,10 @@ TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
       time(firstState.getTime()),
       boxSide(firstState.getBoxSide()) {
   if (!firstState.getParticles().size()) {
-    throw std::invalid_argument("Empty gasData provided.");
+    throw std::invalid_argument("TdStats constructor error: provided empty gasData");
   }
   if (speedsHTemplate.GetEntries() != 0.) {
-    throw std::invalid_argument("Non-empty speedsH template provided");
+    throw std::invalid_argument("TdStats constructor error: non-empty speedsH template provided");
   }
   speedsH = speedsHTemplate;
   speedsH.SetDirectory(nullptr);
@@ -95,17 +94,15 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
     std::cerr << "data.getParticles size = " << data.getParticles().size() <<
     " != " << prevStats.getNParticles() << " prevStats.getNParticles." <<
     std::endl;
-    throw std::invalid_argument("Data with different particle number provided");
+    throw std::invalid_argument("TdStats constructor error: provided data with non-matching particle number");
   } else if (data.getBoxSide() != prevStats.getBoxSide()) {
-    throw std::invalid_argument("Data with different box side provided");
+    throw std::invalid_argument("TdStats constructor error: provided data with non-matching box side");
   } else if (data.getTime() < prevStats.getTime()) {
     throw std::invalid_argument(
-        "Gas with time smaller than stats time provided");
+        "TdStats constructor error: provided gas with time smaller than stats time");
   } else if (!isNegligible(T - prevStats.getTemp(), prevStats.getTemp())) {
-		std::cout << std::fixed << std::setprecision(16);
-		std::cout << "Error: non matching temperatures: " << T << " vs stats " << prevStats.getTemp() << std::endl;
     throw std::invalid_argument(
-        "Gas and stats with non-matching temperatures provided");
+        "TdStats constructor error: provided gas and stats with non-matching temperatures");
   } else {
     prevStats.wallPulses = {};
     prevStats.freePaths.clear();
@@ -161,17 +158,15 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
     // std::cout << "data.getParticles size = " << data.getParticles().size() <<
     // " != " << prevStats.getNParticles() << " prevStats.getNParticles." <<
     // std::endl;
-    throw std::invalid_argument("Data with different particle number provided");
+    throw std::invalid_argument("TdStats constructor error: provided data with different particle number");
   } else if (data.getBoxSide() != prevStats.getBoxSide()) {
-    throw std::invalid_argument("Data with different box side provided");
+    throw std::invalid_argument("TdStats constructor error: provided data with different box side");
   } else if (data.getTime() < prevStats.getTime()) {
     throw std::invalid_argument(
-        "Gas with time smaller than stats time provided");
+        "TdStats constructor error: provided gas with time smaller than stats time");
   } else if (!isNegligible(T - prevStats.getTemp(), prevStats.getTemp())) {
-		std::cout << std::fixed << std::setprecision(16);
-		std::cout << "Error: non matching temperatures: " << T << " vs stats " << prevStats.getTemp() << std::endl;
     throw std::invalid_argument(
-        "Gas and stats with non-matching temperatures provided");
+        "TdStats constructor error: provided gas and stats with non-matching temperatures");
   } else {
     {
       TH1D* defH = new TH1D();
@@ -187,7 +182,7 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
         // template.\n";
         if (speedsHTemplate.GetEntries() != 0.) {
           delete defH;
-          throw std::runtime_error("Non-empty speedsH template provided.");
+          throw std::runtime_error("TdStats constructor error: provided non-empty speedsH template");
         } else {
           speedsH = speedsHTemplate;
         }
@@ -304,9 +299,9 @@ TdStats& TdStats::operator=(TdStats&& s) noexcept {
 
 void TdStats::addData(GasData const& data) {
   if (data.getParticles().size() != getNParticles()) {
-    throw std::invalid_argument("Non-matching gas particles number.");
+    throw std::invalid_argument("TdStats addData error: non-matching gas particles number");
   } else if (data.getTime() < time) {
-    throw std::invalid_argument("Data time less than internal time.");
+    throw std::invalid_argument("TdStats addData error: data time less than internal time");
   } else {
     time = data.getTime();
     if (data.getCollType() == 'w') {
@@ -342,7 +337,7 @@ void TdStats::addData(GasData const& data) {
 
 double TdStats::getPressure(Wall wall) const {
   if (wall == Wall::VOID) {
-    throw std::invalid_argument("VOID wall provided");
+    throw std::invalid_argument("getPressure error: VOID wall provided");
   }
   return wallPulses[int(wall)] / (getBoxSide() * getBoxSide() * getDeltaT());
 }

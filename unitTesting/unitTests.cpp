@@ -715,6 +715,7 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
       GS::Gas onePGas{1, 50., 20., -9.};
       onePGas.simulate(10, singleOutput);
       singleOutput.setDone();
+			singleOutput.setFont(font);
       // same
       std::cout << "Done simulating, processing data." << std::endl;
       singleOutput.processData();

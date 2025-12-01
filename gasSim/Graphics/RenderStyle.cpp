@@ -5,13 +5,13 @@
 void GS::RenderStyle::setWallsOpts(const std::string& opts) {
   bool isGood{true};
   if (opts.length() > 6) {
-    throw std::invalid_argument("Too many wall options provided");
+    throw std::invalid_argument("setWallsOpts error: provided too many wall options");
     isGood = false;
   }
   for (char opt : opts) {
     if (opt != 'u' && opt != 'd' && opt != 'l' && opt != 'r' && opt != 'f' &&
         opt != 'b') {
-      throw std::invalid_argument("Invalid wall option provided");
+      throw std::invalid_argument("setWallsOpts error: provided invalid wall option");
       isGood = false;
     }
   }
