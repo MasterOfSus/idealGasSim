@@ -544,13 +544,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
             if (i < 6) {
+              graph->AddPoint(stat.getTime0(), stat.getPressure(Wall(i)));
               graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));
             } else {
+              graph->AddPoint(stat.getTime0(), stat.getPressure());
               graph->AddPoint(stat.getTime(), stat.getPressure());
             }
           }
 
+          mfpGraph.AddPoint(stat.getTime0(), stat.getMeanFreePath());
           mfpGraph.AddPoint(stat.getTime(), stat.getMeanFreePath());
+          kBGraph.AddPoint(stat.getTime0(),
+                           stat.getPressure() * stat.getVolume() /
+                               (stat.getNParticles() * stat.getTemp()));
           kBGraph.AddPoint(stat.getTime(),
                            stat.getPressure() * stat.getVolume() /
                                (stat.getNParticles() * stat.getTemp()));
@@ -682,11 +688,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
               if (i < 6) {
+                graph->AddPoint(stat.getTime0(), stat.getPressure(Wall(i)));
                 graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));
               } else {
+                graph->AddPoint(stat.getTime0(), stat.getPressure());
                 graph->AddPoint(stat.getTime(), stat.getPressure());
               }
             }
+            kBGraph.AddPoint(stat.getTime0(),
+                             stat.getPressure() * stat.getVolume() /
+                                 (stat.getNParticles() * stat.getTemp()));
             kBGraph.AddPoint(stat.getTime(),
                              stat.getPressure() * stat.getVolume() /
                                  (stat.getNParticles() * stat.getTemp()));
@@ -904,12 +915,18 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           for (size_t k{0}; k < 7; ++k) {
             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(k)};
             if (k < 6) {
+              graph->AddPoint(stat.getTime0(), stat.getPressure(Wall(k)));
               graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));
             } else {
+              graph->AddPoint(stat.getTime0(), stat.getPressure());
               graph->AddPoint(stat.getTime(), stat.getPressure());
             }
           }
+          mfpGraph.AddPoint(stat.getTime0(), stat.getMeanFreePath());
           mfpGraph.AddPoint(stat.getTime(), stat.getMeanFreePath());
+          kBGraph.AddPoint(stat.getTime0(),
+                           stat.getPressure() * stat.getVolume() /
+                               (stat.getNParticles() * stat.getTemp()));
           kBGraph.AddPoint(stat.getTime(),
                            stat.getPressure() * stat.getVolume() /
                                (stat.getNParticles() * stat.getTemp()));
