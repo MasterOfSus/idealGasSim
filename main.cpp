@@ -1,11 +1,13 @@
 #include <chrono>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <thread>
 
 #include "gasSim/Libs/INIReader.h"
 
+#include <RtypesCore.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TGraph.h>
@@ -89,7 +91,16 @@ GS::VideoOpts stovideoopts(std::string s) {
   }
 }
 
+void throwIfZombie(TObject* o, std::string message) {
+	if (o->IsZombie()) {
+		throw std::runtime_error(message);
+	}
+}
+
 int main(int argc, const char* argv[]) {
+	// trying to make root stop throwing temper tantrums over my variables
+	TH1D::AddDirectory(kFALSE);
+
   try {
     std::cout << "Welcome. Starting idealGasSim gas simulation.\n";
     auto opts{GS::optParse(argc, argv)};
@@ -127,17 +138,11 @@ int main(int argc, const char* argv[]) {
                     << ".root"
                     ).str().c_str() << std::endl;
     */
-    if (inputFile.IsZombie()) {
-      throw std::runtime_error("Provided a path not mapping to any ROOT file.");
-    }
+		throwIfZombie(&inputFile, "Failed to load provided input file path.");
 
     TH1D speedsHTemplate{*((TH1D*)inputFile.Get("speedsHTemplate"))};
-    if (speedsHTemplate.IsZombie()) {
-      throw std::runtime_error(
-          "Couldn't find speedsHTemplate in input root file.");
-    }
-
-    // std::cout << "Found speedsHTemplate." << std::endl;
+		speedsHTemplate.SetDirectory(nullptr);
+		throwIfZombie(&inputFile, "Failed to load speedsHTemplate from input file.");
 
     long nStats{cFile.GetInteger("simulation parameters", "nStats", 1)};
     if (nStats <= 0) {
@@ -169,11 +174,6 @@ int main(int argc, const char* argv[]) {
         nStats / gas.getBoxSide()};
     output.setStatChunkSize(desiredStatChunkSize > 1. ? desiredStatChunkSize
                                                       : 1);
-    // std::cout << "Set statChunkSize at " << output.getStatChunkSize() <<
-    // std::endl;
-
-    // std::cout << "Starting simulation thread." << std::endl;
-
     double gasSide{gas.getBoxSide()};
 
     std::mutex coutMtx;
@@ -181,7 +181,7 @@ int main(int argc, const char* argv[]) {
       gas.simulate(cFile.GetInteger("simulation parameters", "nIters", 0),
                    output);
       std::lock_guard<std::mutex> coutGuard{coutMtx};
-      std::cout << "Simulation thread done." << std::endl;
+      std::cout << "Simulation thread done.                                      \r" << std::endl;
     }};
 
     {
@@ -233,8 +233,6 @@ int main(int argc, const char* argv[]) {
                       gasSize.x,
                       gasSize.y};
 
-    // std::cout << "Starting textures loading." << std::endl;
-
     sf::Texture particleTex;
     particleTex.loadFromFile(
         "assets/" + cFile.Get("render", "particleTexPath", "lightBall") +
@@ -249,8 +247,6 @@ int main(int argc, const char* argv[]) {
     bool mfpMemory{cFile.GetBoolean("output", "mfpMemory", true)};
 
     const int frameTimems{static_cast<int>(1000. / output.getFramerate())};
-
-    // std::cout << "Initializing processing thread." << std::endl;
 
     std::thread processThread;
     if (stovideoopts(cFile.Get("output", "videoOpt", "justGas")) !=
@@ -273,61 +269,58 @@ int main(int argc, const char* argv[]) {
       std::cout << "Processing thread running." << std::endl;
     }
 
-    // std::cout << "Initialized processing thread." << std::endl;
-
-    TList* allPtrs = new TList();
+		std::vector<TObject*> allRootPtrs {};
 
     TList* graphsList = new TList();
-    allPtrs->Add(graphsList);
+		graphsList->SetOwner(kFALSE);
+    allRootPtrs.emplace_back(graphsList);
     TMultiGraph* pGraphs = (TMultiGraph*)inputFile.Get("pGraphs");
+		throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
     TGraph* kBGraph = (TGraph*)inputFile.Get("kBGraph");
+		throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.");
     TGraph* mfpGraph = (TGraph*)inputFile.Get("mfpGraph");
-    if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
-      throw std::runtime_error(
-          "Couldn't find one or more graphs in provided root file.");
-    }
+		throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.");
     graphsList->Add(pGraphs);
     graphsList->Add(kBGraph);
     graphsList->Add(mfpGraph);
 
     TF1* pLineF = (TF1*)inputFile.Get("pLineF");
-    allPtrs->Add(pLineF);
+		throwIfZombie(pLineF, "Failed to load pLineF from input file.");
+    allRootPtrs.emplace_back(pLineF);
     TF1* kBGraphF = (TF1*)inputFile.Get("kBGraphF");
-    allPtrs->Add(kBGraphF);
+		throwIfZombie(kBGraphF, "Failed to load kBGraphF from input file.");
+    allRootPtrs.emplace_back(kBGraphF);
     TF1* maxwellF = (TF1*)inputFile.Get("maxwellF");
-    allPtrs->Add(maxwellF);
+		throwIfZombie(maxwellF, "Failed to load maxwellF from input file.");
+    allRootPtrs.emplace_back(maxwellF);
     TF1* mfpGraphF = (TF1*)inputFile.Get("mfpGraphF");
-    allPtrs->Add(mfpGraphF);
+		throwIfZombie(mfpGraphF, "Failed to load mfpGraphF from input file.");
+    allRootPtrs.emplace_back(mfpGraphF);
     TH1D* cumulatedSpeedsH = (TH1D*)inputFile.Get("cumulatedSpeedsH");
-    if (!cumulatedSpeedsH) {
-      throw std::runtime_error("Cumulated speeds histo not found.");
-    }
-    allPtrs->Add(cumulatedSpeedsH);
+		cumulatedSpeedsH->SetDirectory(nullptr);
+		throwIfZombie(cumulatedSpeedsH, "Failed to load cumulatedSpeedsH from input file.");
+    allRootPtrs.emplace_back(cumulatedSpeedsH);
     TLine* meanLine = (TLine*)inputFile.Get("meanLine");
-    allPtrs->Add(meanLine);
+		throwIfZombie(meanLine, "Failed to load meanLine from input file.");
+    allRootPtrs.emplace_back(meanLine);
     TLine* meanSqLine = (TLine*)inputFile.Get("meanSqLine");
-    allPtrs->Add(meanSqLine);
+		throwIfZombie(meanSqLine, "Failed to load meanSqLine from input file.");
+    allRootPtrs.emplace_back(meanSqLine);
     TF1* expP = (TF1*)inputFile.Get("expP");
-    allPtrs->Add(expP);
+		throwIfZombie(expP, "Failed to load expP from input file.");
+    allRootPtrs.emplace_back(expP);
     TF1* expkB = (TF1*)inputFile.Get("expkB");
-    allPtrs->Add(expkB);
+		throwIfZombie(expkB, "Failed to load expkB from input file.");
+    allRootPtrs.emplace_back(expkB);
     TF1* expMFP = (TF1*)inputFile.Get("expMFP");
-    allPtrs->Add(expMFP);
-
-    for (TObject* p : *allPtrs) {
-      if (p->IsZombie()) {
-        throw std::runtime_error(
-            "Couldn't find one or more required objects from input file.");
-      }
-    }
+		throwIfZombie(expMFP, "Failed to load expMFP from input file.");
+    allRootPtrs.emplace_back(expMFP);
 
     maxwellF->SetParameter(
         0, cFile.GetReal("simulation parameters", "targetT", 1.));
     maxwellF->FixParameter(
         1, cFile.GetInteger("simulation parameters", "nParticles", 1) *
                output.getStatSize());
-    // std::cout << "Set maxwellF nParticles at " << maxwellF->GetParameter(1)
-    // << std::endl;
     maxwellF->FixParameter(2,
                            cFile.GetReal("simulation parameters", "pMass", 1));
 
@@ -348,13 +341,8 @@ int main(int argc, const char* argv[]) {
           if (opt != GS::VideoOpts::gasPlusCoords) {
             if (speedsH.GetEntries()) {
               speedsH.Fit(maxwellF, "Q");
-              /*
-              if (!cumulatedSpeedsH) {
-                      throw std::runtime_error("Cumulated speeds histo is
-              nullptr.");
-              }
+							// skibidi
               cumulatedSpeedsH->Add(&speedsH);
-              */
               meanLine->SetX1(speedsH.GetMean());
               meanLine->SetY1(0.);
               meanLine->SetX2(meanLine->GetX1());
@@ -424,7 +412,6 @@ int main(int argc, const char* argv[]) {
 
     GS::VideoOpts videoOpt{
         stovideoopts(cFile.Get("output", "videoOpt", "all"))};
-    // std::cout << "Extracted videoOpts." << std::endl;
     sf::Texture placeHolder;
     placeHolder.loadFromFile(
         (std::ostringstream()
@@ -432,7 +419,6 @@ int main(int argc, const char* argv[]) {
          << ".png")
             .str()
             .c_str());
-    // std::cout << "Loaded placeholder." << std::endl;
 
     while (!output.isProcessing()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -455,8 +441,6 @@ int main(int argc, const char* argv[]) {
           << output.getFramerate() << " -i - -c:v libx264 -pix_fmt yuv420p "
           << "outputs/videos/"
           << cFile.Get("output", "videoOutputName", "output") << ".mp4";
-
-      // std::cout << "Trying to open ffmpeg pipe." << std::endl;
 
       FILE* ffmpeg = popen(cmd.str().c_str(), "w");
       if (!ffmpeg) {
@@ -490,8 +474,8 @@ int main(int argc, const char* argv[]) {
           break;
         }
       }
-    } else {  // no permanent video output requested -> wiew-once real time
-              // video
+    } else {  // no permanent video output requested ->
+							// wiew-once live video
       {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Starting video display." << std::endl;
@@ -504,7 +488,6 @@ int main(int argc, const char* argv[]) {
       std::atomic<bool> stopBufferLoop{false};
       std::atomic<bool> bufferKillSignal{false};
       std::atomic<bool> stop{false};
-      // std::cout << "Reached video output loop." << std::endl;
       std::atomic<int> queueNumber{1};
       std::atomic<int> launchedPlayThreadsN{0};
       std::atomic<int> droppedFrames{0};
@@ -520,9 +503,6 @@ int main(int argc, const char* argv[]) {
           std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
         }
         if (!stop.load()) {
-          // std::cout << "Found queue number " << queueNumber << " equal to
-          // thread number " << threadN << ", stopping buffer loop." <<
-          // std::endl;
           stopBufferLoop = true;
           std::lock_guard<std::mutex> windowGuard{windowMtx};
           window.setActive();
@@ -560,22 +540,13 @@ int main(int argc, const char* argv[]) {
           }
           queueNumber++;
           if (launchedPlayThreadsN == threadN) {
-            // std::cout << "Found playThreads number " << launchedPlayThreadsN
-            // << " still equal to thread number " << threadN << ": starting up
-            // buffering loop." << std::endl;
             stopBufferLoop = false;
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Status: buffering.                                   "
                          "                          \r";
-          } else {
-            // std::cout << "Found playThreads number " << launchedPlayThreadsN
-            // << " higher than thread number " << threadN << ": not
-            // reactivating buffering loop" << std::endl;
           }
           window.setActive(false);
         }
-        // std::cout << "Playthread n. " << threadN << " out. *mic drop*" <<
-        // std::endl;
       }};
       std::thread bufferingLoop{[&stopBufferLoop, &placeHolder, &window,
                                  &windowMtx, &bufferKillSignal, frameTimems,
@@ -585,7 +556,6 @@ int main(int argc, const char* argv[]) {
                       (float)windowSize.y / (float)placeHolder.getSize().y);
         while (true) {
           if (!stopBufferLoop) {
-            // std::cout << "Found buffer loop activation signal." << std::endl;
             std::lock_guard<std::mutex> windowGuard{windowMtx};
             window.setActive();
             while (window.isOpen() && !stopBufferLoop) {
@@ -603,7 +573,6 @@ int main(int argc, const char* argv[]) {
             if (bufferKillSignal) {
               break;
             }
-            // std::cout << "Buffering loop turned off." << std::endl;
             window.setActive(false);
           } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
@@ -640,20 +609,11 @@ int main(int argc, const char* argv[]) {
           rendersPtr->insert(rendersPtr->end(),
                              std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));
-          // std::cout << "Renders pointer size = " << rendersPtr->size() << "
-          // yielding " << rendersPtr->size() * frameTimems / 1000. << " seconds
-          // of video. Time = " <<
-          // std::chrono::duration<double>(std::chrono::high_resolution_clock::now()
-          // - simStart).count() << std::endl;
           if (lastBatch) {
             break;
           }
         }
         if (!lastBatch) {
-          // std::cout << "Sending playthread n. " << 1 + launchedPlayThreadsN
-          // << ", time = " <<
-          // std::chrono::duration<double>(std::chrono::high_resolution_clock::now()
-          // - simStart).count() << std::endl;
           std::thread playThread{
               [playLambda, rendersPtr, &launchedPlayThreadsN] {
                 launchedPlayThreadsN.fetch_add(1);
@@ -661,16 +621,11 @@ int main(int argc, const char* argv[]) {
               }};
           playThread.detach();
         } else {
-          // std::cout << "Sending last playthread at n. " << 1 +
-          // launchedPlayThreadsN << ", time = " <<
-          // std::chrono::duration<double>(std::chrono::high_resolution_clock::now()
-          // - simStart).count() << std::endl;
           std::thread playThread{
               [playLambda, rendersPtr, &launchedPlayThreadsN] {
                 launchedPlayThreadsN.fetch_add(1);
                 playLambda(rendersPtr, launchedPlayThreadsN.load());
               }};
-          // std::cout << "Joining playThread." << std::endl;
           playThread.join();
           bufferKillSignal = true;
           {
@@ -680,9 +635,7 @@ int main(int argc, const char* argv[]) {
           break;
         }
       }
-      // std::cout << "Reached main loop end." << std::endl;
       stopBufferLoop = true;
-      // std::cout << "Set buffer loop to stop." << std::endl;
       if (bufferingLoop.joinable()) {
         bufferingLoop.join();
       }
@@ -692,8 +645,6 @@ int main(int argc, const char* argv[]) {
                 << ". Leftover data: " << output.getRawDataSize()
                 << " collisions." << std::endl;
     }
-
-    // std::cout << "Joining simulation and processing threads." << std::endl;
 
     if (simThread.joinable()) {
       simThread.join();
@@ -713,11 +664,9 @@ int main(int argc, const char* argv[]) {
             .c_str(),
         "RECREATE")};
 
-    // std::cerr << "Got to writing without crashing." << std::endl;
-
     rootOutput->SetTitle(rootOutput->GetName());
     rootOutput->cd();
-    allPtrs->Add(rootOutput);
+    allRootPtrs.emplace_back(rootOutput);
     graphsList->Write();
     pLineF->Write();
     kBGraph->Write();
@@ -725,15 +674,15 @@ int main(int argc, const char* argv[]) {
     mfpGraph->Write();
     mfpGraphF->Write();
     maxwellF->Write();
-    // cumulatedSpeedsH->Write();
-
-    // std::cerr << "Got to closing without crashing." << std::endl;
+    cumulatedSpeedsH->Write();
 
     rootOutput->Close();
 
-    std::cout << "done!" << std::endl;
+		for (TObject* o: allRootPtrs) {
+			delete(o);
+		}
 
-    // std::cerr << "Got to deleting without crashing." << std::endl;
+    std::cout << "done!" << std::endl;
 
     return 0;
   } catch (const std::runtime_error& error) {
