@@ -1,3 +1,4 @@
+#include <SFML/Graphics/Color.hpp>
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -20,6 +21,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Graphics/Text.hpp>
 
 #include "gasSim/DataProcessing.hpp"
 #include "gasSim/Input.hpp"
@@ -482,7 +484,14 @@ int main(int argc, const char* argv[]) {
       }
       sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y),
                               "GasSim Display", sf::Style::Default);
-      std::mutex windowMtx;
+			sf::Texture lastWindowTxtr;
+			lastWindowTxtr.create(windowSize.x, windowSize.y);
+			{
+			sf::Image blankWindow;
+			blankWindow.create(windowSize.x, windowSize.y, sf::Color::White);
+			lastWindowTxtr.update(blankWindow);
+			}
+      std::mutex windowMtx; // used both for lastWindowTxtr and window
       window.setFramerateLimit(60);
       window.setActive(false);
       std::atomic<bool> stopBufferLoop{false};
@@ -492,10 +501,8 @@ int main(int argc, const char* argv[]) {
       std::atomic<int> launchedPlayThreadsN{0};
       std::atomic<int> droppedFrames{0};
       std::atomic<int> framesToDrop{0};
-      auto playLambda{[&window, &windowMtx, &stopBufferLoop, &queueNumber,
-                       &launchedPlayThreadsN, &droppedFrames, &framesToDrop,
-                       frameTimems, &stop,
-                       &coutMtx](std::shared_ptr<std::vector<sf::Texture>> rPtr,
+
+      auto playLambda{[&, frameTimems](std::shared_ptr<std::vector<sf::Texture>> rPtr,
                                  int threadN) {
         sf::Sprite auxS;
         while (threadN != queueNumber) {
@@ -540,6 +547,7 @@ int main(int argc, const char* argv[]) {
           }
           queueNumber++;
           if (launchedPlayThreadsN == threadN) {
+						lastWindowTxtr = rPtr->back();
             stopBufferLoop = false;
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Status: buffering.                                   "
@@ -548,19 +556,51 @@ int main(int argc, const char* argv[]) {
           window.setActive(false);
         }
       }};
-      std::thread bufferingLoop{[&stopBufferLoop, &placeHolder, &window,
-                                 &windowMtx, &bufferKillSignal, frameTimems,
-                                 windowSize]() {
-        sf::Sprite auxS{placeHolder};
-        auxS.setScale((float)windowSize.x / (float)placeHolder.getSize().x,
-                      (float)windowSize.y / (float)placeHolder.getSize().y);
+			sf::Texture bufferingWheelT;
+			bufferingWheelT.loadFromFile(
+				std::string("assets/") + cFile.Get("output", "bufferingWheel", "jesse") + std::string(".png")
+			);
+			sf::Sprite bufferingWheel;
+			bufferingWheel.setTexture(bufferingWheelT, true);
+			bufferingWheel.setOrigin(
+					bufferingWheelT.getSize().x / 2.,
+					bufferingWheelT.getSize().y / 2.
+			);
+			bufferingWheel.setScale(
+					windowSize.x * 0.2 / bufferingWheelT.getSize().x,
+					windowSize.y * 0.2 / bufferingWheelT.getSize().y
+			);
+			bufferingWheel.setPosition(windowSize.x / 2., windowSize.y / 2.);
+			sf::Text bufferingText {
+				"(UwU) loading (^w^)",
+				font,
+				static_cast<unsigned>(windowSize.y * 0.025)
+			};
+			bufferingText.setFillColor(sf::Color::Black);
+			bufferingText.setOutlineColor(sf::Color::White);
+			bufferingText.setOutlineThickness(4);
+			// I have no idea why the x value is that but hey it works
+			// (the character size may not be in pixels?)
+			bufferingText.setOrigin(
+					bufferingText.getCharacterSize() * bufferingText.getString().getSize() / 3.25,
+					bufferingText.getCharacterSize() / 2.
+			);
+			bufferingText.setPosition(
+					bufferingWheel.getPosition().x,
+					bufferingWheel.getPosition().y + windowSize.y * 0.2);
+      std::thread bufferingLoop{[&, frameTimems, windowSize]() {
+				sf::Sprite auxS;
+				auxS.setTexture(lastWindowTxtr, true);
         while (true) {
           if (!stopBufferLoop) {
             std::lock_guard<std::mutex> windowGuard{windowMtx};
             window.setActive();
             while (window.isOpen() && !stopBufferLoop) {
-              window.clear(sf::Color::Red);
-              window.draw(auxS);
+							window.draw(auxS); // repaint last window texture
+						 	// 120 degrees per second
+							bufferingWheel.setRotation(bufferingWheel.getRotation() + 120. * frameTimems / 1000.);
+							window.draw(bufferingWheel);
+							window.draw(bufferingText);
               window.display();
               if (bufferKillSignal) {
                 break;
