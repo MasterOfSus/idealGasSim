@@ -36,9 +36,6 @@ std::ostream& operator<<(std::ostream& os, GS::GSVectorD const& v) {
 TEST_CASE("Testing GSVectorD") {
   GS::GSVectorD vec1{1.1, -2.11, 56.253};
   GS::GSVectorD vec2{12.3, 0.12, -6.3};
-  // GS::GSVectorD weirdFloatVector{-5.5f, 100000.f, 4.3f};
-  // GS::GSVectorD weirdIntVector{-5, 6, 3};
-  // GS::GSVectorD randomvec2(67.);
   SUBCASE("Constructor") {
     CHECK(vec1.x == 1.1);
     CHECK(vec1.y == -2.11);
@@ -161,7 +158,9 @@ TEST_CASE("Testing WallCollision") {
   }
   SUBCASE("Resolve Collision") {
     coll.solve();
-    // Da aggiungere il check del risolutore corretto
+		CHECK(doctest::Approx(coll.getP1()->speed.x) == 0.);
+		CHECK(doctest::Approx(coll.getP1()->speed.y) == 0.);
+		CHECK(doctest::Approx(coll.getP1()->speed.z) == -10.);
   }
 }
 TEST_CASE("Testing PartCollision") {
@@ -188,15 +187,22 @@ TEST_CASE("Testing PartCollision") {
     coll.getP1()->position.x = 4;
     coll.getP1()->position.y = 0;
     coll.getP1()->position.z = 4;
-    /* why are we accessing a private member through its pointer to change its
-    value? credo sia un refuso, prima non valutavamo il metodo solve()
-                coll.getSecondParticle()->speed.x = actualSpeed.x;
-                coll.getSecondParticle()->speed.y = actualSpeed.y;
-                coll.getSecondParticle()->speed.z = actualSpeed.z;
-
-                CHECK(coll.getP1()->position == actualPosition);
-    CHECK(coll.getSecondParticle()->speed == actualSpeed);*/
   }
+	SUBCASE("Solving method") {
+		// getting the particles in contact, even if it doesn't matter since
+		// resolution just applies a formula on the normalized distance
+		coll.getP1()->position = {0., 0., 0.};
+		coll.getP1()->speed = {5.46, 4.35, -3.24};
+		GS::GSVectorD p2Pos = {sqrt(2. * GS::Particle::getRadius()), sqrt(2. * GS::Particle::getRadius()), 0.};
+		coll.getP2()->position = p2Pos;
+		coll.solve();
+		CHECK(doctest::Approx(coll.getP1()->speed.x) == .7155);
+		CHECK(doctest::Approx(coll.getP1()->speed.y) == -0.3945);
+		CHECK(doctest::Approx(coll.getP1()->speed.z) == -3.24);
+		CHECK(doctest::Approx(coll.getP2()->speed.x) == 4.8545);
+		CHECK(doctest::Approx(coll.getP2()->speed.y) == 4.9555);
+		CHECK(doctest::Approx(coll.getP2()->speed.z) == 5.6253);
+	}
 }
 
 TEST_CASE("Testing collisionTime") {
@@ -256,10 +262,11 @@ TEST_CASE("Testing Gas constructor") {
         GS::Gas(std::vector<GS::Particle>(almostGoodPs), boxSide, time));
     CHECK(goodGas.getParticles() == goodPs);
     CHECK(goodGas.getBoxSide() == 5.);
+		// overlap issue
     std::vector<GS::Particle> badPs{
         {{1.1, 2., 3.}, {1., 1., 2.}},        // !!!
         {{1.1, 2.5, 3.99}, {1., 2., 0.}},     // !!!
-        {{3.99, 3.99, 3.99}, {1., 5., 6.}}};  // overlap issue
+        {{3.99, 3.99, 3.99}, {1., 5., 6.}}};
     GS::Gas badGas;
     CHECK_THROWS(badGas = GS::Gas(std::move(badPs), boxSide, time));
 
@@ -474,12 +481,10 @@ TEST_CASE("Testing the camera class") {
     CHECK(projection.y == doctest::Approx(-504.927f + 800.f));
     CHECK(projection.z == doctest::Approx(0.5f));
     projection = camera.getPointProjection(static_cast<GS::GSVectorF>(p2));
-    // projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(-3786.95f + 500.f));
     CHECK(projection.y == doctest::Approx(-4796.80f + 800.f));
     CHECK(projection.z == doctest::Approx(2.25f));
     projection = camera.getPointProjection(static_cast<GS::GSVectorF>(p3));
-    // projections.emplace_back(projection);
     CHECK(projection.x == doctest::Approx(835.74f + 500.f));
     CHECK(projection.y == doctest::Approx(94.51f + 800.f));
     CHECK(projection.z == doctest::Approx(-0.022167f));
@@ -524,8 +529,6 @@ TEST_CASE("Testing the GasData class") {
     CHECK(data.getTime() == gas.getTime());
     CHECK(data.getBoxSide() == gas.getBoxSide());
     CHECK(data.getP1Index() == 0);
-    // CHECK(GS::Particle(data.getP1()) ==
-    // GS::Particle(data.getParticles()[data.getP1Index()]));
     CHECK(data.getWall() == GS::Wall::Back);
     CHECK(data.getCollType() == 'w');
     CHECK(moreGas.getParticles() == moreData.getParticles());
@@ -552,14 +555,9 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
   GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
   GS::SimDataPipeline output{5, 1., defaultH};
   gas.simulate(5, output);
-  // std::cout << "Started processing data.\n";
   output.processData();
-  // std::cout << "Finished processing data.\n";
   SUBCASE("Testing the constructor") {
     GS::TdStats stats{output.getStats()[0]};
-    // CHECK(stats.getSpeeds() == std::vector<GS::GSVectorD>{
-    //                                {1., 0., 0.}, {0., 0., 0.}, {0., -1.,
-    //                                0.}});
     CHECK(stats.getBoxSide() == 4.);
     CHECK(stats.getVolume() == 64.);
     CHECK(stats.getDeltaT() == 1.5);
@@ -574,8 +572,6 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
     CHECK(stats.getPressure(GS::Wall::Left) == 10. / 6.);
     CHECK(stats.getPressure(GS::Wall::Top) == 10. / 16.);
     CHECK(stats.getPressure(GS::Wall::Bottom) == 0.);
-    // CHECK(stats.getSpeeds() ==
-    //      std::vector<GS::GSVectorD>{{2., 3., -0.75}});
     CHECK(stats.getTime0() == 0.);
     CHECK(stats.getTime() == 1.5);
     CHECK(stats.getDeltaT() == 1.5);
@@ -591,16 +587,6 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
     CHECK(moreStats.getPressure(GS::Wall::Right) == 10. / (11. * 72.));
     CHECK(moreStats.getPressure(GS::Wall::Top) == 0.);
     CHECK(moreStats.getPressure(GS::Wall::Bottom) == 0.);
-    /*CHECK(moreStats.getSpeeds() ==
-          std::vector<GS::GSVectorD>{
-              {-1., 0., 0.}, {0., 0., 0.},  {0., -1., 0.},
-              {1., 0., 0.},  {0., 0., 0.},  {0., -1., 0.},
-              {1., 0., 0.},  {0., -1., 0.}, {0., 0., 0.},
-              {1., 0., 0.},  {0., 1., 0.},  {0., 0., 0.},
-              {1., 0., 0.},  {0., 0., 0.},  {0., 1., 0.},
-              {-1., 0., 0.},
-              {0., 0., 0.},
-              {0., -1., 0.}});*/
     CHECK(moreStats.getMeanFreePath() == 2.5);
   }
 }
@@ -995,4 +981,3 @@ TEST_CASE(
   };
   std::cout << "Bye!" << std::endl;
 }
-// ciucciami le Particelle

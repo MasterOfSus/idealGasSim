@@ -37,7 +37,7 @@ struct PWCollision final : public Collision {
 
 struct PPCollision final : public Collision {
  public:
-  Particle const* getP2() const { return p2; }
+  Particle* getP2() const { return p2; }
   char getType() const override { return 'p'; }
   void solve() override;
 

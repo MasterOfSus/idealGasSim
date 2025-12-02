@@ -179,7 +179,7 @@ int main(int argc, const char* argv[]) {
     double gasSide{gas.getBoxSide()};
 
     std::mutex coutMtx;
-    std::thread simThread{[&gas, &output, &cFile, &coutMtx] {
+    std::thread simThread{[&] {
       gas.simulate(cFile.GetInteger("simulation parameters", "nIters", 0),
                    output);
       std::lock_guard<std::mutex> coutGuard{coutMtx};
@@ -254,7 +254,7 @@ int main(int argc, const char* argv[]) {
     if (stovideoopts(cFile.Get("output", "videoOpt", "justGas")) !=
         GS::VideoOpts::justStats) {
       processThread =
-          std::thread([&output, &camera, &style, &coutMtx, mfpMemory] {
+          std::thread([&, mfpMemory] {
             output.processData(camera, style, mfpMemory);
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Data processing thread done.                         "
@@ -331,6 +331,12 @@ int main(int argc, const char* argv[]) {
           TGraph* genPGraph{(TGraph*)pGraphs->GetListOfGraphs()->At(6)};
           if (genPGraph->GetN()) {
             genPGraph->Fit(pLineF, "Q");
+						// Keep number of drawn points at 30
+            if (genPGraph->GetN() >= 30) {
+              pGraphs->GetXaxis()->SetRangeUser(
+                  genPGraph->GetPointX(genPGraph->GetN() - 30),
+                  genPGraph->GetPointX(genPGraph->GetN() - 1));
+            }
           }
           if (kBGraph->GetN()) {
             if (kBGraph->GetN() >= 30) {
@@ -339,6 +345,8 @@ int main(int argc, const char* argv[]) {
                   kBGraph->GetPointX(kBGraph->GetN() - 1));
             }
             kBGraph->Fit(kBGraphF, "Q");
+						// keep most data visible but not squished down by outliers
+						kBGraph->GetYaxis()->SetRangeUser(0., kBGraphF->GetParameter(0) * 3.25);
           }
           if (opt != GS::VideoOpts::gasPlusCoords) {
             if (speedsH.GetEntries()) {
@@ -386,11 +394,6 @@ int main(int argc, const char* argv[]) {
           if (genPGraph->GetN()) {
             pLineF->GetXaxis()->SetRangeUser(
                 0., genPGraph->GetPointX(genPGraph->GetN() - 1));
-            if (genPGraph->GetN() >= 30) {
-              pGraphs->GetXaxis()->SetRangeUser(
-                  genPGraph->GetPointX(genPGraph->GetN() - 30),
-                  genPGraph->GetPointX(genPGraph->GetN() - 1));
-            }
           }
           pLineF->Draw("SAME");
           expP->SetRange(0., genPGraph->GetXaxis()->GetXmax());
@@ -582,12 +585,12 @@ int main(int argc, const char* argv[]) {
 			// I have no idea why the x value is that but hey it works
 			// (the character size may not be in pixels?)
 			bufferingText.setOrigin(
-					bufferingText.getCharacterSize() * bufferingText.getString().getSize() / 3.25,
-					bufferingText.getCharacterSize() / 2.
+					bufferingText.getLocalBounds().width / 2.f,
+					bufferingText.getLocalBounds().height / 2.f
 			);
 			bufferingText.setPosition(
 					bufferingWheel.getPosition().x,
-					bufferingWheel.getPosition().y + windowSize.y * 0.2);
+					bufferingWheel.getPosition().y + windowSize.y * 0.2f);
       std::thread bufferingLoop{[&, frameTimems, windowSize]() {
 				sf::Sprite auxS;
 				auxS.setTexture(lastWindowTxtr, true);
