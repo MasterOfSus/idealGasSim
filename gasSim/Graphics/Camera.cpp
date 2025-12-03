@@ -279,6 +279,7 @@ void drawParticles(Gas const& gas, Camera const& camera,
     for (size_t i{0}; i < 4; ++i)
       particles.append(sf::Vertex(vertexes[i], texVertexes[i]));
   }
+	texture.setActive();
   texture.draw(particles, &style.getPartTexture());
 }
 

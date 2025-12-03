@@ -1,9 +1,11 @@
-#include "SimDataPipeline.hpp"
-
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <iterator>
 #include <stdexcept>
 #include <thread>
+
+#include <SFML/Window/Context.hpp>
+
+#include "SimDataPipeline.hpp"
 
 namespace GS {
 
@@ -160,17 +162,19 @@ void SimDataPipeline::processData(Camera const& camera,
       {  // guard scope begin
         std::lock_guard<std::mutex> outputGuard{outputMtx};
 
-        sThread = std::thread([this, &data, mfpMemory]() {
+				auto const& dataRef {data};
+
+        sThread = std::thread([this, dataRef, mfpMemory]() {
           try {
-            processStats(data, mfpMemory);
+            processStats(dataRef, mfpMemory);
           } catch (std::exception const& e) {
             std::terminate();
           }
         });
 
-        gThread = std::thread([this, &data, &camera, &style]() {
+        gThread = std::thread([this, dataRef, &camera, &style]() {
           try {
-            processGraphics(data, camera, style);
+            processGraphics(dataRef, camera, style);
           } catch (std::exception const& e) {
             std::terminate();
           }
@@ -196,23 +200,19 @@ void SimDataPipeline::processData(Camera const& camera,
 void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
                                       Camera const& camera,
                                       RenderStyle const& style) {
+  sf::RenderTexture picture;
   std::vector<std::pair<sf::Texture, double>> tempRenders{};
 
   // setting local time variables
   double gTime;
   double gDeltaT{this->gDeltaT.load()};
-  {  // guard scope
-    std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
-    if (!this->gTime.has_value()) {
-      this->gTime = data[0].getT0() - gDeltaT;
-    }
-    assert(gDeltaT > 0.);
-    if (data.size()) {
-      assert(this->gTime <= data[0].getT0());
-    }
-    gTime = *this->gTime;
-  }  // guard scope
-  sf::RenderTexture picture;
+	std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
+	assert(gDeltaT > 0.);
+	if (!this->gTime.has_value()) {
+		this->gTime = data[0].getT0() - gDeltaT;
+	}
+	assert(this->gTime <= data[0].getT0());
+	gTime = *this->gTime;
 
   tempRenders.reserve(
       (data.back().getTime() - data.front().getTime()) / gDeltaT + 1);
@@ -224,15 +224,16 @@ void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
   for (GasData const& dat : data) {
     while (gTime + gDeltaT <= dat.getTime()) {
       gTime += gDeltaT;
+			// std::cerr << "GTime = " << gTime;
       drawGas(dat, camera, picture, style, gTime - dat.getTime());
-      renders.emplace_back(picture.getTexture(), gTime);
+      tempRenders.emplace_back(picture.getTexture(), gTime);
+			// std::cerr << "Render time = " << gTime << std::endl;
     }
   }
 
   std::lock_guard<std::mutex> rendersGuard{rendersMtx};
   renders.insert(renders.end(), std::make_move_iterator(tempRenders.begin()),
                  std::make_move_iterator(tempRenders.end()));
-  std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
   this->gTime = gTime;
 }
 
@@ -294,6 +295,7 @@ std::vector<TdStats> SimDataPipeline::getStats(bool emptyQueue) {
 }
 
 std::vector<sf::Texture> SimDataPipeline::getRenders(bool emptyQueue) {
+	sf::Context c;
   std::vector<sf::Texture> tempRenders{};
   if (emptyQueue) {
     std::lock_guard<std::mutex> rendersGuard{rendersMtx};
@@ -303,9 +305,9 @@ std::vector<sf::Texture> SimDataPipeline::getRenders(bool emptyQueue) {
     }
     renders.clear();
   } else {
-    std::lock_guard<std::mutex> guard(rendersMtx);
+    std::lock_guard<std::mutex> rendersGuard {rendersMtx};
     tempRenders.reserve(renders.size());
-    for (auto& r : renders) {
+    for (auto const& r : renders) {
       tempRenders.emplace_back(r.first);
     }
   }

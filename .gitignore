@@ -1,6 +1,8 @@
 .vscode
+
 mainSketch
-build
+bDebug
+bRelease
 unitTesting/unitTests
 .cache
 unitTesting/compileResults.txt

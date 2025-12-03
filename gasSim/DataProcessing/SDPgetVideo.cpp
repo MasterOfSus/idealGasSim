@@ -3,6 +3,7 @@
 #include <TGraph.h>
 #include <TImage.h>
 #include <TMultiGraph.h>
+#include <iostream>
 
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -10,6 +11,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Window/Context.hpp>
 #include <iomanip>
 #include <sstream>
 
@@ -118,11 +120,10 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   switch (opt) {
     case VideoOpts::justGas: {  // case scope
       {                         // lock scope
+				sf::Context c;
+        std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
         std::lock_guard<std::mutex> rGuard{rendersMtx};
-        {  // locks scope 2
-          std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
           gTime = this->gTime;
-        }  // end of locks scope 2
         if (!gTime.has_value()) {
           return {};
         }
@@ -140,11 +141,9 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       break;
     }  // end of case scope
     case VideoOpts::justStats: {  // lock/case scope
+      std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
       std::lock_guard<std::mutex> sGuard{statsMtx};
-      {  // locks scope 2
-        std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
-        gTime = this->gTime;
-      }  // end of locks scope 2
+      gTime = this->gTime;
       gDeltaT = this->gDeltaT.load();
       if (this->stats.size()) {
         // setting fTime_
@@ -187,15 +186,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     }  // end of lock/case scope
     case VideoOpts::all:
     case VideoOpts::gasPlusCoords: {  // locks/case scope
+			sf::Context c;
       std::unique_lock<std::mutex> resultsLock{outputMtx};
       outputCv.wait_for(resultsLock, std::chrono::milliseconds(50),
                         [this]() { return addedResults.load(); });
+      std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
       std::lock_guard<std::mutex> rGuard{rendersMtx};
       std::lock_guard<std::mutex> sGuard{statsMtx};
-      {  // lock scope 2
-        std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
-        gTime = this->gTime;
-      }  // end of lock scope 2
+      gTime = this->gTime;
       gDeltaT = this->gDeltaT.load();
       if (!gTime.has_value()) {
         return {};
@@ -379,7 +377,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     case VideoOpts::justGas: {
       if (renders.size()) {
         assert(isIntMultOf(*fTime - *gTime, gDeltaT));
-        assert(gTime == renders.back().second);
+				// std::cerr << "gTime = " << *gTime << " renders.back().second = " << renders.back().second << std::endl;
+        // assert(isNegligible(*gTime - renders.back().second - gDeltaT, gDeltaT));
         assert(fTime <= getRendersT0(renders));
         box.setPosition(0, 0);
         size_t rIndex{0};

@@ -8,6 +8,10 @@ namespace GS {
 	double collisionTime(Particle const& p1, Particle const& p2);
 
 	struct randomThreadsMgr {
+		randomThreadsMgr() {
+			threads.reserve(1000);
+		};
+		size_t nThreads {0};
 		std::vector<std::thread> threads {};
 		void finish();
 		void add(std::function<void()> f);

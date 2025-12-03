@@ -5,6 +5,7 @@
 #include <random>
 #include <stdexcept>
 #include <thread>
+#include <iostream>
 
 #include "../DataProcessing/SimDataPipeline.hpp"
 #include "GSVector.hpp"
@@ -242,9 +243,9 @@ auto trIndex(size_t i, size_t nEls) {
 
 PPCollision Gas::firstPPColl() {
   // collision compare lambda
-  auto getBestPPCollision{[](PPCollision& c, Particle* p1, Particle* p2) {
-    GSVectorD relPos{p1->position - p2->position};
-    GSVectorD relSpd{p1->speed - p2->speed};
+  auto getBestPPCollision{[](PPCollision& c, Particle * p1, Particle * p2) {
+		GSVectorD relPos {p1->position - p2->position};
+    const GSVectorD relSpd{p1->speed - p2->speed};
     if (relPos * relSpd <= 0.) {
       double cTime{collisionTime(*p1, *p2)};
       if (cTime < c.getTime()) {
@@ -266,11 +267,15 @@ PPCollision Gas::firstPPColl() {
   size_t checksPerThread{nChecks / nThreads};
   size_t extraChecks{nChecks % nThreads};
 
-  std::vector<std::thread> threads{};
+	std::mutex particlesMtx;
+  std::vector<std::thread> threads {};
+	threads.reserve(nThreads);
+	std::mutex bestCollsMtx;
   std::vector<PPCollision> bestColls(nThreads, {INFINITY, nullptr, nullptr});
 
+	// concurrent access on particles is read-only
   // first thread with extra checks
-  threads.push_back(std::thread([&]() {
+  threads.emplace(threads.begin(), [&]() {
     PPCollision c{INFINITY, nullptr, nullptr};
     size_t endIndex{checksPerThread + extraChecks};
     for (size_t i{0}; i < endIndex; ++i) {
@@ -278,13 +283,16 @@ PPCollision Gas::firstPPColl() {
       getBestPPCollision(c, particles.data() + trI.first,
                          particles.data() + trI.second);
     }
+		std::lock_guard<std::mutex> bestCollsGuard {bestCollsMtx};
     bestColls[0] = c;
-  }));
+  });
+
+	if (checksPerThread) {
 
   // other threads with normal checks number
   for (size_t threadIndex{1}; threadIndex < nThreads; ++threadIndex) {
     size_t thrI{threadIndex};
-    threads.push_back(std::thread([&, thrI]() {
+    threads.emplace(threads.begin() + thrI, [&, thrI]() {
       PPCollision c{INFINITY, nullptr, nullptr};
       size_t i{thrI * checksPerThread + extraChecks};
       size_t endIndex{(thrI + 1) * checksPerThread + extraChecks};
@@ -293,11 +301,14 @@ PPCollision Gas::firstPPColl() {
         getBestPPCollision(c, particles.data() + trI.first,
                            particles.data() + trI.second);
       }
+			std::lock_guard<std::mutex> bestCollsGuard {bestCollsMtx};
       bestColls[thrI] = c;
-    }));
+    });
   }
 
-  for (std::thread& t : threads) {
+	}
+
+  for (auto& t: threads) {
     if (t.joinable()) {
       t.join();
     }

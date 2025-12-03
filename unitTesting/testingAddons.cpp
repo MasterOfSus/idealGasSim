@@ -6,6 +6,7 @@
 
 namespace GS {
 	void randomThreadsMgr::add(std::function<void()> f) {
+		if (nThreads < 1000) {
 		threads.emplace_back(
 			[this, f = std::move(f)] () {
 				thread_local std::mt19937 r {std::random_device{}()};
@@ -33,6 +34,8 @@ namespace GS {
 				}
 			}
 		);
+		++nThreads;
+		}
 	}
 	void randomThreadsMgr::finish() {
 		stop.store(true);
