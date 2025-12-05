@@ -28,7 +28,7 @@ class SimDataPipeline {
 
   void addData(std::vector<GasData>&& data);
   void processData(bool mfpMemory = true);
-  void processData(Camera const& camera, RenderStyle const& style,
+  void processData(Camera camera, RenderStyle style,
                    bool mfpMemory = true);
   std::vector<sf::Texture> getVideo(
       VideoOpts opt, sf::Vector2i windowSize, sf::Texture const& placeHolderT,
@@ -50,9 +50,10 @@ class SimDataPipeline {
   void setFont(sf::Font const& font);
 
  private:
-  void processStats(std::vector<GasData> const& data, bool mfpMemory);
+  void processStats(std::vector<GasData> const& data, bool mfpMemory, std::vector<TdStats>& tempResults);
   void processGraphics(std::vector<GasData> const& data, Camera const& camera,
-                       RenderStyle const& style);
+                       RenderStyle const& style,
+											 std::vector<std::pair<sf::Texture, double>>& tempRenders);
 
   std::atomic<bool> dataDone{false};
   std::atomic<bool> processing{false};

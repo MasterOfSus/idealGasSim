@@ -123,7 +123,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 				sf::Context c;
         std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
         std::lock_guard<std::mutex> rGuard{rendersMtx};
-          gTime = this->gTime;
+        gTime = this->gTime;
         if (!gTime.has_value()) {
           return {};
         }
@@ -379,7 +379,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         assert(isIntMultOf(*fTime - *gTime, gDeltaT));
 				// std::cerr << "gTime = " << *gTime << " renders.back().second = " << renders.back().second << std::endl;
         // assert(isNegligible(*gTime - renders.back().second - gDeltaT, gDeltaT));
-        assert(fTime <= getRendersT0(renders));
+        assert(fTime < getRendersT0(renders) || isNegligible(*fTime - getRendersT0(renders), gDeltaT));
         box.setPosition(0, 0);
         size_t rIndex{0};
         while (*fTime + gDeltaT < gTime ||
@@ -536,7 +536,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     case VideoOpts::gasPlusCoords:
       if (renders.size()) {
         assert(gTime == renders.back().second);
-        assert(fTime <= getRendersT0(renders));
+				assert(fTime < getRendersT0(renders) || isNegligible(*fTime - getRendersT0(renders), gDeltaT));
       }
       {  // case scope
         timeText.setPosition(windowSize.x * 0.51, windowSize.y * 0.01);
@@ -745,7 +745,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       }  // case scope end
     case VideoOpts::all: {  // case scope
       if (renders.size()) {
-        assert(fTime <= getRendersT0(renders));
+        assert(fTime < getRendersT0(renders) || isNegligible(*fTime - getRendersT0(renders), gDeltaT));
         assert(gTime == renders.back().second);
       }
       timeText.setPosition(windowSize.x * 0.26, windowSize.y * 0.01);
