@@ -2,6 +2,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <thread>
+#include <iostream>
 
 #include <SFML/Window/Context.hpp>
 
@@ -168,6 +169,7 @@ void SimDataPipeline::processData(Camera camera,
 				try {
 					processStats(*data, mfpMemory, tempStats);
 				} catch (std::exception const& e) {
+					std::cerr << "What..." << std::endl;
 					std::terminate();
 				}
 			}};
@@ -176,6 +178,7 @@ void SimDataPipeline::processData(Camera camera,
 				try {
 					processGraphics(*data, camera, style, tempRenders);
 				} catch (std::exception const& e) {
+					std::cerr << "What (graphicz)..." << std::endl;
 					std::terminate();
 				}
 			}};

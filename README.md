@@ -1,5 +1,11 @@
 # idealGasSim
 
+This project has been abandoned, I give up, I cannot for the life of me figure out what's wrong with the multithreading and I cannot keep on doing this as I have been using it to destroy myself for way too long.
+Lol I'm so silly time to become homeless.
+Btw running the program with gasSim_demo.ini from the configs directory seems to work, I tried with 10k particles and justStats, with 100 for boxSide instead and it terminates without throwing, sillyyyyyyyyyyy. BLEP.
+
+![hopefully this silly car image is still available](https://static.wikia.nocookie.net/silly-cat/images/5/59/Milly.png/revision/latest?cb=20231001194804)
+
 **idealGasSim** is a rudimentary ideal‑gas simulator implementing an event‑based three‑dimensional system of freely moving identical particles inside a cubic container. The project includes visualization, data processing, and a fully configurable workflow.
 
 ## Features

@@ -180,8 +180,14 @@ int main(int argc, const char* argv[]) {
 
     std::mutex coutMtx;
     std::thread simThread{[&] {
+			try {
       gas.simulate(cFile.GetInteger("simulation parameters", "nIters", 0),
                    output);
+			} catch (std::runtime_error const& e) {
+				std::lock_guard<std::mutex> coutGuard{coutMtx};
+				std::cout << "Runtime error: " << e.what() << std::endl;
+				std::terminate();
+			}
       std::lock_guard<std::mutex> coutGuard{coutMtx};
       std::cout << "Simulation thread done.                                      \r" << std::endl;
     }};
@@ -190,8 +196,6 @@ int main(int argc, const char* argv[]) {
       std::lock_guard<std::mutex> coutGuard{coutMtx};
       std::cout << "Simulation thread running." << std::endl;
     }
-
-    // std::cout << "Started simulation thread." << std::endl;
 
     GS::GSVectorF camPos{static_cast<GS::GSVectorF>(stovec(cFile.Get(
         "rendering", "camPos",
@@ -263,7 +267,19 @@ int main(int argc, const char* argv[]) {
           });
     } else {
       processThread =
-          std::thread([&output, mfpMemory] { output.processData(mfpMemory); });
+          std::thread([&, mfpMemory] { 
+						try {
+							output.processData(mfpMemory);
+						} catch (std::runtime_error const& e) {
+							std::lock_guard<std::mutex> coutGuard{coutMtx};
+							std::cout << "Runtime error: " << e.what() << std::endl;
+							std::terminate();
+						}
+            std::lock_guard<std::mutex> coutGuard{coutMtx};
+            std::cout << "Data processing thread done.                         "
+                         "               \r"
+                      << std::endl;
+					});
     }
 
     {
