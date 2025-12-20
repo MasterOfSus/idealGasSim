@@ -1,6 +1,5 @@
 #include "TdStats.hpp"
 
-#include <iostream>
 #include <stdexcept>
 
 // Auxiliary addPulse private function, assumes solved collision for input
@@ -83,9 +82,6 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
       time{data.getTime()},
       boxSide{data.getBoxSide()} {
   if (data.getParticles().size() != prevStats.getNParticles()) {
-    std::cerr << "data.getParticles size = " << data.getParticles().size()
-              << " != " << prevStats.getNParticles()
-              << " prevStats.getNParticles." << std::endl;
     throw std::invalid_argument(
         "TdStats constructor error: provided data with non-matching particle "
         "number");

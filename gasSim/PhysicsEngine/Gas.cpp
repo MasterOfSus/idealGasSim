@@ -5,7 +5,6 @@
 #include <random>
 #include <stdexcept>
 #include <thread>
-#include <iostream>
 
 #include "../DataProcessing/SimDataPipeline.hpp"
 #include "GSVector.hpp"

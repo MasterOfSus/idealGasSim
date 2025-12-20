@@ -40,7 +40,9 @@ class SimDataPipeline {
   size_t getStatSize() const { return statSize.load(); }
   void setStatSize(size_t size);
 
+	size_t getNStats();
   std::vector<TdStats> getStats(bool clearMem = false);
+	size_t getNRenders();
   std::vector<sf::Texture> getRenders(bool clearMem = false);
 
   bool isProcessing() { return processing.load(); }

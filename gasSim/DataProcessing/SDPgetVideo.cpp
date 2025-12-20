@@ -3,7 +3,6 @@
 #include <TGraph.h>
 #include <TImage.h>
 #include <TMultiGraph.h>
-#include <iostream>
 
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -377,8 +376,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     case VideoOpts::justGas: {
       if (renders.size()) {
         assert(isIntMultOf(*fTime - *gTime, gDeltaT));
-				// std::cerr << "gTime = " << *gTime << " renders.back().second = " << renders.back().second << std::endl;
-        // assert(isNegligible(*gTime - renders.back().second - gDeltaT, gDeltaT));
         assert(fTime < getRendersT0(renders) || isNegligible(*fTime - getRendersT0(renders), gDeltaT));
         box.setPosition(0, 0);
         size_t rIndex{0};

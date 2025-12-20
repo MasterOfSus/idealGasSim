@@ -1,8 +1,8 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <iterator>
+#include <mutex>
 #include <stdexcept>
 #include <thread>
-#include <iostream>
 
 #include <SFML/Window/Context.hpp>
 
@@ -169,7 +169,6 @@ void SimDataPipeline::processData(Camera camera,
 				try {
 					processStats(*data, mfpMemory, tempStats);
 				} catch (std::exception const& e) {
-					std::cerr << "What..." << std::endl;
 					std::terminate();
 				}
 			}};
@@ -178,7 +177,6 @@ void SimDataPipeline::processData(Camera camera,
 				try {
 					processGraphics(*data, camera, style, tempRenders);
 				} catch (std::exception const& e) {
-					std::cerr << "What (graphicz)..." << std::endl;
 					std::terminate();
 				}
 			}};
@@ -290,6 +288,11 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
   }
 }
 
+size_t SimDataPipeline::getNStats() {
+	std::lock_guard<std::mutex> statsGuard {statsMtx};
+	return stats.size();
+}
+
 std::vector<TdStats> SimDataPipeline::getStats(bool emptyQueue) {
   if (emptyQueue) {
     std::deque<TdStats> tempStats{};
@@ -308,6 +311,11 @@ std::vector<TdStats> SimDataPipeline::getStats(bool emptyQueue) {
     std::lock_guard<std::mutex> guard{statsMtx};
     return std::vector<TdStats>(stats.begin(), stats.end());
   }
+}
+
+size_t SimDataPipeline::getNRenders() {
+	std::lock_guard<std::mutex> rendersGuard {rendersMtx};
+	return renders.size();
 }
 
 std::vector<sf::Texture> SimDataPipeline::getRenders(bool emptyQueue) {

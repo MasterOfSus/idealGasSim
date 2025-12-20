@@ -4,6 +4,7 @@
 #include <random>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <thread>
 
 #include "gasSim/Libs/INIReader.h"
@@ -132,14 +133,6 @@ int main(int argc, const char* argv[]) {
          << ".root")
             .str()
             .c_str())};
-    /*
-    std::cout << (std::ostringstream()
-                    << "inputs/"
-                    << cFile.Get("simulation parameters", "ROOTInputPath",
-    "input").c_str()
-                    << ".root"
-                    ).str().c_str() << std::endl;
-    */
 		throwIfZombie(&inputFile, "Failed to load provided input file path.");
 
     TH1D speedsHTemplate{*((TH1D*)inputFile.Get("speedsHTemplate"))};
@@ -209,13 +202,11 @@ int main(int argc, const char* argv[]) {
          << ", " << gasSide * 0.5 - camPos.z << '}')
             .str())))};
 
-    // std::cout << "Made camera vectors." << std::endl;
-
     sf::Vector2u windowSize{
         static_cast<unsigned>(cFile.GetInteger("output", "videoResX", 800)),
         static_cast<unsigned>(cFile.GetInteger("output", "videoResY", 600))};
 
-    sf::Vector2u gasSize{};
+    sf::Vector2u gasSize{1, 1};
     switch (stovideoopts(cFile.Get("output", "videoOpt", "justGas"))) {
       case GS::VideoOpts::justGas:
         gasSize = windowSize;
@@ -267,7 +258,7 @@ int main(int argc, const char* argv[]) {
           });
     } else {
       processThread =
-          std::thread([&, mfpMemory] { 
+          std::thread([&, mfpMemory] {
 						try {
 							output.processData(mfpMemory);
 						} catch (std::runtime_error const& e) {
@@ -520,6 +511,7 @@ int main(int argc, const char* argv[]) {
       std::atomic<int> launchedPlayThreadsN{0};
       std::atomic<int> droppedFrames{0};
       std::atomic<int> framesToDrop{0};
+			std::atomic<int> processedFrames{0};
 
       auto playLambda{[&, frameTimems](std::shared_ptr<std::vector<sf::Texture>> rPtr,
                                  int threadN) {
@@ -595,18 +587,35 @@ int main(int argc, const char* argv[]) {
 				font,
 				static_cast<unsigned>(windowSize.y * 0.025)
 			};
+			sf::Text progressText {
+				"0 iterations awaiting processing\n0 stats instances,\n0 renders awaiting composition\n0 frames ready to visualize",
+				font,
+				static_cast<unsigned>(windowSize.y * 0.025)
+			};
 			bufferingText.setFillColor(sf::Color::Black);
+			progressText.setFillColor(sf::Color::Black);
 			bufferingText.setOutlineColor(sf::Color::White);
+			progressText.setOutlineColor(sf::Color::White);
 			bufferingText.setOutlineThickness(4);
+			progressText.setOutlineThickness(4);
 			// I have no idea why the x value is that but hey it works
-			// (the character size may not be in pixels?)
+			// (the character size may() not be in pixels?)
 			bufferingText.setOrigin(
+					bufferingText.getLocalBounds().width / 2.f,
+					bufferingText.getLocalBounds().height / 2.f
+			);
+			progressText.setOrigin(
 					bufferingText.getLocalBounds().width / 2.f,
 					bufferingText.getLocalBounds().height / 2.f
 			);
 			bufferingText.setPosition(
 					bufferingWheel.getPosition().x,
 					bufferingWheel.getPosition().y + windowSize.y * 0.2f);
+			progressText.setPosition(
+					bufferingText.getPosition().x,
+					bufferingText.getPosition().y +
+					bufferingText.getLocalBounds().height
+			);
       std::thread bufferingLoop{[&, frameTimems, windowSize]() {
 				sf::Sprite auxS;
 				auxS.setTexture(lastWindowTxtr, true);
@@ -620,6 +629,19 @@ int main(int argc, const char* argv[]) {
 							bufferingWheel.setRotation(bufferingWheel.getRotation() + 120. * frameTimems / 1000.);
 							window.draw(bufferingWheel);
 							window.draw(bufferingText);
+							progressText.setString(
+									std::to_string(output.getRawDataSize()) +
+									" iterations awaiting processing\n" +
+									std::to_string(output.getNStats()) +
+									" stats instances,\n" +
+									std::to_string(output.getNRenders()) +
+									" renders awaiting composition\n" +
+									std::to_string(launchedPlayThreadsN.load()) +
+									" player threads awaiting display\n" +
+									std::to_string(processedFrames.load()) + 
+									" processed frames"
+							);
+							window.draw(progressText);
               window.display();
               if (bufferKillSignal) {
                 break;
@@ -665,6 +687,7 @@ int main(int argc, const char* argv[]) {
           std::vector<sf::Texture> v = {output.getVideo(
               videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
               *graphsList, true, fitLambda, drawLambdas)};
+					processedFrames.store(v.size() + processedFrames.load());
           rendersPtr->insert(rendersPtr->end(),
                              std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));
