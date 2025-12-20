@@ -549,6 +549,7 @@ int main(int argc, const char* argv[]) {
                 framesToDrop.fetch_sub(1);
                 lastDrawEnd = std::chrono::high_resolution_clock::now();
               }
+							processedFrames.fetch_sub(1);
             }
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Status: displaying. Progress: " << ++i
@@ -590,14 +591,14 @@ int main(int argc, const char* argv[]) {
 			sf::Text progressText {
 				"0 iterations awaiting processing\n0 stats instances,\n0 renders awaiting composition\n0 frames ready to visualize",
 				font,
-				static_cast<unsigned>(windowSize.y * 0.025)
+				static_cast<unsigned>(windowSize.y * 0.01)
 			};
 			bufferingText.setFillColor(sf::Color::Black);
 			progressText.setFillColor(sf::Color::Black);
 			bufferingText.setOutlineColor(sf::Color::White);
 			progressText.setOutlineColor(sf::Color::White);
 			bufferingText.setOutlineThickness(4);
-			progressText.setOutlineThickness(4);
+			progressText.setOutlineThickness(2);
 			// I have no idea why the x value is that but hey it works
 			// (the character size may() not be in pixels?)
 			bufferingText.setOrigin(
@@ -605,16 +606,14 @@ int main(int argc, const char* argv[]) {
 					bufferingText.getLocalBounds().height / 2.f
 			);
 			progressText.setOrigin(
-					bufferingText.getLocalBounds().width / 2.f,
-					bufferingText.getLocalBounds().height / 2.f
+				0., 0.
 			);
 			bufferingText.setPosition(
 					bufferingWheel.getPosition().x,
 					bufferingWheel.getPosition().y + windowSize.y * 0.2f);
 			progressText.setPosition(
-					bufferingText.getPosition().x,
-					bufferingText.getPosition().y +
-					bufferingText.getLocalBounds().height
+					windowSize.y * .05,
+					windowSize.y * .05
 			);
       std::thread bufferingLoop{[&, frameTimems, windowSize]() {
 				sf::Sprite auxS;
@@ -636,8 +635,6 @@ int main(int argc, const char* argv[]) {
 									" stats instances,\n" +
 									std::to_string(output.getNRenders()) +
 									" renders awaiting composition\n" +
-									std::to_string(launchedPlayThreadsN.load()) +
-									" player threads awaiting display\n" +
 									std::to_string(processedFrames.load()) + 
 									" processed frames"
 							);
@@ -687,7 +684,7 @@ int main(int argc, const char* argv[]) {
           std::vector<sf::Texture> v = {output.getVideo(
               videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
               *graphsList, true, fitLambda, drawLambdas)};
-					processedFrames.store(v.size() + processedFrames.load());
+					processedFrames.fetch_add(v.size());
           rendersPtr->insert(rendersPtr->end(),
                              std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));
