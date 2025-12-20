@@ -50,7 +50,7 @@ target_sources(gasSimLib PUBLIC
 # Compile options for library
 target_compile_options(gasSimLib PRIVATE
     -Wall -Wextra
-		$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined -fno-omit-frame-pointer>
+		$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer>
     $<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>
 )
 
@@ -66,12 +66,12 @@ target_link_libraries(idealGasSim PRIVATE gasSimLib
 
 target_compile_options(idealGasSim PRIVATE
     -Wall -Wextra
-    $<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined -fno-omit-frame-pointer>
+    $<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer>
     $<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>
 )
 
 target_link_options(idealGasSim PRIVATE
-    $<$<CONFIG:Debug>:-fsanitize=thread,undefined -fno-omit-frame-pointer>
+    $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer>
 )
 
 target_include_directories(idealGasSim PRIVATE ./root/include)
@@ -99,12 +99,12 @@ target_link_libraries(gasSimTests PRIVATE gasSimLib
 
 target_compile_options(gasSimTests PRIVATE
     -Wall -Wextra
-    $<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined -fno-omit-frame-pointer>
+    $<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=address,undefined -fno-omit-frame-pointer>
     $<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>
 )
 
 target_link_options(gasSimTests PRIVATE
-    $<$<CONFIG:Debug>:-fsanitize=thread,undefined -fno-omit-frame-pointer>
+    $<$<CONFIG:Debug>:-fsanitize=address,undefined -fno-omit-frame-pointer>
 )
 
 target_include_directories(gasSimTests PRIVATE ./root/include)
