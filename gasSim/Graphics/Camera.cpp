@@ -4,6 +4,7 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
+#include <cmath>
 #include <execution>
 #include <stdexcept>
 
@@ -52,7 +53,7 @@ void Camera::setResolution(unsigned height, unsigned width) {
 void Camera::setAspectRatio(
     const float ratio) {  // ratio set by keeping the image width
   if (ratio > 0.f) {
-    height = static_cast<unsigned>(width / ratio);
+    height = static_cast<unsigned>(static_cast<float>(width) / ratio);
   } else {
     throw std::invalid_argument(
         "setAspectRatio error: non-positive ratio provided");
@@ -69,10 +70,10 @@ Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVector,
 }
 
 float Camera::getTopSide() const {
-  return 2.f * getPlaneDistance() * tan(getFOV() * (M_PI / 180.f) / 2.f);
+  return 2.f * getPlaneDistance() * static_cast<float>(tanf(getFOV() * (M_PIf / 180.f)) / 2.f);
 };
 
-float Camera::getPixelSide() const { return getTopSide() / getWidth(); }
+float Camera::getPixelSide() const { return getTopSide() / static_cast<float>(getWidth()); }
 
 float Camera::getNPixels(float length) const {
   return std::abs(length) / getPixelSide();
@@ -105,7 +106,7 @@ GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
   // returning base-changed vector with scaling factor, with sign for positional
   // information as the third coordinate
   return {
-      m * b + getWidth() / 2.f, o * b + getHeight() / 2.f,
+      m * b + static_cast<float>(getWidth()) / 2.f, o * b + static_cast<float>(getHeight()) / 2.f,
       (a - focus) * (a - focus) /
           ((a - focus) *
            (point - focus))  // scaling factor, degenerate if > 1 V < 0
@@ -267,7 +268,7 @@ void drawParticles(Gas const& gas, Camera const& camera,
   std::sort(std::execution::par, projections.begin(), projections.end(),
             [](GSVectorF const& a, GSVectorF const& b) { return a.z < b.z; });
   for (GSVectorF const& proj : projections) {
-    float r{camera.getNPixels(Particle::getRadius()) * proj.z};
+    float r{camera.getNPixels(static_cast<float>(Particle::getRadius())) * proj.z};
     sf::Vector2f vertexes[4]{{proj.x - r, proj.y + r},
                              {proj.x + r, proj.y + r},
                              {proj.x + r, proj.y - r},
@@ -293,7 +294,7 @@ void drawParticles(GasData const& data, Camera const& camera,
   std::sort(std::execution::par, projections.begin(), projections.end(),
             [](GSVectorF const& a, GSVectorF const& b) { return a.z < b.z; });
   for (GSVectorF const& proj : projections) {
-    float r{camera.getNPixels(Particle::getRadius()) * proj.z};
+    float r{camera.getNPixels(static_cast<float>(Particle::getRadius())) * proj.z};
     sf::Vector2f vertexes[4]{{proj.x - r, proj.y + r},
                              {proj.x + r, proj.y + r},
                              {proj.x + r, proj.y - r},
@@ -417,7 +418,7 @@ void drawWalls(GasLike const& gas, const Camera& camera,
 
   sf::Sprite auxSprite;
   auxSprite.setScale(1.f, -1.f);
-  auxSprite.setPosition(0.f, backWalls.getSize().y);
+  auxSprite.setPosition(0.f, static_cast<float>(backWalls.getSize().y));
 
   auxSprite.setTexture(texture.getTexture(), true);
   backWalls.draw(auxSprite);  // draw particles over backWalls

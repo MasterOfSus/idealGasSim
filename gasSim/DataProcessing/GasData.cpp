@@ -5,7 +5,7 @@
 
 // auxiliary getPIndex function
 
-inline int getPIndex(GS::Particle const* p, GS::Gas const& gas) {
+inline long getPIndex(GS::Particle const* p, GS::Gas const& gas) {
   return p - gas.getParticles().data();
 }
 

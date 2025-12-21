@@ -10,13 +10,13 @@ enum class Wall { Front, Back, Left, Right, Top, Bottom, VOID };
 struct Collision {
  public:
   double getTime() const { return time; }
-  Particle const* getP1() const { return p1; }
   virtual char getType() const = 0;
   virtual void solve() = 0;
   virtual ~Collision() = 0;
   Collision(double time, Particle* p);
 
-  Particle* getP1() { return p1; };
+  Particle* getP1() { return p1; }
+	Particle const* getP1() const { return p1; }
 
  private:
   Particle* p1;

@@ -90,9 +90,11 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide, double time)
   }
 
   if (particlesN) {
-    size_t npPerSide{static_cast<size_t>(std::ceil(cbrt(particlesN)))};
+    size_t npPerSide{
+			static_cast<size_t>(std::ceil(cbrt(static_cast<double>(particlesN))))
+		};
     double pR{Particle::getRadius()};
-    double latticeUnit{(boxSide * 0.95 - 2 * pR) / (npPerSide - 1)};
+    double latticeUnit{(boxSide * 0.95 - 2 * pR) / static_cast<double>(npPerSide - 1)};
 
     if (latticeUnit <= 2. * pR) {
       throw std::runtime_error(
@@ -117,9 +119,9 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide, double time)
       size_t pJ{(i / npPerSide) % npPerSide};
       size_t pK{i / (npPerSide * npPerSide)};
 
-      double x{(pI * latticeUnit) + pR + 0.025 * boxSide};
-      double y{(pJ * latticeUnit) + pR + 0.025 * boxSide};
-      double z{(pK * latticeUnit) + pR + 0.025 * boxSide};
+      double x{(static_cast<double>(pI) * latticeUnit) + pR + 0.025 * boxSide};
+      double y{(static_cast<double>(pJ) * latticeUnit) + pR + 0.025 * boxSide};
+      double z{(static_cast<double>(pK) * latticeUnit) + pR + 0.025 * boxSide};
       return GSVectorD{x, y, z};
     };
 
@@ -134,7 +136,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide, double time)
     // ensure as exact a final temperature as possible
     GSVectorD direction{unifRandVec(1.)};
     direction.normalize();
-    double missingEnergy{3. * particlesN * temperature / 2. -
+    double missingEnergy{3. * static_cast<double>(particlesN) * temperature / 2. -
                          std::accumulate(particles.begin(), particles.end(), 0.,
                                          [](double acc, Particle const& p) {
                                            return acc += energy(p);
@@ -234,7 +236,7 @@ auto trIndex(size_t i, size_t nEls) {
   size_t rowIndex{
       nEls - 2 -
       static_cast<size_t>(std::floor(
-          std::sqrt(-8 * i + 4 * nEls * (nEls - 1) - 7) / 2. - 0.5))};
+          std::sqrt(-8 * static_cast<double>(i) + 4 * nEls * (nEls - 1) - 7) / 2. - 0.5))};
   size_t colIndex{i + rowIndex + 1 - nEls * (nEls - 1) / 2 +
                   (nEls - rowIndex) * ((nEls - rowIndex) - 1) / 2};
   return std::pair<size_t, size_t>(rowIndex, colIndex);
@@ -290,7 +292,7 @@ PPCollision Gas::firstPPColl() {
 
   // other threads with normal checks number
   for (size_t threadIndex{1}; threadIndex < nThreads; ++threadIndex) {
-    size_t thrI{threadIndex};
+    long thrI{static_cast<long>(threadIndex)};
     threads.emplace(threads.begin() + thrI, [&, thrI]() {
       PPCollision c{INFINITY, nullptr, nullptr};
       size_t i{thrI * checksPerThread + extraChecks};

@@ -1,0 +1,1242 @@
+[  6%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/PhysicsEngine/Particle.cpp.o
+[ 12%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/PhysicsEngine/Collision.cpp.o
+[ 18%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/PhysicsEngine/Gas.cpp.o
+/home/mogus/cppProjects/idealGasSim/gasSim/PhysicsEngine/Gas.cpp: In function ‘auto GS::trIndex(size_t, size_t)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/PhysicsEngine/Gas.cpp:239:60: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  239 |           std::sqrt(-8 * static_cast<double>(i) + 4 * nEls * (nEls - 1) - 7) / 2. - 0.5))};
+      |                                                   ~~~~~~~~~^~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/PhysicsEngine/Gas.cpp: In lambda function:
+/home/mogus/cppProjects/idealGasSim/gasSim/PhysicsEngine/Gas.cpp:298:16: warning: conversion to ‘long unsigned int’ from ‘long int’ may change the sign of the result [-Wsign-conversion]
+  298 |       size_t i{thrI * checksPerThread + extraChecks};
+      |                ^~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/PhysicsEngine/Gas.cpp:299:29: warning: conversion to ‘long unsigned int’ from ‘long int’ may change the sign of the result [-Wsign-conversion]
+  299 |       size_t endIndex{(thrI + 1) * checksPerThread + extraChecks};
+      |                       ~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/PhysicsEngine/Gas.cpp:306:17: warning: conversion to ‘std::vector<GS::PPCollision>::size_type’ {aka ‘long unsigned int’} from ‘long int’ may change the sign of the result [-Wsign-conversion]
+  306 |       bestColls[thrI] = c;
+      |                 ^~~~
+[ 25%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/Graphics/RenderStyle.cpp.o
+[ 31%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/Graphics/Camera.cpp.o
+In file included from /home/mogus/cppProjects/idealGasSim/gasSim/Graphics/../PhysicsEngine/Particle.hpp:6,
+                 from /home/mogus/cppProjects/idealGasSim/gasSim/Graphics/../PhysicsEngine/Collision.hpp:4,
+                 from /home/mogus/cppProjects/idealGasSim/gasSim/Graphics/../PhysicsEngine.hpp:4,
+                 from /home/mogus/cppProjects/idealGasSim/gasSim/Graphics/RenderStyle.hpp:6,
+                 from /home/mogus/cppProjects/idealGasSim/gasSim/Graphics/Camera.hpp:4,
+                 from /home/mogus/cppProjects/idealGasSim/gasSim/Graphics/Camera.cpp:1:
+/home/mogus/cppProjects/idealGasSim/gasSim/Graphics/../PhysicsEngine/GSVector.hpp: In instantiation of ‘FP GS::GSVector<FP>::norm() const [with FP = float]’:
+/home/mogus/cppProjects/idealGasSim/gasSim/Graphics/Camera.cpp:18:23:   required from here
+/home/mogus/cppProjects/idealGasSim/gasSim/Graphics/../PhysicsEngine/GSVector.hpp:40:32: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+   40 |   FP norm() const { return sqrt(x * x + y * y + z * z); }
+      |                            ~~~~^~~~~~~~~~~~~~~~~~~~~~~
+[ 37%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/DataProcessing/GasData.cpp.o
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/GasData.cpp: In constructor ‘GS::GasData::GasData(const GS::Gas&, const GS::Collision*)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/GasData.cpp:34:28: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘long int’ may change the sign of the result [-Wsign-conversion]
+   34 |         p1Index = getPIndex(coll->getP1(), gas);
+      |                   ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/GasData.cpp:35:28: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘long int’ may change the sign of the result [-Wsign-conversion]
+   35 |         p2Index = getPIndex(coll->getP2(), gas);
+      |                   ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/GasData.cpp:43:26: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘long int’ may change the sign of the result [-Wsign-conversion]
+   43 |       p1Index = getPIndex(collision->getP1(), gas);
+      |                 ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/c++/13/cassert:44,
+                 from /home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/GasData.cpp:3:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/GasData.cpp: In member function ‘char GS::GasData::getCollType() const’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/GasData.cpp:52:18: warning: comparison of unsigned expression in ‘>= 0’ is always true [-Wtype-limits]
+   52 |   assert(p1Index >= 0 && p1Index <= static_cast<size_t>(particles.size()));
+      |          ~~~~~~~~^~~~
+[ 43%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/DataProcessing/TdStats.cpp.o
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp: In constructor ‘GS::TdStats::TdStats(const GS::GasData&, const TH1D&)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp:44:27: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+   44 |         2. / getNParticles() / 3.},
+      |              ~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp: In constructor ‘GS::TdStats::TdStats(const GS::GasData&, GS::TdStats&&)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp:79:38: warning: conversion from ‘std::vector<GS::Particle>::size_type’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+   79 |         2. / data.getParticles().size() / 3.},
+      |              ~~~~~~~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp: In constructor ‘GS::TdStats::TdStats(const GS::GasData&, GS::TdStats&&, const TH1D&)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp:145:38: warning: conversion from ‘std::vector<GS::Particle>::size_type’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  145 |         2. / data.getParticles().size() / 3.},
+      |              ~~~~~~~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp: In member function ‘double GS::TdStats::getPressure(GS::Wall) const’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp:336:21: warning: conversion to ‘std::array<double, 6>::size_type’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  336 |   return wallPulses[int(wall)] / (getBoxSide() * getBoxSide() * getDeltaT());
+      |                     ^~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp: In member function ‘double GS::TdStats::getMeanFreePath() const’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/TdStats.cpp:349:26: warning: conversion from ‘std::vector<double>::size_type’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  349 |            freePaths.size();
+      |            ~~~~~~~~~~~~~~^~
+[ 50%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/DataProcessing/SimDataPipeline.cpp.o
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp: In member function ‘void GS::SimDataPipeline::processData(bool)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp:114:62: warning: conversion to ‘std::_Deque_iterator<GS::GasData, GS::GasData&, GS::GasData*>::difference_type’ {aka ‘long int’} from ‘size_t’ {aka ‘long unsigned int’} may change the sign of the result [-Wsign-conversion]
+  114 |             std::make_move_iterator(rawData.begin() + nStats * statSize));
+      |                                                       ~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp:116:65: warning: conversion to ‘std::_Deque_iterator<GS::GasData, GS::GasData&, GS::GasData*>::difference_type’ {aka ‘long int’} from ‘size_t’ {aka ‘long unsigned int’} may change the sign of the result [-Wsign-conversion]
+  116 |         rawData.erase(rawData.begin(), rawData.begin() + nStats * statSize);
+      |                                                          ~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp: In member function ‘void GS::SimDataPipeline::processData(GS::Camera, GS::RenderStyle, bool)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp:163:68: warning: conversion to ‘std::_Deque_iterator<GS::GasData, GS::GasData&, GS::GasData*>::difference_type’ {aka ‘long int’} from ‘size_t’ {aka ‘long unsigned int’} may change the sign of the result [-Wsign-conversion]
+  163 |                   std::make_move_iterator(rawData.begin() + nStats * statSize));
+      |                                                             ~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp:165:63: warning: conversion to ‘std::_Deque_iterator<GS::GasData, GS::GasData&, GS::GasData*>::difference_type’ {aka ‘long int’} from ‘size_t’ {aka ‘long unsigned int’} may change the sign of the result [-Wsign-conversion]
+  165 |       rawData.erase(rawData.begin(), rawData.begin() + nStats * statSize);
+      |                                                        ~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp: In member function ‘void GS::SimDataPipeline::processGraphics(const std::vector<GS::GasData>&, const GS::Camera&, const GS::RenderStyle&, std::vector<std::pair<sf::Texture, double> >&)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SimDataPipeline.cpp:242:66: warning: conversion from ‘double’ to ‘std::vector<std::pair<sf::Texture, double> >::size_type’ {aka ‘long unsigned int’} may change value [-Wfloat-conversion]
+  242 |       (data.back().getTime() - data.front().getTime()) / gDeltaT + 1);
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~
+[ 56%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/DataProcessing/SDPgetVideo.cpp.o
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp: In function ‘std::string GS::scientificNotation(double, size_t)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:61:46: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘int’ may change value [-Wconversion]
+   61 |   ss << std::scientific << std::setprecision(nDigits) << std::uppercase << x;
+      |                                              ^~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp: In member function ‘std::vector<sf::Texture> GS::SimDataPipeline::getVideo(GS::VideoOpts, sf::Vector2i, const sf::Texture&, TList&, bool, std::function<void(TH1D&, GS::VideoOpts)>, std::array<std::function<void()>, 4>)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:89:39: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
+   89 |   if (((TMultiGraph*)outputGraphs.At(0))->GetListOfGraphs()->GetSize() != 7) {
+      |                                       ^
+      |        -
+      |        static_cast< -
+      |                     > (                )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:300:37: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  300 |   timeText.setPosition(windowSize.x * 0.01, windowSize.y * 0.01);
+      |                        ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:300:58: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  300 |   timeText.setPosition(windowSize.x * 0.01, windowSize.y * 0.01);
+      |                                             ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:302:56: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
+  302 |   TMultiGraph& pGraphs{*(TMultiGraph*)outputGraphs.At(0)};
+      |                                                        ^
+      |                         -
+      |                         static_cast< -
+      |                                      > (                )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:303:46: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  303 |   TGraph& kBGraph{*(TGraph*)outputGraphs.At(1)};
+      |                                              ^
+      |                    ---------
+      |                    static_cast<TGraph*> (     )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:304:47: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  304 |   TGraph& mfpGraph{*(TGraph*)outputGraphs.At(2)};
+      |                                               ^
+      |                     ---------
+      |                     static_cast<TGraph*> (     )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:342:28: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  342 |     TText.setCharacterSize(charSize);
+      |                            ^~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:343:28: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  343 |     VText.setCharacterSize(charSize);
+      |                            ^~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:344:28: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  344 |     NText.setCharacterSize(charSize);
+      |                            ^~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:373:27: warning: conversion to ‘unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  373 |   frame.create(windowSize.x, windowSize.y);
+      |                ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:373:41: warning: conversion to ‘unsigned int’ from ‘int’ may change the sign of the result [-Wsign-conversion]
+  373 |   frame.create(windowSize.x, windowSize.y);
+      |                              ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:389:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  389 |                 windowSize.x / (float)renders[rIndex].first.getSize().x,
+      |                                                                       ^
+      |                                -------
+      |                                static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:389:28: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  389 |                 windowSize.x / (float)renders[rIndex].first.getSize().x,
+      |                 ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:390:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  390 |                 windowSize.y / (float)renders[rIndex].first.getSize().y);
+      |                                                                       ^
+      |                                -------
+      |                                static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:390:28: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  390 |                 windowSize.y / (float)renders[rIndex].first.getSize().y);
+      |                 ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:396:70: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  396 |             box.setScale(windowSize.x / (float)placeholder.getSize().x,
+      |                                                                      ^
+      |                                         -------
+      |                                         static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:396:37: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  396 |             box.setScale(windowSize.x / (float)placeholder.getSize().x,
+      |                          ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:397:70: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  397 |                          windowSize.y / (float)placeholder.getSize().y);
+      |                                                                      ^
+      |                                         -------
+      |                                         static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:397:37: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  397 |                          windowSize.y / (float)placeholder.getSize().y);
+      |                          ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:416:66: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  416 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                  ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:416:67: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  416 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                   ^
+      |                           ---------
+      |                           static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:428:43: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  428 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                              ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:428:63: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  428 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                                                  ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:430:39: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  430 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                          ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:430:59: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  430 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                                              ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp: In instantiation of ‘GS::SimDataPipeline::getVideo(GS::VideoOpts, sf::Vector2i, const sf::Texture&, TList&, bool, std::function<void(TH1D&, GS::VideoOpts)>, std::array<std::function<void()>, 4>)::<lambda(auto:6&, double, double, const char*, std::function<void()>)> [with auto:6 = TMultiGraph]’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:432:18:   required from here
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:335:38: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  335 |     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:335:63: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  335 |     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
+      |                                                  ~~~~~~~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp: In instantiation of ‘GS::SimDataPipeline::getVideo(GS::VideoOpts, sf::Vector2i, const sf::Texture&, TList&, bool, std::function<void(TH1D&, GS::VideoOpts)>, std::array<std::function<void()>, 4>)::<lambda(auto:6&, double, double, const char*, std::function<void()>)> [with auto:6 = TGraph]’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:433:18:   required from here
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:335:38: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  335 |     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:335:63: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  335 |     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
+      |                                                  ~~~~~~~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:435:43: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  435 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                              ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:435:63: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  435 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                                  ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:436:39: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  436 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                          ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:436:59: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  436 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                              ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:440:38: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  440 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                           ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:440:59: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  440 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                                                ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:441:47: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  441 |           txtBox.setPosition(0., windowSize.y * 0.45);
+      |                                  ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:442:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  442 |           VText.setPosition(windowSize.x * (0. + 0.025),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:443:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  443 |                             windowSize.y * (0.45 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:444:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  444 |           NText.setPosition(windowSize.x * (0. + 0.175),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:445:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  445 |                             windowSize.y * (0.45 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:446:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  446 |           TText.setPosition(windowSize.x * (0. + 0.325),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:447:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  447 |                             windowSize.y * (0.45 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:453:74: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  453 |           box.setScale(windowSize.x * 0.5 / (float)placeholder.getSize().x,
+      |                                                                          ^
+      |                                             -------
+      |                                             static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:454:74: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  454 |                        windowSize.y * 0.5 / (float)placeholder.getSize().y);
+      |                                                                          ^
+      |                                             -------
+      |                                             static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:453:43: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  453 |           box.setScale(windowSize.x * 0.5 / (float)placeholder.getSize().x,
+      |                        ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:454:43: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  454 |                        windowSize.y * 0.5 / (float)placeholder.getSize().y);
+      |                        ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:455:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  455 |           box.setPosition(windowSize.x * 0.5, windowSize.y);
+      |                           ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:455:58: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  455 |           box.setPosition(windowSize.x * 0.5, windowSize.y);
+      |                                               ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:469:66: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  469 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                  ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:469:67: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  469 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                   ^
+      |                           ---------
+      |                           static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:483:51: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  483 |                                (stat.getNParticles() * stat.getTemp()));
+      |                                 ~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:486:51: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  486 |                                (stat.getNParticles() * stat.getTemp()));
+      |                                 ~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:496:43: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  496 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                              ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:496:63: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  496 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                                                  ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:497:39: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  497 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                          ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:497:59: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  497 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.45);
+      |                                              ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:502:43: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  502 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                              ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:502:63: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  502 |           cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                                  ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:503:39: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  503 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                          ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:503:59: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  503 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                              ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp: In instantiation of ‘GS::SimDataPipeline::getVideo(GS::VideoOpts, sf::Vector2i, const sf::Texture&, TList&, bool, std::function<void(TH1D&, GS::VideoOpts)>, std::array<std::function<void()>, 4>)::<lambda(auto:6&, double, double, const char*, std::function<void()>)> [with auto:6 = TH1D]’:
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:505:18:   required from here
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:335:38: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  335 |     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:335:63: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  335 |     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
+      |                                                  ~~~~~~~~~~~~~^~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:508:38: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  508 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                           ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:508:59: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  508 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                                                ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:509:47: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  509 |           txtBox.setPosition(0., windowSize.y * 0.45);
+      |                                  ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:510:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  510 |           VText.setPosition(windowSize.x * (0. + 0.025),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:511:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  511 |                             windowSize.y * (0.45 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:512:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  512 |           NText.setPosition(windowSize.x * (0. + 0.175),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:513:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  513 |                             windowSize.y * (0.45 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:514:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  514 |           TText.setPosition(windowSize.x * (0. + 0.325),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:515:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  515 |                             windowSize.y * (0.45 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:537:43: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  537 |         timeText.setPosition(windowSize.x * 0.51, windowSize.y * 0.01);
+      |                              ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:537:64: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  537 |         timeText.setPosition(windowSize.x * 0.51, windowSize.y * 0.01);
+      |                                                   ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:541:39: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  541 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                          ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:541:59: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  541 |           auxTxtr.create(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                              ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:544:68: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  544 |               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                    ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:544:69: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  544 |               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                     ^
+      |                             ---------
+      |                             static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:554:45: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  554 |             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:554:65: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  554 |             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                                    ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:558:40: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  558 |             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
+      |                             ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:558:61: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  558 |             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
+      |                                                  ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:559:45: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  559 |             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
+      |                                ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:559:70: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  559 |             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
+      |                                                    ~~~~~~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:560:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  560 |             VText.setPosition(windowSize.x * (0.5 + 0.025),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:561:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  561 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:562:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  562 |             NText.setPosition(windowSize.x * (0.5 + 0.175),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:563:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  563 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:564:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  564 |             TText.setPosition(windowSize.x * (0.5 + 0.325),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:565:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  565 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:571:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  571 |             box.setPosition(windowSize.x * 0.5, 0.);
+      |                             ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:580:72: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  580 |                     gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                                                                        ^
+      |                                 -------
+      |                                 static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:580:29: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  580 |                     gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                     ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:581:72: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  581 |                     gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                                                                        ^
+      |                                 -------
+      |                                 static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:581:29: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  581 |                     gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                     ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:587:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  587 |                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                                                                       ^
+      |                                          -------
+      |                                          static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:587:38: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  587 |                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                              ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:588:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  588 |                              gasSize.y / (float)placeholder.getSize().y);
+      |                                                                       ^
+      |                                          -------
+      |                                          static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:588:38: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  588 |                              gasSize.y / (float)placeholder.getSize().y);
+      |                              ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:611:68: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  611 |               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                    ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:611:69: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  611 |               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                     ^
+      |                             ---------
+      |                             static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:622:53: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  622 |                                  (stat.getNParticles() * stat.getTemp()));
+      |                                   ~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:625:53: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  625 |                                  (stat.getNParticles() * stat.getTemp()));
+      |                                   ~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:635:45: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  635 |             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:635:65: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  635 |             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                                    ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:639:40: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  639 |             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
+      |                             ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:639:61: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  639 |             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
+      |                                                  ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:640:45: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  640 |             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
+      |                                ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:640:70: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  640 |             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
+      |                                                    ~~~~~~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:641:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  641 |             VText.setPosition(windowSize.x * (0.5 + 0.025),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:642:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  642 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:643:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  643 |             NText.setPosition(windowSize.x * (0.5 + 0.175),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:644:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  644 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:645:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  645 |             TText.setPosition(windowSize.x * (0.5 + 0.325),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:646:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  646 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:652:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  652 |             box.setPosition(windowSize.x * 0.5, 0.);
+      |                             ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:660:72: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  660 |                     gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                                                                        ^
+      |                                 -------
+      |                                 static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:660:29: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  660 |                     gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                     ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:661:72: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  661 |                     gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                                                                        ^
+      |                                 -------
+      |                                 static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:661:29: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  661 |                     gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                     ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:667:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  667 |                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                                                                       ^
+      |                                          -------
+      |                                          static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:667:38: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  667 |                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                              ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:668:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  668 |                              gasSize.y / (float)placeholder.getSize().y);
+      |                                                                       ^
+      |                                          -------
+      |                                          static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:668:38: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  668 |                              gasSize.y / (float)placeholder.getSize().y);
+      |                              ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:682:68: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  682 |               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                    ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:682:69: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  682 |               TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                     ^
+      |                             ---------
+      |                             static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:692:45: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  692 |             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:692:65: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  692 |             cnvs.SetCanvasSize(windowSize.x * 0.5, windowSize.y * 0.5);
+      |                                                    ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:696:40: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  696 |             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
+      |                             ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:696:61: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  696 |             txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 1.f / 9.f});
+      |                                                  ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:697:45: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  697 |             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
+      |                                ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:697:70: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  697 |             txtBox.setPosition(windowSize.x * 0.5, windowSize.y * 8. / 9.);
+      |                                                    ~~~~~~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:698:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  698 |             VText.setPosition(windowSize.x * (0.5 + 0.025),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:699:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  699 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:700:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  700 |             NText.setPosition(windowSize.x * (0.5 + 0.175),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:701:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  701 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:702:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  702 |             TText.setPosition(windowSize.x * (0.5 + 0.325),
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:703:44: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  703 |                               windowSize.y * (8. / 9. + 1. / 36.));
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:708:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  708 |             box.setPosition(windowSize.x * 0.5, 0.);
+      |                             ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:718:72: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  718 |                     gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                                                                        ^
+      |                                 -------
+      |                                 static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:718:29: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  718 |                     gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                     ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:719:72: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  719 |                     gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                                                                        ^
+      |                                 -------
+      |                                 static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:719:29: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  719 |                     gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                     ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:725:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  725 |                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                                                                       ^
+      |                                          -------
+      |                                          static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:725:38: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  725 |                 box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                              ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:726:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  726 |                              gasSize.y / (float)placeholder.getSize().y);
+      |                                                                       ^
+      |                                          -------
+      |                                          static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:726:38: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  726 |                              gasSize.y / (float)placeholder.getSize().y);
+      |                              ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:744:41: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  744 |       timeText.setPosition(windowSize.x * 0.26, windowSize.y * 0.01);
+      |                            ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:744:62: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  744 |       timeText.setPosition(windowSize.x * 0.26, windowSize.y * 0.01);
+      |                                                 ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:748:37: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  748 |         auxTxtr.create(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                        ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:748:58: warning: conversion from ‘double’ to ‘unsigned int’ may change value [-Wfloat-conversion]
+  748 |         auxTxtr.create(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                                             ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:751:66: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  751 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                  ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:751:67: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  751 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                   ^
+      |                           ---------
+      |                           static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:764:43: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  764 |           cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                              ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:764:64: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  764 |           cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                                                   ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:770:38: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  770 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                           ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:770:59: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  770 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                                                ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:771:43: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  771 |           txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+      |                              ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:771:64: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  771 |           txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+      |                                                   ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:772:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  772 |           VText.setPosition(windowSize.x * (0.25 + 0.025),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:773:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  773 |                             windowSize.y * (0.9 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:774:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  774 |           NText.setPosition(windowSize.x * (0.25 + 0.175),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:775:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  775 |                             windowSize.y * (0.9 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:776:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  776 |           TText.setPosition(windowSize.x * (0.25 + 0.325),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:777:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  777 |                             windowSize.y * (0.9 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:784:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  784 |           box.setPosition(windowSize.x * 0.25, 0.);
+      |                           ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:793:70: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  793 |                   gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                                                                      ^
+      |                               -------
+      |                               static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:793:27: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  793 |                   gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                   ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:794:70: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  794 |                   gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                                                                      ^
+      |                               -------
+      |                               static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:794:27: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  794 |                   gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                   ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:800:69: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  800 |               box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                                                                     ^
+      |                                        -------
+      |                                        static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:800:36: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  800 |               box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                            ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:801:69: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  801 |                            gasSize.y / (float)placeholder.getSize().y);
+      |                                                                     ^
+      |                                        -------
+      |                                        static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:801:36: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  801 |                            gasSize.y / (float)placeholder.getSize().y);
+      |                            ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:823:66: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  823 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(k)};
+      |                                                                  ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:823:67: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  823 |             TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(k)};
+      |                                                                   ^
+      |                           ---------
+      |                           static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:836:51: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  836 |                                (stat.getNParticles() * stat.getTemp()));
+      |                                 ~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:839:51: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  839 |                                (stat.getNParticles() * stat.getTemp()));
+      |                                 ~~~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:849:43: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  849 |           cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                              ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:849:64: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  849 |           cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                                                   ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:855:38: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  855 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                           ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:855:59: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  855 |           txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                                                ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:856:43: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  856 |           txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+      |                              ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:856:64: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  856 |           txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+      |                                                   ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:857:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  857 |           VText.setPosition(windowSize.x * (0.25 + 0.025),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:858:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  858 |                             windowSize.y * (0.9 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:859:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  859 |           NText.setPosition(windowSize.x * (0.25 + 0.175),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:860:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  860 |                             windowSize.y * (0.9 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:861:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  861 |           TText.setPosition(windowSize.x * (0.25 + 0.325),
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:862:42: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  862 |                             windowSize.y * (0.9 + 0.025));
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:868:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  868 |           box.setPosition(windowSize.x * 0.25, 0.);
+      |                           ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:876:70: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  876 |                   gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                                                                      ^
+      |                               -------
+      |                               static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:876:27: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  876 |                   gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                   ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:877:70: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  877 |                   gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                                                                      ^
+      |                               -------
+      |                               static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:877:27: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  877 |                   gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                   ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:883:69: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  883 |               box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                                                                     ^
+      |                                        -------
+      |                                        static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:883:36: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  883 |               box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                            ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:884:69: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  884 |                            gasSize.y / (float)placeholder.getSize().y);
+      |                                                                     ^
+      |                                        -------
+      |                                        static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:884:36: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  884 |                            gasSize.y / (float)placeholder.getSize().y);
+      |                            ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:895:64: warning: conversion from ‘size_t’ {aka ‘long unsigned int’} to ‘Int_t’ {aka ‘int’} may change value [-Wconversion]
+  895 |           TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                ^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:895:65: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  895 |           TGraph* graph{(TGraph*)pGraphs.GetListOfGraphs()->At(i)};
+      |                                                                 ^
+      |                         ---------
+      |                         static_cast<TGraph*> (                   )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:908:41: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  908 |         cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                            ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:908:62: warning: conversion from ‘double’ to ‘UInt_t’ {aka ‘unsigned int’} may change value [-Wfloat-conversion]
+  908 |         cnvs.SetCanvasSize(windowSize.x * 0.25, windowSize.y * 0.5);
+      |                                                 ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:914:36: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  914 |         txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                         ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:914:57: warning: conversion from ‘int’ to ‘float’ may change value [-Wconversion]
+  914 |         txtBox.setSize({windowSize.x * 0.5f, windowSize.y * 0.1f});
+      |                                              ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:915:41: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  915 |         txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+      |                            ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:915:62: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  915 |         txtBox.setPosition(windowSize.x * 0.25, windowSize.y * 0.9);
+      |                                                 ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:916:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  916 |         VText.setPosition(windowSize.x * (0.25 + 0.025),
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:917:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  917 |                           windowSize.y * (0.9 + 0.025));
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:918:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  918 |         NText.setPosition(windowSize.x * (0.25 + 0.175),
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:919:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  919 |                           windowSize.y * (0.9 + 0.025));
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:920:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  920 |         TText.setPosition(windowSize.x * (0.25 + 0.325),
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:921:40: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  921 |                           windowSize.y * (0.9 + 0.025));
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:927:38: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  927 |         box.setPosition(windowSize.x * 0.25, 0.);
+      |                         ~~~~~~~~~~~~~^~~~~~
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:936:77: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  936 |             box.setScale(gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                                                                             ^
+      |                                      -------
+      |                                      static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:936:34: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  936 |             box.setScale(gasSize.x / (float)renders[rIndex].first.getSize().x,
+      |                          ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:937:77: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  937 |                          gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                                                                             ^
+      |                                      -------
+      |                                      static_cast<float> (                    )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:937:34: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  937 |                          gasSize.y / (float)renders[rIndex].first.getSize().y);
+      |                          ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:943:67: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  943 |             box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                                                                   ^
+      |                                      -------
+      |                                      static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:943:34: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  943 |             box.setScale(gasSize.x / (float)placeholder.getSize().x,
+      |                          ~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:944:67: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  944 |                          gasSize.y / (float)placeholder.getSize().y);
+      |                                                                   ^
+      |                                      -------
+      |                                      static_cast<float> (          )
+/home/mogus/cppProjects/idealGasSim/gasSim/DataProcessing/SDPgetVideo.cpp:944:34: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  944 |                          gasSize.y / (float)placeholder.getSize().y);
+      |                          ~~~~~~~~^
+[ 62%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/Input/Input.cpp.o
+[ 68%] Linking CXX shared library libgasSimLib.so
+[ 68%] Built target gasSimLib
+[ 75%] Building CXX object CMakeFiles/idealGasSim.dir/main.cpp.o
+In file included from /home/mogus/cppProjects/idealGasSim/main.cpp:11:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h: In function ‘char* rstrip(char*)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:126:47: warning: use of old-style cast to ‘unsigned char’ [-Wold-style-cast]
+  126 |   while (p > s && isspace((unsigned char)(*--p)))
+      |                                               ^
+      |                           -
+      |                           static_cast<  -
+      |                                         > (    )
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h: In function ‘char* lskip(const char*)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:133:42: warning: use of old-style cast to ‘unsigned char’ [-Wold-style-cast]
+  133 |   while (*s && isspace((unsigned char)(*s)))
+      |                                          ^
+      |                        -
+      |                        static_cast<  -
+      |                                      > (  )
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:135:18: warning: use of old-style cast to ‘char*’ [-Wold-style-cast]
+  135 |   return (char *)s;
+      |                  ^
+      |          ---------
+      |          const_cast<char *> (s)
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h: In function ‘char* find_chars_or_comment(const char*, const char*)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:146:43: warning: use of old-style cast to ‘unsigned char’ [-Wold-style-cast]
+  146 |     was_space = isspace((unsigned char)(*s));
+      |                                           ^
+      |                         -
+      |                         static_cast<  -
+      |                                       > (  )
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:154:18: warning: use of old-style cast to ‘char*’ [-Wold-style-cast]
+  154 |   return (char *)s;
+      |                  ^
+      |          ---------
+      |          const_cast<char *> (s)
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h: In function ‘int ini_parse_stream(ini_reader, void*, ini_handler, void*)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:196:46: warning: use of old-style cast to ‘unsigned char’ [-Wold-style-cast]
+  196 |     if (lineno == 1 && (unsigned char)start[0] == 0xEF &&
+      |                                              ^
+      |                        -
+      |                        static_cast<  -
+      |                                      > (      )
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:197:31: warning: use of old-style cast to ‘unsigned char’ [-Wold-style-cast]
+  197 |         (unsigned char)start[1] == 0xBB && (unsigned char)start[2] == 0xBF) {
+      |                               ^
+      |         -
+      |         static_cast<  -
+      |                       > (      )
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:197:66: warning: use of old-style cast to ‘unsigned char’ [-Wold-style-cast]
+  197 |         (unsigned char)start[1] == 0xBB && (unsigned char)start[2] == 0xBF) {
+      |                                                                  ^
+      |                                            -
+      |                                            static_cast<  -
+      |                                                          > (      )
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h: In function ‘int ini_parse_file(FILE*, ini_handler, void*)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:273:39: warning: use of old-style cast to ‘ini_reader’ {aka ‘char* (*)(char*, int, void*)’} [-Wold-style-cast]
+  273 |   return ini_parse_stream((ini_reader)fgets, file, handler, user);
+      |                                       ^~~~~
+      |                           -----------------
+      |                           reinterpret_cast<ini_reader> (fgets)
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h: At global scope:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:303:17: warning: extra ‘;’ after in-class function definition [-Wextra-semi]
+  303 |   INIReader() {};
+      |                 ^
+      |                 -
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h: In static member function ‘static int INIReader::ValueHandler(void*, const char*, const char*, const char*)’:
+/home/mogus/cppProjects/idealGasSim/gasSim/Libs/INIReader.h:444:36: warning: use of old-style cast to ‘class INIReader*’ [-Wold-style-cast]
+  444 |   INIReader *reader = (INIReader *)user;
+      |                                    ^~~~
+      |                       -
+      |                       static_cast<-
+      |                                   > (  )
+/home/mogus/cppProjects/idealGasSim/main.cpp: In function ‘int main(int, const char**)’:
+/home/mogus/cppProjects/idealGasSim/main.cpp:139:94: warning: use of old-style cast to ‘class TH1D*’ [-Wold-style-cast]
+  139 |                 std::shared_ptr<TH1D> speedsHTemplate {(TH1D*)inputFile.Get("speedsHTemplate")};
+      |                                                                                              ^
+      |                                                        -------
+      |                                                        static_cast<TH1D*> (                   )
+/home/mogus/cppProjects/idealGasSim/main.cpp:170:9: warning: conversion from ‘long int’ to ‘double’ may change value [-Wconversion]
+  170 |         nStats / gas.getBoxSide()};
+      |         ^~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:171:55: warning: conversion from ‘double’ to ‘size_t’ {aka ‘long unsigned int’} may change value [-Wfloat-conversion]
+  171 |     output.setStatChunkSize(desiredStatChunkSize > 1. ? desiredStatChunkSize
+      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+  172 |                                                       : 1);
+      |                                                       ~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp: In lambda function:
+/home/mogus/cppProjects/idealGasSim/main.cpp:178:36: warning: conversion to ‘size_t’ {aka ‘long unsigned int’} from ‘long int’ may change the sign of the result [-Wsign-conversion]
+  178 |       gas.simulate(cFile.GetInteger("simulation parameters", "nIters", 0),
+      |                    ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp: In function ‘int main(int, const char**)’:
+/home/mogus/cppProjects/idealGasSim/main.cpp:240:35: warning: conversion from ‘long int’ to ‘sf::Uint32’ {aka ‘unsigned int’} may change value [-Wconversion]
+  240 |         sf::Color(cFile.GetInteger("render", "wallsColor", 0x50fa7b80)));
+      |                   ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:242:35: warning: conversion from ‘long int’ to ‘sf::Uint32’ {aka ‘unsigned int’} may change value [-Wconversion]
+  242 |         sf::Color(cFile.GetInteger("render", "gasBgColor", 0xffffffff)));
+      |                   ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:284:65: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
+  284 |     TMultiGraph* pGraphs = (TMultiGraph*)inputFile.Get("pGraphs");
+      |                                                                 ^
+      |                            -
+      |                            static_cast< -
+      |                                         > (                      )
+/home/mogus/cppProjects/idealGasSim/main.cpp:286:55: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  286 |     TGraph* kBGraph = (TGraph*)inputFile.Get("kBGraph");
+      |                                                       ^
+      |                       ---------
+      |                       static_cast<TGraph*> (           )
+/home/mogus/cppProjects/idealGasSim/main.cpp:288:57: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  288 |     TGraph* mfpGraph = (TGraph*)inputFile.Get("mfpGraph");
+      |                                                         ^
+      |                        ---------
+      |                        static_cast<TGraph*> (            )
+/home/mogus/cppProjects/idealGasSim/main.cpp:294:74: warning: use of old-style cast to ‘class TF1*’ [-Wold-style-cast]
+  294 |                 std::shared_ptr<TF1> pLineF {(TF1*)inputFile.Get("pLineF")};
+      |                                                                          ^
+      |                                              ------
+      |                                              static_cast<TF1*> (          )
+/home/mogus/cppProjects/idealGasSim/main.cpp:296:78: warning: use of old-style cast to ‘class TF1*’ [-Wold-style-cast]
+  296 |                 std::shared_ptr<TF1> kBGraphF {(TF1*)inputFile.Get("kBGraphF")};
+      |                                                                              ^
+      |                                                ------
+      |                                                static_cast<TF1*> (            )
+/home/mogus/cppProjects/idealGasSim/main.cpp:298:66: warning: use of old-style cast to ‘class TF1*’ [-Wold-style-cast]
+  298 |     std::shared_ptr<TF1> maxwellF {(TF1*)inputFile.Get("maxwellF")};
+      |                                                                  ^
+      |                                    ------
+      |                                    static_cast<TF1*> (            )
+/home/mogus/cppProjects/idealGasSim/main.cpp:300:68: warning: use of old-style cast to ‘class TF1*’ [-Wold-style-cast]
+  300 |     std::shared_ptr<TF1> mfpGraphF {(TF1*)inputFile.Get("mfpGraphF")};
+      |                                                                    ^
+      |                                     ------
+      |                                     static_cast<TF1*> (             )
+/home/mogus/cppProjects/idealGasSim/main.cpp:302:96: warning: use of old-style cast to ‘class TH1D*’ [-Wold-style-cast]
+  302 |                 std::shared_ptr<TH1D> cumulatedSpeedsH {(TH1D*)inputFile.Get("cumulatedSpeedsH")};
+      |                                                                                                ^
+      |                                                         -------
+      |                                                         static_cast<TH1D*> (                    )
+/home/mogus/cppProjects/idealGasSim/main.cpp:305:82: warning: use of old-style cast to ‘class TLine*’ [-Wold-style-cast]
+  305 |                 std::shared_ptr<TLine> meanLine {(TLine*)inputFile.Get("meanLine")};
+      |                                                                                  ^
+      |                                                  --------
+      |                                                  static_cast<TLine*> (            )
+/home/mogus/cppProjects/idealGasSim/main.cpp:307:86: warning: use of old-style cast to ‘class TLine*’ [-Wold-style-cast]
+  307 |                 std::shared_ptr<TLine> meanSqLine {(TLine*)inputFile.Get("meanSqLine")};
+      |                                                                                      ^
+      |                                                    --------
+      |                                                    static_cast<TLine*> (              )
+/home/mogus/cppProjects/idealGasSim/main.cpp:309:58: warning: use of old-style cast to ‘class TF1*’ [-Wold-style-cast]
+  309 |     std::shared_ptr<TF1> expP {(TF1*)inputFile.Get("expP")};
+      |                                                          ^
+      |                                ------
+      |                                static_cast<TF1*> (        )
+/home/mogus/cppProjects/idealGasSim/main.cpp:311:60: warning: use of old-style cast to ‘class TF1*’ [-Wold-style-cast]
+  311 |     std::shared_ptr<TF1> expkB {(TF1*)inputFile.Get("expkB")};
+      |                                                            ^
+      |                                 ------
+      |                                 static_cast<TF1*> (         )
+/home/mogus/cppProjects/idealGasSim/main.cpp:313:62: warning: use of old-style cast to ‘class TF1*’ [-Wold-style-cast]
+  313 |     std::shared_ptr<TF1> expMFP {(TF1*)inputFile.Get("expMFP")};
+      |                                                              ^
+      |                                  ------
+      |                                  static_cast<TF1*> (          )
+/home/mogus/cppProjects/idealGasSim/main.cpp:319:28: warning: conversion to ‘long unsigned int’ from ‘long int’ may change the sign of the result [-Wsign-conversion]
+  319 |         1, cFile.GetInteger("simulation parameters", "nParticles", 1) *
+      |            ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:319:71: warning: conversion from ‘long unsigned int’ to ‘Double_t’ {aka ‘double’} may change value [-Wconversion]
+  319 |         1, cFile.GetInteger("simulation parameters", "nParticles", 1) *
+      |            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+  320 |                output.getStatSize());
+      |                ~~~~~~~~~~~~~~~~~~~~                                    
+/home/mogus/cppProjects/idealGasSim/main.cpp: In lambda function:
+/home/mogus/cppProjects/idealGasSim/main.cpp:326:70: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  326 |           TGraph* genPGraph{(TGraph*)pGraphs->GetListOfGraphs()->At(6)};
+      |                                                                      ^
+      |                             ---------
+      |                             static_cast<TGraph*> (                    )
+/home/mogus/cppProjects/idealGasSim/main.cpp: In function ‘int main(int, const char**)’:
+/home/mogus/cppProjects/idealGasSim/main.cpp:376:29: warning: conversion from ‘long int’ to ‘float’ may change value [-Wconversion]
+  376 |             cFile.GetInteger("simulation parameters", "nParticles", 1) /
+      |             ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp: In lambda function:
+/home/mogus/cppProjects/idealGasSim/main.cpp:388:70: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  388 |           TGraph* genPGraph{(TGraph*)pGraphs->GetListOfGraphs()->At(0)};
+      |                                                                      ^
+      |                             ---------
+      |                             static_cast<TGraph*> (                    )
+/home/mogus/cppProjects/idealGasSim/main.cpp: In function ‘int main(int, const char**)’:
+/home/mogus/cppProjects/idealGasSim/main.cpp:458:40: warning: use of old-style cast to ‘int’ [-Wold-style-cast]
+  458 |             videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
+      |                                        ^
+      |                        -----------------
+      |                        static_cast<int> (windowSize.x)
+/home/mogus/cppProjects/idealGasSim/main.cpp:458:59: warning: use of old-style cast to ‘int’ [-Wold-style-cast]
+  458 |             videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
+      |                                                           ^
+      |                                           -----------------
+      |                                           static_cast<int> (windowSize.y)
+/home/mogus/cppProjects/idealGasSim/main.cpp:468:46: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  468 |                     << " frames: " << (float)i / (float)(frames.size())
+      |                                              ^
+      |                                       --------
+      |                                       static_cast<float> (i)
+/home/mogus/cppProjects/idealGasSim/main.cpp:468:71: warning: use of old-style cast to ‘float’ [-Wold-style-cast]
+  468 |                     << " frames: " << (float)i / (float)(frames.size())
+      |                                                                       ^
+      |                                                  -------
+      |                                                  static_cast<float> (  )
+/home/mogus/cppProjects/idealGasSim/main.cpp: In lambda function:
+/home/mogus/cppProjects/idealGasSim/main.cpp:532:40: warning: conversion from ‘int’ to ‘std::chrono::duration<float>::rep’ {aka ‘float’} may change value [-Wconversion]
+  532 |                                        frameTimems) -
+      |                                        ^~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp: In function ‘int main(int, const char**)’:
+/home/mogus/cppProjects/idealGasSim/main.cpp:569:69: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  569 |                                         bufferingWheelT.getSize().x / 2.,
+      |                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:570:69: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  570 |                                         bufferingWheelT.getSize().y / 2.
+      |                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:573:60: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  573 |                                         windowSize.x * 0.2 / bufferingWheelT.getSize().x,
+      |                                         ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:574:60: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  574 |                                         windowSize.y * 0.2 / bufferingWheelT.getSize().y
+      |                                         ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:576:65: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  576 |                         bufferingWheel.setPosition(windowSize.x / 2., windowSize.y / 2.);
+      |                                                    ~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:576:84: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  576 |                         bufferingWheel.setPosition(windowSize.x / 2., windowSize.y / 2.);
+      |                                                                       ~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:604:85: warning: conversion from ‘unsigned int’ to ‘float’ may change value [-Wconversion]
+  604 |                                         bufferingWheel.getPosition().y + windowSize.y * 0.2f);
+      |                                                                          ~~~~~~~~~~~^
+/home/mogus/cppProjects/idealGasSim/main.cpp:606:54: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  606 |                                         windowSize.y * .05,
+      |                                         ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:607:54: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  607 |                                         windowSize.y * .05
+      |                                         ~~~~~~~~~~~~~^~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp: In lambda function:
+/home/mogus/cppProjects/idealGasSim/main.cpp:619:113: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+  619 |                                                         bufferingWheel.setRotation(bufferingWheel.getRotation() + 120. * frameTimems / 1000.);
+      |                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp: In function ‘int main(int, const char**)’:
+/home/mogus/cppProjects/idealGasSim/main.cpp:659:51: warning: conversion from ‘double’ to ‘std::vector<sf::Texture>::size_type’ {aka ‘long unsigned int’} may change value [-Wfloat-conversion]
+  659 |         rendersPtr->reserve(output.getFramerate() * 10);
+      |                             ~~~~~~~~~~~~~~~~~~~~~~^~~~
+/home/mogus/cppProjects/idealGasSim/main.cpp:660:32: warning: conversion from ‘std::vector<sf::Texture>::size_type’ {aka ‘long unsigned int’} to ‘double’ may change value [-Wconversion]
+  660 |         while (rendersPtr->size() <= output.getFramerate() * targetBufferTime) {
+      |                ~~~~~~~~~~~~~~~~^~
+/home/mogus/cppProjects/idealGasSim/main.cpp:676:42: warning: use of old-style cast to ‘int’ [-Wold-style-cast]
+  676 |               videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
+      |                                          ^
+      |                          -----------------
+      |                          static_cast<int> (windowSize.x)
+/home/mogus/cppProjects/idealGasSim/main.cpp:676:61: warning: use of old-style cast to ‘int’ [-Wold-style-cast]
+  676 |               videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
+      |                                                             ^
+      |                                             -----------------
+      |                                             static_cast<int> (windowSize.y)
+/home/mogus/cppProjects/idealGasSim/main.cpp:678:73: warning: conversion from ‘std::vector<sf::Texture>::size_type’ {aka ‘long unsigned int’} to ‘std::__atomic_base<int>::__int_type’ {aka ‘int’} may change value [-Wconversion]
+  678 |                                         processedFrames.fetch_add(v.size());
+      |                                                                   ~~~~~~^~
+[ 81%] Linking CXX executable idealGasSim
+[ 81%] Built target idealGasSim
+[ 87%] Building CXX object CMakeFiles/gasSimTests.dir/unitTesting/unitTests.cpp.o
+In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:23:
+/home/mogus/cppProjects/idealGasSim/unitTesting/testingAddons.hpp:13:18: warning: extra ‘;’ after in-class function definition [-Wextra-semi]
+   13 |                 };
+      |                  ^
+      |                  -
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp: In function ‘void DOCTEST_ANON_FUNC_61()’:
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:420:22: warning: conversion from ‘double’ to ‘float’ changes value from ‘1.7777777777777777e+0’ to ‘1.77777779e+0f’ [-Wfloat-conversion]
+  420 |   float newRatio{16. / 9.};
+      |                  ~~~~^~~~
+In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:22:
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:498:25: warning: conversion to ‘std::vector<GS::GSVector<float> >::size_type’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  498 |       CHECK(projections[i] == realProjs[i]);
+      |                         ^
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2146:9: note: in definition of macro ‘DOCTEST_WRAP_IN_TRY’
+ 2146 |         x;                                                                                         \
+      |         ^
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2396:9: note: in expansion of macro ‘DOCTEST_ASSERT_IMPLEMENT_2’
+ 2396 |         DOCTEST_ASSERT_IMPLEMENT_2(assert_type, __VA_ARGS__);                                      \
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2440:28: note: in expansion of macro ‘DOCTEST_ASSERT_IMPLEMENT_1’
+ 2440 | #define DOCTEST_CHECK(...) DOCTEST_ASSERT_IMPLEMENT_1(DT_CHECK, __VA_ARGS__)
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2969:20: note: in expansion of macro ‘DOCTEST_CHECK’
+ 2969 | #define CHECK(...) DOCTEST_CHECK(__VA_ARGS__)
+      |                    ^~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:498:7: note: in expansion of macro ‘CHECK’
+  498 |       CHECK(projections[i] == realProjs[i]);
+      |       ^~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:498:41: warning: conversion to ‘std::vector<GS::GSVector<float> >::size_type’ {aka ‘long unsigned int’} from ‘int’ may change the sign of the result [-Wsign-conversion]
+  498 |       CHECK(projections[i] == realProjs[i]);
+      |                                         ^
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2146:9: note: in definition of macro ‘DOCTEST_WRAP_IN_TRY’
+ 2146 |         x;                                                                                         \
+      |         ^
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2396:9: note: in expansion of macro ‘DOCTEST_ASSERT_IMPLEMENT_2’
+ 2396 |         DOCTEST_ASSERT_IMPLEMENT_2(assert_type, __VA_ARGS__);                                      \
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2440:28: note: in expansion of macro ‘DOCTEST_ASSERT_IMPLEMENT_1’
+ 2440 | #define DOCTEST_CHECK(...) DOCTEST_ASSERT_IMPLEMENT_1(DT_CHECK, __VA_ARGS__)
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/doctest.h:2969:20: note: in expansion of macro ‘DOCTEST_CHECK’
+ 2969 | #define CHECK(...) DOCTEST_CHECK(__VA_ARGS__)
+      |                    ^~~~~~~~~~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:498:7: note: in expansion of macro ‘CHECK’
+  498 |       CHECK(projections[i] == realProjs[i]);
+      |       ^~~~~
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp: In function ‘void DOCTEST_ANON_FUNC_75()’:
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:619:63: warning: use of old-style cast to ‘class TH1D*’ [-Wold-style-cast]
+  619 |       TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
+      |                                                               ^
+      |                             -------
+      |                             static_cast<TH1D*> (               )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:640:65: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
+  640 |         TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+      |                                                                 ^
+      |                                -
+      |                                static_cast< -
+      |                                             > (                  )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:641:55: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  641 |         TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+      |                                                       ^
+      |                           ---------
+      |                           static_cast<TGraph*> (       )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:642:57: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  642 |         TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+      |                                                         ^
+      |                            ---------
+      |                            static_cast<TGraph*> (        )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:713:65: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
+  713 |         TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+      |                                                                 ^
+      |                                -
+      |                                static_cast< -
+      |                                             > (                  )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:714:55: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  714 |         TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+      |                                                       ^
+      |                           ---------
+      |                           static_cast<TGraph*> (       )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:715:57: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  715 |         TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+      |                                                         ^
+      |                            ---------
+      |                            static_cast<TGraph*> (        )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp: In function ‘void DOCTEST_ANON_FUNC_82()’:
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:778:61: warning: use of old-style cast to ‘class TH1D*’ [-Wold-style-cast]
+  778 |     TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
+      |                                                             ^
+      |                           -------
+      |                           static_cast<TH1D*> (               )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:796:61: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
+  796 |     TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+      |                                                             ^
+      |                            -
+      |                            static_cast< -
+      |                                         > (                  )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:797:51: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  797 |     TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+      |                                                   ^
+      |                       ---------
+      |                       static_cast<TGraph*> (       )
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:798:53: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  798 |     TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+      |                                                     ^
+      |                        ---------
+      |                        static_cast<TGraph*> (        )
+In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics/../PhysicsEngine/Particle.hpp:6,
+                 from /home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics/../PhysicsEngine/Collision.hpp:4,
+                 from /home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics/../PhysicsEngine.hpp:4,
+                 from /home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics/RenderStyle.hpp:6,
+                 from /home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics/Camera.hpp:4,
+                 from /home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics.hpp:4,
+                 from /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:21:
+/home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics/../PhysicsEngine/GSVector.hpp: In instantiation of ‘FP GS::GSVector<FP>::norm() const [with FP = float]’:
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:439:5:   required from here
+/home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/Graphics/../PhysicsEngine/GSVector.hpp:40:32: warning: conversion from ‘double’ to ‘float’ may change value [-Wfloat-conversion]
+   40 |   FP norm() const { return sqrt(x * x + y * y + z * z); }
+      |                            ~~~~^~~~~~~~~~~~~~~~~~~~~~~
+[ 93%] Building CXX object CMakeFiles/gasSimTests.dir/unitTesting/testingAddons.cpp.o
+In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/testingAddons.cpp:1:
+/home/mogus/cppProjects/idealGasSim/unitTesting/testingAddons.hpp:13:18: warning: extra ‘;’ after in-class function definition [-Wextra-semi]
+   13 |                 };
+      |                  ^
+      |                  -
+[100%] Linking CXX executable gasSimTests
+[100%] Built target gasSimTests

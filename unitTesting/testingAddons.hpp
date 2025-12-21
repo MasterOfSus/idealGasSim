@@ -10,7 +10,7 @@ namespace GS {
 	struct randomThreadsMgr {
 		randomThreadsMgr() {
 			threads.reserve(1000);
-		};
+		}
 		size_t nThreads {0};
 		std::vector<std::thread> threads {};
 		void finish();
