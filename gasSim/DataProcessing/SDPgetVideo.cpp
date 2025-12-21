@@ -304,7 +304,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   TGraph& mfpGraph{*(TGraph*)outputGraphs.At(2)};
   TCanvas cnvs{};
   // image stuff
-  TImage* trnsfrImg;
+  TImage* trnsfrImg = TImage::Create();
   std::vector<sf::Uint8> pixels;
   sf::Texture auxTxtr;
   sf::Sprite auxSprt;
@@ -322,14 +322,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     }
     cnvs.Modified();
     cnvs.Update();
-    trnsfrImg = TImage::Create();
     trnsfrImg->FromPad(&cnvs);
     auto* buf{trnsfrImg->GetRgbaArray()};
     if (!buf) {
       throw std::runtime_error("Failed to retrieve image RGBA array, aborting");
     }
-    RGBA32toRGBA8(trnsfrImg->GetRgbaArray(), trnsfrImg->GetWidth(),
+    RGBA32toRGBA8(buf, trnsfrImg->GetWidth(),
                   trnsfrImg->GetHeight(), pixels);
+		delete[] buf;
     auxTxtr.update(pixels.data());
     auxSprt.setTexture(auxTxtr, true);
     auxSprt.setPosition(windowSize.x * percPosX, windowSize.y * percPosY);
@@ -361,7 +361,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         NText = {" N = " + Num.str(), font, 18};
         NText.setFont(font);
         NText.setFillColor(sf::Color::Black);
-        trnsfrImg = TImage::Create();
       }
       break;
     case VideoOpts::justGas:
@@ -526,7 +525,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frames.emplace_back(frame.getTexture());
           }
         }
-        trnsfrImg->Delete();
         stats.clear();
       }
       break;
@@ -676,7 +674,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               frames.emplace_back(frame.getTexture());
             }
           }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
-          trnsfrImg->Delete();
         } else if (renders.size()) {
           assert(renders.back().second == gTime);
           if (*fTime + gDeltaT < gTime ||
@@ -735,7 +732,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               frames.emplace_back(frame.getTexture());
             }
           }
-          trnsfrImg->Delete();
         }  // else if renders.size()
         renders.clear();
         break;
@@ -955,13 +951,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         }
       }  // else if renders.size()
       renders.clear();
-      trnsfrImg->Delete();
       break;
     }  // case scope end
     default:
+			delete trnsfrImg;
       throw std::invalid_argument("Invalid video option provided.");
   }
 
+  delete trnsfrImg;
   return frames;
 }
 

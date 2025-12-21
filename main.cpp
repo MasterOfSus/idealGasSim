@@ -1,6 +1,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -135,9 +136,9 @@ int main(int argc, const char* argv[]) {
             .c_str())};
 		throwIfZombie(&inputFile, "Failed to load provided input file path.");
 
-    TH1D speedsHTemplate{*((TH1D*)inputFile.Get("speedsHTemplate"))};
-		speedsHTemplate.SetDirectory(nullptr);
-		throwIfZombie(&inputFile, "Failed to load speedsHTemplate from input file.");
+		std::shared_ptr<TH1D> speedsHTemplate {(TH1D*)inputFile.Get("speedsHTemplate")};
+		speedsHTemplate->SetDirectory(nullptr);
+		throwIfZombie(speedsHTemplate.get(), "Failed to load speedsHTemplate from input file.");
 
     long nStats{cFile.GetInteger("simulation parameters", "nStats", 1)};
     if (nStats <= 0) {
@@ -147,7 +148,7 @@ int main(int argc, const char* argv[]) {
         static_cast<unsigned>(nStats > 0 ? nStats
                                          : throw std::invalid_argument(
                                                "Provided negative nStats.")),
-        cFile.GetFloat("output", "framerate", 60.f), speedsHTemplate};
+        cFile.GetFloat("output", "framerate", 60.f), *speedsHTemplate};
 		sf::Font font;
 		font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
 		output.setFont(font);
@@ -278,11 +279,8 @@ int main(int argc, const char* argv[]) {
       std::cout << "Processing thread running." << std::endl;
     }
 
-		std::vector<TObject*> allRootPtrs {};
-
-    TList* graphsList = new TList();
+		auto graphsList = std::make_unique<TList>();
 		graphsList->SetOwner(kFALSE);
-    allRootPtrs.emplace_back(graphsList);
     TMultiGraph* pGraphs = (TMultiGraph*)inputFile.Get("pGraphs");
 		throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
     TGraph* kBGraph = (TGraph*)inputFile.Get("kBGraph");
@@ -293,37 +291,27 @@ int main(int argc, const char* argv[]) {
     graphsList->Add(kBGraph);
     graphsList->Add(mfpGraph);
 
-    TF1* pLineF = (TF1*)inputFile.Get("pLineF");
-		throwIfZombie(pLineF, "Failed to load pLineF from input file.");
-    allRootPtrs.emplace_back(pLineF);
-    TF1* kBGraphF = (TF1*)inputFile.Get("kBGraphF");
-		throwIfZombie(kBGraphF, "Failed to load kBGraphF from input file.");
-    allRootPtrs.emplace_back(kBGraphF);
-    TF1* maxwellF = (TF1*)inputFile.Get("maxwellF");
-		throwIfZombie(maxwellF, "Failed to load maxwellF from input file.");
-    allRootPtrs.emplace_back(maxwellF);
-    TF1* mfpGraphF = (TF1*)inputFile.Get("mfpGraphF");
-		throwIfZombie(mfpGraphF, "Failed to load mfpGraphF from input file.");
-    allRootPtrs.emplace_back(mfpGraphF);
-    TH1D* cumulatedSpeedsH = (TH1D*)inputFile.Get("cumulatedSpeedsH");
+		std::shared_ptr<TF1> pLineF {(TF1*)inputFile.Get("pLineF")};
+		throwIfZombie(pLineF.get(), "Failed to load pLineF from input file.");
+		std::shared_ptr<TF1> kBGraphF {(TF1*)inputFile.Get("kBGraphF")};
+		throwIfZombie(kBGraphF.get(), "Failed to load kBGraphF from input file.");
+    std::shared_ptr<TF1> maxwellF {(TF1*)inputFile.Get("maxwellF")};
+		throwIfZombie(maxwellF.get(), "Failed to load maxwellF from input file.");
+    std::shared_ptr<TF1> mfpGraphF {(TF1*)inputFile.Get("mfpGraphF")};
+		throwIfZombie(mfpGraphF.get(), "Failed to load mfpGraphF from input file.");
+		std::shared_ptr<TH1D> cumulatedSpeedsH {(TH1D*)inputFile.Get("cumulatedSpeedsH")};
 		cumulatedSpeedsH->SetDirectory(nullptr);
-		throwIfZombie(cumulatedSpeedsH, "Failed to load cumulatedSpeedsH from input file.");
-    allRootPtrs.emplace_back(cumulatedSpeedsH);
-    TLine* meanLine = (TLine*)inputFile.Get("meanLine");
-		throwIfZombie(meanLine, "Failed to load meanLine from input file.");
-    allRootPtrs.emplace_back(meanLine);
-    TLine* meanSqLine = (TLine*)inputFile.Get("meanSqLine");
-		throwIfZombie(meanSqLine, "Failed to load meanSqLine from input file.");
-    allRootPtrs.emplace_back(meanSqLine);
-    TF1* expP = (TF1*)inputFile.Get("expP");
-		throwIfZombie(expP, "Failed to load expP from input file.");
-    allRootPtrs.emplace_back(expP);
-    TF1* expkB = (TF1*)inputFile.Get("expkB");
-		throwIfZombie(expkB, "Failed to load expkB from input file.");
-    allRootPtrs.emplace_back(expkB);
-    TF1* expMFP = (TF1*)inputFile.Get("expMFP");
-		throwIfZombie(expMFP, "Failed to load expMFP from input file.");
-    allRootPtrs.emplace_back(expMFP);
+		throwIfZombie(cumulatedSpeedsH.get(), "Failed to load cumulatedSpeedsH from input file.");
+		std::shared_ptr<TLine> meanLine {(TLine*)inputFile.Get("meanLine")};
+		throwIfZombie(meanLine.get(), "Failed to load meanLine from input file.");
+		std::shared_ptr<TLine> meanSqLine {(TLine*)inputFile.Get("meanSqLine")};
+		throwIfZombie(meanSqLine.get(), "Failed to load meanSqLine from input file.");
+    std::shared_ptr<TF1> expP {(TF1*)inputFile.Get("expP")};
+		throwIfZombie(expP.get(), "Failed to load expP from input file.");
+    std::shared_ptr<TF1> expkB {(TF1*)inputFile.Get("expkB")};
+		throwIfZombie(expkB.get(), "Failed to load expkB from input file.");
+    std::shared_ptr<TF1> expMFP {(TF1*)inputFile.Get("expMFP")};
+		throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
 
     maxwellF->SetParameter(
         0, cFile.GetReal("simulation parameters", "targetT", 1.));
@@ -337,7 +325,7 @@ int main(int argc, const char* argv[]) {
         [&](TH1D& speedsH, GS::VideoOpts opt) {
           TGraph* genPGraph{(TGraph*)pGraphs->GetListOfGraphs()->At(6)};
           if (genPGraph->GetN()) {
-            genPGraph->Fit(pLineF, "Q");
+            genPGraph->Fit(pLineF.get(), "Q");
 						// Keep number of drawn points at 30
             if (genPGraph->GetN() >= 30) {
               pGraphs->GetXaxis()->SetRangeUser(
@@ -351,13 +339,13 @@ int main(int argc, const char* argv[]) {
                   kBGraph->GetPointX(kBGraph->GetN() - 30),
                   kBGraph->GetPointX(kBGraph->GetN() - 1));
             }
-            kBGraph->Fit(kBGraphF, "Q");
+            kBGraph->Fit(kBGraphF.get(), "Q");
 						// keep most data visible but not squished down by outliers
 						kBGraph->GetYaxis()->SetRangeUser(0., kBGraphF->GetParameter(0) * 3.25);
           }
           if (opt != GS::VideoOpts::gasPlusCoords) {
             if (speedsH.GetEntries()) {
-              speedsH.Fit(maxwellF, "Q");
+              speedsH.Fit(maxwellF.get(), "Q");
 							// skibidi
               cumulatedSpeedsH->Add(&speedsH);
               meanLine->SetX1(speedsH.GetMean());
@@ -377,7 +365,7 @@ int main(int argc, const char* argv[]) {
                     mfpGraph->GetPointX(mfpGraph->GetN() - 30),
                     mfpGraph->GetPointX(mfpGraph->GetN() - 1));
               }
-              mfpGraph->Fit(mfpGraphF, "Q");
+              mfpGraph->Fit(mfpGraphF.get(), "Q");
             }
           }
         }};
@@ -486,6 +474,7 @@ int main(int argc, const char* argv[]) {
           break;
         }
       }
+			pclose(ffmpeg);
     } else {  // no permanent video output requested ->
 							// wiew-once live video
       {
@@ -559,7 +548,9 @@ int main(int argc, const char* argv[]) {
           }
           queueNumber++;
           if (launchedPlayThreadsN == threadN) {
-						lastWindowTxtr = rPtr->back();
+						if (rPtr->size()) {
+							lastWindowTxtr = rPtr->back();
+						}
             stopBufferLoop = false;
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Status: buffering.                                   "
@@ -735,17 +726,16 @@ int main(int argc, const char* argv[]) {
     std::cout << "Saving results to file... ";
     std::cout.flush();
     inputFile.Close();
-    TFile* rootOutput{new TFile(
+		auto rootOutput = std::make_unique<TFile>(
         (std::ostringstream()
          << "outputs/" << cFile.Get("output", "rootOutputName", "output")
          << ".root")
             .str()
             .c_str(),
-        "RECREATE")};
+        "RECREATE");
 
     rootOutput->SetTitle(rootOutput->GetName());
     rootOutput->cd();
-    allRootPtrs.emplace_back(rootOutput);
     graphsList->Write();
     pLineF->Write();
     kBGraph->Write();
@@ -757,9 +747,7 @@ int main(int argc, const char* argv[]) {
 
     rootOutput->Close();
 
-		for (TObject* o: allRootPtrs) {
-			delete(o);
-		}
+		graphsList->Delete();
 
     std::cout << "done!" << std::endl;
 

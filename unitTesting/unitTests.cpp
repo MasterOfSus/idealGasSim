@@ -693,7 +693,8 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
         std::cout << "Closing window." << std::endl;
         window.close();
         std::cout << "Deleting TObjects." << std::endl;
-        graphsList->Delete();
+				graphsList->Delete();
+        delete graphsList;
         i = true;
       }
       std::cout << "Starting single particle getVideo." << std::endl;
@@ -751,7 +752,8 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
           std::cin >> response;
         }
         window.close();
-        graphsList->Delete();
+				graphsList->Delete();
+        delete graphsList;
       }
       std::cout << "Done, going to next test case." << std::endl;
     } else {
@@ -977,7 +979,8 @@ TEST_CASE(
 		std::this_thread::sleep_for(std::chrono::seconds(10));
     std::cout << "Repeat SimDataPipeline stress test? (y/n) ";
     std::cin >> response;
-    graphsList->Delete();
+		graphsList->Delete();
+    delete graphsList;
   };
   std::cout << "Bye!" << std::endl;
 }
