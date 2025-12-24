@@ -1,8 +1,7 @@
 # idealGasSim
 
-This project has been abandoned, I give up, I cannot for the life of me figure out what's wrong with the multithreading and I cannot keep on doing this as I have been using it to destroy myself for way too long.
-Lol I'm so silly time to become homeless.
-Btw running the program with gasSim_demo.ini from the configs directory seems to work, I tried with 10k particles and justStats, with 100 for boxSide instead and it terminates without throwing, sillyyyyyyyyyyy. BLEP.
+This project is on the verge of abandonment, the multithreading is horribly cursed and likely unrecoverable, but hey the rest seems to work. It's quite slow as well, only goes up to ~1000 particles before becoming impossibly slow, no matter the setting (1 fps).
+Sillyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy. BLEP!!!!
 
 ![hopefully this silly car image is still available](https://static.wikia.nocookie.net/silly-cat/images/5/59/Milly.png/revision/latest?cb=20231001194804)
 
