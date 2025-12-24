@@ -616,8 +616,8 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
     if (response == 'y') {
       std::cout << "Loading resources." << std::endl;
       TFile input{"assets/input.root"};
-      TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
-      GS::SimDataPipeline output{1, 24., speedsHTemplate};
+      TH1D* speedsHTemplate{(TH1D*)input.Get("speedsHTemplate")};
+      GS::SimDataPipeline output{1, 24., *speedsHTemplate};
       GS::Gas gas{10, 100., 30., -5.};
       output.setStatChunkSize(10);
       gas.simulate(30, output);
@@ -698,7 +698,7 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
         i = true;
       }
       std::cout << "Starting single particle getVideo." << std::endl;
-      GS::SimDataPipeline singleOutput{1, 24., speedsHTemplate};
+      GS::SimDataPipeline singleOutput{1, 24., *speedsHTemplate};
       GS::Gas onePGas{1, 50., 20., -9.};
       onePGas.simulate(10, singleOutput);
       singleOutput.setDone();
@@ -754,6 +754,7 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
         window.close();
 				graphsList->Delete();
         delete graphsList;
+				delete speedsHTemplate;
       }
       std::cout << "Done, going to next test case." << std::endl;
     } else {
@@ -775,8 +776,8 @@ TEST_CASE(
     std::atomic<bool> stop{false};
     GS::Gas g{10, 50., 20.};
     TFile input{"assets/input.root"};
-    TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
-    GS::SimDataPipeline output{10, 24., speedsHTemplate};
+    TH1D* speedsHTemplate{(TH1D*)input.Get("speedsHTemplate")};
+    GS::SimDataPipeline output{10, 24., *speedsHTemplate};
     GS::Gas gas{10, 100., 30., -5.};
     output.setStatChunkSize(1);
     output.setFont(font);
@@ -981,6 +982,7 @@ TEST_CASE(
     std::cin >> response;
 		graphsList->Delete();
     delete graphsList;
+		delete speedsHTemplate;
   };
   std::cout << "Bye!" << std::endl;
 }

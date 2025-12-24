@@ -70,7 +70,7 @@ Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVector,
 }
 
 float Camera::getTopSide() const {
-  return 2.f * getPlaneDistance() * static_cast<float>(tanf(getFOV() * (M_PIf / 180.f)) / 2.f);
+  return 2.f * getPlaneDistance() * tanf(getFOV() * (M_PIf / 180.f) / 2.f);
 };
 
 float Camera::getPixelSide() const { return getTopSide() / static_cast<float>(getWidth()); }

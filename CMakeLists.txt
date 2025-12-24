@@ -82,37 +82,38 @@ target_include_directories(idealGasSim PRIVATE ./root/include)
 target_link_directories(idealGasSim PRIVATE ./root/lib)
 
 # Test executable
-add_executable(gasSimTests
-    unitTesting/unitTests.cpp
-    unitTesting/testingAddons.cpp
-)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_executable(gasSimTests
+			unitTesting/unitTests.cpp
+			unitTesting/testingAddons.cpp
+	)
 
-target_sources(gasSimTests PUBLIC
-    FILE_SET HEADERS
-    BASE_DIRS unitTesting
-    FILES unitTesting/testingAddons.hpp
-)
+	target_sources(gasSimTests PUBLIC
+			FILE_SET HEADERS
+			BASE_DIRS unitTesting
+			FILES unitTesting/testingAddons.hpp
+	)
 
-target_link_libraries(gasSimTests PRIVATE gasSimLib
-    sfml-graphics sfml-window sfml-system pthread
-    Core Imt RIO Net Hist Graf Graf3d Gpad ROOTVecOps Tree TreePlayer Rint
-    Postscript Matrix Physics MathCore Thread ROOTNTuple MultiProc
-    ROOTDataFrame ROOTNTupleUtil
-    tbb
-)
+	target_link_libraries(gasSimTests PRIVATE gasSimLib
+			sfml-graphics sfml-window sfml-system pthread
+			Core Imt RIO Net Hist Graf Graf3d Gpad ROOTVecOps Tree TreePlayer Rint
+			Postscript Matrix Physics MathCore Thread ROOTNTuple MultiProc
+			ROOTDataFrame ROOTNTupleUtil
+			tbb
+	)
 
-target_compile_options(gasSimTests PRIVATE
-    -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion
-		-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast
-		-fno-omit-frame-pointer
-		$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined>
-    $<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>
-)
+	target_compile_options(gasSimTests PRIVATE
+			-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion
+			-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast
+			-fno-omit-frame-pointer
+			$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined>
+			$<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>
+	)
 
-target_link_options(gasSimTests PRIVATE
-    $<$<CONFIG:Debug>:-fsanitize=thread,undefined -fno-omit-frame-pointer>
-)
+	target_link_options(gasSimTests PRIVATE
+			$<$<CONFIG:Debug>:-fsanitize=thread,undefined -fno-omit-frame-pointer>
+	)
 
-target_include_directories(gasSimTests PRIVATE ./root/include)
-target_link_directories(gasSimTests PRIVATE ./root/lib)
-
+	target_include_directories(gasSimTests PRIVATE ./root/include)
+	target_link_directories(gasSimTests PRIVATE ./root/lib)
+endif()

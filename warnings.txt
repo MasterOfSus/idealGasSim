@@ -1114,11 +1114,6 @@ In file included from /home/mogus/cppProjects/idealGasSim/main.cpp:11:
 [ 81%] Linking CXX executable idealGasSim
 [ 81%] Built target idealGasSim
 [ 87%] Building CXX object CMakeFiles/gasSimTests.dir/unitTesting/unitTests.cpp.o
-In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:23:
-/home/mogus/cppProjects/idealGasSim/unitTesting/testingAddons.hpp:13:18: warning: extra ‘;’ after in-class function definition [-Wextra-semi]
-   13 |                 };
-      |                  ^
-      |                  -
 /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp: In function ‘void DOCTEST_ANON_FUNC_61()’:
 /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:420:22: warning: conversion from ‘double’ to ‘float’ changes value from ‘1.7777777777777777e+0’ to ‘1.77777779e+0f’ [-Wfloat-conversion]
   420 |   float newRatio{16. / 9.};
@@ -1162,7 +1157,7 @@ In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.
       |       ^~~~~
 /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp: In function ‘void DOCTEST_ANON_FUNC_75()’:
 /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:619:63: warning: use of old-style cast to ‘class TH1D*’ [-Wold-style-cast]
-  619 |       TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
+  619 |       TH1D* speedsHTemplate{(TH1D*)input.Get("speedsHTemplate")};
       |                                                               ^
       |                             -------
       |                             static_cast<TH1D*> (               )
@@ -1199,24 +1194,24 @@ In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.
       |                            ---------
       |                            static_cast<TGraph*> (        )
 /home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp: In function ‘void DOCTEST_ANON_FUNC_82()’:
-/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:778:61: warning: use of old-style cast to ‘class TH1D*’ [-Wold-style-cast]
-  778 |     TH1D speedsHTemplate{*(TH1D*)input.Get("speedsHTemplate")};
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:779:61: warning: use of old-style cast to ‘class TH1D*’ [-Wold-style-cast]
+  779 |     TH1D* speedsHTemplate{(TH1D*)input.Get("speedsHTemplate")};
       |                                                             ^
       |                           -------
       |                           static_cast<TH1D*> (               )
-/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:796:61: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
-  796 |     TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:797:61: warning: use of old-style cast to ‘class TMultiGraph*’ [-Wold-style-cast]
+  797 |     TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
       |                                                             ^
       |                            -
       |                            static_cast< -
       |                                         > (                  )
-/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:797:51: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
-  797 |     TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:798:51: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  798 |     TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
       |                                                   ^
       |                       ---------
       |                       static_cast<TGraph*> (       )
-/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:798:53: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
-  798 |     TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+/home/mogus/cppProjects/idealGasSim/unitTesting/unitTests.cpp:799:53: warning: use of old-style cast to ‘class TGraph*’ [-Wold-style-cast]
+  799 |     TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
       |                                                     ^
       |                        ---------
       |                        static_cast<TGraph*> (        )
@@ -1233,10 +1228,5 @@ In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/../gasSim/
    40 |   FP norm() const { return sqrt(x * x + y * y + z * z); }
       |                            ~~~~^~~~~~~~~~~~~~~~~~~~~~~
 [ 93%] Building CXX object CMakeFiles/gasSimTests.dir/unitTesting/testingAddons.cpp.o
-In file included from /home/mogus/cppProjects/idealGasSim/unitTesting/testingAddons.cpp:1:
-/home/mogus/cppProjects/idealGasSim/unitTesting/testingAddons.hpp:13:18: warning: extra ‘;’ after in-class function definition [-Wextra-semi]
-   13 |                 };
-      |                  ^
-      |                  -
 [100%] Linking CXX executable gasSimTests
 [100%] Built target gasSimTests

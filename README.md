@@ -75,10 +75,11 @@ The demo configuration file serves as a reference for most available runtime par
 
 ## Testing
 
-Tests are provided in the `gasSimTests` binary inside the `build/` directory.
+Tests are provided in the `gasSimTests` binary inside the `<debug-dir>` directory.
+Make sure to copy the `assets` folder inside from the unitTesting directory into the `<debug-dir>` directory.
 They are intended to be run from within that directory.
 
-* Demos can be replayed but not regenerated
+* Demos can be replayed but not re-executed on a single run of the testing binary
 * The stress test can be repeated indefinitely
 
 ## Acknowledgments of External Projects
@@ -88,7 +89,7 @@ They are intended to be run from within that directory.
 
 ## Credits
 
-Thanks to Giulia for providing photos of Jesse, the silly cat used as the default buffering wheel.
+Thanks to Giulia for providing photos of Jesse, the silly car used as the default buffering wheel.
 
 Finally, some overdue thanks to Diego Quarantani, Niccolò Poli, and Tomaso Tamburini for their essential work on the project, their support throughout its development, their patience in enduring the effects on their life caused by my obsession with it, but most importantly for becoming good friends.
 Thank you.
