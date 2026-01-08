@@ -136,7 +136,7 @@ int main(int argc, const char* argv[]) {
             .c_str())};
 		throwIfZombie(&inputFile, "Failed to load provided input file path.");
 
-		std::shared_ptr<TH1D> speedsHTemplate {(TH1D*)inputFile.Get("speedsHTemplate")};
+		std::shared_ptr<TH1D> speedsHTemplate {dynamic_cast<TH1D*>(inputFile.Get("speedsHTemplate"))};
 		speedsHTemplate->SetDirectory(nullptr);
 		throwIfZombie(speedsHTemplate.get(), "Failed to load speedsHTemplate from input file.");
 
@@ -167,15 +167,15 @@ int main(int argc, const char* argv[]) {
                         [](double acc, const GS::Particle& p) {
                           return acc + p.speed.norm();
                         }) /
-        nStats / gas.getBoxSide()};
-    output.setStatChunkSize(desiredStatChunkSize > 1. ? desiredStatChunkSize
-                                                      : 1);
+        static_cast<double>(nStats) / gas.getBoxSide()};
+    output.setStatChunkSize(static_cast<size_t>(desiredStatChunkSize > 1 ? desiredStatChunkSize
+                                                      : 1));
     double gasSide{gas.getBoxSide()};
 
     std::mutex coutMtx;
     std::thread simThread{[&] {
 			try {
-      gas.simulate(cFile.GetInteger("simulation parameters", "nIters", 0),
+      gas.simulate(static_cast<size_t>(cFile.GetInteger("simulation parameters", "nIters", 0)),
                    output);
 			} catch (std::runtime_error const& e) {
 				std::lock_guard<std::mutex> coutGuard{coutMtx};
@@ -237,9 +237,9 @@ int main(int argc, const char* argv[]) {
         ".png");
     GS::RenderStyle style{particleTex};
     style.setWallsColor(
-        sf::Color(cFile.GetInteger("render", "wallsColor", 0x50fa7b80)));
+        sf::Color(static_cast<unsigned>(cFile.GetInteger("render", "wallsColor", 0x50fa7b80))));
     style.setBGColor(
-        sf::Color(cFile.GetInteger("render", "gasBgColor", 0xffffffff)));
+        sf::Color(static_cast<unsigned>(cFile.GetInteger("render", "gasBgColor", 0xffffffff))));
     style.setWallsOpts(cFile.Get("render", "wallsOpts", "ufdl"));
 
     bool mfpMemory{cFile.GetBoolean("output", "mfpMemory", true)};
@@ -281,49 +281,49 @@ int main(int argc, const char* argv[]) {
 
 		auto graphsList = std::make_unique<TList>();
 		graphsList->SetOwner(kFALSE);
-    TMultiGraph* pGraphs = (TMultiGraph*)inputFile.Get("pGraphs");
+    TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(inputFile.Get("pGraphs"))};
 		throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
-    TGraph* kBGraph = (TGraph*)inputFile.Get("kBGraph");
+    TGraph* kBGraph {dynamic_cast<TGraph*>(inputFile.Get("kBGraph"))};
 		throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.");
-    TGraph* mfpGraph = (TGraph*)inputFile.Get("mfpGraph");
+    TGraph* mfpGraph {dynamic_cast<TGraph*>(inputFile.Get("mfpGraph"))};
 		throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.");
     graphsList->Add(pGraphs);
     graphsList->Add(kBGraph);
     graphsList->Add(mfpGraph);
 
-		std::shared_ptr<TF1> pLineF {(TF1*)inputFile.Get("pLineF")};
+		std::shared_ptr<TF1> pLineF {dynamic_cast<TF1*>(inputFile.Get("pLineF"))};
 		throwIfZombie(pLineF.get(), "Failed to load pLineF from input file.");
-		std::shared_ptr<TF1> kBGraphF {(TF1*)inputFile.Get("kBGraphF")};
+		std::shared_ptr<TF1> kBGraphF {dynamic_cast<TF1*>(inputFile.Get("kBGraphF"))};
 		throwIfZombie(kBGraphF.get(), "Failed to load kBGraphF from input file.");
-    std::shared_ptr<TF1> maxwellF {(TF1*)inputFile.Get("maxwellF")};
+    std::shared_ptr<TF1> maxwellF {dynamic_cast<TF1*>(inputFile.Get("maxwellF"))};
 		throwIfZombie(maxwellF.get(), "Failed to load maxwellF from input file.");
-    std::shared_ptr<TF1> mfpGraphF {(TF1*)inputFile.Get("mfpGraphF")};
+    std::shared_ptr<TF1> mfpGraphF {dynamic_cast<TF1*>(inputFile.Get("mfpGraphF"))};
 		throwIfZombie(mfpGraphF.get(), "Failed to load mfpGraphF from input file.");
-		std::shared_ptr<TH1D> cumulatedSpeedsH {(TH1D*)inputFile.Get("cumulatedSpeedsH")};
+		std::shared_ptr<TH1D> cumulatedSpeedsH {dynamic_cast<TH1D*>(inputFile.Get("cumulatedSpeedsH"))};
 		cumulatedSpeedsH->SetDirectory(nullptr);
 		throwIfZombie(cumulatedSpeedsH.get(), "Failed to load cumulatedSpeedsH from input file.");
-		std::shared_ptr<TLine> meanLine {(TLine*)inputFile.Get("meanLine")};
+		std::shared_ptr<TLine> meanLine {dynamic_cast<TLine*>(inputFile.Get("meanLine"))};
 		throwIfZombie(meanLine.get(), "Failed to load meanLine from input file.");
-		std::shared_ptr<TLine> meanSqLine {(TLine*)inputFile.Get("meanSqLine")};
+		std::shared_ptr<TLine> meanSqLine {dynamic_cast<TLine*>(inputFile.Get("meanSqLine"))};
 		throwIfZombie(meanSqLine.get(), "Failed to load meanSqLine from input file.");
-    std::shared_ptr<TF1> expP {(TF1*)inputFile.Get("expP")};
+    std::shared_ptr<TF1> expP {dynamic_cast<TF1*>(inputFile.Get("expP"))};
 		throwIfZombie(expP.get(), "Failed to load expP from input file.");
-    std::shared_ptr<TF1> expkB {(TF1*)inputFile.Get("expkB")};
+    std::shared_ptr<TF1> expkB {dynamic_cast<TF1*>(inputFile.Get("expkB"))};
 		throwIfZombie(expkB.get(), "Failed to load expkB from input file.");
-    std::shared_ptr<TF1> expMFP {(TF1*)inputFile.Get("expMFP")};
+    std::shared_ptr<TF1> expMFP {dynamic_cast<TF1*>(inputFile.Get("expMFP"))};
 		throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
 
     maxwellF->SetParameter(
         0, cFile.GetReal("simulation parameters", "targetT", 1.));
     maxwellF->FixParameter(
-        1, cFile.GetInteger("simulation parameters", "nParticles", 1) *
-               output.getStatSize());
+        1, static_cast<double>(static_cast<size_t>(cFile.GetInteger("simulation parameters", "nParticles", 1)) *
+               output.getStatSize()));
     maxwellF->FixParameter(2,
                            cFile.GetReal("simulation parameters", "pMass", 1));
 
     std::function<void(TH1D&, GS::VideoOpts)> fitLambda{
         [&](TH1D& speedsH, GS::VideoOpts opt) {
-          TGraph* genPGraph{(TGraph*)pGraphs->GetListOfGraphs()->At(6)};
+          TGraph* genPGraph{dynamic_cast<TGraph*>(pGraphs->GetListOfGraphs()->At(6))};
           if (genPGraph->GetN()) {
             genPGraph->Fit(pLineF.get(), "Q");
 						// Keep number of drawn points at 30
@@ -373,8 +373,8 @@ int main(int argc, const char* argv[]) {
     expP->SetParameter(
         0,
         cFile.GetFloat("simulation parameters", "targetT", 1) *
-            cFile.GetInteger("simulation parameters", "nParticles", 1) /
-            std::pow(cFile.GetReal("simulation parameters", "boxSide", 1), 3.));
+            static_cast<float>(cFile.GetInteger("simulation parameters", "nParticles", 1)) /
+            static_cast<float>(std::pow(cFile.GetReal("simulation parameters", "boxSide", 1), 3.)));
     expkB->SetParameter(0, 1);
     expMFP->SetParameter(
         0, cFile.GetFloat("simulation parameters", "targetT", 1) / M_SQRT2 /
@@ -385,7 +385,7 @@ int main(int argc, const char* argv[]) {
 
     std::array<std::function<void()>, 4> drawLambdas{
         [&]() {
-          TGraph* genPGraph{(TGraph*)pGraphs->GetListOfGraphs()->At(0)};
+          TGraph* genPGraph{dynamic_cast<TGraph*>(pGraphs->GetListOfGraphs()->At(0))};
           if (genPGraph->GetN()) {
             pLineF->GetXaxis()->SetRangeUser(
                 0., genPGraph->GetPointX(genPGraph->GetN() - 1));
@@ -455,7 +455,7 @@ int main(int argc, const char* argv[]) {
           lastBatch = true;
         }
         std::vector<sf::Texture> frames = {output.getVideo(
-            videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
+            videoOpt, {windowSize.x, windowSize.y}, placeHolder,
             *graphsList, true, fitLambda, drawLambdas)};
         int i{0};
         for (sf::Texture& t : frames) {
@@ -465,7 +465,7 @@ int main(int argc, const char* argv[]) {
           ++i;
           std::lock_guard<std::mutex> coutGuard{coutMtx};
           std::cout << "Encoding batch of " << frames.size()
-                    << " frames: " << (float)i / (float)(frames.size())
+                    << " frames: " << static_cast<float>(i) / static_cast<float>(frames.size())
                     << "% complete.                 \r";
           std::cout.flush();
         }
@@ -529,7 +529,7 @@ int main(int argc, const char* argv[]) {
                 } else {
                   framesToDrop.fetch_add(
                       static_cast<int>(lastFrameDrawTime.count() /
-                                       frameTimems) -
+                                       static_cast<float>(frameTimems)) -
                       1);
                   droppedFrames.fetch_add(1);
                 }
@@ -566,14 +566,14 @@ int main(int argc, const char* argv[]) {
 			sf::Sprite bufferingWheel;
 			bufferingWheel.setTexture(bufferingWheelT, true);
 			bufferingWheel.setOrigin(
-					bufferingWheelT.getSize().x / 2.,
-					bufferingWheelT.getSize().y / 2.
+					static_cast<float>(bufferingWheelT.getSize().x) / 2.f,
+					static_cast<float>(bufferingWheelT.getSize().y) / 2.f
 			);
 			bufferingWheel.setScale(
-					windowSize.x * 0.2 / bufferingWheelT.getSize().x,
-					windowSize.y * 0.2 / bufferingWheelT.getSize().y
+					static_cast<float>(windowSize.x) * 0.2f / static_cast<float>(bufferingWheelT.getSize().x),
+					static_cast<float>(windowSize.y) * 0.2f / static_cast<float>(bufferingWheelT.getSize().y)
 			);
-			bufferingWheel.setPosition(windowSize.x / 2., windowSize.y / 2.);
+			bufferingWheel.setPosition(static_cast<float>(windowSize.x) / 2.f, static_cast<float>(windowSize.y) / 2.f);
 			sf::Text bufferingText {
 				"(UwU) loading (^w^)",
 				font,
@@ -600,11 +600,11 @@ int main(int argc, const char* argv[]) {
 				0., 0.
 			);
 			bufferingText.setPosition(
-					bufferingWheel.getPosition().x,
-					bufferingWheel.getPosition().y + windowSize.y * 0.2f);
+					static_cast<float>(bufferingWheel.getPosition().x),
+					bufferingWheel.getPosition().y + static_cast<float>(windowSize.y) * 0.2f);
 			progressText.setPosition(
-					windowSize.y * .05,
-					windowSize.y * .05
+					static_cast<float>(windowSize.y) * .05f,
+					static_cast<float>(windowSize.y) * .05f
 			);
       std::thread bufferingLoop{[&, frameTimems, windowSize]() {
 				sf::Sprite auxS;
@@ -616,7 +616,7 @@ int main(int argc, const char* argv[]) {
             while (window.isOpen() && !stopBufferLoop) {
 							window.draw(auxS); // repaint last window texture
 						 	// 120 degrees per second
-							bufferingWheel.setRotation(bufferingWheel.getRotation() + 120. * frameTimems / 1000.);
+							bufferingWheel.setRotation(bufferingWheel.getRotation() + 120.f * static_cast<float>(frameTimems) / 1000.f);
 							window.draw(bufferingWheel);
 							window.draw(bufferingText);
 							progressText.setString(
@@ -656,8 +656,8 @@ int main(int argc, const char* argv[]) {
       while (!stop) {
         std::shared_ptr<std::vector<sf::Texture>> rendersPtr{
             std::make_shared<std::vector<sf::Texture>>()};
-        rendersPtr->reserve(output.getFramerate() * 10);
-        while (rendersPtr->size() <= output.getFramerate() * targetBufferTime) {
+        rendersPtr->reserve(static_cast<size_t>(output.getFramerate()) * 10);
+        while (static_cast<double>(rendersPtr->size()) <= output.getFramerate() * targetBufferTime) {
           while (window.pollEvent(e)) {
             if (e.type == sf::Event::Closed) {
               window.close();
@@ -673,9 +673,9 @@ int main(int argc, const char* argv[]) {
             lastBatch = true;
           }
           std::vector<sf::Texture> v = {output.getVideo(
-              videoOpt, {(int)windowSize.x, (int)windowSize.y}, placeHolder,
+              videoOpt, {windowSize.x, windowSize.y}, placeHolder,
               *graphsList, true, fitLambda, drawLambdas)};
-					processedFrames.fetch_add(v.size());
+					processedFrames.fetch_add(static_cast<int>(v.size()));
           rendersPtr->insert(rendersPtr->end(),
                              std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));

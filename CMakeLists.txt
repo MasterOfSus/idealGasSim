@@ -9,6 +9,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Check for sfml library
+find_package(SFML 2.6 COMPONENTS graphics REQUIRED)
+
+# Assertions and allocator sanitizer enabling
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  string(APPEND CMAKE_CXX_FLAGS " -D_GLIBCXX_ASSERTIONS")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  string(APPEND CMAKE_CXX_FLAGS " -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE")
+endif()
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  string(APPEND CMAKE_CXX_FLAGS " -D_GLIBCXX_SANITIZE_STD_ALLOCATOR")
+endif()
+
 # Build types and optimization / sanitizers
 # Default to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -50,7 +63,7 @@ target_sources(gasSimLib PUBLIC
 # Compile options for library
 target_compile_options(gasSimLib PRIVATE
     -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion
-		-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast
+		-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast -Wextra-semi
 		-fno-omit-frame-pointer
 		$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined>
     $<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>

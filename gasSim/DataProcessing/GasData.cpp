@@ -6,7 +6,7 @@
 // auxiliary getPIndex function
 
 inline long getPIndex(GS::Particle const* p, GS::Gas const& gas) {
-  return p - gas.getParticles().data();
+  return static_cast<long>(p - gas.getParticles().data());
 }
 
 // expects a solved collision as argument
@@ -31,8 +31,8 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
         t0 = gas.getTime() - collision->getTime();
         time = gas.getTime();
         boxSide = gas.getBoxSide();
-        p1Index = getPIndex(coll->getP1(), gas);
-        p2Index = getPIndex(coll->getP2(), gas);
+        p1Index = static_cast<size_t>(getPIndex(coll->getP1(), gas));
+        p2Index = static_cast<size_t>(getPIndex(coll->getP2(), gas));
         wall = Wall::VOID;
       }
     } else {
@@ -40,7 +40,7 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
       t0 = gas.getTime() - collision->getTime();
       time = gas.getTime();
       boxSide = gas.getBoxSide();
-      p1Index = getPIndex(collision->getP1(), gas);
+      p1Index = static_cast<size_t>(getPIndex(collision->getP1(), gas));
       p2Index = SIZE_MAX;
       PWCollision const* coll{static_cast<PWCollision const*>(collision)};
       wall = coll->getWall();
@@ -49,7 +49,7 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
 }
 
 char GS::GasData::getCollType() const {
-  assert(p1Index >= 0 && p1Index <= static_cast<size_t>(particles.size()));
+  assert(p1Index <= static_cast<size_t>(particles.size()));
   if (wall == Wall::VOID) {
     return 'p';
   } else {

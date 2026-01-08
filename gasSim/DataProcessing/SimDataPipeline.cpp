@@ -111,9 +111,9 @@ void SimDataPipeline::processData(bool mfpMemory) {
       {  // guard scope begin
         data.insert(
             data.end(), std::make_move_iterator(rawData.begin()),
-            std::make_move_iterator(rawData.begin() + nStats * statSize));
+            std::make_move_iterator(rawData.begin() + static_cast<long>(nStats * statSize)));
         assert(data.size());
-        rawData.erase(rawData.begin(), rawData.begin() + nStats * statSize);
+        rawData.erase(rawData.begin(), rawData.begin() + static_cast<long>(nStats * statSize));
         rawDataLock.unlock();
 				std::vector<TdStats> tempStats;
 
@@ -160,9 +160,9 @@ void SimDataPipeline::processData(Camera camera,
 			std::vector<TdStats> tempStats {};
 			std::vector<std::pair<sf::Texture, double>> tempRenders {};
       data->insert(data->end(), std::make_move_iterator(rawData.begin()),
-                  std::make_move_iterator(rawData.begin() + nStats * statSize));
+                  std::make_move_iterator(rawData.begin() + static_cast<long>(nStats * statSize)));
       assert(data->size());
-      rawData.erase(rawData.begin(), rawData.begin() + nStats * statSize);
+      rawData.erase(rawData.begin(), rawData.begin() + static_cast<long>(nStats * statSize));
       rawDataLock.unlock();
 
 			std::thread sThread {[this, mfpMemory, data, &tempStats]() {
@@ -239,7 +239,7 @@ void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
 	}
 
   tempRenders.reserve(
-      (data.back().getTime() - data.front().getTime()) / gDeltaT + 1);
+      static_cast<size_t>((data.back().getTime() - data.front().getTime()) / gDeltaT) + 1);
 
   while (gTime + gDeltaT < data[0].getT0()) {
     gTime += gDeltaT;

@@ -232,14 +232,35 @@ double collisionTime(Particle const& p1, Particle const& p2) {
 }
 
 // triangular indexing function for set of n elements
+/*
 auto trIndex(size_t i, size_t nEls) {
   size_t rowIndex{
       nEls - 2 -
       static_cast<size_t>(std::floor(
-          std::sqrt(-8 * static_cast<double>(i) + 4 * nEls * (nEls - 1) - 7) / 2. - 0.5))};
+          std::sqrt(-8. * static_cast<double>(i) + 4. * static_cast<double>(nEls * (nEls - 1) - 7)) / 2. - 0.5))};
   size_t colIndex{i + rowIndex + 1 - nEls * (nEls - 1) / 2 +
                   (nEls - rowIndex) * ((nEls - rowIndex) - 1) / 2};
   return std::pair<size_t, size_t>(rowIndex, colIndex);
+}*/
+
+auto trIndex(std::size_t i, std::size_t nEls)
+{
+    const double di = static_cast<double>(i);
+    const double dn = static_cast<double>(nEls);
+
+    const double root =
+        std::sqrt(-8.0 * di + 4.0 * dn * (dn - 1.0) - 7.0);
+
+    const std::size_t rowIndex = static_cast<std::size_t>(
+        dn - 2.0 - std::floor(root / 2.0 - 0.5)
+    );
+
+    const std::size_t colIndex =
+        i + rowIndex + 1
+        - (nEls * (nEls - 1)) / 2
+        + ((nEls - rowIndex) * ((nEls - rowIndex) - 1)) / 2;
+
+    return std::pair<size_t, size_t>(rowIndex, colIndex);
 }
 
 PPCollision Gas::firstPPColl() {
@@ -292,15 +313,15 @@ PPCollision Gas::firstPPColl() {
 
   // other threads with normal checks number
   for (size_t threadIndex{1}; threadIndex < nThreads; ++threadIndex) {
-    long thrI{static_cast<long>(threadIndex)};
-    threads.emplace(threads.begin() + thrI, [&, thrI]() {
+    size_t thrI{threadIndex};
+    threads.emplace(threads.begin() + static_cast<long>(thrI), [&, thrI]() {
       PPCollision c{INFINITY, nullptr, nullptr};
       size_t i{thrI * checksPerThread + extraChecks};
       size_t endIndex{(thrI + 1) * checksPerThread + extraChecks};
       for (; i < endIndex; ++i) {
-        std::pair<size_t, size_t> trI{trIndex(i, nP)};
-        getBestPPCollision(c, particles.data() + trI.first,
-                           particles.data() + trI.second);
+        std::pair<size_t, size_t> trngI{trIndex(i, nP)};
+        getBestPPCollision(c, particles.data() + trngI.first,
+                           particles.data() + trngI.second);
       }
 			std::lock_guard<std::mutex> bestCollsGuard {bestCollsMtx};
       bestColls[thrI] = c;

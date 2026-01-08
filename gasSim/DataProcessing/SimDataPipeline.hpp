@@ -31,7 +31,7 @@ class SimDataPipeline {
   void processData(Camera camera, RenderStyle style,
                    bool mfpMemory = true);
   std::vector<sf::Texture> getVideo(
-      VideoOpts opt, sf::Vector2i windowSize, sf::Texture const& placeHolderT,
+      VideoOpts opt, sf::Vector2u windowSize, sf::Texture const& placeHolderT,
       TList& outputGraphs, bool emptyQueue = false,
       std::function<void(TH1D&, VideoOpts)> fitLambda = {},
       std::array<std::function<void()>, 4> drawLambdas = {});

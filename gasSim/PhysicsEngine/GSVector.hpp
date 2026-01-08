@@ -37,7 +37,7 @@ struct GSVector {  // a three-dimensional vector
   GSVector operator*(FP c) const { return {x * c, y * c, z * c}; }
   GSVector operator/(FP c) const { return {x / c, y / c, z / c}; }
 
-  FP norm() const { return sqrt(x * x + y * y + z * z); }
+  FP norm() const { return static_cast<FP>(sqrt(x * x + y * y + z * z)); }
   void normalize() { *this = *this / norm(); }
 };
 

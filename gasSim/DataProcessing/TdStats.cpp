@@ -41,7 +41,7 @@ TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
       T{std::accumulate(
             firstState.getParticles().begin(), firstState.getParticles().end(),
             0., [](double x, Particle const& p) { return x + energy(p); }) *
-        2. / getNParticles() / 3.},
+        2. / static_cast<double>(getNParticles()) / 3.},
       freePaths{},
       t0(firstState.getT0()),
       time(firstState.getTime()),
@@ -76,7 +76,7 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
       T{std::accumulate(
             data.getParticles().begin(), data.getParticles().end(), 0.,
             [](double x, Particle const& p) { return x + energy(p); }) *
-        2. / data.getParticles().size() / 3.},
+        2. / static_cast<double>(data.getParticles().size()) / 3.},
       freePaths{},
       t0{data.getT0()},
       time{data.getTime()},
@@ -142,7 +142,7 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
       T{std::accumulate(
             data.getParticles().begin(), data.getParticles().end(), 0.,
             [](double x, Particle const& p) { return x + energy(p); }) *
-        2. / data.getParticles().size() / 3.},
+        2. / static_cast<double>(data.getParticles().size()) / 3.},
       freePaths{},
       t0(data.getT0()),
       time(data.getTime()),
@@ -333,7 +333,7 @@ double TdStats::getPressure(Wall wall) const {
   if (wall == Wall::VOID) {
     throw std::invalid_argument("getPressure error: VOID wall provided");
   }
-  return wallPulses[int(wall)] / (getBoxSide() * getBoxSide() * getDeltaT());
+  return wallPulses[static_cast<size_t>(wall)] / (getBoxSide() * getBoxSide() * getDeltaT());
 }
 
 double TdStats::getPressure() const {
@@ -346,7 +346,7 @@ double TdStats::getMeanFreePath() const {
     return -1.;
   } else {
     return std::accumulate(freePaths.begin(), freePaths.end(), 0.) /
-           freePaths.size();
+           static_cast<double>(freePaths.size());
   }
 }
 

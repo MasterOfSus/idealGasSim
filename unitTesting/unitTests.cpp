@@ -417,7 +417,7 @@ TEST_CASE("Testing the camera class") {
   float newFov{70.};
   unsigned newWidth{1000};
   unsigned newHeight{1600};
-  float newRatio{16. / 9.};
+  float newRatio{16.f / 9.f};
   camera.setFocus(newFocus);
   camera.setSightVector(newSight);
   camera.setPlaneDistance(newDistance);
@@ -494,7 +494,7 @@ TEST_CASE("Testing the camera class") {
     CHECK(projection.y == doctest::Approx(0. + 800.f));
     CHECK(projection.z == doctest::Approx(1.f / 3.f));
     std::vector<GS::GSVectorF> realProjs{camera.projectParticles(particles)};
-    for (int i{0}; i < 2; ++i) {
+    for (size_t i{0}; i < 2; ++i) {
       CHECK(projections[i] == realProjs[i]);
     }
   }
@@ -616,7 +616,7 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
     if (response == 'y') {
       std::cout << "Loading resources." << std::endl;
       TFile input{"assets/input.root"};
-      TH1D* speedsHTemplate{(TH1D*)input.Get("speedsHTemplate")};
+      TH1D* speedsHTemplate{dynamic_cast<TH1D*>(input.Get("speedsHTemplate"))};
       GS::SimDataPipeline output{1, 24., *speedsHTemplate};
       GS::Gas gas{10, 100., 30., -5.};
       output.setStatChunkSize(10);
@@ -637,9 +637,9 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
       SUBCASE("Running getVideo a bit and showing output") {
         std::cout << "Loading resources for getVideo." << std::endl;
         TList* graphsList = new TList();
-        TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
-        TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
-        TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+        TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
+        TGraph* kBGraph {dynamic_cast<TGraph*>(input.Get("kBGraph"))};
+        TGraph* mfpGraph {dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
         if (pGraphs->IsZombie() || kBGraph->IsZombie() ||
             mfpGraph->IsZombie()) {
           throw std::runtime_error(
@@ -710,9 +710,9 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
         std::cout << "Loading getVideo resources." << std::endl;
         // display in a window
         TList* graphsList = new TList();
-        TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
-        TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
-        TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+        TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
+        TGraph* kBGraph {dynamic_cast<TGraph*>(input.Get("kBGraph"))};
+        TGraph* mfpGraph {dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
         if (pGraphs->IsZombie() || kBGraph->IsZombie() ||
             mfpGraph->IsZombie()) {
           throw std::runtime_error(
@@ -776,7 +776,7 @@ TEST_CASE(
     std::atomic<bool> stop{false};
     GS::Gas g{10, 50., 20.};
     TFile input{"assets/input.root"};
-    TH1D* speedsHTemplate{(TH1D*)input.Get("speedsHTemplate")};
+    TH1D* speedsHTemplate{dynamic_cast<TH1D*>(input.Get("speedsHTemplate"))};
     GS::SimDataPipeline output{10, 24., *speedsHTemplate};
     GS::Gas gas{10, 100., 30., -5.};
     output.setStatChunkSize(1);
@@ -794,9 +794,9 @@ TEST_CASE(
     GS::RenderStyle style{ball};
     GS::Camera camera{{30, 25, 15}, {-20, -15, -5}, 1., 90., 720, 300};
     TList* graphsList = new TList();
-    TMultiGraph* pGraphs = (TMultiGraph*)input.Get("pGraphs");
-    TGraph* kBGraph = (TGraph*)input.Get("kBGraph");
-    TGraph* mfpGraph = (TGraph*)input.Get("mfpGraph");
+    TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
+    TGraph* kBGraph {dynamic_cast<TGraph*>(input.Get("kBGraph"))};
+    TGraph* mfpGraph {dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
     if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
       throw std::runtime_error(
           "Couldn't find one or more graphs in provided root file.");
