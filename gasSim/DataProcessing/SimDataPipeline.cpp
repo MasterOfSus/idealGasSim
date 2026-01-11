@@ -19,9 +19,9 @@ void SimDataPipeline::setFramerate(double framerate) {
   }
 }
 
-SimDataPipeline::SimDataPipeline(size_t statSize, double framerate,
-                                 TH1D const& speedsHTemplate)
-    : statSize(statSize), speedsHTemplate(speedsHTemplate) {
+SimDataPipeline::SimDataPipeline(size_t statSizeV, double framerate,
+                                 TH1D const& speedsHTemplateR)
+    : statSize(statSizeV), speedsHTemplate(speedsHTemplateR) {
   if (!statSize) {
     throw std::invalid_argument(
         "SDP constructor error: provided null statSize");
@@ -95,11 +95,11 @@ void SimDataPipeline::processData(bool mfpMemory) {
     rawDataCv.wait_for(rawDataLock, std::chrono::milliseconds(100), [this] {
       return rawData.size() > statSize.load() || dataDone.load();
     });
-    size_t statSize{this->statSize.load()};  // stat size for this iteration
-    if (dataDone.load() && rawData.size() < statSize) {
+    size_t statSizeL{statSize.load()};  // stat size for this iteration
+    if (dataDone.load() && rawData.size() < statSizeL) {
       break;
     }
-    size_t nStats{rawData.size() / statSize};
+    size_t nStats{rawData.size() / statSizeL};
     {  // chunkSize nspc
       size_t chunkSize = statChunkSize.load();
       if (chunkSize) {
@@ -111,9 +111,9 @@ void SimDataPipeline::processData(bool mfpMemory) {
       {  // guard scope begin
         data.insert(
             data.end(), std::make_move_iterator(rawData.begin()),
-            std::make_move_iterator(rawData.begin() + static_cast<long>(nStats * statSize)));
+            std::make_move_iterator(rawData.begin() + static_cast<long>(nStats * statSizeL)));
         assert(data.size());
-        rawData.erase(rawData.begin(), rawData.begin() + static_cast<long>(nStats * statSize));
+        rawData.erase(rawData.begin(), rawData.begin() + static_cast<long>(nStats * statSizeL));
         rawDataLock.unlock();
 				std::vector<TdStats> tempStats;
 
@@ -144,25 +144,25 @@ void SimDataPipeline::processData(Camera camera,
     rawDataCv.wait_for(rawDataLock, std::chrono::milliseconds(100), [this] {
       return rawData.size() > statSize.load() || dataDone.load();
     });
-    size_t statSize{this->statSize.load()};  // stat size for this iteration
-    if (dataDone.load() && rawData.size() < statSize) {
+    size_t statSizeL{statSize.load()};  // stat size for this iteration
+    if (dataDone.load() && rawData.size() < statSizeL) {
       break;
     }
 
-    size_t nStats{rawData.size() / statSize};
+    size_t nStats{rawData.size() / statSizeL};
     size_t chunkSize{statChunkSize.load()};
     if (chunkSize) {
       nStats = nStats > chunkSize ? chunkSize : nStats;
     }
 
     if (nStats) {
-			auto data{std::make_shared<std::vector<GasData>>()};
+			auto data {std::make_shared<std::vector<GasData>>()};
 			std::vector<TdStats> tempStats {};
 			std::vector<std::pair<sf::Texture, double>> tempRenders {};
       data->insert(data->end(), std::make_move_iterator(rawData.begin()),
-                  std::make_move_iterator(rawData.begin() + static_cast<long>(nStats * statSize)));
+                  std::make_move_iterator(rawData.begin() + static_cast<long>(nStats * statSizeL)));
       assert(data->size());
-      rawData.erase(rawData.begin(), rawData.begin() + static_cast<long>(nStats * statSize));
+      rawData.erase(rawData.begin(), rawData.begin() + static_cast<long>(nStats * statSizeL));
       rawDataLock.unlock();
 
 			std::thread sThread {[this, mfpMemory, data, &tempStats]() {
@@ -226,30 +226,30 @@ void SimDataPipeline::processGraphics(std::vector<GasData> const& data,
 	picture.setActive();
 
   // setting local time variables
-  double gTime;
-  double gDeltaT{this->gDeltaT.load()};
+  double gTimeL;
+  double gDeltaTL{gDeltaT.load()};
 	{
 	std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
-	assert(gDeltaT > 0.);
-	if (!this->gTime.has_value()) {
-		this->gTime = data[0].getT0() - gDeltaT;
+	assert(gDeltaTL > 0.);
+	if (!gTime.has_value()) {
+		gTime = data[0].getT0() - gDeltaTL;
 	}
-	assert(this->gTime <= data[0].getT0());
-	gTime = *this->gTime;
+	assert(gTime <= data[0].getT0());
+	gTimeL = *gTime;
 	}
 
   tempRenders.reserve(
-      static_cast<size_t>((data.back().getTime() - data.front().getTime()) / gDeltaT) + 1);
+      static_cast<size_t>((data.back().getTime() - data.front().getTime()) / gDeltaTL) + 1);
 
-  while (gTime + gDeltaT < data[0].getT0()) {
-    gTime += gDeltaT;
+  while (gTimeL + gDeltaTL < data[0].getT0()) {
+    gTimeL += gDeltaTL;
   }
 
   for (GasData const& dat : data) {
-    while (gTime + gDeltaT <= dat.getTime()) {
-      gTime += gDeltaT;
-      drawGas(dat, camera, picture, style, gTime - dat.getTime());
-      tempRenders.emplace_back(picture.getTexture(), gTime);
+    while (gTimeL + gDeltaTL <= dat.getTime()) {
+			gTimeL += gDeltaTL;
+      drawGas(dat, camera, picture, style, gTimeL - dat.getTime());
+      tempRenders.emplace_back(picture.getTexture(), gTimeL);
     }
   }
 }
@@ -258,30 +258,30 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
                                    bool mfpMemory,
 																	 std::vector<GS::TdStats>& tempStats) {
 
-  size_t statSize = this->statSize.load();  // local statSize for this call
-  assert(!(data.size() % statSize));
+  size_t statSizeL = statSize.load();  // local statSize for this call
+  assert(!(data.size() % statSizeL));
 
-  tempStats.reserve(data.size() / statSize);
+  tempStats.reserve(data.size() / statSizeL);
 
   if (mfpMemory) {
     std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
-    for (size_t i{0}; i < data.size() / statSize; ++i) {
+    for (size_t i{0}; i < data.size() / statSizeL; ++i) {
       TdStats stat{tempStats.size()
-                       ? TdStats{data[i * statSize], TdStats(tempStats.back())}
+                       ? TdStats{data[i * statSizeL], TdStats(tempStats.back())}
                    : lastStat.has_value()
-                       ? TdStats{data[i * statSize], std::move(*lastStat)}
-                       : TdStats{data[i * statSize], speedsHTemplate}};
-      for (size_t j{1}; j < statSize; ++j) {
-        stat.addData(data[i * statSize + j]);
+                       ? TdStats{data[i * statSizeL], std::move(*lastStat)}
+                       : TdStats{data[i * statSizeL], speedsHTemplate}};
+      for (size_t j{1}; j < statSizeL; ++j) {
+        stat.addData(data[i * statSizeL + j]);
       }
       tempStats.emplace_back(std::move(stat));
     }
     lastStat = tempStats.back();
   } else {
-    for (size_t i{0}; i < data.size() / statSize; ++i) {
-      TdStats stat{data[i * statSize], speedsHTemplate};
-      for (size_t j{1}; j < statSize; ++j) {
-        stat.addData(data[i * statSize + j]);
+    for (size_t i{0}; i < data.size() / statSizeL; ++i) {
+      TdStats stat{data[i * statSizeL], speedsHTemplate};
+      for (size_t j{1}; j < statSizeL; ++j) {
+        stat.addData(data[i * statSizeL + j]);
       }
       tempStats.emplace_back(std::move(stat));
     }

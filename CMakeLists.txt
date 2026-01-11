@@ -63,7 +63,7 @@ target_sources(gasSimLib PUBLIC
 # Compile options for library
 target_compile_options(gasSimLib PRIVATE
     -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion
-		-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast -Wextra-semi
+		-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast -Wextra-semi -Wshadow
 		-fno-omit-frame-pointer
 		$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined>
     $<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>
@@ -81,7 +81,7 @@ target_link_libraries(idealGasSim PRIVATE gasSimLib
 
 target_compile_options(idealGasSim PRIVATE
     -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion
-		-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast
+		-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast -Wshadow
 		-fno-omit-frame-pointer
 		$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined>
     $<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>
@@ -117,7 +117,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 	target_compile_options(gasSimTests PRIVATE
 			-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion
-			-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast
+			-Wimplicit-fallthrough -Wextra-semi -Wold-style-cast -Wshadow
 			-fno-omit-frame-pointer
 			$<$<CONFIG:Debug>:-g -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_ASSERTIONS=1 -fsanitize=thread,undefined>
 			$<$<CONFIG:Release>:-O3 -march=native -DNDEBUG>

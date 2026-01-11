@@ -14,12 +14,12 @@ namespace GS {
 
 // Getters and setters
 
-void Camera::setSightVector(GSVectorF const& sightVector) {
-  if (sightVector.norm() > 0.f) {
-    this->sightVector = sightVector / sightVector.norm();
+void Camera::setSightVector(GSVectorF const& sightVectorV) {
+  if (sightVectorV.norm() > 0.f) {
+    sightVector = sightVectorV / sightVectorV.norm();
   } else {
     throw std::invalid_argument(
-        "setSightVector error: O vector cannot be normalized");
+        "setSightVector error: O vector doesn't have direction information");
   }
 }
 
@@ -41,13 +41,13 @@ void Camera::setFOV(const float FOV) {  // in degrees
   }
 }
 
-void Camera::setResolution(unsigned height, unsigned width) {
-  if (!height || !width) {
+void Camera::setResolution(unsigned heightV, unsigned widthV) {
+  if (!heightV || !widthV) {
     throw std::invalid_argument(
         "setResolution error: provided null height or width");
   }
-  this->height = height;
-  this->width = width;
+  height = heightV;
+  width = widthV;
 }
 
 void Camera::setAspectRatio(
@@ -60,13 +60,13 @@ void Camera::setAspectRatio(
   }
 }
 
-Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVector,
-               float planeDistance, float FOV, unsigned width, unsigned height)
+Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVectorV,
+               float planeDistanceV, float FOV, unsigned widthV, unsigned heightV)
     : focusPoint(focusPosition) {
-  setSightVector(sightVector);
-  setPlaneDistance(planeDistance);
+  setSightVector(sightVectorV);
+  setPlaneDistance(planeDistanceV);
   setFOV(FOV);
-  setResolution(height, width);
+  setResolution(heightV, widthV);
 }
 
 float Camera::getTopSide() const {

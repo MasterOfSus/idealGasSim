@@ -32,8 +32,8 @@ void for_each_couple(Iterator first, Iterator last, Function f) {
   }
 }
 
-Gas::Gas(std::vector<Particle>&& particles, double boxSide, double time)
-    : particles{particles}, boxSide{boxSide}, time{time} {
+Gas::Gas(std::vector<Particle>&& particlesV, double boxSideV, double timeV)
+    : particles{particlesV}, boxSide{boxSideV}, time{timeV} {
   if (boxSide <= 0) {
     this->boxSide = 1.;
     throw std::invalid_argument(
@@ -78,8 +78,8 @@ auto unifRandVec{[](double maxNorm) {
                     rho * sin(phi)});
 }};
 
-Gas::Gas(size_t particlesN, double temperature, double boxSide, double time)
-    : boxSide(boxSide), time{time} {
+Gas::Gas(size_t particlesN, double temperature, double boxSideV, double timeV)
+    : boxSide(boxSideV), time{timeV} {
   if (temperature < 0.) {
     throw std::invalid_argument(
         "Gas constructor error: provided negative temperature");
@@ -165,11 +165,11 @@ Gas::Gas(size_t particlesN, double temperature, double boxSide, double time)
 PWCollision Gas::firstPWColl() {
   auto getPWCollision{[&, this](double position, double speed, Wall negWall,
                                 Wall posWall, Particle* p) -> PWCollision {
-    double time = (speed < 0)
+    double cTime = (speed < 0)
                       ? (position - Particle::getRadius()) / (-speed)
                       : (boxSide - Particle::getRadius() - position) / speed;
     Wall wall = (speed < 0) ? negWall : posWall;
-    return {time, p, wall};
+    return {cTime, p, wall};
   }};
 
   auto getWallColl{[&](Particle* p) {

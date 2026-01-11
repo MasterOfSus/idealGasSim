@@ -15,7 +15,7 @@ class Camera {
          unsigned height = 1080);
 
   // setters and getters
-  void setFocus(GSVectorF const& focusPoint) { this->focusPoint = focusPoint; }
+  void setFocus(GSVectorF const& focusPtV) { focusPoint = focusPtV; }
   void setSightVector(GSVectorF const& sightVector);
   void setAspectRatio(float ratio);
   void setPlaneDistance(float distance);

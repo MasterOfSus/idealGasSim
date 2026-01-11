@@ -95,17 +95,17 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     throw std::runtime_error("getVideo error: called without setting font");
   }
 
-  std::deque<std::pair<sf::Texture, double>> renders{};
-  std::vector<TdStats> stats{};
-  std::optional<double> gTime;
-  double gDeltaT;
+  std::deque<std::pair<sf::Texture, double>> rendersL{};
+  std::vector<TdStats> statsL{};
+  std::optional<double> gTimeL;
+  double gDeltaTL;
 
   auto getRendersT0 = [&](auto const& couples) {
     if (couples.size()) {
-      assert(gTime.has_value());
+      assert(gTimeL.has_value());
       return couples[0].second;
-    } else if (gTime.has_value()) {
-      return *gTime;
+    } else if (gTimeL.has_value()) {
+      return *gTimeL;
     } else {
       throw std::logic_error(
           "getVideo error: tried to get render time for output with no time "
@@ -115,65 +115,65 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
   // extraction of renders and/or stats clusters compatible with
   // processing algorithm
-  // fTime_ initialization, either through gTime_ or through stats[0]
+  // fTime initialization, either through gTime or through statsL[0]
   switch (opt) {
     case VideoOpts::justGas: {  // case scope
       {                         // lock scope
 				sf::Context c;
         std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
         std::lock_guard<std::mutex> rGuard{rendersMtx};
-        gTime = this->gTime;
-        if (!gTime.has_value()) {
+        gTimeL = gTime;
+        if (!gTimeL.has_value()) {
           return {};
         }
-        gDeltaT = this->gDeltaT.load();
-        if (this->renders.size()) {
-          renders = std::move(this->renders);
-          this->renders.clear();
+        gDeltaTL = gDeltaT.load();
+        if (renders.size()) {
+          rendersL = std::move(renders);
+          renders.clear();
         } else {
           return {};
         }
       }  // end of lock scope
-      if ((!fTime.has_value() || !isIntMultOf(*gTime - *fTime, gDeltaT))) {
-        fTime = getRendersT0(renders) - gDeltaT;
+      if ((!fTime.has_value() || !isIntMultOf(*gTimeL - *fTime, gDeltaTL))) {
+        fTime = getRendersT0(rendersL) - gDeltaTL;
       }
       break;
     }  // end of case scope
     case VideoOpts::justStats: {  // lock/case scope
       std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
       std::lock_guard<std::mutex> sGuard{statsMtx};
-      gTime = this->gTime;
-      gDeltaT = this->gDeltaT.load();
-      if (this->stats.size()) {
+      gTimeL = gTime;
+      gDeltaTL = gDeltaT.load();
+      if (stats.size()) {
         // setting fTime_
         if (!fTime.has_value()) {
-          if (gTime.has_value()) {
-            fTime = *gTime +
-                    gDeltaT * std::floor((this->stats[0].getTime0() - *gTime) /
-                                         gDeltaT);
+          if (gTimeL.has_value()) {
+            fTime = *gTimeL +
+                    gDeltaTL * std::floor((stats[0].getTime0() - *gTimeL) /
+                                         gDeltaTL);
           } else {
-            fTime = this->stats.front().getTime0() - gDeltaT;
+            fTime = stats.front().getTime0() - gDeltaTL;
           }
         }
-        if (this->stats.back().getTime() >= *fTime + gDeltaT) {
+        if (stats.back().getTime() >= *fTime + gDeltaTL) {
           // find first where the next frame's time is before it
           // -> the one before it necessarily "contains" the frame time
           // this pattern used in the rest of this file
-          auto sStartI{std::upper_bound(this->stats.begin(), this->stats.end(),
-                                        *fTime + gDeltaT,
+          auto sStartI{std::upper_bound(stats.begin(), stats.end(),
+                                        *fTime + gDeltaTL,
                                         [](double value, TdStats const& s) {
                                           return value < s.getTime0();
                                         }) -
                        1};
-          if (sStartI < this->stats.begin()) {
-            sStartI = this->stats.begin();
+          if (sStartI < stats.begin()) {
+            sStartI = stats.begin();
           }
           if (emptyStats) {
-            stats.insert(stats.end(), std::make_move_iterator(sStartI),
-                         std::make_move_iterator(this->stats.end()));
-            this->stats.clear();
+            statsL.insert(statsL.end(), std::make_move_iterator(sStartI),
+                         std::make_move_iterator(stats.end()));
+            stats.clear();
           } else {
-            stats = std::vector<TdStats>{sStartI, this->stats.end()};
+            statsL = std::vector<TdStats>{sStartI, stats.end()};
           }
         } else {
           return {};
@@ -192,83 +192,83 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
       std::lock_guard<std::mutex> rGuard{rendersMtx};
       std::lock_guard<std::mutex> sGuard{statsMtx};
-      gTime = this->gTime;
-      gDeltaT = this->gDeltaT.load();
-      if (!gTime.has_value()) {
+      gTimeL = gTime;
+      gDeltaTL = gDeltaT.load();
+      if (!gTimeL.has_value()) {
         return {};
       }
-      if (this->renders.size() || this->stats.size()) {
+      if (renders.size() || stats.size()) {
         //  dealing with fTime_
-        if (!fTime.has_value() || !isIntMultOf(*gTime - *fTime, gDeltaT)) {
-          if (!this->stats.size()) {
-            fTime = getRendersT0(this->renders) - gDeltaT;
-          } else if (!this->renders.size()) {
+        if (!fTime.has_value() || !isIntMultOf(*gTimeL - *fTime, gDeltaTL)) {
+          if (!stats.size()) {
+            fTime = getRendersT0(renders) - gDeltaTL;
+          } else if (!renders.size()) {
             fTime =
-                *gTime +
-                gDeltaT * std::floor((this->stats.front().getTime0() - *gTime) /
-                                     gDeltaT);
-            assert(isIntMultOf(*fTime - *gTime, gDeltaT));
+                *gTimeL +
+                gDeltaTL * std::floor((stats.front().getTime0() - *gTimeL) /
+                                     gDeltaTL);
+            assert(isIntMultOf(*fTime - *gTimeL, gDeltaTL));
           } else {
-            if (getRendersT0(this->renders) > this->stats.front().getTime0()) {
-              fTime = getRendersT0(this->renders) +
-                      gDeltaT * std::floor((this->stats[0].getTime0() -
-                                            getRendersT0(this->renders)) /
-                                           gDeltaT);
+            if (getRendersT0(renders) > stats.front().getTime0()) {
+              fTime = getRendersT0(renders) +
+                      gDeltaTL * std::floor((stats[0].getTime0() -
+                                            getRendersT0(renders)) /
+                                           gDeltaTL);
             } else {
-              fTime = getRendersT0(this->renders) - gDeltaT;
+              fTime = getRendersT0(renders) - gDeltaTL;
             }
           }
         }
 
         //  extracting algorithm-compatible vector segments
-        if (this->stats.size()) {
-          auto sStartI{std::upper_bound(this->stats.begin(), this->stats.end(),
-                                        *fTime + gDeltaT,
+        if (stats.size()) {
+          auto sStartI{std::upper_bound(stats.begin(), stats.end(),
+                                        *fTime + gDeltaTL,
                                         [](double value, TdStats const& s) {
                                           return value < s.getTime0();
                                         }) -
                        1};
-          if (sStartI < this->stats.begin()) {
-            sStartI = this->stats.begin();
+          if (sStartI < stats.begin()) {
+            sStartI = stats.begin();
           }
-          if (sStartI != this->stats.end()) {
-            auto gStartI{std::upper_bound(this->renders.begin(),
-                                          this->renders.end(), *fTime + gDeltaT,
+          if (sStartI != stats.end()) {
+            auto gStartI{std::upper_bound(renders.begin(),
+                                          renders.end(), *fTime + gDeltaTL,
                                           [](double value, auto const& render) {
                                             return value <= render.second;
                                           })};
-            assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-            auto gEndI{std::upper_bound(this->renders.begin(),
-                                        this->renders.end(),
-                                        this->stats.back().getTime(),
+            assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+            auto gEndI{std::upper_bound(renders.begin(),
+                                        renders.end(),
+                                        stats.back().getTime(),
                                         [](double value, auto const& render) {
                                           return value < render.second;
                                         })};
             if (emptyStats) {
-              stats.insert(stats.end(), std::make_move_iterator(sStartI),
-                           std::make_move_iterator(this->stats.end()));
-              this->stats.clear();
+              statsL.insert(statsL.end(), std::make_move_iterator(sStartI),
+                           std::make_move_iterator(stats.end()));
+              stats.clear();
             } else {
-              stats = std::vector(sStartI, this->stats.end());
+              statsL = std::vector(sStartI, stats.end());
             }
             assert(gStartI <= gEndI);
-            renders.insert(renders.begin(), std::make_move_iterator(gStartI),
+            rendersL.insert(rendersL.begin(), std::make_move_iterator(gStartI),
                            std::make_move_iterator(gEndI));
-            this->renders.clear();
+            renders.clear();
           }
-          if (!stats.size() && !renders.size()) {
+          if (!statsL.size() && !rendersL.size()) {
             return {};
           }
         } else {
-          auto gStartI{std::upper_bound(this->renders.begin(),
-                                        this->renders.end(), *fTime + gDeltaT,
+          auto gStartI{std::upper_bound(renders.begin(),
+                                        renders.end(), *fTime + gDeltaTL,
                                         [](double value, auto const& render) {
                                           return value <= render.second;
                                         })};
           // same as above
-          renders.insert(renders.begin(), std::make_move_iterator(gStartI),
-                         std::make_move_iterator(this->renders.end()));
-          this->renders.clear();
+          rendersL.insert(rendersL.begin(), std::make_move_iterator(gStartI),
+                         std::make_move_iterator(renders.end()));
+          renders.clear();
         }
       } else {
         return {};
@@ -348,16 +348,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     case VideoOpts::gasPlusCoords:
     case VideoOpts::all:
     case VideoOpts::justStats:
-      if (stats.size()) {
-        Temp << std::fixed << std::setprecision(2) << stats[0].getTemp();
+      if (statsL.size()) {
+        Temp << std::fixed << std::setprecision(2) << statsL[0].getTemp();
         TText = {"T = " + Temp.str() + "K", font, 18};
         TText.setFont(font);
         TText.setFillColor(sf::Color::Black);
-        VText = {"V = " + scientificNotation(stats[0].getVolume()) + "m^3",
+        VText = {"V = " + scientificNotation(statsL[0].getVolume()) + "m^3",
                  font, 18};
         VText.setFont(font);
         VText.setFillColor(sf::Color::Black);
-        Num << std::fixed << std::setprecision(2) << stats[0].getNParticles();
+        Num << std::fixed << std::setprecision(2) << statsL[0].getNParticles();
         NText = {" N = " + Num.str(), font, 18};
         NText.setFont(font);
         NText.setFillColor(sf::Color::Black);
@@ -373,22 +373,22 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   frame.create(windowSize.x, windowSize.y);
   switch (opt) {
     case VideoOpts::justGas: {
-      if (renders.size()) {
-        assert(isIntMultOf(*fTime - *gTime, gDeltaT));
-        assert(fTime < getRendersT0(renders) || isNegligible(*fTime - getRendersT0(renders), gDeltaT));
+      if (rendersL.size()) {
+        assert(isIntMultOf(*fTime - *gTimeL, gDeltaTL));
+        assert(fTime < getRendersT0(rendersL) || isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
         box.setPosition(0, 0);
         size_t rIndex{0};
-        while (*fTime + gDeltaT < gTime ||
-               isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
-          *fTime += gDeltaT;
+        while (*fTime + gDeltaTL < gTimeL ||
+               isNegligible(*fTime + gDeltaTL - *gTimeL, gDeltaTL)) {
+          *fTime += gDeltaTL;
           timeText.setString("time = " + round2(*fTime));
-          assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-          if (renders.size() > rIndex &&
-              isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
+          assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+          if (rendersL.size() > rIndex &&
+              isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
             box.setScale(
-                static_cast<float>(windowSize.x) / static_cast<float>(renders[rIndex].first.getSize().x),
-                static_cast<float>(windowSize.y) / static_cast<float>(renders[rIndex].first.getSize().y));
-            box.setTexture(renders[rIndex++].first);
+                static_cast<float>(windowSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
+                static_cast<float>(windowSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+            box.setTexture(rendersL[rIndex++].first);
             frame.draw(box);
             frame.draw(timeText);
             frame.display();
@@ -402,16 +402,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
           frames.emplace_back(frame.getTexture());
         }
-        renders.clear();
+        rendersL.clear();
       }
       break;
     }
     case VideoOpts::justStats:
-      if (stats.size()) {
-        if (*fTime + gDeltaT <
-            stats.front()
+      if (statsL.size()) {
+        if (*fTime + gDeltaTL <
+            statsL.front()
                 .getTime0()) {  // insert empty data and use placeholder render
-          auto& stat{stats.front()};
+          auto& stat{statsL.front()};
           for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
             graph->AddPoint(*fTime, -1.);
@@ -458,13 +458,13 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
           frame.display();
 
-          while (*fTime + gDeltaT < stat.getTime0()) {
-            *fTime += gDeltaT;
+          while (*fTime + gDeltaTL < stat.getTime0()) {
+            *fTime += gDeltaTL;
             frames.emplace_back(frame.getTexture());
           }
         }
 
-        for (TdStats const& stat : stats) {
+        for (TdStats const& stat : statsL) {
           for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
             if (i < 6) {
@@ -520,34 +520,34 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
           frame.display();
 
-          while (*fTime + gDeltaT < stat.getTime()) {
-            *fTime += gDeltaT;
+          while (*fTime + gDeltaTL < stat.getTime()) {
+            *fTime += gDeltaTL;
             frames.emplace_back(frame.getTexture());
           }
         }
-        stats.clear();
+        statsL.clear();
       }
       break;
     case VideoOpts::gasPlusCoords:
-      if (renders.size()) {
-        assert(gTime == renders.back().second);
-				assert(fTime < getRendersT0(renders) || isNegligible(*fTime - getRendersT0(renders), gDeltaT));
+      if (rendersL.size()) {
+        assert(gTimeL == rendersL.back().second);
+				assert(fTime < getRendersT0(rendersL) || isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
       }
       {  // case scope
         timeText.setPosition(static_cast<float>(windowSize.x) * 0.51f, static_cast<float>(windowSize.y) * 0.01f);
         sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                              static_cast<unsigned>(windowSize.y * 0.9)};
-        if (stats.size()) {
+        if (statsL.size()) {
           auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
-          if (*fTime + gDeltaT < stats.front().getTime0()) {
+          if (*fTime + gDeltaTL < statsL.front().getTime0()) {
             for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
               graph->AddPoint(*fTime, -1.);
-              graph->AddPoint(stats.front().getTime0(), -1.);
+              graph->AddPoint(statsL.front().getTime0(), -1.);
             }
 
             kBGraph.AddPoint(*fTime, -1.);
-            kBGraph.AddPoint(stats.front().getTime0(), -1.);
+            kBGraph.AddPoint(statsL.front().getTime0(), -1.);
 
             frame.clear();
 
@@ -570,16 +570,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             // insert paired renders or placeholders
             box.setPosition(static_cast<float>(windowSize.x) * 0.5f, 0.f);
             size_t rIndex{0};
-            while (*fTime + gDeltaT < stats.front().getTime0()) {
-              *fTime += gDeltaT;
+            while (*fTime + gDeltaTL < statsL.front().getTime0()) {
+              *fTime += gDeltaTL;
               timeText.setString("time = " + round2(*fTime));
-              assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-              if (renders.size() > rIndex &&
-                  isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
+              assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+              if (rendersL.size() > rIndex &&
+                  isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
                 box.setScale(
-                    static_cast<float>(gasSize.x) / static_cast<float>(renders[rIndex].first.getSize().x),
-                    static_cast<float>(gasSize.y) / static_cast<float>(renders[rIndex].first.getSize().y));
-                box.setTexture(renders[rIndex++].first);
+                    static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
+                    static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                box.setTexture(rendersL[rIndex++].first);
                 frame.draw(box);
                 frame.draw(timeText);
                 frame.display();
@@ -594,17 +594,17 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               frames.emplace_back(frame.getTexture());
             }
           }
-          assert(*fTime + gDeltaT >= stats.front().getTime0());
+          assert(*fTime + gDeltaTL >= statsL.front().getTime0());
           size_t rIndex{0};
-          while (*fTime + gDeltaT < stats.back().getTime()) {
-            auto s{std::upper_bound(stats.begin(), stats.end(),
-                                    *fTime + gDeltaT,
+          while (*fTime + gDeltaTL < statsL.back().getTime()) {
+            auto s{std::upper_bound(statsL.begin(), statsL.end(),
+                                    *fTime + gDeltaTL,
                                     [](double value, TdStats const& stat) {
                                       return value < stat.getTime0();
                                     }) -
                    1};
-            assert(s >= stats.begin());
-            assert(s < stats.end());
+            assert(s >= statsL.begin());
+            assert(s < statsL.end());
             TdStats const& stat{*s};
             // make the graphs picture
             for (size_t i{0}; i < 7; ++i) {
@@ -650,16 +650,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(TText);
             // insert paired renders or placeholders
             box.setPosition(static_cast<float>(windowSize.x) * 0.5f, 0.f);
-            while (*fTime + gDeltaT < stat.getTime()) {
-              *fTime += gDeltaT;
+            while (*fTime + gDeltaTL < stat.getTime()) {
+              *fTime += gDeltaTL;
               timeText.setString("time = " + round2(*fTime));
-              assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-              if (renders.size() > rIndex &&
-                  isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
+              assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+              if (rendersL.size() > rIndex &&
+                  isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
                 box.setScale(
-                    static_cast<float>(gasSize.x) / static_cast<float>(renders[rIndex].first.getSize().x),
-                    static_cast<float>(gasSize.y) / static_cast<float>(renders[rIndex].first.getSize().y));
-                box.setTexture(renders[rIndex++].first);
+                    static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
+                    static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                box.setTexture(rendersL[rIndex++].first);
                 frame.draw(box);
                 frame.draw(timeText);
                 frame.display();
@@ -673,19 +673,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               }
               frames.emplace_back(frame.getTexture());
             }
-          }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
-        } else if (renders.size()) {
-          assert(renders.back().second == gTime);
-          if (*fTime + gDeltaT < gTime ||
-              isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
+          }  // while (fTime_ + gDeltaTL < statsL.back().getTime())
+        } else if (rendersL.size()) {
+          assert(rendersL.back().second == gTimeL);
+          if (*fTime + gDeltaTL < gTimeL ||
+              isNegligible(*fTime + gDeltaTL - *gTimeL, gDeltaTL)) {
             for (size_t i{0}; i < 7; ++i) {
               TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
               graph->AddPoint(*fTime, -1.);
-              graph->AddPoint(*gTime, -1.);
+              graph->AddPoint(*gTimeL, -1.);
             }
 
             kBGraph.AddPoint(*fTime, -1.);
-            kBGraph.AddPoint(*gTime, -1.);
+            kBGraph.AddPoint(*gTimeL, -1.);
 
             frame.clear();
 
@@ -707,17 +707,17 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(TText);
             box.setPosition(static_cast<float>(windowSize.x) * 0.5f, 0.f);
             size_t rIndex{0};
-            while (*fTime + gDeltaT < gTime ||
-                   isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
-              *fTime += gDeltaT;
+            while (*fTime + gDeltaTL < gTimeL ||
+                   isNegligible(*fTime + gDeltaTL - *gTimeL, gDeltaTL)) {
+              *fTime += gDeltaTL;
               timeText.setString("time = " + round2(*fTime));
-              assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-              if (renders.size() > rIndex &&
-                  isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
+              assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+              if (rendersL.size() > rIndex &&
+                  isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
                 box.setScale(
-                    static_cast<float>(gasSize.x) / static_cast<float>(renders[rIndex].first.getSize().x),
-                    static_cast<float>(gasSize.y) / static_cast<float>(renders[rIndex].first.getSize().y));
-                box.setTexture(renders[rIndex++].first);
+                    static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
+                    static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                box.setTexture(rendersL[rIndex++].first);
                 frame.draw(box);
                 frame.draw(timeText);
                 frame.display();
@@ -732,31 +732,31 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               frames.emplace_back(frame.getTexture());
             }
           }
-        }  // else if renders.size()
-        renders.clear();
+        }  // else if rendersL.size()
+        rendersL.clear();
         break;
       }  // case scope end
     case VideoOpts::all: {  // case scope
-      if (renders.size()) {
-        assert(fTime < getRendersT0(renders) || isNegligible(*fTime - getRendersT0(renders), gDeltaT));
-        assert(gTime == renders.back().second);
+      if (rendersL.size()) {
+        assert(fTime < getRendersT0(rendersL) || isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
+        assert(gTimeL == rendersL.back().second);
       }
       timeText.setPosition(static_cast<float>(windowSize.x) * 0.26f, static_cast<float>(windowSize.y) * 0.01f);
       sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                            static_cast<unsigned>(windowSize.y * 0.9)};
-      if (stats.size()) {
+      if (statsL.size()) {
         auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
-        if (*fTime + gDeltaT < stats.front().getTime0()) {
+        if (*fTime + gDeltaTL < statsL.front().getTime0()) {
           for (size_t i{0}; i < 7; ++i) {
             TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
             graph->AddPoint(*fTime, -1.);
-            graph->AddPoint(stats.front().getTime0(), -1.);
+            graph->AddPoint(statsL.front().getTime0(), -1.);
           }
 
           mfpGraph.AddPoint(*fTime, -1.);
-          mfpGraph.AddPoint(stats.front().getTime0(), -1.);
+          mfpGraph.AddPoint(statsL.front().getTime0(), -1.);
           kBGraph.AddPoint(*fTime, -1.);
-          kBGraph.AddPoint(stats.front().getTime0(), -1.);
+          kBGraph.AddPoint(statsL.front().getTime0(), -1.);
           TH1D speedH{};
 
           frame.clear();
@@ -783,16 +783,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           // insert paired renders or placeholders
           box.setPosition(static_cast<float>(windowSize.x) * 0.25f, 0.f);
           size_t rIndex{0};
-          while (*fTime + gDeltaT < stats.front().getTime0()) {
-            *fTime += gDeltaT;
+          while (*fTime + gDeltaTL < statsL.front().getTime0()) {
+            *fTime += gDeltaTL;
             timeText.setString("time = " + round2(*fTime));
-            assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-            if (renders.size() > rIndex &&
-                isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
+            assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+            if (rendersL.size() > rIndex &&
+                isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
               box.setScale(
-                  static_cast<float>(gasSize.x) / static_cast<float>(renders[rIndex].first.getSize().x),
-                  static_cast<float>(gasSize.y) / static_cast<float>(renders[rIndex].first.getSize().y));
-              box.setTexture(renders[rIndex++].first);
+                  static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
+                  static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+              box.setTexture(rendersL[rIndex++].first);
               frame.draw(box);
               frame.draw(timeText);
               frame.display();
@@ -808,15 +808,15 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
         }
         size_t rIndex{0};
-        while (*fTime + gDeltaT < stats.back().getTime()) {
-          assert(*fTime + gDeltaT >= stats.front().getTime0());
-          auto s{std::upper_bound(stats.begin(), stats.end(), *fTime + gDeltaT,
-                                  [gDeltaT](double value, TdStats const& stat) {
+        while (*fTime + gDeltaTL < statsL.back().getTime()) {
+          assert(*fTime + gDeltaTL >= statsL.front().getTime0());
+          auto s{std::upper_bound(statsL.begin(), statsL.end(), *fTime + gDeltaTL,
+                                  [gDeltaTL](double value, TdStats const& stat) {
                                     return value < stat.getTime0();
                                   }) -
                  1};
-          assert(s >= stats.begin());
-          assert(s != stats.end());
+          assert(s >= statsL.begin());
+          assert(s != statsL.end());
           TdStats const& stat{*s};
           // make the graphs picture
           for (size_t k{0}; k < 7; ++k) {
@@ -866,16 +866,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           frame.draw(TText);
 
           box.setPosition(static_cast<float>(windowSize.x) * 0.25f, 0.f);
-          while (*fTime + gDeltaT < stat.getTime()) {
-            *fTime += gDeltaT;
+          while (*fTime + gDeltaTL < stat.getTime()) {
+            *fTime += gDeltaTL;
             timeText.setString("time = " + round2(*fTime));
-            assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-            if (renders.size() > rIndex &&
-                isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
+            assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+            if (rendersL.size() > rIndex &&
+                isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
               box.setScale(
-                  static_cast<float>(gasSize.x) / static_cast<float>(renders[rIndex].first.getSize().x),
-                  static_cast<float>(gasSize.y) / static_cast<float>(renders[rIndex].first.getSize().y));
-              box.setTexture(renders[(rIndex++)].first);
+                  static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
+                  static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+              box.setTexture(rendersL[(rIndex++)].first);
               frame.draw(box);
               frame.draw(timeText);
               frame.display();
@@ -889,18 +889,18 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             }
             frames.emplace_back(frame.getTexture());
           }
-        }  // while (fTime_ + gDeltaT_ < stats.back().getTime())
-      } else if (renders.size()) {
+        }  // while (fTime_ + gDeltaTL < statsL.back().getTime())
+      } else if (rendersL.size()) {
         for (size_t i{0}; i < 7; ++i) {
           TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
           graph->AddPoint(*fTime, -1.);
-          graph->AddPoint(*gTime, -1.);
+          graph->AddPoint(*gTimeL, -1.);
         }
 
         mfpGraph.AddPoint(*fTime, -1.);
-        mfpGraph.AddPoint(*gTime, -1.);
+        mfpGraph.AddPoint(*gTimeL, -1.);
         kBGraph.AddPoint(*fTime, -1.);
-        kBGraph.AddPoint(*gTime, -1.);
+        kBGraph.AddPoint(*gTimeL, -1.);
         TH1D speedH{};
 
         frame.clear();
@@ -926,16 +926,16 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
         box.setPosition(static_cast<float>(windowSize.x) * 0.25f, 0.f);
         size_t rIndex{0};
-        while (*fTime + gDeltaT < gTime ||
-               isNegligible(*fTime + gDeltaT - *gTime, gDeltaT)) {
-          *fTime += gDeltaT;
+        while (*fTime + gDeltaTL < gTimeL ||
+               isNegligible(*fTime + gDeltaTL - *gTimeL, gDeltaTL)) {
+          *fTime += gDeltaTL;
           timeText.setString("time = " + round2(*fTime));
-          assert(isIntMultOf(*gTime - *fTime, gDeltaT));
-          if (renders.size() > rIndex &&
-              isNegligible(*fTime - renders[rIndex].second, gDeltaT)) {
-            box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(renders[rIndex].first.getSize().x),
-                         static_cast<float>(gasSize.y) / static_cast<float>(renders[rIndex].first.getSize().y));
-            box.setTexture(renders[rIndex++].first);
+          assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
+          if (rendersL.size() > rIndex &&
+              isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
+            box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
+                         static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+            box.setTexture(rendersL[rIndex++].first);
             frame.draw(box);
             frame.draw(timeText);
             frame.display();
@@ -950,7 +950,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           frames.emplace_back(frame.getTexture());
         }
       }  // else if renders.size()
-      renders.clear();
+      rendersL.clear();
       break;
     }  // case scope end
     default:

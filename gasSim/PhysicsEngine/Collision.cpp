@@ -4,7 +4,7 @@
 
 namespace GS {
 
-Collision::Collision(double time, Particle* p1) : p1{p1}, time{time} {
+Collision::Collision(double timeV, Particle* p1p) : p1{p1p}, time{timeV} {
   if (time < 0.) {
     throw std::invalid_argument(
         "Collision constructor error: provided negative time");
@@ -13,8 +13,8 @@ Collision::Collision(double time, Particle* p1) : p1{p1}, time{time} {
 
 Collision::~Collision() = default;
 
-PWCollision::PWCollision(double time, Particle* p1, Wall wall)
-    : Collision(time, p1), wall{wall} {}
+PWCollision::PWCollision(double timeV, Particle* p1p, Wall wallV)
+    : Collision(timeV, p1p), wall{wallV} {}
 
 void PWCollision::solve() {
   Particle* p{getP1()};
@@ -37,17 +37,17 @@ void PWCollision::solve() {
   }
 }
 
-PPCollision::PPCollision(double time, Particle* p1, Particle* p2)
-    : Collision(time, p1), p2{p2} {}
+PPCollision::PPCollision(double timeV, Particle* p1p, Particle* p2p)
+    : Collision(timeV, p1p), p2{p2p} {}
 
 void PPCollision::solve() {
-  Particle* p1{getP1()};
-  GSVectorD d{p1->position - p2->position};
+  Particle* p1p{getP1()};
+  GSVectorD d{p1p->position - p2->position};
   d.normalize();
-  GSVectorD v{p1->speed - p2->speed};
+  GSVectorD v{p1p->speed - p2->speed};
   double proj = d * v;
 
-  p1->speed -= d * proj;
+  p1p->speed -= d * proj;
   p2->speed += d * proj;
 }
 

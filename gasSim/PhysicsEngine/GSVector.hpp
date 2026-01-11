@@ -12,7 +12,7 @@ struct GSVector {  // a three-dimensional vector
   FP x{0.}, y{0.}, z{0.};
 
   GSVector() = default;
-  GSVector(FP x, FP y, FP z) : x{x}, y{y}, z{z} {}
+  GSVector(FP xV, FP yV, FP zV) : x{xV}, y{yV}, z{zV} {}
 
   template <typename FP1>
   explicit GSVector(GSVector<FP1> const& v)
