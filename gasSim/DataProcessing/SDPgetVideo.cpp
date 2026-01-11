@@ -37,10 +37,10 @@ void RGBA32toRGBA8(UInt_t const* rgbaBffr, size_t w, size_t h,
     UInt_t rgba = rgbaBffr[idx];
     size_t base = idx * 4;
 
-    pixels[base + 0] = (rgba >> 24) & 0xFF;  // R
-    pixels[base + 1] = (rgba >> 16) & 0xFF;  // G
-    pixels[base + 2] = (rgba >> 8) & 0xFF;   // B
-    pixels[base + 3] = (rgba >> 0) & 0xFF;   // A
+    pixels[base + 0] = static_cast<sf::Uint8>((rgba >> 24) & 0xFF);  // R
+    pixels[base + 1] = static_cast<sf::Uint8>((rgba >> 16) & 0xFF);  // G
+    pixels[base + 2] = static_cast<sf::Uint8>((rgba >> 8) & 0xFF);   // B
+    pixels[base + 3] = static_cast<sf::Uint8>((rgba >> 0) & 0xFF);   // A
   }
 }
 // chatGPT written code ends here
