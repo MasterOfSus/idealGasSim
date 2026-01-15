@@ -1,9 +1,5 @@
 # idealGasSim
 
-This project is on the verge of abandonment, the multithreading is horribly cursed and likely unrecoverable, but hey the rest seems to work. It's quite slow as well, only goes up to ~1000 particles before becoming impossibly slow, no matter the setting (1 fps).
-Sillyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy. BLEP!!!!
-
-![hopefully this silly car image is still available](https://static.wikia.nocookie.net/silly-cat/images/5/59/Milly.png/revision/latest?cb=20231001194804)
 
 **idealGasSim** is a rudimentary ideal‑gas simulator implementing an event‑based three‑dimensional system of freely moving identical particles inside a cubic container. The project includes visualization, data processing, and a fully configurable workflow.
 
@@ -42,19 +38,18 @@ Developed and tested with:
 3. Update the target_link_libraries() field in `CMakeLists.txt` to match the multithreading facilities provided by your environment. (the project was developed on an intel machine, amd machines might differ)
 3. Configure and build using CMake from the project root:
 
-for a debug build:
 ```
-cmake -B <debug-dir> -DCMAKE_BUILD_TYPE=Debug
+cmake -S . -B build -G"Ninja Multi-Config"
 ```
-for a release build:
+then, depending on the desired build type (Debug or Release): 
 ```
-cmake -B <build-dir> -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config ^desired build type^
 ```
-then, from the desired directory: 
+Unit tests are executed by appending --target test, as follows:
 ```
-cmake --build .
+cmake --build build --config ^desired build type^ --target test
 ```
-The resulting binaries will appear in the current directory.
+The main binaries can be found in build/^desired build type^
 
 ## Running the Main Binary
 
@@ -67,16 +62,17 @@ Graph appearance and parameter settings are controlled via an input macro whose 
 Run the main binary from the project root. Example: the official demo can be executed with
 
 ```bash
-./build/idealGasSim -t -c configs/gasSim_demo.ini
+./build/idealGasSim -c configs/gasSim_demo.ini
 ```
 
 The demo configuration file serves as a reference for most available runtime parameters.
 
-## Testing
+## Additional "tests" and manual tests execution
+The proper unit tests are provided in the same build directory as the main executable, but they rely on the execution environment to provide an `assets` folder equal to that found in the unitTesting directory, it is best to execute them from the unitTesting directory itself.
 
-Tests are provided in the `gasSimTests` binary inside the `<debug-dir>` directory.
-Make sure to copy the `assets` folder inside from the unitTesting directory into the `<debug-dir>` directory.
-They are intended to be run from within that directory.
+Additional demos for the getVideo method are provided in the `unitTests/getVideoTest.t` binary.
+The binary provides parameters validation and function call safety checks, along two different demos and a stress test for the thread safety.
+The `getVideoTest.t` binary depends on the `assets` directory in the same way as the unit tests.
 
 * Demos can be replayed but not re-executed on a single run of the testing binary
 * The stress test can be repeated indefinitely
@@ -92,3 +88,6 @@ Thanks to Giulia for providing photos of Jesse, the silly car used as the defaul
 
 Finally, some overdue thanks to Diego Quarantani, Niccolò Poli, and Tomaso Tamburini for their essential work on the project, their support throughout its development, their patience in enduring the effects on their life caused by my obsession with it, but most importantly for becoming good friends.
 Thank you.
+
+## BLEP!!!!
+![hopefully this silly car image is still available](https://static.wikia.nocookie.net/silly-cat/images/5/59/Milly.png/revision/latest?cb=20231001194804)
