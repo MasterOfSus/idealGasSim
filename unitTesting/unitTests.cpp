@@ -1,25 +1,30 @@
-#include <TFile.h>
-#include <TGraph.h>
-#include <TMultiGraph.h>
-
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <cmath>
-#include <vector>
-
-#include "SFML/Graphics.hpp"
+#include "DataProcessing/GasData.hpp"          // for GasData
+#include "DataProcessing/SimDataPipeline.hpp"  // for SimDataPipeline
+#include "DataProcessing/TdStats.hpp"          // for TdStats
+#include "Graphics/Camera.hpp"                 // for Camera
+#include "Graphics/RenderStyle.hpp"            // for RenderStyle
+#include "PhysicsEngine/Collision.hpp"         // for PPCollision, PWCollision
+#include "PhysicsEngine/GSVector.hpp"          // for GSVector, operator==
+#include "PhysicsEngine/Gas.hpp"               // for Gas
+#include "PhysicsEngine/Particle.hpp"          // for Particle, energy, oper...
 #include "testingAddons.hpp"
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Color.hpp>             // for Color, operator==
 
-#include "../gasSim/Graphics.hpp"
+#include <TH1.h>
+
+#include <cmath>
+#include <vector>
+#include <stddef.h>                            // for size_t
+#include <algorithm>                           // for max
+#include <string>                              // for basic_string
+#include <utility>                             // for move
+#include <atomic>                              // for atomic
+#include <numeric>                             // for accumulate
+
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-// #include "input.hpp"
-#include "../gasSim/DataProcessing.hpp"
-#include "../gasSim/Input.hpp"
-#include "../gasSim/PhysicsEngine.hpp"
 
 // setting particle mass and radius
 std::atomic<double> GS::Particle::mass = 10.;

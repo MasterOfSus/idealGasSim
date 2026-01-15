@@ -10,7 +10,7 @@ double maxwellian(Double_t* x, Double_t* pars) {
 	static double xV;
 	xV = *x;
 	return 4 * xV * xV * pars[1] * 
-		sqrt(std::pow(pars[2]/2./pars[0], 3)/M_PI) *
+		std::sqrt(std::pow(pars[2]/2./pars[0], 3)/M_PI) *
 		std::pow(M_E, - pars[2] * xV * xV/2./pars[0]);
 }
 

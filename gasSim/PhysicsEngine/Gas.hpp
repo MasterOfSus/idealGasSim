@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <functional>
+#include <stddef.h>
 
 #include "Collision.hpp"
 #include "Particle.hpp"
@@ -16,6 +17,7 @@ class Gas {
 
   Gas() : particles{}, boxSide{1.}, time{0.} {}
   Gas(std::vector<Particle>&& particles, double boxSide, double time = 0.);
+
   // parametric constructor with particles distributed
   // in a cubical lattice filling 95% of the box's dimensions and
   // uniform distribution for speed norm and direction

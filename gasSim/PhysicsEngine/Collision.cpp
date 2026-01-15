@@ -1,5 +1,8 @@
 #include "Collision.hpp"
 
+#include "PhysicsEngine/GSVector.hpp"
+#include "PhysicsEngine/Particle.hpp"
+
 #include <stdexcept>
 
 namespace GS {

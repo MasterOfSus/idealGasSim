@@ -1,25 +1,54 @@
-#include <RtypesCore.h>
-#include <TCanvas.h>
-#include <TGraph.h>
-#include <TImage.h>
-#include <TMultiGraph.h>
+#include "SimDataPipeline.hpp"
 
-#include <SFML/Graphics/Image.hpp>
+#include "DataProcessing/TdStats.hpp"
+
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Window/Context.hpp>
+#include <SFML/Config.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/System/String.hpp>
+#include <SFML/System/Vector2.hpp>
+
+#include <TH1.h>
+#include <RtypesCore.h>
+#include <TCanvas.h>
+#include <TGraph.h>
+#include <TImage.h>
+#include <TMultiGraph.h>
+
 #include <iomanip>
 #include <sstream>
+#include <TList.h>
+#include <TObject.h>
+#include <assert.h>
+#include <bits/chrono.h>
+#include <stddef.h>
+#include <algorithm>
+#include <array>
+#include <atomic>
+#include <cmath>
+#include <condition_variable>
+#include <deque>
+#include <functional>
+#include <iterator>
+#include <mutex>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "SimDataPipeline.hpp"
-
-// Hi, my name's Liam, I was the person who wrote this,
+// Hi, my name's Liam, I am the person who wrote this,
 // I just wanted to say that I'm sorry for everything
 
 namespace GS {
+
+enum class Wall;
 
 bool isNegligible(double epsilon, double x);  // implemented in TdStats.cpp
 
@@ -811,7 +840,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         while (*fTime + gDeltaTL < statsL.back().getTime()) {
           assert(*fTime + gDeltaTL >= statsL.front().getTime0());
           auto s{std::upper_bound(statsL.begin(), statsL.end(), *fTime + gDeltaTL,
-                                  [gDeltaTL](double value, TdStats const& stat) {
+                                  [](double value, TdStats const& stat) {
                                     return value < stat.getTime0();
                                   }) -
                  1};

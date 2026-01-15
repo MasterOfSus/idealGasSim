@@ -1,11 +1,9 @@
-#include <chrono>
-#include <iostream>
-#include <memory>
-#include <random>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <thread>
+#include "DataProcessing/SimDataPipeline.hpp"
+#include "Graphics/Camera.hpp"
+#include "Graphics/RenderStyle.hpp"
+#include "PhysicsEngine/GSVector.hpp"
+#include "PhysicsEngine/Gas.hpp"
+#include "PhysicsEngine/Particle.hpp"
 
 #include "gasSim/Libs/cxxopts.hpp"
 #include "gasSim/Libs/INIReader.h"
@@ -14,9 +12,12 @@
 #include <TF1.h>
 #include <TFile.h>
 #include <TGraph.h>
-#include <TLegend.h>
 #include <TLine.h>
 #include <TMultiGraph.h>
+#include <TAxis.h>
+#include <TH1.h>
+#include <TList.h>
+#include <TObject.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Color.hpp>
@@ -25,8 +26,30 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowStyle.hpp>
 
-#include "gasSim/DataProcessing.hpp"
+#include <bits/chrono.h>
+#include <stdio.h>
+#include <array>
+#include <atomic>
+#include <cmath>
+#include <exception>
+#include <functional>
+#include <iterator>
+#include <mutex>
+#include <numeric>
+#include <utility>
+#include <vector>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <algorithm>
+#include <thread>
 
 std::atomic<double> GS::Particle::radius{1.};
 std::atomic<double> GS::Particle::mass{1.};
@@ -371,7 +394,7 @@ int main(int argc, const char* argv[]) {
               meanLine->SetY2(maxwellF->Eval(meanLine->GetX1()));
               double rms{speedsH.GetRMS()};
               meanSqLine->SetX1(
-                  sqrt(rms * rms + meanLine->GetX1() * meanLine->GetX1()));
+                  std::sqrt(rms * rms + meanLine->GetX1() * meanLine->GetX1()));
               meanSqLine->SetY1(0.);
               meanSqLine->SetX2(meanSqLine->GetX1());
               meanSqLine->SetY2(maxwellF->Eval(meanSqLine->GetX1()));
@@ -447,7 +470,7 @@ int main(int argc, const char* argv[]) {
                 << std::endl;
     }
 
-    if (cFile.GetBoolean("output", "saveVideo", "false")) {
+    if (cFile.GetBoolean("output", "saveVideo", false)) {
       {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Starting video encoding." << std::endl;

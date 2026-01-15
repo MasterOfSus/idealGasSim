@@ -1,15 +1,20 @@
 #include "TdStats.hpp"
 
+#include "DataProcessing/GasData.hpp"
+#include "PhysicsEngine/Collision.hpp"
+#include "PhysicsEngine/Particle.hpp"
+
 #include <limits>
 #include <stdexcept>
 #include <algorithm>
 #include <numeric>
 #include <cassert>
-
-// Auxiliary addPulse private function, assumes solved collision for input
+#include <vector>
+#include <utility>
 
 namespace GS {
 
+// Auxiliary addPulse private function, assumes solved collision for input
 void TdStats::addPulse(GasData const& data) {
   assert(data.getCollType() == 'w');
   switch (data.getWall()) {
@@ -37,7 +42,6 @@ void TdStats::addPulse(GasData const& data) {
 }
 
 // Constructors
-
 TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
     : wallPulses{},
       lastCollPositions(std::vector<GSVectorD>(firstState.getParticles().size(),
@@ -72,7 +76,7 @@ TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
 }
 
 bool isNegligible(double epsilon, double x) {
-  return fabs(epsilon / x) < 1E-6;
+  return std::fabs(epsilon / x) < 1E-6;
 }
 
 TdStats::TdStats(GasData const& data, TdStats&& prevStats)
@@ -252,8 +256,8 @@ TdStats::TdStats(TdStats&& s) noexcept
   s.lastCollPositions.clear();
   s.T = 0.;
   s.freePaths.clear();
-  s.t0 = NAN;
-  s.time = NAN;
+  s.t0 = std::numeric_limits<double>::quiet_NaN();
+  s.time = std::numeric_limits<double>::quiet_NaN();
 }
 
 TdStats& TdStats::operator=(TdStats const& s) {

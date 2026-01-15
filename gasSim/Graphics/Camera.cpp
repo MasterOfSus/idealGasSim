@@ -1,14 +1,29 @@
 #include "Camera.hpp"
+#include "DataProcessing/GasData.hpp"
+#include "Graphics/RenderStyle.hpp"
+#include "PhysicsEngine/Collision.hpp"
+#include "PhysicsEngine/GSVector.hpp"
+#include "PhysicsEngine/Gas.hpp"
+#include "PhysicsEngine/Particle.hpp"
 
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Vertex.hpp>
+#include <SFML/System/Vector2.hpp>
+
+#include <bits/std_abs.h>
+#include <stddef.h>
+#include <string.h>
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <execution>
 #include <stdexcept>
-
-#include "../DataProcessing/GasData.hpp"
 
 namespace GS {
 
@@ -71,7 +86,7 @@ Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVectorV,
 
 float Camera::getTopSide() const {
   return 2.f * getPlaneDistance() * tanf(getFOV() * (M_PIf / 180.f) / 2.f);
-};
+}
 
 float Camera::getPixelSide() const { return getTopSide() / static_cast<float>(getWidth()); }
 

@@ -1,2 +1,117 @@
-[1/2] Building CXX object CMakeFiles/idealGasSim.dir/Debug/main.cpp.o
-[2/2] Linking CXX executable Debug/idealGasSim
+
+/home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp should add these lines:
+#include <SFML/System/Vector2.inl>             // for Vector2::Vector2<T>
+
+/home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp should remove these lines:
+
+The full include-list for /home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp:
+#include <TFile.h>                             // for TFile
+#include <TGraph.h>                            // for TGraph
+#include <TH1.h>                               // for TH1D
+#include <TList.h>                             // for TList
+#include <TMultiGraph.h>                       // for TMultiGraph
+#include <TObject.h>                           // for TObject
+#include <bits/chrono.h>                       // for seconds
+#include <SFML/Graphics/Font.hpp>              // for Font
+#include <SFML/Graphics/RenderWindow.hpp>      // for RenderWindow
+#include <SFML/Graphics/Sprite.hpp>            // for Sprite
+#include <SFML/Graphics/Texture.hpp>           // for Texture
+#include <SFML/System/Vector2.inl>             // for Vector2::Vector2<T>
+#include <SFML/Window/Event.hpp>               // for Event
+#include <SFML/Window/VideoMode.hpp>           // for VideoMode
+#include <atomic>                              // for atomic
+#include <functional>                          // for function
+#include <iostream>                            // for basic_ostream, operator<<
+#include <mutex>                               // for mutex, lock_guard
+#include <random>                              // for uniform_int_distribution
+#include <stdexcept>                           // for runtime_error
+#include <string>                              // for char_traits, allocator
+#include <thread>                              // for thread, sleep_for
+#include <vector>                              // for vector
+#include "DataProcessing/SimDataPipeline.hpp"  // for SimDataPipeline, Video...
+#include "Graphics/Camera.hpp"                 // for Camera
+#include "Graphics/RenderStyle.hpp"            // for RenderStyle
+#include "PhysicsEngine/Gas.hpp"               // for Gas
+#include "PhysicsEngine/Particle.hpp"          // for Particle
+#include "doctest.h"                           // for ResultBuilder, CHECK_T...
+#include "testingAddons.hpp"                   // for randomThreadsMgr
+---
+
+
+/home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp should add these lines:
+#include <SFML/System/Vector2.inl>             // for Vector2::Vector2<T>
+
+/home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp should remove these lines:
+
+The full include-list for /home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp:
+#include <TFile.h>                             // for TFile
+#include <TGraph.h>                            // for TGraph
+#include <TH1.h>                               // for TH1D
+#include <TList.h>                             // for TList
+#include <TMultiGraph.h>                       // for TMultiGraph
+#include <TObject.h>                           // for TObject
+#include <bits/chrono.h>                       // for seconds
+#include <SFML/Graphics/Font.hpp>              // for Font
+#include <SFML/Graphics/RenderWindow.hpp>      // for RenderWindow
+#include <SFML/Graphics/Sprite.hpp>            // for Sprite
+#include <SFML/Graphics/Texture.hpp>           // for Texture
+#include <SFML/System/Vector2.inl>             // for Vector2::Vector2<T>
+#include <SFML/Window/Event.hpp>               // for Event
+#include <SFML/Window/VideoMode.hpp>           // for VideoMode
+#include <atomic>                              // for atomic
+#include <functional>                          // for function
+#include <iostream>                            // for basic_ostream, operator<<
+#include <mutex>                               // for mutex, lock_guard
+#include <random>                              // for uniform_int_distribution
+#include <stdexcept>                           // for runtime_error
+#include <string>                              // for char_traits, allocator
+#include <thread>                              // for thread, sleep_for
+#include <vector>                              // for vector
+#include "DataProcessing/SimDataPipeline.hpp"  // for SimDataPipeline, Video...
+#include "Graphics/Camera.hpp"                 // for Camera
+#include "Graphics/RenderStyle.hpp"            // for RenderStyle
+#include "PhysicsEngine/Gas.hpp"               // for Gas
+#include "PhysicsEngine/Particle.hpp"          // for Particle
+#include "doctest.h"                           // for ResultBuilder, CHECK_T...
+#include "testingAddons.hpp"                   // for randomThreadsMgr
+---
+
+
+/home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp should add these lines:
+#include <SFML/System/Vector2.inl>             // for Vector2::Vector2<T>
+
+/home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp should remove these lines:
+
+The full include-list for /home/mogus/cppProjects/idealGasSimShit/idealGasSim/unitTesting/getVideoTest.cpp:
+#include <TFile.h>                             // for TFile
+#include <TGraph.h>                            // for TGraph
+#include <TH1.h>                               // for TH1D
+#include <TList.h>                             // for TList
+#include <TMultiGraph.h>                       // for TMultiGraph
+#include <TObject.h>                           // for TObject
+#include <bits/chrono.h>                       // for seconds
+#include <SFML/Graphics/Font.hpp>              // for Font
+#include <SFML/Graphics/RenderWindow.hpp>      // for RenderWindow
+#include <SFML/Graphics/Sprite.hpp>            // for Sprite
+#include <SFML/Graphics/Texture.hpp>           // for Texture
+#include <SFML/System/Vector2.inl>             // for Vector2::Vector2<T>
+#include <SFML/Window/Event.hpp>               // for Event
+#include <SFML/Window/VideoMode.hpp>           // for VideoMode
+#include <atomic>                              // for atomic
+#include <functional>                          // for function
+#include <iostream>                            // for basic_ostream, operator<<
+#include <mutex>                               // for mutex, lock_guard
+#include <random>                              // for uniform_int_distribution
+#include <stdexcept>                           // for runtime_error
+#include <string>                              // for char_traits, allocator
+#include <thread>                              // for thread, sleep_for
+#include <vector>                              // for vector
+#include "DataProcessing/SimDataPipeline.hpp"  // for SimDataPipeline, Video...
+#include "Graphics/Camera.hpp"                 // for Camera
+#include "Graphics/RenderStyle.hpp"            // for RenderStyle
+#include "PhysicsEngine/Gas.hpp"               // for Gas
+#include "PhysicsEngine/Particle.hpp"          // for Particle
+#include "doctest.h"                           // for ResultBuilder, CHECK_T...
+#include "testingAddons.hpp"                   // for randomThreadsMgr
+---
+

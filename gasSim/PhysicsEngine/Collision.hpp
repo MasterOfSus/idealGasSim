@@ -1,22 +1,23 @@
 #ifndef COLLISION_HPP
 #define COLLISION_HPP
 
-#include "Particle.hpp"
-
 namespace GS {
+
+struct Particle;
 
 enum class Wall { Front, Back, Left, Right, Top, Bottom, VOID };
 
 struct Collision {
  public:
+  Collision(double time, Particle* p);
+	
+	Particle* getP1() { return p1; }
+	Particle const* getP1() const { return p1; }
   double getTime() const { return time; }
+
   virtual char getType() const = 0;
   virtual void solve() = 0;
-  Collision(double time, Particle* p);
-
-  Particle* getP1() { return p1; }
-	Particle const* getP1() const { return p1; }
-
+  
  private:
   Particle* p1;
   double time;
@@ -24,11 +25,11 @@ struct Collision {
 
 struct PWCollision final : public Collision {
  public:
+  PWCollision(double time, Particle* p1, Wall wall);
+
   Wall getWall() const { return wall; }
   char getType() const override { return 'w'; }
   void solve() override;
-
-  PWCollision(double time, Particle* p1, Wall wall);
 
  private:
   Wall wall;
@@ -36,11 +37,11 @@ struct PWCollision final : public Collision {
 
 struct PPCollision final : public Collision {
  public:
+  PPCollision(double time, Particle* p1, Particle* p2);
+
   Particle* getP2() const { return p2; }
   char getType() const override { return 'p'; }
   void solve() override;
-
-  PPCollision(double time, Particle* p1, Particle* p2);
 
  private:
   Particle* p2;

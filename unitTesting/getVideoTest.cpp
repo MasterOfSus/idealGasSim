@@ -1,28 +1,38 @@
+#include "DataProcessing/SimDataPipeline.hpp"
+#include "Graphics/Camera.hpp"
+#include "Graphics/RenderStyle.hpp"
+#include "PhysicsEngine/Gas.hpp"
+#include "PhysicsEngine/Particle.hpp"
+#include "testingAddons.hpp"
+
 #include <TFile.h>
 #include <TGraph.h>
 #include <TMultiGraph.h>
-#include <random>
+#include <TH1.h>
+#include <TList.h>
+#include <TObject.h>
 
 #include <SFML/Graphics/Texture.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
-#include <cmath>
-#include <vector>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Window/Event.hpp>
 
-#include "SFML/Graphics.hpp"
+#include <vector>
+#include <random>
+#include <thread>
+#include <bits/chrono.h>
+#include <atomic>
+#include <functional>
+#include <iostream>
+#include <mutex>
+#include <stdexcept>
+#include <string>
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
-#include "../gasSim/Graphics.hpp"
 #include "doctest.h"
-// #include "input.hpp"
-#include "../gasSim/DataProcessing.hpp"
-#include <thread>
-
-#include "../gasSim/Input.hpp"
-#include "../gasSim/PhysicsEngine.hpp"
-#include "testingAddons.hpp"
 
 std::atomic<double> GS::Particle::mass = 10.;
 std::atomic<double> GS::Particle::radius = 1.;

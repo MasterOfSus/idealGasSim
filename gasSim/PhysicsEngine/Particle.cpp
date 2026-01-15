@@ -1,5 +1,7 @@
 #include "Particle.hpp"
 
+#include "PhysicsEngine/GSVector.hpp"
+
 namespace GS {
 
 bool operator==(Particle const& p1, Particle const& p2) {

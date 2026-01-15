@@ -1,11 +1,22 @@
 #include "Gas.hpp"
 
+#include <vector>
+#include <functional>
 #include <algorithm>
 #include <cassert>
 #include <random>
 #include <stdexcept>
 #include <thread>
+#include <cmath>
+#include <cstddef>
+#include <iterator>
+#include <mutex>
+#include <numeric> 
+#include <utility>
 
+#include "DataProcessing/GasData.hpp"
+#include "PhysicsEngine/Collision.hpp"
+#include "PhysicsEngine/Particle.hpp"
 #include "../DataProcessing/SimDataPipeline.hpp"
 #include "GSVector.hpp"
 
@@ -74,7 +85,7 @@ auto unifRandVec{[](double maxNorm) {
   theta = baseDist(eng) * 2. * M_PI;
   phi = -M_PI / 2. + baseDist(eng) * M_PI;
   rho = baseDist(eng) * maxNorm;
-  return GSVectorD({rho * cos(phi) * cos(theta), rho * cos(phi) * sin(theta),
+  return GSVectorD({rho * std::cos(phi) * std::cos(theta), rho * std::cos(phi) * sin(theta),
                     rho * sin(phi)});
 }};
 
@@ -111,7 +122,7 @@ Gas::Gas(size_t particlesN, double temperature, double boxSideV, double timeV)
       }
     }
 
-    double maxSpeed = sqrt(30. / M_PI * temperature / Particle::getMass());
+    double maxSpeed = std::sqrt(30. * temperature / (M_PI * Particle::getMass()));
 
     auto latticePosition = [=](size_t i) {
       // compute integer lattice coordinate
@@ -152,9 +163,9 @@ Gas::Gas(size_t particlesN, double temperature, double boxSideV, double timeV)
     }
     particles.emplace_back(
         Particle({latticePosition(particlesN - 1),
-                  direction * sqrt(2. * missingEnergy / Particle::getMass())}));
+                  direction * std::sqrt(2. * missingEnergy / Particle::getMass())}));
   } else {
-    if (temperature) {
+    if (static_cast<bool>(temperature)) {
       throw std::invalid_argument(
           "Gas constructor error: asked to reach a temperature with zero "
           "particles");
@@ -232,16 +243,6 @@ double collisionTime(Particle const& p1, Particle const& p2) {
 }
 
 // triangular indexing function for set of n elements
-/*
-auto trIndex(size_t i, size_t nEls) {
-  size_t rowIndex{
-      nEls - 2 -
-      static_cast<size_t>(std::floor(
-          std::sqrt(-8. * static_cast<double>(i) + 4. * static_cast<double>(nEls * (nEls - 1) - 7)) / 2. - 0.5))};
-  size_t colIndex{i + rowIndex + 1 - nEls * (nEls - 1) / 2 +
-                  (nEls - rowIndex) * ((nEls - rowIndex) - 1) / 2};
-  return std::pair<size_t, size_t>(rowIndex, colIndex);
-}*/
 
 auto trIndex(std::size_t i, std::size_t nEls)
 {
@@ -289,7 +290,6 @@ PPCollision Gas::firstPPColl() {
   size_t checksPerThread{nChecks / nThreads};
   size_t extraChecks{nChecks % nThreads};
 
-	std::mutex particlesMtx;
   std::vector<std::thread> threads {};
 	threads.reserve(nThreads);
 	std::mutex bestCollsMtx;

@@ -1,5 +1,7 @@
 .vscode
 
+.gitignore
+iwyu_tool.py
 mainSketch
 bDebug
 bRelease

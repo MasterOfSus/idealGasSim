@@ -2,10 +2,19 @@
 #define CAMERAHPP
 
 #include "RenderStyle.hpp"
+#include "../PhysicsEngine/GSVector.hpp"
+
+#include <vector>
+
+namespace sf {
+	class RenderTexture;
+}
 
 namespace GS {
 
 class GasData;
+class Gas;
+struct Particle;
 
 class Camera {
  public:
@@ -31,17 +40,16 @@ class Camera {
   float getFOV() const { return fov; }
   unsigned getHeight() const { return height; }
   unsigned getWidth() const { return width; }
+  // auxiliary member functions
+  float getTopSide() const;
+  float getPixelSide() const;
+  float getNPixels(float length) const;
 
   GSVectorF getPointProjection(GSVectorF const& point) const;
   std::vector<GSVectorF> projectParticles(
       std::vector<Particle> const& particles, double deltaT = 0.) const;
   std::vector<GSVectorF> projectParticles(GasData const& data,
                                           double deltaT) const;
-
-  // auxiliary member functions
-  float getTopSide() const;
-  float getPixelSide() const;
-  float getNPixels(float length) const;
 
  private:
   GSVectorF focusPoint;

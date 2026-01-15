@@ -1,19 +1,32 @@
 #ifndef SIMDATAPIPELINE_HPP
 #define SIMDATAPIPELINE_HPP
 
+#include "DataProcessing/GasData.hpp"
+#include "Graphics/RenderStyle.hpp"
+#include "TdStats.hpp"
+
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <atomic>
+#include <SFML/System/Vector2.hpp>
+
+#include <TH1.h>
+
+#include <stddef.h>
+#include <array>
+#include <utility>
+#include <vector>
 #include <condition_variable>
 #include <deque>
 #include <functional>
 #include <mutex>
 #include <optional>
+#include <atomic>
 
-#include "../Graphics.hpp"
-#include "TdStats.hpp"
+class TList;
 
 namespace GS {
+
+class Camera;
 
 enum class VideoOpts { justGas, justStats, gasPlusCoords, all };
 

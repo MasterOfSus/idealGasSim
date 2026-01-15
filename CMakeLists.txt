@@ -47,7 +47,6 @@ add_library(gasSimLib SHARED
     gasSim/DataProcessing/TdStats.cpp 
     gasSim/DataProcessing/SimDataPipeline.cpp
     gasSim/DataProcessing/SDPgetVideo.cpp
-    gasSim/Input/Input.cpp
 )
 target_sources(gasSimLib PUBLIC
     FILE_SET HEADERS
@@ -62,7 +61,6 @@ target_sources(gasSimLib PUBLIC
         gasSim/DataProcessing/GasData.hpp 
         gasSim/DataProcessing/TdStats.hpp 
         gasSim/DataProcessing/SimDataPipeline.hpp
-        gasSim/Input/Input.hpp
 )
 target_include_directories(
 	gasSimLib SYSTEM PUBLIC ${ROOT_INCLUDE_DIRS} gasSim/Libs

@@ -1,10 +1,15 @@
 #ifndef TESTINGADDONS_HPP
 #define TESTINGADDONS_HPP
+
 #include <thread>
 #include <functional>
-#include "../gasSim/PhysicsEngine.hpp"
+#include <stddef.h>
+#include <atomic>
+#include <vector>
 
 namespace GS {
+	struct Particle;
+
 	double collisionTime(Particle const& p1, Particle const& p2);
 
 	struct randomThreadsMgr {

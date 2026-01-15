@@ -1,9 +1,16 @@
 #ifndef GASDATA_HPP
 #define GASDATA_HPP
 
-#include "../PhysicsEngine.hpp"
+#include "PhysicsEngine/Collision.hpp"  // for Wall, Collision (ptr only)
+#include "PhysicsEngine/Particle.hpp"   // for Particle
+
+#include <stddef.h>                     // for size_t
+#include <vector>                       // for vector
 
 namespace GS {
+
+class Gas;
+
 class GasData {
  public:
   GasData(Gas const& gas, Collision const* collision);

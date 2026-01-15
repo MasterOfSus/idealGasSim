@@ -2,13 +2,18 @@
 #define RENDERSTYLE_HPP
 
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Color.hpp>
 
-#include "../PhysicsEngine.hpp"
+#include <string>
 
 namespace GS {
 
 class RenderStyle {
  public:
+
+  RenderStyle(sf::Texture const& texture) : partTexture(texture) {}
+  RenderStyle() = delete;
+
   std::string const& getWallsOpts() const { return wallsOpts; }
   void setWallsOpts(std::string const& opts);
   sf::Color getWallsColor() const { return wallsColor; }
@@ -21,10 +26,6 @@ class RenderStyle {
 
   sf::Color getBGColor() const { return background; }
   void setBGColor(sf::Color color) { background = color; }
-
-  RenderStyle(sf::Texture const& texture) : partTexture(texture) {}
-
-  RenderStyle() = delete;
 
  private:
   std::string wallsOpts{"udlrfb"};  // up, down, left, right, front, back
