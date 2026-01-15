@@ -563,60 +563,64 @@ int main(int argc, const char* argv[]) {
         if (!stop.load()) {
           pauseBufferLoop.store(true);
           std::lock_guard<std::mutex> windowGuard{windowMtx};
-          while (window.pollEvent(e)) {
-            if (e.type == sf::Event::Closed) {
-              stop.store(true);
-              bufferKillSignal.store(true);
-              pauseBufferLoop.store(true);
-              window.close();
-              break;
-            }
-          }
-          window.setActive();
-          auto lastDrawEnd{std::chrono::high_resolution_clock::now()};
-          float frameTimeS{static_cast<float>(frameTimems / 1000.)};
-          std::chrono::duration<float> lastFrameDrawTime{};
-          int i{0};
-          for (const sf::Texture& r : *rPtr) {
-            if (window.isOpen()) {
-              if (!framesToDrop.load()) {
-                lastFrameDrawTime =
-                    std::chrono::high_resolution_clock::now() - lastDrawEnd;
-                if (lastFrameDrawTime.count() <= frameTimeS) {
-                  auxS.setTexture(r);
-                  window.draw(auxS);
-                  window.display();
-                } else {
-                  framesToDrop.fetch_add(
-                      static_cast<int>(lastFrameDrawTime.count() /
-                                       static_cast<float>(frameTimems)) -
-                      1);
-                  droppedFrames.fetch_add(1);
-                }
-                lastDrawEnd = std::chrono::high_resolution_clock::now();
-              } else {
-                framesToDrop.fetch_sub(1);
-                lastDrawEnd = std::chrono::high_resolution_clock::now();
-              }
-              processedFrames.fetch_sub(1);
-            }
-            std::lock_guard<std::mutex> coutGuard{coutMtx};
-            std::cout << "Status: displaying. Progress: " << ++i
-                      << " from batch of " << rPtr->size()
-                      << " renders      \r";
-            std::cout.flush();
-          }
-          queueNumber++;
-          if (launchedPlayThreadsN == threadN) {
-            if (rPtr->size()) {
-              lastWindowTxtr.update(std::move(rPtr->back()));
-            }
-            pauseBufferLoop.store(false);
-            std::lock_guard<std::mutex> coutGuard{coutMtx};
-            std::cout << "Status: buffering.                                   "
-                         "                          \r";
-          }
-          window.setActive(false);
+					if (window.isOpen()) {
+						window.setActive();
+						auto lastDrawEnd{std::chrono::high_resolution_clock::now()};
+						float frameTimeS{static_cast<float>(frameTimems / 1000.)};
+						std::chrono::duration<float> lastFrameDrawTime{};
+						int i{0};
+						for (const sf::Texture& r : *rPtr) {
+							while (window.pollEvent(e)) {
+								if (e.type == sf::Event::Closed) {
+									stop.store(true);
+									bufferKillSignal.store(true);
+									pauseBufferLoop.store(true);
+									window.close();
+									break;
+								}
+							}
+							if (window.isOpen()) {
+								if (!framesToDrop.load()) {
+									lastFrameDrawTime =
+											std::chrono::high_resolution_clock::now() - lastDrawEnd;
+									if (lastFrameDrawTime.count() <= frameTimeS) {
+										auxS.setTexture(r);
+										window.draw(auxS);
+										window.display();
+									} else {
+										framesToDrop.fetch_add(
+												static_cast<int>(lastFrameDrawTime.count() /
+																				 static_cast<float>(frameTimems)) -
+												1);
+										droppedFrames.fetch_add(1);
+									}
+									lastDrawEnd = std::chrono::high_resolution_clock::now();
+								} else {
+									framesToDrop.fetch_sub(1);
+									lastDrawEnd = std::chrono::high_resolution_clock::now();
+								}
+								processedFrames.fetch_sub(1);
+							} else {
+								break;
+							}
+							std::lock_guard<std::mutex> coutGuard{coutMtx};
+							std::cout << "Status: displaying. Progress: " << ++i
+												<< " from batch of " << rPtr->size()
+												<< " renders      \r";
+							std::cout.flush();
+						}
+						window.setActive(false);
+						queueNumber++;
+						if (launchedPlayThreadsN == threadN) {
+							if (rPtr->size()) {
+								lastWindowTxtr.update(std::move(rPtr->back()));
+							}
+							pauseBufferLoop.store(false);
+							std::lock_guard<std::mutex> coutGuard{coutMtx};
+							std::cout << "Status: buffering.                                   "
+													 "                          \r";
+						}
+					}
         }
       }};
       sf::Texture bufferingWheelT;
@@ -660,12 +664,11 @@ int main(int argc, const char* argv[]) {
       std::thread bufferingLoop{[&, frameTimems]() {
         sf::Sprite auxS;
         sf::Event e;
-        while (true) {
+        while (!bufferKillSignal.load()) {
           if (!pauseBufferLoop) {
             std::lock_guard<std::mutex> windowGuard{windowMtx};
-            window.setActive();
             auxS.setTexture(lastWindowTxtr, true);
-            while (window.isOpen() && !pauseBufferLoop.load()) {
+            while (window.isOpen() && !pauseBufferLoop.load() && !bufferKillSignal.load()) {
               while (window.pollEvent(e)) {
                 if (e.type == sf::Event::Closed) {
                   stop.store(true);
@@ -675,6 +678,9 @@ int main(int argc, const char* argv[]) {
                   break;
                 }
               }
+							// avoid drawing an extra frame on window close
+							if (!window.isOpen()) { break; }
+							window.setActive();
               window.draw(auxS);  // repaint last window texture
                                   // 120 degrees per second
               bufferingWheel.setRotation(
@@ -691,27 +697,21 @@ int main(int argc, const char* argv[]) {
                   std::to_string(processedFrames.load()) + " processed frames");
               window.draw(progressText);
               window.display();
-              if (bufferKillSignal) {
-                break;
-              }
             }
             window.setActive(false);
             if (!window.isOpen()) {
               break;
             }
-            if (bufferKillSignal) {
+            if (bufferKillSignal.load()) {
               break;
             }
           } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
           }
-          if (bufferKillSignal) {
-            break;
-          }
         }
       }};
       bool lastBatch{false};
-      // sf::Event e{};
+			// main thread composes video and sends batches through playthreads
       while (!stop.load()) {
         std::shared_ptr<std::vector<sf::Texture>> rendersPtr{
             std::make_shared<std::vector<sf::Texture>>()};
@@ -731,7 +731,7 @@ int main(int argc, const char* argv[]) {
           rendersPtr->insert(rendersPtr->end(),
                              std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));
-          if (lastBatch || stop.load()) {
+          if (lastBatch) {
             break;
           }
         }
@@ -741,10 +741,15 @@ int main(int argc, const char* argv[]) {
                 launchedPlayThreadsN.fetch_add(1);
                 playLambda(rendersPtr, launchedPlayThreadsN);
               }};
-          if (!stop) {
+          if (!stop.load()) {
             playThread.detach();
           } else {
             playThread.join();
+						bufferKillSignal.store(true);
+						{
+							std::lock_guard<std::mutex> coutGuard{coutMtx};
+							std::cout << "Window close detected through stop signal. Aborting." << std::endl;
+						}
             break;
           }
         } else {
@@ -754,15 +759,17 @@ int main(int argc, const char* argv[]) {
                 playLambda(rendersPtr, launchedPlayThreadsN.load());
               }};
           playThread.join();
-          bufferKillSignal = true;
+          bufferKillSignal.store(true);
           {
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Done displaying. Closing window." << std::endl;
           }
           break;
         }
-      }
+      } // while (!stop.load())
       pauseBufferLoop.store(true);
+			// likely redundant, but one can never be too sure
+			bufferKillSignal.store(true);
       if (bufferingLoop.joinable()) {
         bufferingLoop.join();
       }
@@ -782,31 +789,33 @@ int main(int argc, const char* argv[]) {
       processThread.join();
     }
 
-    std::cout << "Saving results to file... ";
-    std::cout.flush();
-    inputFile.Close();
-    auto rootOutput = std::make_unique<TFile>(
-        (std::string("outputs/") +
-         config.Get("output", "rootOutputName", "output") + ".root")
-            .c_str(),
-        "RECREATE");
+		if (!stop.load()) {
+			std::cout << "Saving results to file... ";
+			std::cout.flush();
+			inputFile.Close();
+			auto rootOutput = std::make_unique<TFile>(
+					(std::string("outputs/") +
+					 config.Get("output", "rootOutputName", "output") + ".root")
+							.c_str(),
+					"RECREATE");
 
-    rootOutput->SetTitle(rootOutput->GetName());
-    rootOutput->cd();
-    graphsList->Write();
-    pLineF->Write();
-    kBGraph->Write();
-    kBGraphF->Write();
-    mfpGraph->Write();
-    mfpGraphF->Write();
-    maxwellF->Write();
-    cumulatedSpeedsH->Write();
-
-    rootOutput->Close();
+			rootOutput->SetTitle(rootOutput->GetName());
+			rootOutput->cd();
+			graphsList->Write();
+			pLineF->Write();
+			kBGraph->Write();
+			kBGraphF->Write();
+			mfpGraph->Write();
+			mfpGraphF->Write();
+			maxwellF->Write();
+			cumulatedSpeedsH->Write();
+			rootOutput->Close();
+			std::cout << "done!" << std::endl;
+		} else {
+			std::cout << "Stop signal detected. Skipping results saving.\n";
+		}
 
     graphsList->Delete();
-
-    std::cout << "done!" << std::endl;
 
     return 0;
   } catch (const std::runtime_error& error) {
