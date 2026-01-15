@@ -1,45 +1,18 @@
 #include "TdStats.hpp"
 
+#include <algorithm>
+#include <cassert>
+#include <limits>
+#include <numeric>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
 #include "DataProcessing/GasData.hpp"
 #include "PhysicsEngine/Collision.hpp"
 #include "PhysicsEngine/Particle.hpp"
 
-#include <limits>
-#include <stdexcept>
-#include <algorithm>
-#include <numeric>
-#include <cassert>
-#include <vector>
-#include <utility>
-
 namespace GS {
-
-// Auxiliary addPulse private function, assumes solved collision for input
-void TdStats::addPulse(GasData const& data) {
-  assert(data.getCollType() == 'w');
-  switch (data.getWall()) {
-    case Wall::Front:
-      wallPulses[0] += Particle::getMass() * 2. * data.getP1().speed.y;
-      break;
-    case Wall::Back:
-      wallPulses[1] -= Particle::getMass() * 2. * data.getP1().speed.y;
-      break;
-    case Wall::Left:
-      wallPulses[2] += Particle::getMass() * 2. * data.getP1().speed.x;
-      break;
-    case Wall::Right:
-      wallPulses[3] -= Particle::getMass() * 2. * data.getP1().speed.x;
-      break;
-    case Wall::Top:
-      wallPulses[4] -= Particle::getMass() * 2. * data.getP1().speed.z;
-      break;
-    case Wall::Bottom:
-      wallPulses[5] += Particle::getMass() * 2. * data.getP1().speed.z;
-      break;
-    default:
-      throw std::invalid_argument("addPulse error: VOID wall type provided");
-  }
-}
 
 // Constructors
 TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
@@ -337,11 +310,39 @@ void TdStats::addData(GasData const& data) {
   }
 }
 
+// Auxiliary addPulse private function, assumes solved collision for input
+void TdStats::addPulse(GasData const& data) {
+  assert(data.getCollType() == 'w');
+  switch (data.getWall()) {
+    case Wall::Front:
+      wallPulses[0] += Particle::getMass() * 2. * data.getP1().speed.y;
+      break;
+    case Wall::Back:
+      wallPulses[1] -= Particle::getMass() * 2. * data.getP1().speed.y;
+      break;
+    case Wall::Left:
+      wallPulses[2] += Particle::getMass() * 2. * data.getP1().speed.x;
+      break;
+    case Wall::Right:
+      wallPulses[3] -= Particle::getMass() * 2. * data.getP1().speed.x;
+      break;
+    case Wall::Top:
+      wallPulses[4] -= Particle::getMass() * 2. * data.getP1().speed.z;
+      break;
+    case Wall::Bottom:
+      wallPulses[5] += Particle::getMass() * 2. * data.getP1().speed.z;
+      break;
+    default:
+      throw std::invalid_argument("addPulse error: VOID wall type provided");
+  }
+}
+
 double TdStats::getPressure(Wall wall) const {
   if (wall == Wall::VOID) {
     throw std::invalid_argument("getPressure error: VOID wall provided");
   }
-  return wallPulses[static_cast<size_t>(wall)] / (getBoxSide() * getBoxSide() * getDeltaT());
+  return wallPulses[static_cast<size_t>(wall)] /
+         (getBoxSide() * getBoxSide() * getDeltaT());
 }
 
 double TdStats::getPressure() const {

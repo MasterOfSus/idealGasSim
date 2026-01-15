@@ -13,7 +13,6 @@ struct Particle {
 
   static double getMass() { return mass.load(); }
   static void setMass(double m) { mass.store(m); }
-
   static double getRadius() { return radius.load(); }
   static void setRadius(double r) { radius.store(r); }
 
@@ -22,9 +21,10 @@ struct Particle {
   static std::atomic<double> mass;
 };
 
-bool operator==(Particle const& p1, Particle const& p2);
 bool overlap(Particle const& p1, Particle const& p2);
 double energy(Particle const& p);
+
+bool operator==(Particle const& p1, Particle const& p2);
 
 }  // namespace GS
 

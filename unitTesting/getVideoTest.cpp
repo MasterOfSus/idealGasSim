@@ -1,43 +1,40 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <TFile.h>
+#include <TGraph.h>
+#include <TH1.h>
+#include <TList.h>
+#include <TMultiGraph.h>
+#include <TObject.h>
+#include <bits/chrono.h>
+
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <atomic>
+#include <functional>
+#include <iostream>
+#include <mutex>
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+
 #include "DataProcessing/SimDataPipeline.hpp"
 #include "Graphics/Camera.hpp"
 #include "Graphics/RenderStyle.hpp"
 #include "PhysicsEngine/Gas.hpp"
 #include "PhysicsEngine/Particle.hpp"
-#include "testingAddons.hpp"
-
-#include <TFile.h>
-#include <TGraph.h>
-#include <TMultiGraph.h>
-#include <TH1.h>
-#include <TList.h>
-#include <TObject.h>
-
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Window/Event.hpp>
-
-#include <vector>
-#include <random>
-#include <thread>
-#include <bits/chrono.h>
-#include <atomic>
-#include <functional>
-#include <iostream>
-#include <mutex>
-#include <stdexcept>
-#include <string>
-
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-
 #include "doctest.h"
+#include "testingAddons.hpp"
 
 std::atomic<double> GS::Particle::mass = 10.;
 std::atomic<double> GS::Particle::radius = 1.;
 
-TH1D defaultH {};
+TH1D defaultH{};
 
 TEST_CASE("Loosely testing the SimDataPipeline class") {
   SUBCASE("Throwing behaviour") {
@@ -85,9 +82,9 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
       SUBCASE("Running getVideo a bit and showing output") {
         std::cout << "Loading resources for getVideo." << std::endl;
         TList* graphsList = new TList();
-        TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
-        TGraph* kBGraph {dynamic_cast<TGraph*>(input.Get("kBGraph"))};
-        TGraph* mfpGraph {dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
+        TMultiGraph* pGraphs{dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
+        TGraph* kBGraph{dynamic_cast<TGraph*>(input.Get("kBGraph"))};
+        TGraph* mfpGraph{dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
         if (pGraphs->IsZombie() || kBGraph->IsZombie() ||
             mfpGraph->IsZombie()) {
           throw std::runtime_error(
@@ -141,7 +138,7 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
         std::cout << "Closing window." << std::endl;
         window.close();
         std::cout << "Deleting TObjects." << std::endl;
-				graphsList->Delete();
+        graphsList->Delete();
         delete graphsList;
         i = true;
       }
@@ -150,7 +147,7 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
       GS::Gas onePGas{1, 50., 20., -9.};
       onePGas.simulate(10, singleOutput);
       singleOutput.setDone();
-			singleOutput.setFont(font);
+      singleOutput.setFont(font);
       // same
       std::cout << "Done simulating, processing data." << std::endl;
       singleOutput.processData();
@@ -158,9 +155,9 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
         std::cout << "Loading getVideo resources." << std::endl;
         // display in a window
         TList* graphsList = new TList();
-        TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
-        TGraph* kBGraph {dynamic_cast<TGraph*>(input.Get("kBGraph"))};
-        TGraph* mfpGraph {dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
+        TMultiGraph* pGraphs{dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
+        TGraph* kBGraph{dynamic_cast<TGraph*>(input.Get("kBGraph"))};
+        TGraph* mfpGraph{dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
         if (pGraphs->IsZombie() || kBGraph->IsZombie() ||
             mfpGraph->IsZombie()) {
           throw std::runtime_error(
@@ -200,9 +197,9 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
           std::cin >> response;
         }
         window.close();
-				graphsList->Delete();
+        graphsList->Delete();
         delete graphsList;
-				delete speedsHTemplate;
+        delete speedsHTemplate;
       }
       std::cout << "Done, going to next test case." << std::endl;
     } else {
@@ -241,9 +238,9 @@ TEST_CASE(
     GS::RenderStyle style{ball};
     GS::Camera camera{{30, 25, 15}, {-20, -15, -5}, 1., 90., 720, 300};
     TList* graphsList = new TList();
-    TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
-    TGraph* kBGraph {dynamic_cast<TGraph*>(input.Get("kBGraph"))};
-    TGraph* mfpGraph {dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
+    TMultiGraph* pGraphs{dynamic_cast<TMultiGraph*>(input.Get("pGraphs"))};
+    TGraph* kBGraph{dynamic_cast<TGraph*>(input.Get("kBGraph"))};
+    TGraph* mfpGraph{dynamic_cast<TGraph*>(input.Get("mfpGraph"))};
     if (pGraphs->IsZombie() || kBGraph->IsZombie() || mfpGraph->IsZombie()) {
       throw std::runtime_error(
           "Couldn't find one or more graphs in provided root file.");
@@ -302,7 +299,7 @@ TEST_CASE(
     manager.add([&] {
       thread_local std::mt19937 r{std::random_device{}()};
       std::uniform_int_distribution<unsigned> emptyQueueD{0, 1};
-			bool emptyQueue {static_cast<bool>(emptyQueueD(r))};
+      bool emptyQueue{static_cast<bool>(emptyQueueD(r))};
       {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Calling getStats(" << emptyQueue << ")" << std::endl;
@@ -312,7 +309,7 @@ TEST_CASE(
     manager.add([&] {
       thread_local std::mt19937 r{std::random_device{}()};
       std::uniform_int_distribution<unsigned> emptyQueueD{0, 1};
-			bool emptyQueue {static_cast<bool>(emptyQueueD(r))};
+      bool emptyQueue{static_cast<bool>(emptyQueueD(r))};
       {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Calling getRenders(" << emptyQueue << ")" << std::endl;
@@ -329,7 +326,8 @@ TEST_CASE(
       output.setStatSize(emptyQueueD(r));
       {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
-        std::cout << "statSize set to " + std::to_string(output.getStatSize()) << std::endl;
+        std::cout << "statSize set to " + std::to_string(output.getStatSize())
+                  << std::endl;
       }
     });
 
@@ -344,12 +342,12 @@ TEST_CASE(
       std::cout << "Starting processing." << std::endl;
     }
     std::thread processThread{[&] {
-			output.processData(camera, style, true);
-			{
-				std::lock_guard<std::mutex> coutGuard {coutMtx};
-				std::cout << "Done processing." << std::endl;
-			}
-		}};
+      output.processData(camera, style, true);
+      {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Done processing." << std::endl;
+      }
+    }};
 
     sf::RenderWindow window{sf::VideoMode(800, 600), "getVideo display"};
     window.setFramerateLimit(24);
@@ -421,15 +419,17 @@ TEST_CASE(
     }
     {
       std::lock_guard<std::mutex> coutGuard{coutMtx};
-      std::cout << "Joining disturbances. Waiting ten seconds for all threads to finish." << std::endl;
+      std::cout << "Joining disturbances. Waiting ten seconds for all threads "
+                   "to finish."
+                << std::endl;
     }
     manager.finish();
-		std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
     std::cout << "Repeat SimDataPipeline stress test? (y/n) ";
     std::cin >> response;
-		graphsList->Delete();
+    graphsList->Delete();
     delete graphsList;
-		delete speedsHTemplate;
+    delete speedsHTemplate;
   };
   std::cout << "Bye!" << std::endl;
 }

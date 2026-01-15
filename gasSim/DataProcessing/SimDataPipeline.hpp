@@ -1,26 +1,25 @@
 #ifndef SIMDATAPIPELINE_HPP
 #define SIMDATAPIPELINE_HPP
 
-#include "DataProcessing/GasData.hpp"
-#include "Graphics/RenderStyle.hpp"
-#include "TdStats.hpp"
+#include <TH1.h>
+#include <stddef.h>
 
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <TH1.h>
-
-#include <stddef.h>
 #include <array>
-#include <utility>
-#include <vector>
+#include <atomic>
 #include <condition_variable>
 #include <deque>
 #include <functional>
 #include <mutex>
 #include <optional>
-#include <atomic>
+#include <utility>
+#include <vector>
+
+#include "DataProcessing/GasData.hpp"
+#include "Graphics/RenderStyle.hpp"
+#include "TdStats.hpp"
 
 class TList;
 
@@ -35,42 +34,45 @@ class SimDataPipeline {
   SimDataPipeline(size_t statSize, double framerate,
                   TH1D const& speedsHTemplate);
 
-  void setStatChunkSize(size_t statChunkSize);
-  size_t getStatChunkSize() const { return statChunkSize.load(); }
-  void setFramerate(double framerate);
-
   void addData(std::vector<GasData>&& data);
-  void processData(bool mfpMemory = true, std::function<bool()> stopper = [] { return false; });
-  void processData(Camera camera, RenderStyle style,
-                   bool mfpMemory = true, std::function<bool()> stopper = [] { return false; });
+  void processData(
+      bool mfpMemory = true,
+      std::function<bool()> stopper = [] { return false; });
+  void processData(
+      Camera camera, RenderStyle style, bool mfpMemory = true,
+      std::function<bool()> stopper = [] { return false; });
   std::vector<sf::Texture> getVideo(
       VideoOpts opt, sf::Vector2u windowSize, sf::Texture const& placeHolderT,
       TList& outputGraphs, bool emptyQueue = false,
       std::function<void(TH1D&, VideoOpts)> fitLambda = {},
       std::array<std::function<void()>, 4> drawLambdas = {});
+
   size_t getRawDataSize();
+  size_t getNStats();
+  std::vector<TdStats> getStats(bool clearMem = false);
+  size_t getNRenders();
+  std::vector<sf::Texture> getRenders(bool clearMem = false);
+  bool isProcessing() { return processing.load(); }
+  bool isDone() { return doneAddingData.load(); }
+  void setDone() { doneAddingData.store(true); }
+
+  void setStatChunkSize(size_t statChunkSize);
+  size_t getStatChunkSize() const { return statChunkSize.load(); }
+  void setFramerate(double framerate);
   double getFramerate() const { return 1. / gDeltaT.load(); }
   size_t getStatSize() const { return statSize.load(); }
   void setStatSize(size_t size);
-
-	size_t getNStats();
-  std::vector<TdStats> getStats(bool clearMem = false);
-	size_t getNRenders();
-  std::vector<sf::Texture> getRenders(bool clearMem = false);
-
-  bool isProcessing() { return processing.load(); }
-  bool isDone() { return dataDone.load(); }
-  void setDone() { dataDone.store(true); }
-
   void setFont(sf::Font const& font);
 
  private:
-  void processStats(std::vector<GasData> const& data, bool mfpMemory, std::vector<TdStats>& tempResults);
-  void processGraphics(std::vector<GasData> const& data, Camera const& camera,
-                       RenderStyle const& style,
-											 std::vector<std::pair<sf::Texture, double>>& tempRenders);
+  void processStats(std::vector<GasData> const& data, bool mfpMemory,
+                    std::vector<TdStats>& tempResults);
+  void processGraphics(
+      std::vector<GasData> const& data, Camera const& camera,
+      RenderStyle const& style,
+      std::vector<std::pair<sf::Texture, double>>& tempRenders);
 
-  std::atomic<bool> dataDone{false};
+  std::atomic<bool> doneAddingData{false};
   std::atomic<bool> processing{false};
   std::atomic<bool> addedResults{false};
   std::deque<GasData> rawData{};
@@ -101,6 +103,7 @@ class SimDataPipeline {
   const TH1D speedsHTemplate;
   sf::Font font;
 };
+
 }  // namespace GS
 
 #endif

@@ -1,33 +1,26 @@
-#include "SimDataPipeline.hpp"
+#include <RtypesCore.h>
+#include <TCanvas.h>
+#include <TGraph.h>
+#include <TH1.h>
+#include <TImage.h>
+#include <TList.h>
+#include <TMultiGraph.h>
+#include <TObject.h>
+#include <assert.h>
+#include <bits/chrono.h>
+#include <stddef.h>
 
-#include "DataProcessing/TdStats.hpp"
-
+#include <SFML/Config.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <SFML/Window/Context.hpp>
-#include <SFML/Config.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Font.hpp>
 #include <SFML/System/String.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include <TH1.h>
-#include <RtypesCore.h>
-#include <TCanvas.h>
-#include <TGraph.h>
-#include <TImage.h>
-#include <TMultiGraph.h>
-
-#include <iomanip>
-#include <sstream>
-#include <TList.h>
-#include <TObject.h>
-#include <assert.h>
-#include <bits/chrono.h>
-#include <stddef.h>
+#include <SFML/Window/Context.hpp>
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -35,13 +28,18 @@
 #include <condition_variable>
 #include <deque>
 #include <functional>
+#include <iomanip>
 #include <iterator>
 #include <mutex>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "DataProcessing/TdStats.hpp"
+#include "SimDataPipeline.hpp"
 
 // Hi, my name's Liam, I am the person who wrote this,
 // I just wanted to say that I'm sorry for everything
@@ -87,7 +85,8 @@ std::string scientificNotation(double x, size_t nDigits = 2) {
   static std::ostringstream ss;
   ss.str("");
   ss.clear();
-  ss << std::scientific << std::setprecision(static_cast<int>(nDigits)) << std::uppercase << x;
+  ss << std::scientific << std::setprecision(static_cast<int>(nDigits))
+     << std::uppercase << x;
   return ss.str();
 }
 
@@ -115,7 +114,9 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         "getVideo error: provided graphs list with wrong object types");
   }
 
-  if (dynamic_cast<TMultiGraph*>(outputGraphs.At(0))->GetListOfGraphs()->GetSize() != 7) {
+  if (dynamic_cast<TMultiGraph*>(outputGraphs.At(0))
+          ->GetListOfGraphs()
+          ->GetSize() != 7) {
     throw std::invalid_argument(
         "getVideo error: provided multigraph number of graphs != 7");
   }
@@ -148,7 +149,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   switch (opt) {
     case VideoOpts::justGas: {  // case scope
       {                         // lock scope
-				sf::Context c;
+        sf::Context c;
         std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
         std::lock_guard<std::mutex> rGuard{rendersMtx};
         gTimeL = gTime;
@@ -178,8 +179,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         if (!fTime.has_value()) {
           if (gTimeL.has_value()) {
             fTime = *gTimeL +
-                    gDeltaTL * std::floor((stats[0].getTime0() - *gTimeL) /
-                                         gDeltaTL);
+                    gDeltaTL *
+                        std::floor((stats[0].getTime0() - *gTimeL) / gDeltaTL);
           } else {
             fTime = stats.front().getTime0() - gDeltaTL;
           }
@@ -199,7 +200,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
           if (emptyStats) {
             statsL.insert(statsL.end(), std::make_move_iterator(sStartI),
-                         std::make_move_iterator(stats.end()));
+                          std::make_move_iterator(stats.end()));
             stats.clear();
           } else {
             statsL = std::vector<TdStats>{sStartI, stats.end()};
@@ -214,7 +215,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     }  // end of lock/case scope
     case VideoOpts::all:
     case VideoOpts::gasPlusCoords: {  // locks/case scope
-			sf::Context c;
+      sf::Context c;
       std::unique_lock<std::mutex> resultsLock{outputMtx};
       outputCv.wait_for(resultsLock, std::chrono::milliseconds(50),
                         [this]() { return addedResults.load(); });
@@ -232,17 +233,17 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           if (!stats.size()) {
             fTime = getRendersT0(renders) - gDeltaTL;
           } else if (!renders.size()) {
-            fTime =
-                *gTimeL +
-                gDeltaTL * std::floor((stats.front().getTime0() - *gTimeL) /
-                                     gDeltaTL);
+            fTime = *gTimeL +
+                    gDeltaTL * std::floor((stats.front().getTime0() - *gTimeL) /
+                                          gDeltaTL);
             assert(isIntMultOf(*fTime - *gTimeL, gDeltaTL));
           } else {
             if (getRendersT0(renders) > stats.front().getTime0()) {
-              fTime = getRendersT0(renders) +
-                      gDeltaTL * std::floor((stats[0].getTime0() -
-                                            getRendersT0(renders)) /
-                                           gDeltaTL);
+              fTime =
+                  getRendersT0(renders) +
+                  gDeltaTL *
+                      std::floor((stats[0].getTime0() - getRendersT0(renders)) /
+                                 gDeltaTL);
             } else {
               fTime = getRendersT0(renders) - gDeltaTL;
             }
@@ -261,42 +262,41 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             sStartI = stats.begin();
           }
           if (sStartI != stats.end()) {
-            auto gStartI{std::upper_bound(renders.begin(),
-                                          renders.end(), *fTime + gDeltaTL,
+            auto gStartI{std::upper_bound(renders.begin(), renders.end(),
+                                          *fTime + gDeltaTL,
                                           [](double value, auto const& render) {
                                             return value <= render.second;
                                           })};
             assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
-            auto gEndI{std::upper_bound(renders.begin(),
-                                        renders.end(),
+            auto gEndI{std::upper_bound(renders.begin(), renders.end(),
                                         stats.back().getTime(),
                                         [](double value, auto const& render) {
                                           return value < render.second;
                                         })};
             if (emptyStats) {
               statsL.insert(statsL.end(), std::make_move_iterator(sStartI),
-                           std::make_move_iterator(stats.end()));
+                            std::make_move_iterator(stats.end()));
               stats.clear();
             } else {
               statsL = std::vector(sStartI, stats.end());
             }
             assert(gStartI <= gEndI);
             rendersL.insert(rendersL.begin(), std::make_move_iterator(gStartI),
-                           std::make_move_iterator(gEndI));
+                            std::make_move_iterator(gEndI));
             renders.clear();
           }
           if (!statsL.size() && !rendersL.size()) {
             return {};
           }
         } else {
-          auto gStartI{std::upper_bound(renders.begin(),
-                                        renders.end(), *fTime + gDeltaTL,
+          auto gStartI{std::upper_bound(renders.begin(), renders.end(),
+                                        *fTime + gDeltaTL,
                                         [](double value, auto const& render) {
                                           return value <= render.second;
                                         })};
           // same as above
           rendersL.insert(rendersL.begin(), std::make_move_iterator(gStartI),
-                         std::make_move_iterator(renders.end()));
+                          std::make_move_iterator(renders.end()));
           renders.clear();
         }
       } else {
@@ -326,7 +326,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   timeText.setFillColor(sf::Color::Black);
   timeText.setOutlineColor(sf::Color::White);
   timeText.setOutlineThickness(1.);
-  timeText.setPosition(static_cast<float>(windowSize.x) * 0.01f, static_cast<float>(windowSize.y) * 0.01f);
+  timeText.setPosition(static_cast<float>(windowSize.x) * 0.01f,
+                       static_cast<float>(windowSize.y) * 0.01f);
   // graphs
   TMultiGraph& pGraphs{*dynamic_cast<TMultiGraph*>(outputGraphs.At(0))};
   TGraph& kBGraph{*dynamic_cast<TGraph*>(outputGraphs.At(1))};
@@ -356,18 +357,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     if (!buf) {
       throw std::runtime_error("Failed to retrieve image RGBA array, aborting");
     }
-    RGBA32toRGBA8(buf, trnsfrImg->GetWidth(),
-                  trnsfrImg->GetHeight(), pixels);
-		delete[] buf;
+    RGBA32toRGBA8(buf, trnsfrImg->GetWidth(), trnsfrImg->GetHeight(), pixels);
+    delete[] buf;
     auxTxtr.update(pixels.data());
     auxSprt.setTexture(auxTxtr, true);
-    auxSprt.setPosition(static_cast<float>(windowSize.x) * static_cast<float>(percPosX), static_cast<float>(windowSize.y) * static_cast<float>(percPosY));
+    auxSprt.setPosition(
+        static_cast<float>(windowSize.x) * static_cast<float>(percPosX),
+        static_cast<float>(windowSize.y) * static_cast<float>(percPosY));
     frame.draw(auxSprt);
   }};
 
   {  // charSize
-    unsigned charSize{static_cast<unsigned>(windowSize.y *
-                    (opt == VideoOpts::gasPlusCoords ? 0.5 / 9. : 0.05))};
+    unsigned charSize{static_cast<unsigned>(
+        windowSize.y * (opt == VideoOpts::gasPlusCoords ? 0.5 / 9. : 0.05))};
     TText.setCharacterSize(charSize);
     VText.setCharacterSize(charSize);
     NText.setCharacterSize(charSize);
@@ -404,7 +406,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     case VideoOpts::justGas: {
       if (rendersL.size()) {
         assert(isIntMultOf(*fTime - *gTimeL, gDeltaTL));
-        assert(fTime < getRendersT0(rendersL) || isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
+        assert(fTime < getRendersT0(rendersL) ||
+               isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
         box.setPosition(0, 0);
         size_t rIndex{0};
         while (*fTime + gDeltaTL < gTimeL ||
@@ -415,15 +418,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           if (rendersL.size() > rIndex &&
               isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
             box.setScale(
-                static_cast<float>(windowSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
-                static_cast<float>(windowSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                static_cast<float>(windowSize.x) /
+                    static_cast<float>(rendersL[rIndex].first.getSize().x),
+                static_cast<float>(windowSize.y) /
+                    static_cast<float>(rendersL[rIndex].first.getSize().y));
             box.setTexture(rendersL[rIndex++].first);
             frame.draw(box);
             frame.draw(timeText);
             frame.display();
           } else {
-            box.setScale(static_cast<float>(windowSize.x) / static_cast<float>(placeholder.getSize().x),
-                         static_cast<float>(windowSize.y) / static_cast<float>(placeholder.getSize().y));
+            box.setScale(static_cast<float>(windowSize.x) /
+                             static_cast<float>(placeholder.getSize().x),
+                         static_cast<float>(windowSize.y) /
+                             static_cast<float>(placeholder.getSize().y));
             box.setTexture(placeholder, true);
             frame.draw(box);
             frame.draw(timeText);
@@ -442,7 +449,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
                 .getTime0()) {  // insert empty data and use placeholder render
           auto& stat{statsL.front()};
           for (size_t i{0}; i < 7; ++i) {
-            TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
+            TGraph* graph{dynamic_cast<TGraph*>(
+                pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
             graph->AddPoint(*fTime, -1.);
             graph->AddPoint(stat.getTime0(), -1.);
           }
@@ -454,34 +462,49 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
           frame.clear();
 
-          cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
+          cnvs.SetCanvasSize(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
           ;
-          auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
+          auxTxtr.create(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
 
           drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
           drawObj(kBGraph, 0., windowSize.y * 0.55, "APL", drawLambdas[1]);
 
-          cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
-          auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+          cnvs.SetCanvasSize(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+          auxTxtr.create(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
 
           drawObj(mfpGraph, 0.5, 0.5, "APL", drawLambdas[3]);
 
-          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 0.1f});
+          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                          static_cast<float>(windowSize.y) * 0.1f});
           txtBox.setPosition(0.f, static_cast<float>(windowSize.y) * 0.45f);
-          VText.setPosition(static_cast<float>(windowSize.x) * (0.f + 0.025f),
-                            static_cast<float>(windowSize.y) * (0.45f + 0.025f));
-          NText.setPosition(static_cast<float>(windowSize.x) * (0.f + 0.175f),
-                            static_cast<float>(windowSize.y) * (0.45f + 0.025f));
-          TText.setPosition(static_cast<float>(windowSize.x) * (0.f + 0.325f),
-                            static_cast<float>(windowSize.y) * (0.45f + 0.025f));
+          VText.setPosition(
+              static_cast<float>(windowSize.x) * (0.f + 0.025f),
+              static_cast<float>(windowSize.y) * (0.45f + 0.025f));
+          NText.setPosition(
+              static_cast<float>(windowSize.x) * (0.f + 0.175f),
+              static_cast<float>(windowSize.y) * (0.45f + 0.025f));
+          TText.setPosition(
+              static_cast<float>(windowSize.x) * (0.f + 0.325f),
+              static_cast<float>(windowSize.y) * (0.45f + 0.025f));
           frame.draw(txtBox);
           frame.draw(VText);
           frame.draw(NText);
           frame.draw(TText);
 
-          box.setScale(static_cast<float>(windowSize.x) * 0.5f / static_cast<float>(placeholder.getSize().x),
-                       static_cast<float>(windowSize.y) * 0.5f / static_cast<float>(placeholder.getSize().y));
-          box.setPosition(static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y));
+          box.setScale(static_cast<float>(windowSize.x) * 0.5f /
+                           static_cast<float>(placeholder.getSize().x),
+                       static_cast<float>(windowSize.y) * 0.5f /
+                           static_cast<float>(placeholder.getSize().y));
+          box.setPosition(static_cast<float>(windowSize.x) * 0.5f,
+                          static_cast<float>(windowSize.y));
           box.setTexture(placeholder, true);
           frame.draw(box);
 
@@ -495,7 +518,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
         for (TdStats const& stat : statsL) {
           for (size_t i{0}; i < 7; ++i) {
-            TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
+            TGraph* graph{dynamic_cast<TGraph*>(
+                pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
             if (i < 6) {
               graph->AddPoint(stat.getTime0(), stat.getPressure(Wall(i)));
               graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));
@@ -507,12 +531,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
           mfpGraph.AddPoint(stat.getTime0(), stat.getMeanFreePath());
           mfpGraph.AddPoint(stat.getTime(), stat.getMeanFreePath());
-          kBGraph.AddPoint(stat.getTime0(),
-                           stat.getPressure() * stat.getVolume() /
-                               (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
-          kBGraph.AddPoint(stat.getTime(),
-                           stat.getPressure() * stat.getVolume() /
-                               (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
+          kBGraph.AddPoint(
+              stat.getTime0(),
+              stat.getPressure() * stat.getVolume() /
+                  (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
+          kBGraph.AddPoint(
+              stat.getTime(),
+              stat.getPressure() * stat.getVolume() /
+                  (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
 
           TH1D speedH{stat.getSpeedH()};
 
@@ -522,26 +548,38 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
           frame.clear();
 
-          cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
-          auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
+          cnvs.SetCanvasSize(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
+          auxTxtr.create(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.45f));
 
           drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
           drawObj(kBGraph, 0., 0.55, "APL", drawLambdas[1]);
 
-          cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5));
-          auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5));
+          cnvs.SetCanvasSize(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5));
+          auxTxtr.create(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5));
 
           drawObj(speedH, 0.5, 0., "HIST", drawLambdas[2]);
           drawObj(mfpGraph, 0.5, 0.5, "APL", drawLambdas[3]);
 
-          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 0.1f});
+          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                          static_cast<float>(windowSize.y) * 0.1f});
           txtBox.setPosition(0.f, static_cast<float>(windowSize.y) * 0.45f);
-          VText.setPosition(static_cast<float>(windowSize.x) * (0.f + 0.025f),
-                            static_cast<float>(windowSize.y) * (0.45f + 0.025f));
-          NText.setPosition(static_cast<float>(windowSize.x) * (0.f + 0.175f),
-                            static_cast<float>(windowSize.y) * (0.45f + 0.025f));
-          TText.setPosition(static_cast<float>(windowSize.x) * (0.f + 0.325f),
-                            static_cast<float>(windowSize.y) * (0.45f + 0.025f));
+          VText.setPosition(
+              static_cast<float>(windowSize.x) * (0.f + 0.025f),
+              static_cast<float>(windowSize.y) * (0.45f + 0.025f));
+          NText.setPosition(
+              static_cast<float>(windowSize.x) * (0.f + 0.175f),
+              static_cast<float>(windowSize.y) * (0.45f + 0.025f));
+          TText.setPosition(
+              static_cast<float>(windowSize.x) * (0.f + 0.325f),
+              static_cast<float>(windowSize.y) * (0.45f + 0.025f));
           frame.draw(txtBox);
           frame.draw(VText);
           frame.draw(NText);
@@ -560,17 +598,22 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     case VideoOpts::gasPlusCoords:
       if (rendersL.size()) {
         assert(gTimeL == rendersL.back().second);
-				assert(fTime < getRendersT0(rendersL) || isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
+        assert(fTime < getRendersT0(rendersL) ||
+               isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
       }
       {  // case scope
-        timeText.setPosition(static_cast<float>(windowSize.x) * 0.51f, static_cast<float>(windowSize.y) * 0.01f);
+        timeText.setPosition(static_cast<float>(windowSize.x) * 0.51f,
+                             static_cast<float>(windowSize.y) * 0.01f);
         sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                              static_cast<unsigned>(windowSize.y * 0.9)};
         if (statsL.size()) {
-          auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+          auxTxtr.create(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
           if (*fTime + gDeltaTL < statsL.front().getTime0()) {
             for (size_t i{0}; i < 7; ++i) {
-              TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
+              TGraph* graph{dynamic_cast<TGraph*>(
+                  pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
               graph->AddPoint(*fTime, -1.);
               graph->AddPoint(statsL.front().getTime0(), -1.);
             }
@@ -580,18 +623,25 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
             frame.clear();
 
-            cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+            cnvs.SetCanvasSize(
+                static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+                static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
             drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
             drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
-            txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 1.f / 9.f});
-            txtBox.setPosition(static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 8.f / 9.f);
-            VText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.025f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
-            NText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.175f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
-            TText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.325f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                            static_cast<float>(windowSize.y) * 1.f / 9.f});
+            txtBox.setPosition(static_cast<float>(windowSize.x) * 0.5f,
+                               static_cast<float>(windowSize.y) * 8.f / 9.f);
+            VText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.025f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            NText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.175f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            TText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.325f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
             frame.draw(txtBox);
             frame.draw(VText);
             frame.draw(NText);
@@ -606,15 +656,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               if (rendersL.size() > rIndex &&
                   isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
                 box.setScale(
-                    static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
-                    static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                    static_cast<float>(gasSize.x) /
+                        static_cast<float>(rendersL[rIndex].first.getSize().x),
+                    static_cast<float>(gasSize.y) /
+                        static_cast<float>(rendersL[rIndex].first.getSize().y));
                 box.setTexture(rendersL[rIndex++].first);
                 frame.draw(box);
                 frame.draw(timeText);
                 frame.display();
               } else {
-                box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(placeholder.getSize().x),
-                             static_cast<float>(gasSize.y) / static_cast<float>(placeholder.getSize().y));
+                box.setScale(static_cast<float>(gasSize.x) /
+                                 static_cast<float>(placeholder.getSize().x),
+                             static_cast<float>(gasSize.y) /
+                                 static_cast<float>(placeholder.getSize().y));
                 box.setTexture(placeholder, true);
                 frame.draw(box);
                 frame.draw(timeText);
@@ -637,7 +691,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             TdStats const& stat{*s};
             // make the graphs picture
             for (size_t i{0}; i < 7; ++i) {
-              TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
+              TGraph* graph{dynamic_cast<TGraph*>(
+                  pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
               if (i < 6) {
                 graph->AddPoint(stat.getTime0(), stat.getPressure(Wall(i)));
                 graph->AddPoint(stat.getTime(), stat.getPressure(Wall(i)));
@@ -648,10 +703,12 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             }
             kBGraph.AddPoint(stat.getTime0(),
                              stat.getPressure() * stat.getVolume() /
-                                 (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
+                                 (static_cast<double>(stat.getNParticles()) *
+                                  stat.getTemp()));
             kBGraph.AddPoint(stat.getTime(),
                              stat.getPressure() * stat.getVolume() /
-                                 (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
+                                 (static_cast<double>(stat.getNParticles()) *
+                                  stat.getTemp()));
 
             TH1D h{};
 
@@ -661,18 +718,25 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
             frame.clear();
 
-            cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+            cnvs.SetCanvasSize(
+                static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+                static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
             drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
             drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
-            txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 1.f / 9.f});
-            txtBox.setPosition(static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 8.f / 9.f);
-            VText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.025f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
-            NText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.175f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
-            TText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.325f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                            static_cast<float>(windowSize.y) * 1.f / 9.f});
+            txtBox.setPosition(static_cast<float>(windowSize.x) * 0.5f,
+                               static_cast<float>(windowSize.y) * 8.f / 9.f);
+            VText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.025f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            NText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.175f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            TText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.325f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
             frame.draw(txtBox);
             frame.draw(VText);
             frame.draw(NText);
@@ -686,15 +750,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               if (rendersL.size() > rIndex &&
                   isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
                 box.setScale(
-                    static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
-                    static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                    static_cast<float>(gasSize.x) /
+                        static_cast<float>(rendersL[rIndex].first.getSize().x),
+                    static_cast<float>(gasSize.y) /
+                        static_cast<float>(rendersL[rIndex].first.getSize().y));
                 box.setTexture(rendersL[rIndex++].first);
                 frame.draw(box);
                 frame.draw(timeText);
                 frame.display();
               } else {
-                box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(placeholder.getSize().x),
-                             static_cast<float>(gasSize.y) / static_cast<float>(placeholder.getSize().y));
+                box.setScale(static_cast<float>(gasSize.x) /
+                                 static_cast<float>(placeholder.getSize().x),
+                             static_cast<float>(gasSize.y) /
+                                 static_cast<float>(placeholder.getSize().y));
                 box.setTexture(placeholder, true);
                 frame.draw(box);
                 frame.draw(timeText);
@@ -708,7 +776,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           if (*fTime + gDeltaTL < gTimeL ||
               isNegligible(*fTime + gDeltaTL - *gTimeL, gDeltaTL)) {
             for (size_t i{0}; i < 7; ++i) {
-              TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
+              TGraph* graph{dynamic_cast<TGraph*>(
+                  pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
               graph->AddPoint(*fTime, -1.);
               graph->AddPoint(*gTimeL, -1.);
             }
@@ -718,18 +787,25 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
             frame.clear();
 
-            cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+            cnvs.SetCanvasSize(
+                static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.5f),
+                static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
             drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
             drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
 
-            txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 1.f / 9.f});
-            txtBox.setPosition(static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 8.f / 9.f);
-            VText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.025f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
-            NText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.175f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
-            TText.setPosition(static_cast<float>(windowSize.x) * (0.5f + 0.325f),
-                              static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                            static_cast<float>(windowSize.y) * 1.f / 9.f});
+            txtBox.setPosition(static_cast<float>(windowSize.x) * 0.5f,
+                               static_cast<float>(windowSize.y) * 8.f / 9.f);
+            VText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.025f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            NText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.175f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
+            TText.setPosition(
+                static_cast<float>(windowSize.x) * (0.5f + 0.325f),
+                static_cast<float>(windowSize.y) * (8.f / 9.f + 1.f / 36.f));
             frame.draw(txtBox);
             frame.draw(VText);
             frame.draw(NText);
@@ -744,15 +820,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
               if (rendersL.size() > rIndex &&
                   isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
                 box.setScale(
-                    static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
-                    static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                    static_cast<float>(gasSize.x) /
+                        static_cast<float>(rendersL[rIndex].first.getSize().x),
+                    static_cast<float>(gasSize.y) /
+                        static_cast<float>(rendersL[rIndex].first.getSize().y));
                 box.setTexture(rendersL[rIndex++].first);
                 frame.draw(box);
                 frame.draw(timeText);
                 frame.display();
               } else {
-                box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(placeholder.getSize().x),
-                             static_cast<float>(gasSize.y) / static_cast<float>(placeholder.getSize().y));
+                box.setScale(static_cast<float>(gasSize.x) /
+                                 static_cast<float>(placeholder.getSize().x),
+                             static_cast<float>(gasSize.y) /
+                                 static_cast<float>(placeholder.getSize().y));
                 box.setTexture(placeholder, true);
                 frame.draw(box);
                 frame.draw(timeText);
@@ -767,17 +847,22 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       }  // case scope end
     case VideoOpts::all: {  // case scope
       if (rendersL.size()) {
-        assert(fTime < getRendersT0(rendersL) || isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
+        assert(fTime < getRendersT0(rendersL) ||
+               isNegligible(*fTime - getRendersT0(rendersL), gDeltaTL));
         assert(gTimeL == rendersL.back().second);
       }
-      timeText.setPosition(static_cast<float>(windowSize.x) * 0.26f, static_cast<float>(windowSize.y) * 0.01f);
+      timeText.setPosition(static_cast<float>(windowSize.x) * 0.26f,
+                           static_cast<float>(windowSize.y) * 0.01f);
       sf::Vector2u gasSize{static_cast<unsigned>(windowSize.x * 0.5),
                            static_cast<unsigned>(windowSize.y * 0.9)};
       if (statsL.size()) {
-        auxTxtr.create(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+        auxTxtr.create(
+            static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f),
+            static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
         if (*fTime + gDeltaTL < statsL.front().getTime0()) {
           for (size_t i{0}; i < 7; ++i) {
-            TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
+            TGraph* graph{dynamic_cast<TGraph*>(
+                pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
             graph->AddPoint(*fTime, -1.);
             graph->AddPoint(statsL.front().getTime0(), -1.);
           }
@@ -790,14 +875,18 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
           frame.clear();
 
-          cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+          cnvs.SetCanvasSize(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
           drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
           drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
           drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);
           drawObj(mfpGraph, 0.75, 0.5, "APL", drawLambdas[3]);
 
-          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 0.1f});
-          txtBox.setPosition(static_cast<float>(windowSize.x) * 0.25f, static_cast<float>(windowSize.y) * 0.9f);
+          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                          static_cast<float>(windowSize.y) * 0.1f});
+          txtBox.setPosition(static_cast<float>(windowSize.x) * 0.25f,
+                             static_cast<float>(windowSize.y) * 0.9f);
           VText.setPosition(static_cast<float>(windowSize.x) * (0.25f + 0.025f),
                             static_cast<float>(windowSize.y) * (0.9f + 0.025f));
           NText.setPosition(static_cast<float>(windowSize.x) * (0.25f + 0.175f),
@@ -819,15 +908,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             if (rendersL.size() > rIndex &&
                 isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
               box.setScale(
-                  static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
-                  static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                  static_cast<float>(gasSize.x) /
+                      static_cast<float>(rendersL[rIndex].first.getSize().x),
+                  static_cast<float>(gasSize.y) /
+                      static_cast<float>(rendersL[rIndex].first.getSize().y));
               box.setTexture(rendersL[rIndex++].first);
               frame.draw(box);
               frame.draw(timeText);
               frame.display();
             } else {
-              box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(placeholder.getSize().x),
-                           static_cast<float>(gasSize.y) / static_cast<float>(placeholder.getSize().y));
+              box.setScale(static_cast<float>(gasSize.x) /
+                               static_cast<float>(placeholder.getSize().x),
+                           static_cast<float>(gasSize.y) /
+                               static_cast<float>(placeholder.getSize().y));
               box.setTexture(placeholder, true);
               frame.draw(box);
               frame.draw(timeText);
@@ -839,7 +932,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         size_t rIndex{0};
         while (*fTime + gDeltaTL < statsL.back().getTime()) {
           assert(*fTime + gDeltaTL >= statsL.front().getTime0());
-          auto s{std::upper_bound(statsL.begin(), statsL.end(), *fTime + gDeltaTL,
+          auto s{std::upper_bound(statsL.begin(), statsL.end(),
+                                  *fTime + gDeltaTL,
                                   [](double value, TdStats const& stat) {
                                     return value < stat.getTime0();
                                   }) -
@@ -849,7 +943,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           TdStats const& stat{*s};
           // make the graphs picture
           for (size_t k{0}; k < 7; ++k) {
-            TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(k)))};
+            TGraph* graph{dynamic_cast<TGraph*>(
+                pGraphs.GetListOfGraphs()->At(static_cast<int>(k)))};
             if (k < 6) {
               graph->AddPoint(stat.getTime0(), stat.getPressure(Wall(k)));
               graph->AddPoint(stat.getTime(), stat.getPressure(Wall(k)));
@@ -860,12 +955,14 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
           mfpGraph.AddPoint(stat.getTime0(), stat.getMeanFreePath());
           mfpGraph.AddPoint(stat.getTime(), stat.getMeanFreePath());
-          kBGraph.AddPoint(stat.getTime0(),
-                           stat.getPressure() * stat.getVolume() /
-                               (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
-          kBGraph.AddPoint(stat.getTime(),
-                           stat.getPressure() * stat.getVolume() /
-                               (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
+          kBGraph.AddPoint(
+              stat.getTime0(),
+              stat.getPressure() * stat.getVolume() /
+                  (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
+          kBGraph.AddPoint(
+              stat.getTime(),
+              stat.getPressure() * stat.getVolume() /
+                  (static_cast<double>(stat.getNParticles()) * stat.getTemp()));
           TH1D speedH;
           speedH = stat.getSpeedH();
 
@@ -875,14 +972,18 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
           frame.clear();
 
-          cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+          cnvs.SetCanvasSize(
+              static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f),
+              static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
           drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
           drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
           drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);
           drawObj(mfpGraph, 0.75, 0.5, "APL", drawLambdas[3]);
 
-          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 0.1f});
-          txtBox.setPosition(static_cast<float>(windowSize.x) * 0.25f, static_cast<float>(windowSize.y) * 0.9f);
+          txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                          static_cast<float>(windowSize.y) * 0.1f});
+          txtBox.setPosition(static_cast<float>(windowSize.x) * 0.25f,
+                             static_cast<float>(windowSize.y) * 0.9f);
           VText.setPosition(static_cast<float>(windowSize.x) * (0.25f + 0.025f),
                             static_cast<float>(windowSize.y) * (0.9f + 0.025f));
           NText.setPosition(static_cast<float>(windowSize.x) * (0.25f + 0.175f),
@@ -902,15 +1003,19 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             if (rendersL.size() > rIndex &&
                 isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
               box.setScale(
-                  static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
-                  static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+                  static_cast<float>(gasSize.x) /
+                      static_cast<float>(rendersL[rIndex].first.getSize().x),
+                  static_cast<float>(gasSize.y) /
+                      static_cast<float>(rendersL[rIndex].first.getSize().y));
               box.setTexture(rendersL[(rIndex++)].first);
               frame.draw(box);
               frame.draw(timeText);
               frame.display();
             } else {
-              box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(placeholder.getSize().x),
-                           static_cast<float>(gasSize.y) / static_cast<float>(placeholder.getSize().y));
+              box.setScale(static_cast<float>(gasSize.x) /
+                               static_cast<float>(placeholder.getSize().x),
+                           static_cast<float>(gasSize.y) /
+                               static_cast<float>(placeholder.getSize().y));
               box.setTexture(placeholder, true);
               frame.draw(box);
               frame.draw(timeText);
@@ -921,7 +1026,8 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         }  // while (fTime_ + gDeltaTL < statsL.back().getTime())
       } else if (rendersL.size()) {
         for (size_t i{0}; i < 7; ++i) {
-          TGraph* graph{dynamic_cast<TGraph*>(pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
+          TGraph* graph{dynamic_cast<TGraph*>(
+              pGraphs.GetListOfGraphs()->At(static_cast<int>(i)))};
           graph->AddPoint(*fTime, -1.);
           graph->AddPoint(*gTimeL, -1.);
         }
@@ -934,14 +1040,18 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
 
         frame.clear();
 
-        cnvs.SetCanvasSize(static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f), static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
+        cnvs.SetCanvasSize(
+            static_cast<unsigned>(static_cast<float>(windowSize.x) * 0.25f),
+            static_cast<unsigned>(static_cast<float>(windowSize.y) * 0.5f));
         drawObj(pGraphs, 0., 0., "APL", drawLambdas[0]);
         drawObj(kBGraph, 0., 0.5, "APL", drawLambdas[1]);
         drawObj(speedH, 0.75, 0., "HIST", drawLambdas[2]);
         drawObj(mfpGraph, 0.75, 0.5, "APL", drawLambdas[3]);
 
-        txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f, static_cast<float>(windowSize.y) * 0.1f});
-        txtBox.setPosition(static_cast<float>(windowSize.x) * 0.25f, static_cast<float>(windowSize.y) * 0.9f);
+        txtBox.setSize({static_cast<float>(windowSize.x) * 0.5f,
+                        static_cast<float>(windowSize.y) * 0.1f});
+        txtBox.setPosition(static_cast<float>(windowSize.x) * 0.25f,
+                           static_cast<float>(windowSize.y) * 0.9f);
         VText.setPosition(static_cast<float>(windowSize.x) * (0.25f + 0.025f),
                           static_cast<float>(windowSize.y) * (0.9f + 0.025f));
         NText.setPosition(static_cast<float>(windowSize.x) * (0.25f + 0.175f),
@@ -962,15 +1072,20 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
           if (rendersL.size() > rIndex &&
               isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
-            box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(rendersL[rIndex].first.getSize().x),
-                         static_cast<float>(gasSize.y) / static_cast<float>(rendersL[rIndex].first.getSize().y));
+            box.setScale(
+                static_cast<float>(gasSize.x) /
+                    static_cast<float>(rendersL[rIndex].first.getSize().x),
+                static_cast<float>(gasSize.y) /
+                    static_cast<float>(rendersL[rIndex].first.getSize().y));
             box.setTexture(rendersL[rIndex++].first);
             frame.draw(box);
             frame.draw(timeText);
             frame.display();
           } else {
-            box.setScale(static_cast<float>(gasSize.x) / static_cast<float>(placeholder.getSize().x),
-                         static_cast<float>(gasSize.y) / static_cast<float>(placeholder.getSize().y));
+            box.setScale(static_cast<float>(gasSize.x) /
+                             static_cast<float>(placeholder.getSize().x),
+                         static_cast<float>(gasSize.y) /
+                             static_cast<float>(placeholder.getSize().y));
             box.setTexture(placeholder, true);
             frame.draw(box);
             frame.draw(timeText);
@@ -983,7 +1098,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       break;
     }  // case scope end
     default:
-			delete trnsfrImg;
+      delete trnsfrImg;
       throw std::invalid_argument("Invalid video option provided.");
   }
 

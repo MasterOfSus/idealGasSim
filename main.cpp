@@ -1,55 +1,53 @@
+#include <RtypesCore.h>
+#include <TAxis.h>
+#include <TF1.h>
+#include <TFile.h>
+#include <TGraph.h>
+#include <TH1.h>
+#include <TLine.h>
+#include <TList.h>
+#include <TMultiGraph.h>
+#include <TObject.h>
+#include <bits/chrono.h>
+#include <stdio.h>
+
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/WindowStyle.hpp>
+#include <algorithm>
+#include <array>
+#include <atomic>
+#include <cmath>
+#include <exception>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <mutex>
+#include <numeric>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
+
 #include "DataProcessing/SimDataPipeline.hpp"
 #include "Graphics/Camera.hpp"
 #include "Graphics/RenderStyle.hpp"
 #include "PhysicsEngine/GSVector.hpp"
 #include "PhysicsEngine/Gas.hpp"
 #include "PhysicsEngine/Particle.hpp"
-
-#include "gasSim/Libs/cxxopts.hpp"
 #include "gasSim/Libs/INIReader.h"
-
-#include <RtypesCore.h>
-#include <TF1.h>
-#include <TFile.h>
-#include <TGraph.h>
-#include <TLine.h>
-#include <TMultiGraph.h>
-#include <TAxis.h>
-#include <TH1.h>
-#include <TList.h>
-#include <TObject.h>
-
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/WindowStyle.hpp>
-
-#include <bits/chrono.h>
-#include <stdio.h>
-#include <array>
-#include <atomic>
-#include <cmath>
-#include <exception>
-#include <functional>
-#include <iterator>
-#include <mutex>
-#include <numeric>
-#include <utility>
-#include <vector>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <algorithm>
-#include <thread>
+#include "gasSim/Libs/cxxopts.hpp"
 
 std::atomic<double> GS::Particle::radius{1.};
 std::atomic<double> GS::Particle::mass{1.};
@@ -119,35 +117,35 @@ GS::VideoOpts stovideoopts(std::string s) {
 }
 
 void throwIfZombie(TObject* o, std::string message) {
-	if (o->IsZombie()) {
-		throw std::runtime_error(message);
-	}
+  if (o->IsZombie()) {
+    throw std::runtime_error(message);
+  }
 }
 
 int main(int argc, const char* argv[]) {
   try {
     std::cout << "Welcome. Starting idealGasSim gas simulation.\n";
 
-		// trying to make root stop throwing temper tantrums over my variables
-		TH1D::AddDirectory(kFALSE);
+    // trying to make root stop throwing temper tantrums over my variables
+    TH1D::AddDirectory(kFALSE);
 
-		cxxopts::Options options(
-				"idealGasSim",
-				"An event-based ideal gas simulator with graphic data visualization"
-		);
+    cxxopts::Options options(
+        "idealGasSim",
+        "An event-based ideal gas simulator with graphic data visualization");
 
-		options.add_options()
-				("h,help", "Print this help message")
-				("c,config", "Use the given path as the configuration file, defaults to configs/gasSim_demo.ini",
-						cxxopts::value<std::string>());
+    options.add_options()("h,help", "Print this help message")(
+        "c,config",
+        "Use the given path as the configuration file, defaults to "
+        "configs/gasSim_demo.ini",
+        cxxopts::value<std::string>());
 
-		auto opts = options.parse(argc, argv);
+    auto opts = options.parse(argc, argv);
 
-		// No args or explicit help → print help and exit
-		if (argc == 1 || opts["help"].as<bool>()) {
-				std::cout << options.help() << '\n';
-				return 0;
-		}
+    // No args or explicit help → print help and exit
+    if (argc == 1 || opts["help"].as<bool>()) {
+      std::cout << options.help() << '\n';
+      return 0;
+    }
 
     std::string path = opts.count("config") != 0
                            ? opts["config"].as<std::string>()
@@ -161,8 +159,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "Starting resources loading. Using config file at path "
               << path << std::endl;
 
-    GS::Particle::setMass(
-        cFile.GetReal("simulation parameters", "pMass", 1.));
+    GS::Particle::setMass(cFile.GetReal("simulation parameters", "pMass", 1.));
     GS::Particle::setRadius(
         cFile.GetReal("simulation parameters", "pRadius", 1.));
 
@@ -173,11 +170,13 @@ int main(int argc, const char* argv[]) {
          << ".root")
             .str()
             .c_str())};
-		throwIfZombie(&inputFile, "Failed to load provided input file path.");
+    throwIfZombie(&inputFile, "Failed to load provided input file path.");
 
-		std::shared_ptr<TH1D> speedsHTemplate {dynamic_cast<TH1D*>(inputFile.Get("speedsHTemplate"))};
-		speedsHTemplate->SetDirectory(nullptr);
-		throwIfZombie(speedsHTemplate.get(), "Failed to load speedsHTemplate from input file.");
+    std::shared_ptr<TH1D> speedsHTemplate{
+        dynamic_cast<TH1D*>(inputFile.Get("speedsHTemplate"))};
+    speedsHTemplate->SetDirectory(nullptr);
+    throwIfZombie(speedsHTemplate.get(),
+                  "Failed to load speedsHTemplate from input file.");
 
     long nStats{cFile.GetInteger("simulation parameters", "nStats", 1)};
     if (nStats <= 0) {
@@ -188,9 +187,9 @@ int main(int argc, const char* argv[]) {
                                          : throw std::invalid_argument(
                                                "Provided negative nStats.")),
         cFile.GetFloat("output", "framerate", 60.f), *speedsHTemplate};
-		sf::Font font;
-		font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
-		output.setFont(font);
+    sf::Font font;
+    font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
+    output.setFont(font);
     GS::Gas gas{static_cast<size_t>(
                     cFile.GetInteger("simulation parameters", "nParticles", 1)),
                 cFile.GetFloat("simulation parameters", "targetT", 1),
@@ -207,23 +206,26 @@ int main(int argc, const char* argv[]) {
                           return acc + p.speed.norm();
                         }) /
         static_cast<double>(nStats) / gas.getBoxSide()};
-    output.setStatChunkSize(static_cast<size_t>(desiredStatChunkSize > 1 ? desiredStatChunkSize
-                                                      : 1));
+    output.setStatChunkSize(static_cast<size_t>(
+        desiredStatChunkSize > 1 ? desiredStatChunkSize : 1));
     double gasSide{gas.getBoxSide()};
 
     std::atomic<bool> stop{false};
     std::mutex coutMtx;
     std::thread simThread{[&] {
-			try {
-      gas.simulate(static_cast<size_t>(cFile.GetInteger("simulation parameters", "nIters", 0)),
-                   output, [&] { return stop.load(); });
-			} catch (std::runtime_error const& e) {
-				std::lock_guard<std::mutex> coutGuard{coutMtx};
-				std::cout << "Runtime error: " << e.what() << std::endl;
-				std::terminate();
-			}
+      try {
+        gas.simulate(static_cast<size_t>(cFile.GetInteger(
+                         "simulation parameters", "nIters", 0)),
+                     output, [&] { return stop.load(); });
+      } catch (std::runtime_error const& e) {
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Runtime error: " << e.what() << std::endl;
+        std::terminate();
+      }
       std::lock_guard<std::mutex> coutGuard{coutMtx};
-      std::cout << "Simulation thread done.                                      \r" << std::endl;
+      std::cout
+          << "Simulation thread done.                                      \r"
+          << std::endl;
     }};
 
     {
@@ -276,10 +278,10 @@ int main(int argc, const char* argv[]) {
         "assets/" + cFile.Get("render", "particleTexPath", "lightBall") +
         ".png");
     GS::RenderStyle style{particleTex};
-    style.setWallsColor(
-        sf::Color(static_cast<unsigned>(cFile.GetInteger("render", "wallsColor", 0x50fa7b80))));
-    style.setBGColor(
-        sf::Color(static_cast<unsigned>(cFile.GetInteger("render", "gasBgColor", 0xffffffff))));
+    style.setWallsColor(sf::Color(static_cast<unsigned>(
+        cFile.GetInteger("render", "wallsColor", 0x50fa7b80))));
+    style.setBGColor(sf::Color(static_cast<unsigned>(
+        cFile.GetInteger("render", "gasBgColor", 0xffffffff))));
     style.setWallsOpts(cFile.Get("render", "wallsOpts", "ufdl"));
 
     bool mfpMemory{cFile.GetBoolean("output", "mfpMemory", true)};
@@ -289,29 +291,28 @@ int main(int argc, const char* argv[]) {
     std::thread processThread;
     if (stovideoopts(cFile.Get("output", "videoOpt", "justGas")) !=
         GS::VideoOpts::justStats) {
-      processThread =
-          std::thread([&, mfpMemory] {
-            output.processData(camera, style, mfpMemory, [&] { return stop.load(); });
-            std::lock_guard<std::mutex> coutGuard{coutMtx};
-            std::cout << "Data processing thread done.                         "
-                         "               \r"
-                      << std::endl;
-          });
+      processThread = std::thread([&, mfpMemory] {
+        output.processData(camera, style, mfpMemory,
+                           [&] { return stop.load(); });
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Data processing thread done.                         "
+                     "               \r"
+                  << std::endl;
+      });
     } else {
-      processThread =
-          std::thread([&, mfpMemory] {
-						try {
-							output.processData(mfpMemory, [&] { return stop.load(); });
-						} catch (std::runtime_error const& e) {
-							std::lock_guard<std::mutex> coutGuard{coutMtx};
-							std::cout << "Runtime error: " << e.what() << std::endl;
-							std::terminate();
-						}
-            std::lock_guard<std::mutex> coutGuard{coutMtx};
-            std::cout << "Data processing thread done.                         "
-                         "               \r"
-                      << std::endl;
-					});
+      processThread = std::thread([&, mfpMemory] {
+        try {
+          output.processData(mfpMemory, [&] { return stop.load(); });
+        } catch (std::runtime_error const& e) {
+          std::lock_guard<std::mutex> coutGuard{coutMtx};
+          std::cout << "Runtime error: " << e.what() << std::endl;
+          std::terminate();
+        }
+        std::lock_guard<std::mutex> coutGuard{coutMtx};
+        std::cout << "Data processing thread done.                         "
+                     "               \r"
+                  << std::endl;
+      });
     }
 
     {
@@ -319,102 +320,113 @@ int main(int argc, const char* argv[]) {
       std::cout << "Processing thread running." << std::endl;
     }
 
-		auto graphsList = std::make_unique<TList>();
-		graphsList->SetOwner(kFALSE);
-    TMultiGraph* pGraphs {dynamic_cast<TMultiGraph*>(inputFile.Get("pGraphs"))};
-		throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
-    TGraph* kBGraph {dynamic_cast<TGraph*>(inputFile.Get("kBGraph"))};
-		throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.");
-    TGraph* mfpGraph {dynamic_cast<TGraph*>(inputFile.Get("mfpGraph"))};
-		throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.");
+    auto graphsList = std::make_unique<TList>();
+    graphsList->SetOwner(kFALSE);
+    TMultiGraph* pGraphs{dynamic_cast<TMultiGraph*>(inputFile.Get("pGraphs"))};
+    throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
+    TGraph* kBGraph{dynamic_cast<TGraph*>(inputFile.Get("kBGraph"))};
+    throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.");
+    TGraph* mfpGraph{dynamic_cast<TGraph*>(inputFile.Get("mfpGraph"))};
+    throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.");
     graphsList->Add(pGraphs);
     graphsList->Add(kBGraph);
     graphsList->Add(mfpGraph);
 
-		std::shared_ptr<TF1> pLineF {dynamic_cast<TF1*>(inputFile.Get("pLineF"))};
-		throwIfZombie(pLineF.get(), "Failed to load pLineF from input file.");
-		std::shared_ptr<TF1> kBGraphF {dynamic_cast<TF1*>(inputFile.Get("kBGraphF"))};
-		throwIfZombie(kBGraphF.get(), "Failed to load kBGraphF from input file.");
-    std::shared_ptr<TF1> maxwellF {dynamic_cast<TF1*>(inputFile.Get("maxwellF"))};
-		throwIfZombie(maxwellF.get(), "Failed to load maxwellF from input file.");
-    std::shared_ptr<TF1> mfpGraphF {dynamic_cast<TF1*>(inputFile.Get("mfpGraphF"))};
-		throwIfZombie(mfpGraphF.get(), "Failed to load mfpGraphF from input file.");
-		std::shared_ptr<TH1D> cumulatedSpeedsH {dynamic_cast<TH1D*>(inputFile.Get("cumulatedSpeedsH"))};
-		cumulatedSpeedsH->SetDirectory(nullptr);
-		throwIfZombie(cumulatedSpeedsH.get(), "Failed to load cumulatedSpeedsH from input file.");
-		std::shared_ptr<TLine> meanLine {dynamic_cast<TLine*>(inputFile.Get("meanLine"))};
-		throwIfZombie(meanLine.get(), "Failed to load meanLine from input file.");
-		std::shared_ptr<TLine> meanSqLine {dynamic_cast<TLine*>(inputFile.Get("meanSqLine"))};
-		throwIfZombie(meanSqLine.get(), "Failed to load meanSqLine from input file.");
-    std::shared_ptr<TF1> expP {dynamic_cast<TF1*>(inputFile.Get("expP"))};
-		throwIfZombie(expP.get(), "Failed to load expP from input file.");
-    std::shared_ptr<TF1> expkB {dynamic_cast<TF1*>(inputFile.Get("expkB"))};
-		throwIfZombie(expkB.get(), "Failed to load expkB from input file.");
-    std::shared_ptr<TF1> expMFP {dynamic_cast<TF1*>(inputFile.Get("expMFP"))};
-		throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
+    std::shared_ptr<TF1> pLineF{dynamic_cast<TF1*>(inputFile.Get("pLineF"))};
+    throwIfZombie(pLineF.get(), "Failed to load pLineF from input file.");
+    std::shared_ptr<TF1> kBGraphF{
+        dynamic_cast<TF1*>(inputFile.Get("kBGraphF"))};
+    throwIfZombie(kBGraphF.get(), "Failed to load kBGraphF from input file.");
+    std::shared_ptr<TF1> maxwellF{
+        dynamic_cast<TF1*>(inputFile.Get("maxwellF"))};
+    throwIfZombie(maxwellF.get(), "Failed to load maxwellF from input file.");
+    std::shared_ptr<TF1> mfpGraphF{
+        dynamic_cast<TF1*>(inputFile.Get("mfpGraphF"))};
+    throwIfZombie(mfpGraphF.get(), "Failed to load mfpGraphF from input file.");
+    std::shared_ptr<TH1D> cumulatedSpeedsH{
+        dynamic_cast<TH1D*>(inputFile.Get("cumulatedSpeedsH"))};
+    cumulatedSpeedsH->SetDirectory(nullptr);
+    throwIfZombie(cumulatedSpeedsH.get(),
+                  "Failed to load cumulatedSpeedsH from input file.");
+    std::shared_ptr<TLine> meanLine{
+        dynamic_cast<TLine*>(inputFile.Get("meanLine"))};
+    throwIfZombie(meanLine.get(), "Failed to load meanLine from input file.");
+    std::shared_ptr<TLine> meanSqLine{
+        dynamic_cast<TLine*>(inputFile.Get("meanSqLine"))};
+    throwIfZombie(meanSqLine.get(),
+                  "Failed to load meanSqLine from input file.");
+    std::shared_ptr<TF1> expP{dynamic_cast<TF1*>(inputFile.Get("expP"))};
+    throwIfZombie(expP.get(), "Failed to load expP from input file.");
+    std::shared_ptr<TF1> expkB{dynamic_cast<TF1*>(inputFile.Get("expkB"))};
+    throwIfZombie(expkB.get(), "Failed to load expkB from input file.");
+    std::shared_ptr<TF1> expMFP{dynamic_cast<TF1*>(inputFile.Get("expMFP"))};
+    throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
 
     maxwellF->SetParameter(
         0, cFile.GetReal("simulation parameters", "targetT", 1.));
     maxwellF->FixParameter(
-        1, static_cast<double>(static_cast<size_t>(cFile.GetInteger("simulation parameters", "nParticles", 1)) *
-               output.getStatSize()));
+        1, static_cast<double>(static_cast<size_t>(cFile.GetInteger(
+                                   "simulation parameters", "nParticles", 1)) *
+                               output.getStatSize()));
     maxwellF->FixParameter(2,
                            cFile.GetReal("simulation parameters", "pMass", 1));
 
-    std::function<void(TH1D&, GS::VideoOpts)> fitLambda{
-        [&](TH1D& speedsH, GS::VideoOpts opt) {
-          TGraph* genPGraph{dynamic_cast<TGraph*>(pGraphs->GetListOfGraphs()->At(6))};
-          if (genPGraph->GetN()) {
-            genPGraph->Fit(pLineF.get(), "Q");
-						// Keep number of drawn points at 30
-            if (genPGraph->GetN() >= 30) {
-              pGraphs->GetXaxis()->SetRangeUser(
-                  genPGraph->GetPointX(genPGraph->GetN() - 30),
-                  genPGraph->GetPointX(genPGraph->GetN() - 1));
-            }
+    std::function<void(TH1D&, GS::VideoOpts)> fitLambda{[&](TH1D& speedsH,
+                                                            GS::VideoOpts opt) {
+      TGraph* genPGraph{
+          dynamic_cast<TGraph*>(pGraphs->GetListOfGraphs()->At(6))};
+      if (genPGraph->GetN()) {
+        genPGraph->Fit(pLineF.get(), "Q");
+        // Keep number of drawn points at 30
+        if (genPGraph->GetN() >= 30) {
+          pGraphs->GetXaxis()->SetRangeUser(
+              genPGraph->GetPointX(genPGraph->GetN() - 30),
+              genPGraph->GetPointX(genPGraph->GetN() - 1));
+        }
+      }
+      if (kBGraph->GetN()) {
+        if (kBGraph->GetN() >= 30) {
+          kBGraph->GetXaxis()->SetRangeUser(
+              kBGraph->GetPointX(kBGraph->GetN() - 30),
+              kBGraph->GetPointX(kBGraph->GetN() - 1));
+        }
+        kBGraph->Fit(kBGraphF.get(), "Q");
+        // keep most data visible but not squished down by outliers
+        kBGraph->GetYaxis()->SetRangeUser(0., kBGraphF->GetParameter(0) * 3.25);
+      }
+      if (opt != GS::VideoOpts::gasPlusCoords) {
+        if (static_cast<bool>(speedsH.GetEntries())) {
+          speedsH.Fit(maxwellF.get(), "Q");
+          // skibidi
+          cumulatedSpeedsH->Add(&speedsH);
+          meanLine->SetX1(speedsH.GetMean());
+          meanLine->SetY1(0.);
+          meanLine->SetX2(meanLine->GetX1());
+          meanLine->SetY2(maxwellF->Eval(meanLine->GetX1()));
+          double rms{speedsH.GetRMS()};
+          meanSqLine->SetX1(
+              std::sqrt(rms * rms + meanLine->GetX1() * meanLine->GetX1()));
+          meanSqLine->SetY1(0.);
+          meanSqLine->SetX2(meanSqLine->GetX1());
+          meanSqLine->SetY2(maxwellF->Eval(meanSqLine->GetX1()));
+        }
+        if (mfpGraph->GetN()) {
+          if (mfpGraph->GetN() >= 30) {
+            mfpGraph->GetXaxis()->SetRangeUser(
+                mfpGraph->GetPointX(mfpGraph->GetN() - 30),
+                mfpGraph->GetPointX(mfpGraph->GetN() - 1));
           }
-          if (kBGraph->GetN()) {
-            if (kBGraph->GetN() >= 30) {
-              kBGraph->GetXaxis()->SetRangeUser(
-                  kBGraph->GetPointX(kBGraph->GetN() - 30),
-                  kBGraph->GetPointX(kBGraph->GetN() - 1));
-            }
-            kBGraph->Fit(kBGraphF.get(), "Q");
-						// keep most data visible but not squished down by outliers
-						kBGraph->GetYaxis()->SetRangeUser(0., kBGraphF->GetParameter(0) * 3.25);
-          }
-          if (opt != GS::VideoOpts::gasPlusCoords) {
-            if (static_cast<bool>(speedsH.GetEntries())) {
-              speedsH.Fit(maxwellF.get(), "Q");
-							// skibidi
-              cumulatedSpeedsH->Add(&speedsH);
-              meanLine->SetX1(speedsH.GetMean());
-              meanLine->SetY1(0.);
-              meanLine->SetX2(meanLine->GetX1());
-              meanLine->SetY2(maxwellF->Eval(meanLine->GetX1()));
-              double rms{speedsH.GetRMS()};
-              meanSqLine->SetX1(
-                  std::sqrt(rms * rms + meanLine->GetX1() * meanLine->GetX1()));
-              meanSqLine->SetY1(0.);
-              meanSqLine->SetX2(meanSqLine->GetX1());
-              meanSqLine->SetY2(maxwellF->Eval(meanSqLine->GetX1()));
-            }
-            if (mfpGraph->GetN()) {
-              if (mfpGraph->GetN() >= 30) {
-                mfpGraph->GetXaxis()->SetRangeUser(
-                    mfpGraph->GetPointX(mfpGraph->GetN() - 30),
-                    mfpGraph->GetPointX(mfpGraph->GetN() - 1));
-              }
-              mfpGraph->Fit(mfpGraphF.get(), "Q");
-            }
-          }
-        }};
+          mfpGraph->Fit(mfpGraphF.get(), "Q");
+        }
+      }
+    }};
 
     expP->SetParameter(
-        0,
-        cFile.GetFloat("simulation parameters", "targetT", 1) *
-            static_cast<float>(cFile.GetInteger("simulation parameters", "nParticles", 1)) /
-            static_cast<float>(std::pow(cFile.GetReal("simulation parameters", "boxSide", 1), 3.)));
+        0, cFile.GetFloat("simulation parameters", "targetT", 1) *
+               static_cast<float>(
+                   cFile.GetInteger("simulation parameters", "nParticles", 1)) /
+               static_cast<float>(std::pow(
+                   cFile.GetReal("simulation parameters", "boxSide", 1), 3.)));
     expkB->SetParameter(0, 1);
     expMFP->SetParameter(
         0, cFile.GetFloat("simulation parameters", "targetT", 1) / M_SQRT2 /
@@ -425,7 +437,8 @@ int main(int argc, const char* argv[]) {
 
     std::array<std::function<void()>, 4> drawLambdas{
         [&]() {
-          TGraph* genPGraph{dynamic_cast<TGraph*>(pGraphs->GetListOfGraphs()->At(0))};
+          TGraph* genPGraph{
+              dynamic_cast<TGraph*>(pGraphs->GetListOfGraphs()->At(0))};
           if (genPGraph->GetN()) {
             pLineF->GetXaxis()->SetRangeUser(
                 0., genPGraph->GetPointX(genPGraph->GetN() - 1));
@@ -494,9 +507,9 @@ int main(int argc, const char* argv[]) {
             !output.isProcessing()) {
           lastBatch = true;
         }
-        std::vector<sf::Texture> frames = {output.getVideo(
-            videoOpt, {windowSize.x, windowSize.y}, placeHolder,
-            *graphsList, true, fitLambda, drawLambdas)};
+        std::vector<sf::Texture> frames = {
+            output.getVideo(videoOpt, {windowSize.x, windowSize.y}, placeHolder,
+                            *graphsList, true, fitLambda, drawLambdas)};
         int i{0};
         for (sf::Texture& t : frames) {
           auxImg = t.copyToImage();
@@ -504,8 +517,8 @@ int main(int argc, const char* argv[]) {
                  ffmpeg);
           ++i;
           std::lock_guard<std::mutex> coutGuard{coutMtx};
-          std::cout << "Encoding batch of " << frames.size()
-                    << " frames: " << static_cast<float>(i) / static_cast<float>(frames.size())
+          std::cout << "Encoding batch of " << frames.size() << " frames: "
+                    << static_cast<float>(i) / static_cast<float>(frames.size())
                     << "% complete.                 \r";
           std::cout.flush();
         }
@@ -514,23 +527,23 @@ int main(int argc, const char* argv[]) {
           break;
         }
       }
-			pclose(ffmpeg);
+      pclose(ffmpeg);
     } else {  // no permanent video output requested ->
-							// wiew-once live video
+              // wiew-once live video
       {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Starting video display." << std::endl;
       }
       sf::RenderWindow window(sf::VideoMode(windowSize.x, windowSize.y),
                               "GasSim Display", sf::Style::Default);
-			sf::Texture lastWindowTxtr;
-			lastWindowTxtr.create(windowSize.x, windowSize.y);
-			{
-			sf::Image blankWindow;
-			blankWindow.create(windowSize.x, windowSize.y, sf::Color::White);
-			lastWindowTxtr.update(blankWindow);
-			}
-      std::mutex windowMtx; // used both for lastWindowTxtr and window
+      sf::Texture lastWindowTxtr;
+      lastWindowTxtr.create(windowSize.x, windowSize.y);
+      {
+        sf::Image blankWindow;
+        blankWindow.create(windowSize.x, windowSize.y, sf::Color::White);
+        lastWindowTxtr.update(blankWindow);
+      }
+      std::mutex windowMtx;  // used both for lastWindowTxtr and window
       window.setFramerateLimit(60);
       window.setActive(false);
       std::atomic<bool> pauseBufferLoop{false};
@@ -539,28 +552,31 @@ int main(int argc, const char* argv[]) {
       std::atomic<int> launchedPlayThreadsN{0};
       std::atomic<int> droppedFrames{0};
       std::atomic<int> framesToDrop{0};
-			std::atomic<int> processedFrames{0};
+      std::atomic<int> processedFrames{0};
 
-      auto playLambda{[&, frameTimems](std::shared_ptr<std::vector<sf::Texture>> rPtr,
-                                 int threadN) {
+      auto playLambda{[&, frameTimems](
+                          std::shared_ptr<std::vector<sf::Texture>> rPtr,
+                          int threadN) {
         sf::Sprite auxS;
-				sf::Event e;
+        sf::Event e;
         while (threadN != queueNumber) {
-          if (stop.load()) { break; }
+          if (stop.load()) {
+            break;
+          }
           std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
         }
         if (!stop.load()) {
           pauseBufferLoop.store(true);
           std::lock_guard<std::mutex> windowGuard{windowMtx};
-					while (window.pollEvent(e)) {
-						if (e.type == sf::Event::Closed) {
-							stop.store(true);
-							bufferKillSignal.store(true);
-							pauseBufferLoop.store(true);
-							window.close();
-							break;
-						}
-					}
+          while (window.pollEvent(e)) {
+            if (e.type == sf::Event::Closed) {
+              stop.store(true);
+              bufferKillSignal.store(true);
+              pauseBufferLoop.store(true);
+              window.close();
+              break;
+            }
+          }
           window.setActive();
           auto lastDrawEnd{std::chrono::high_resolution_clock::now()};
           float frameTimeS{static_cast<float>(frameTimems / 1000.)};
@@ -587,7 +603,7 @@ int main(int argc, const char* argv[]) {
                 framesToDrop.fetch_sub(1);
                 lastDrawEnd = std::chrono::high_resolution_clock::now();
               }
-							processedFrames.fetch_sub(1);
+              processedFrames.fetch_sub(1);
             }
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Status: displaying. Progress: " << ++i
@@ -597,9 +613,9 @@ int main(int argc, const char* argv[]) {
           }
           queueNumber++;
           if (launchedPlayThreadsN == threadN) {
-						if (rPtr->size()) {
-							lastWindowTxtr.update(std::move(rPtr->back()));
-						}
+            if (rPtr->size()) {
+              lastWindowTxtr.update(std::move(rPtr->back()));
+            }
             pauseBufferLoop.store(false);
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Status: buffering.                                   "
@@ -608,91 +624,82 @@ int main(int argc, const char* argv[]) {
           window.setActive(false);
         }
       }};
-			sf::Texture bufferingWheelT;
-			bufferingWheelT.loadFromFile(
-				std::string("assets/") + cFile.Get("output", "bufferingWheel", "jesse") + std::string(".png")
-			);
-			sf::Sprite bufferingWheel;
-			bufferingWheel.setTexture(bufferingWheelT, true);
-			bufferingWheel.setOrigin(
-					static_cast<float>(bufferingWheelT.getSize().x) / 2.f,
-					static_cast<float>(bufferingWheelT.getSize().y) / 2.f
-			);
-			bufferingWheel.setScale(
-					static_cast<float>(windowSize.x) * 0.2f / static_cast<float>(bufferingWheelT.getSize().x),
-					static_cast<float>(windowSize.y) * 0.2f / static_cast<float>(bufferingWheelT.getSize().y)
-			);
-			bufferingWheel.setPosition(static_cast<float>(windowSize.x) / 2.f, static_cast<float>(windowSize.y) / 2.f);
-			sf::Text bufferingText {
-				"(UwU) loading (^w^)",
-				font,
-				static_cast<unsigned>(windowSize.y * 0.025)
-			};
-			sf::Text progressText {
-				"0 iterations awaiting processing\n0 stats instances,\n0 renders awaiting composition\n0 frames ready to visualize",
-				font,
-				static_cast<unsigned>(windowSize.y * 0.01)
-			};
-			bufferingText.setFillColor(sf::Color::Black);
-			progressText.setFillColor(sf::Color::Black);
-			bufferingText.setOutlineColor(sf::Color::White);
-			progressText.setOutlineColor(sf::Color::White);
-			bufferingText.setOutlineThickness(4);
-			progressText.setOutlineThickness(2);
-			bufferingText.setOrigin(
-					bufferingText.getLocalBounds().width / 2.f,
-					bufferingText.getLocalBounds().height / 2.f
-			);
-			progressText.setOrigin(
-				0., 0.
-			);
-			bufferingText.setPosition(
-					static_cast<float>(bufferingWheel.getPosition().x),
-					bufferingWheel.getPosition().y + static_cast<float>(windowSize.y) * 0.2f);
-			progressText.setPosition(
-					static_cast<float>(windowSize.y) * .05f,
-					static_cast<float>(windowSize.y) * .05f
-			);
+      sf::Texture bufferingWheelT;
+      bufferingWheelT.loadFromFile(
+          std::string("assets/") +
+          cFile.Get("output", "bufferingWheel", "jesse") + std::string(".png"));
+      sf::Sprite bufferingWheel;
+      bufferingWheel.setTexture(bufferingWheelT, true);
+      bufferingWheel.setOrigin(
+          static_cast<float>(bufferingWheelT.getSize().x) / 2.f,
+          static_cast<float>(bufferingWheelT.getSize().y) / 2.f);
+      bufferingWheel.setScale(
+          static_cast<float>(windowSize.x) * 0.2f /
+              static_cast<float>(bufferingWheelT.getSize().x),
+          static_cast<float>(windowSize.y) * 0.2f /
+              static_cast<float>(bufferingWheelT.getSize().y));
+      bufferingWheel.setPosition(static_cast<float>(windowSize.x) / 2.f,
+                                 static_cast<float>(windowSize.y) / 2.f);
+      sf::Text bufferingText{"(UwU) loading (^w^)", font,
+                             static_cast<unsigned>(windowSize.y * 0.025)};
+      sf::Text progressText{
+          "0 iterations awaiting processing\n0 stats instances,\n0 renders "
+          "awaiting composition\n0 frames ready to visualize",
+          font, static_cast<unsigned>(windowSize.y * 0.01)};
+      bufferingText.setFillColor(sf::Color::Black);
+      progressText.setFillColor(sf::Color::Black);
+      bufferingText.setOutlineColor(sf::Color::White);
+      progressText.setOutlineColor(sf::Color::White);
+      bufferingText.setOutlineThickness(4);
+      progressText.setOutlineThickness(2);
+      bufferingText.setOrigin(bufferingText.getLocalBounds().width / 2.f,
+                              bufferingText.getLocalBounds().height / 2.f);
+      progressText.setOrigin(0., 0.);
+      bufferingText.setPosition(
+          static_cast<float>(bufferingWheel.getPosition().x),
+          bufferingWheel.getPosition().y +
+              static_cast<float>(windowSize.y) * 0.2f);
+      progressText.setPosition(static_cast<float>(windowSize.y) * .05f,
+                               static_cast<float>(windowSize.y) * .05f);
       std::thread bufferingLoop{[&, frameTimems]() {
-				sf::Sprite auxS;
-				sf::Event e;
+        sf::Sprite auxS;
+        sf::Event e;
         while (true) {
           if (!pauseBufferLoop) {
             std::lock_guard<std::mutex> windowGuard{windowMtx};
             window.setActive();
-						auxS.setTexture(lastWindowTxtr, true);
+            auxS.setTexture(lastWindowTxtr, true);
             while (window.isOpen() && !pauseBufferLoop.load()) {
-							while (window.pollEvent(e)) {
-								if (e.type == sf::Event::Closed) {
-									stop.store(true);
-									bufferKillSignal.store(true);
-									pauseBufferLoop.store(true);
-									window.close();
-									break;
-								}
-							}
-							window.draw(auxS); // repaint last window texture
-						 	// 120 degrees per second
-							bufferingWheel.setRotation(bufferingWheel.getRotation() + 120.f * static_cast<float>(frameTimems) / 1000.f);
-							window.draw(bufferingWheel);
-							window.draw(bufferingText);
-							progressText.setString(
-									std::to_string(output.getRawDataSize()) +
-									" iterations awaiting processing\n" +
-									std::to_string(output.getNStats()) +
-									" stats instances,\n" +
-									std::to_string(output.getNRenders()) +
-									" renders awaiting composition\n" +
-									std::to_string(processedFrames.load()) + 
-									" processed frames"
-							);
-							window.draw(progressText);
+              while (window.pollEvent(e)) {
+                if (e.type == sf::Event::Closed) {
+                  stop.store(true);
+                  bufferKillSignal.store(true);
+                  pauseBufferLoop.store(true);
+                  window.close();
+                  break;
+                }
+              }
+              window.draw(auxS);  // repaint last window texture
+                                  // 120 degrees per second
+              bufferingWheel.setRotation(
+                  bufferingWheel.getRotation() +
+                  120.f * static_cast<float>(frameTimems) / 1000.f);
+              window.draw(bufferingWheel);
+              window.draw(bufferingText);
+              progressText.setString(
+                  std::to_string(output.getRawDataSize()) +
+                  " iterations awaiting processing\n" +
+                  std::to_string(output.getNStats()) + " stats instances,\n" +
+                  std::to_string(output.getNRenders()) +
+                  " renders awaiting composition\n" +
+                  std::to_string(processedFrames.load()) + " processed frames");
+              window.draw(progressText);
               window.display();
               if (bufferKillSignal) {
                 break;
               }
             }
-						window.setActive(false);
+            window.setActive(false);
             if (!window.isOpen()) {
               break;
             }
@@ -713,19 +720,18 @@ int main(int argc, const char* argv[]) {
         std::shared_ptr<std::vector<sf::Texture>> rendersPtr{
             std::make_shared<std::vector<sf::Texture>>()};
         rendersPtr->reserve(static_cast<size_t>(output.getFramerate()) * 10);
-        while (
-						static_cast<double>(rendersPtr->size()) <= output.getFramerate() * targetBufferTime
-						&& !stop.load()
-					) {
+        while (static_cast<double>(rendersPtr->size()) <=
+                   output.getFramerate() * targetBufferTime &&
+               !stop.load()) {
           if (output.isDone() &&
               output.getRawDataSize() < output.getStatSize() &&
               !output.isProcessing()) {
             lastBatch = true;
           }
           std::vector<sf::Texture> v = {output.getVideo(
-              videoOpt, {windowSize.x, windowSize.y}, placeHolder,
-              *graphsList, true, fitLambda, drawLambdas)};
-					processedFrames.fetch_add(static_cast<int>(v.size()));
+              videoOpt, {windowSize.x, windowSize.y}, placeHolder, *graphsList,
+              true, fitLambda, drawLambdas)};
+          processedFrames.fetch_add(static_cast<int>(v.size()));
           rendersPtr->insert(rendersPtr->end(),
                              std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));
@@ -739,12 +745,12 @@ int main(int argc, const char* argv[]) {
                 launchedPlayThreadsN.fetch_add(1);
                 playLambda(rendersPtr, launchedPlayThreadsN);
               }};
-					if (!stop) {
-          	playThread.detach();
-					} else {
-						playThread.join();
-						break;
-					}
+          if (!stop) {
+            playThread.detach();
+          } else {
+            playThread.join();
+            break;
+          }
         } else {
           std::thread playThread{
               [playLambda, rendersPtr, &launchedPlayThreadsN] {
@@ -764,9 +770,9 @@ int main(int argc, const char* argv[]) {
       if (bufferingLoop.joinable()) {
         bufferingLoop.join();
       }
-			if (window.isOpen()) {
-      	window.close();
-			}
+      if (window.isOpen()) {
+        window.close();
+      }
       std::lock_guard<std::mutex> coutGuard{coutMtx};
       std::cout << "Dropped frames: " << droppedFrames.load()
                 << ". Leftover data: " << output.getRawDataSize()
@@ -783,7 +789,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "Saving results to file... ";
     std::cout.flush();
     inputFile.Close();
-		auto rootOutput = std::make_unique<TFile>(
+    auto rootOutput = std::make_unique<TFile>(
         (std::ostringstream()
          << "outputs/" << cFile.Get("output", "rootOutputName", "output")
          << ".root")
@@ -804,7 +810,7 @@ int main(int argc, const char* argv[]) {
 
     rootOutput->Close();
 
-		graphsList->Delete();
+    graphsList->Delete();
 
     std::cout << "done!" << std::endl;
 

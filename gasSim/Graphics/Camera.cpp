@@ -1,4 +1,24 @@
 #include "Camera.hpp"
+
+#include <bits/std_abs.h>
+#include <stddef.h>
+#include <string.h>
+
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/ConvexShape.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Vertex.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <execution>
+#include <stdexcept>
+
 #include "DataProcessing/GasData.hpp"
 #include "Graphics/RenderStyle.hpp"
 #include "PhysicsEngine/Collision.hpp"
@@ -6,92 +26,16 @@
 #include "PhysicsEngine/Gas.hpp"
 #include "PhysicsEngine/Particle.hpp"
 
-#include <SFML/Graphics/ConvexShape.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/VertexArray.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Vertex.hpp>
-#include <SFML/System/Vector2.hpp>
-
-#include <bits/std_abs.h>
-#include <stddef.h>
-#include <string.h>
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <execution>
-#include <stdexcept>
-
 namespace GS {
 
-// Getters and setters
-
-void Camera::setSightVector(GSVectorF const& sightVectorV) {
-  if (sightVectorV.norm() > 0.f) {
-    sightVector = sightVectorV / sightVectorV.norm();
-  } else {
-    throw std::invalid_argument(
-        "setSightVector error: O vector doesn't have direction information");
-  }
-}
-
-void Camera::setPlaneDistance(const float distance) {
-  if (distance > 0.f) {
-    planeDistance = distance;
-  } else {
-    throw std::invalid_argument(
-        "setPlaneDistance error: provided non positive distance");
-  }
-}
-
-void Camera::setFOV(const float FOV) {  // in degrees
-  if (FOV > 0.f && FOV < 180.f) {
-    fov = FOV;
-  } else {
-    throw std::invalid_argument(
-        "setFOV error: provided bad FOV (accepted range: 0.f, 180.f)");
-  }
-}
-
-void Camera::setResolution(unsigned heightV, unsigned widthV) {
-  if (!heightV || !widthV) {
-    throw std::invalid_argument(
-        "setResolution error: provided null height or width");
-  }
-  height = heightV;
-  width = widthV;
-}
-
-void Camera::setAspectRatio(
-    const float ratio) {  // ratio set by keeping the image width
-  if (ratio > 0.f) {
-    height = static_cast<unsigned>(static_cast<float>(width) / ratio);
-  } else {
-    throw std::invalid_argument(
-        "setAspectRatio error: non-positive ratio provided");
-  }
-}
-
 Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVectorV,
-               float planeDistanceV, float FOV, unsigned widthV, unsigned heightV)
+               float planeDistanceV, float FOV, unsigned widthV,
+               unsigned heightV)
     : focusPoint(focusPosition) {
   setSightVector(sightVectorV);
   setPlaneDistance(planeDistanceV);
   setFOV(FOV);
   setResolution(heightV, widthV);
-}
-
-float Camera::getTopSide() const {
-  return 2.f * getPlaneDistance() * tanf(getFOV() * (M_PIf / 180.f) / 2.f);
-}
-
-float Camera::getPixelSide() const { return getTopSide() / static_cast<float>(getWidth()); }
-
-float Camera::getNPixels(float length) const {
-  return std::abs(length) / getPixelSide();
 }
 
 GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
@@ -121,7 +65,8 @@ GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
   // returning base-changed vector with scaling factor, with sign for positional
   // information as the third coordinate
   return {
-      m * b + static_cast<float>(getWidth()) / 2.f, o * b + static_cast<float>(getHeight()) / 2.f,
+      m * b + static_cast<float>(getWidth()) / 2.f,
+      o * b + static_cast<float>(getHeight()) / 2.f,
       (a - focus) * (a - focus) /
           ((a - focus) *
            (point - focus))  // scaling factor, degenerate if > 1 V < 0
@@ -143,6 +88,10 @@ std::vector<GSVectorF> Camera::projectParticles(
   }
   return projections;
 }
+
+// the speeds after the collision are reversed, so a particle who just had a
+// collision needs to be drawn with the speed preceding the collision
+// otherwise it is drawn shifted opposite of what it should have been
 
 inline GSVectorD preCollSpeed(GSVectorD& v, Wall wall) {
   switch (wall) {
@@ -273,6 +222,84 @@ std::vector<GSVectorF> Camera::projectParticles(GasData const& data,
   return projections;
 }
 
+float Camera::getTopSide() const {
+  return 2.f * getPlaneDistance() * tanf(getFOV() * (M_PIf / 180.f) / 2.f);
+}
+
+float Camera::getPixelSide() const {
+  return getTopSide() / static_cast<float>(getWidth());
+}
+
+float Camera::getNPixels(float length) const {
+  return std::abs(length) / getPixelSide();
+}
+
+// Getters and setters
+
+void Camera::setSightVector(GSVectorF const& sightVectorV) {
+  if (sightVectorV.norm() > 0.f) {
+    sightVector = sightVectorV / sightVectorV.norm();
+  } else {
+    throw std::invalid_argument(
+        "setSightVector error: O vector doesn't have direction information");
+  }
+}
+
+void Camera::setAspectRatio(
+    const float ratio) {  // ratio set by keeping the image width
+  if (ratio > 0.f) {
+    height = static_cast<unsigned>(static_cast<float>(width) / ratio);
+  } else {
+    throw std::invalid_argument(
+        "setAspectRatio error: non-positive ratio provided");
+  }
+}
+
+void Camera::setPlaneDistance(const float distance) {
+  if (distance > 0.f) {
+    planeDistance = distance;
+  } else {
+    throw std::invalid_argument(
+        "setPlaneDistance error: provided non positive distance");
+  }
+}
+
+void Camera::setFOV(const float FOV) {  // in degrees
+  if (FOV > 0.f && FOV < 180.f) {
+    fov = FOV;
+  } else {
+    throw std::invalid_argument(
+        "setFOV error: provided bad FOV (accepted range: 0.f, 180.f)");
+  }
+}
+
+void Camera::setResolution(unsigned heightV, unsigned widthV) {
+  if (!heightV || !widthV) {
+    throw std::invalid_argument(
+        "setResolution error: provided null height or width");
+  }
+  height = heightV;
+  width = widthV;
+}
+
+template <typename GasLike>
+void drawGas(GasLike const& gasLike, Camera const& camera,
+             sf::RenderTexture& picture, RenderStyle const& style,
+             double deltaT) {
+  picture.create(camera.getWidth(), camera.getHeight());
+  picture.clear(sf::Color::Transparent);
+  drawParticles(gasLike, camera, picture, style, deltaT);
+  drawWalls(gasLike, camera, picture, style);
+}
+
+template void drawGas<Gas>(Gas const& gas, Camera const& camera,
+                           sf::RenderTexture& picture, RenderStyle const& style,
+                           double deltaT);
+
+template void drawGas<GasData>(GasData const& data, Camera const& camera,
+                               sf::RenderTexture& picture,
+                               RenderStyle const& style, double deltaT);
+
 void drawParticles(Gas const& gas, Camera const& camera,
                    sf::RenderTexture& texture, RenderStyle const& style,
                    double deltaT) {
@@ -283,7 +310,8 @@ void drawParticles(Gas const& gas, Camera const& camera,
   std::sort(std::execution::par, projections.begin(), projections.end(),
             [](GSVectorF const& a, GSVectorF const& b) { return a.z < b.z; });
   for (GSVectorF const& proj : projections) {
-    float r{camera.getNPixels(static_cast<float>(Particle::getRadius())) * proj.z};
+    float r{camera.getNPixels(static_cast<float>(Particle::getRadius())) *
+            proj.z};
     sf::Vector2f vertexes[4]{{proj.x - r, proj.y + r},
                              {proj.x + r, proj.y + r},
                              {proj.x + r, proj.y - r},
@@ -295,7 +323,7 @@ void drawParticles(Gas const& gas, Camera const& camera,
     for (size_t i{0}; i < 4; ++i)
       particles.append(sf::Vertex(vertexes[i], texVertexes[i]));
   }
-	texture.setActive();
+  texture.setActive();
   texture.draw(particles, &style.getPartTexture());
 }
 
@@ -309,7 +337,8 @@ void drawParticles(GasData const& data, Camera const& camera,
   std::sort(std::execution::par, projections.begin(), projections.end(),
             [](GSVectorF const& a, GSVectorF const& b) { return a.z < b.z; });
   for (GSVectorF const& proj : projections) {
-    float r{camera.getNPixels(static_cast<float>(Particle::getRadius())) * proj.z};
+    float r{camera.getNPixels(static_cast<float>(Particle::getRadius())) *
+            proj.z};
     sf::Vector2f vertexes[4]{{proj.x - r, proj.y + r},
                              {proj.x + r, proj.y + r},
                              {proj.x + r, proj.y - r},
@@ -367,10 +396,6 @@ std::array<GSVectorF, 6> gasWallData(GasLike const& gasLike, char wall) {
 template std::array<GSVectorF, 6> gasWallData<Gas>(Gas const& gas, char wall);
 template std::array<GSVectorF, 6> gasWallData<GasData>(GasData const& gasData,
                                                        char wall);
-
-// the speeds after the collision are reversed, so a particle who just had a
-// collision needs to be drawn with the speed opposite to the one it has in the
-// moment, otherwise it is drawn shifted opposite to what it should have been
 
 template <typename GasLike>
 void drawWalls(GasLike const& gas, const Camera& camera,
@@ -450,21 +475,4 @@ template void drawWalls<GasData>(GasData const& data, Camera const& camera,
                                  sf::RenderTexture& texture,
                                  RenderStyle const& style);
 
-template <typename GasLike>
-void drawGas(GasLike const& gasLike, Camera const& camera,
-             sf::RenderTexture& picture, RenderStyle const& style,
-             double deltaT) {
-  picture.create(camera.getWidth(), camera.getHeight());
-  picture.clear(sf::Color::Transparent);
-  drawParticles(gasLike, camera, picture, style, deltaT);
-  drawWalls(gasLike, camera, picture, style);
-}
-
-template void drawGas<Gas>(Gas const& gas, Camera const& camera,
-                           sf::RenderTexture& picture, RenderStyle const& style,
-                           double deltaT);
-
-template void drawGas<GasData>(GasData const& data, Camera const& camera,
-                               sf::RenderTexture& picture,
-                               RenderStyle const& style, double deltaT);
 }  // namespace GS

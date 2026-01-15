@@ -1,16 +1,14 @@
 #ifndef RENDERSTYLE_HPP
 #define RENDERSTYLE_HPP
 
-#include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Color.hpp>
-
+#include <SFML/Graphics/Texture.hpp>
 #include <string>
 
 namespace GS {
 
 class RenderStyle {
  public:
-
   RenderStyle(sf::Texture const& texture) : partTexture(texture) {}
   RenderStyle() = delete;
 

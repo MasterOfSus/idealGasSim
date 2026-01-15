@@ -1,11 +1,12 @@
 #ifndef GASDATA_HPP
 #define GASDATA_HPP
 
-#include "PhysicsEngine/Collision.hpp"  // for Wall, Collision (ptr only)
-#include "PhysicsEngine/Particle.hpp"   // for Particle
+#include <stddef.h>
 
-#include <stddef.h>                     // for size_t
-#include <vector>                       // for vector
+#include <vector>
+
+#include "PhysicsEngine/Collision.hpp"
+#include "PhysicsEngine/Particle.hpp"
 
 namespace GS {
 
@@ -13,7 +14,10 @@ class Gas;
 
 class GasData {
  public:
+  // expects a solved collision
   GasData(Gas const& gas, Collision const* collision);
+
+  char getCollType() const;
 
   std::vector<Particle> const& getParticles() const { return particles; }
   Particle const& getP1() const { return particles[p1Index]; }
@@ -24,7 +28,6 @@ class GasData {
   double getTime() const { return time; }
   double getBoxSide() const { return boxSide; }
   Wall getWall() const;
-  char getCollType() const;
 
   bool operator==(GasData const& data) const;
 

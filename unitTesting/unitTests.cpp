@@ -1,30 +1,28 @@
-#include "DataProcessing/GasData.hpp"          // for GasData
-#include "DataProcessing/SimDataPipeline.hpp"  // for SimDataPipeline
-#include "DataProcessing/TdStats.hpp"          // for TdStats
-#include "Graphics/Camera.hpp"                 // for Camera
-#include "Graphics/RenderStyle.hpp"            // for RenderStyle
-#include "PhysicsEngine/Collision.hpp"         // for PPCollision, PWCollision
-#include "PhysicsEngine/GSVector.hpp"          // for GSVector, operator==
-#include "PhysicsEngine/Gas.hpp"               // for Gas
-#include "PhysicsEngine/Particle.hpp"          // for Particle, energy, oper...
-#include "testingAddons.hpp"
-
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Color.hpp>             // for Color, operator==
-
-#include <TH1.h>
-
-#include <cmath>
-#include <vector>
-#include <stddef.h>                            // for size_t
-#include <algorithm>                           // for max
-#include <string>                              // for basic_string
-#include <utility>                             // for move
-#include <atomic>                              // for atomic
-#include <numeric>                             // for accumulate
-
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <TH1.h>
+#include <stddef.h>
+
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <algorithm>
+#include <atomic>
+#include <cmath>
+#include <numeric>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "DataProcessing/GasData.hpp"
+#include "DataProcessing/SimDataPipeline.hpp"
+#include "DataProcessing/TdStats.hpp"
+#include "Graphics/Camera.hpp"
+#include "Graphics/RenderStyle.hpp"
+#include "PhysicsEngine/Collision.hpp"
+#include "PhysicsEngine/GSVector.hpp"
+#include "PhysicsEngine/Gas.hpp"
+#include "PhysicsEngine/Particle.hpp"
 #include "doctest.h"
+#include "testingAddons.hpp"
 
 // setting particle mass and radius
 std::atomic<double> GS::Particle::mass = 10.;
@@ -155,9 +153,9 @@ TEST_CASE("Testing WallCollision") {
   }
   SUBCASE("Resolve Collision") {
     coll.solve();
-		CHECK(doctest::Approx(coll.getP1()->speed.x) == 0.);
-		CHECK(doctest::Approx(coll.getP1()->speed.y) == 0.);
-		CHECK(doctest::Approx(coll.getP1()->speed.z) == -10.);
+    CHECK(doctest::Approx(coll.getP1()->speed.x) == 0.);
+    CHECK(doctest::Approx(coll.getP1()->speed.y) == 0.);
+    CHECK(doctest::Approx(coll.getP1()->speed.z) == -10.);
   }
 }
 TEST_CASE("Testing PartCollision") {
@@ -185,21 +183,22 @@ TEST_CASE("Testing PartCollision") {
     coll.getP1()->position.y = 0;
     coll.getP1()->position.z = 4;
   }
-	SUBCASE("Solving method") {
-		// getting the particles in contact, even if it doesn't matter since
-		// resolution just applies a formula on the normalized distance
-		coll.getP1()->position = {0., 0., 0.};
-		coll.getP1()->speed = {5.46, 4.35, -3.24};
-		GS::GSVectorD p2Pos = {sqrt(2. * GS::Particle::getRadius()), sqrt(2. * GS::Particle::getRadius()), 0.};
-		coll.getP2()->position = p2Pos;
-		coll.solve();
-		CHECK(doctest::Approx(coll.getP1()->speed.x) == .7155);
-		CHECK(doctest::Approx(coll.getP1()->speed.y) == -0.3945);
-		CHECK(doctest::Approx(coll.getP1()->speed.z) == -3.24);
-		CHECK(doctest::Approx(coll.getP2()->speed.x) == 4.8545);
-		CHECK(doctest::Approx(coll.getP2()->speed.y) == 4.9555);
-		CHECK(doctest::Approx(coll.getP2()->speed.z) == 5.6253);
-	}
+  SUBCASE("Solving method") {
+    // getting the particles in contact, even if it doesn't matter since
+    // resolution just applies a formula on the normalized distance
+    coll.getP1()->position = {0., 0., 0.};
+    coll.getP1()->speed = {5.46, 4.35, -3.24};
+    GS::GSVectorD p2Pos = {sqrt(2. * GS::Particle::getRadius()),
+                           sqrt(2. * GS::Particle::getRadius()), 0.};
+    coll.getP2()->position = p2Pos;
+    coll.solve();
+    CHECK(doctest::Approx(coll.getP1()->speed.x) == .7155);
+    CHECK(doctest::Approx(coll.getP1()->speed.y) == -0.3945);
+    CHECK(doctest::Approx(coll.getP1()->speed.z) == -3.24);
+    CHECK(doctest::Approx(coll.getP2()->speed.x) == 4.8545);
+    CHECK(doctest::Approx(coll.getP2()->speed.y) == 4.9555);
+    CHECK(doctest::Approx(coll.getP2()->speed.z) == 5.6253);
+  }
 }
 
 TEST_CASE("Testing collisionTime") {
@@ -259,11 +258,10 @@ TEST_CASE("Testing Gas constructor") {
         GS::Gas(std::vector<GS::Particle>(almostGoodPs), boxSide, time));
     CHECK(goodGas.getParticles() == goodPs);
     CHECK(goodGas.getBoxSide() == 5.);
-		// overlap issue
-    std::vector<GS::Particle> badPs{
-        {{1.1, 2., 3.}, {1., 1., 2.}},        // !!!
-        {{1.1, 2.5, 3.99}, {1., 2., 0.}},     // !!!
-        {{3.99, 3.99, 3.99}, {1., 5., 6.}}};
+    // overlap issue
+    std::vector<GS::Particle> badPs{{{1.1, 2., 3.}, {1., 1., 2.}},     // !!!
+                                    {{1.1, 2.5, 3.99}, {1., 2., 0.}},  // !!!
+                                    {{3.99, 3.99, 3.99}, {1., 5., 6.}}};
     GS::Gas badGas;
     CHECK_THROWS(badGas = GS::Gas(std::move(badPs), boxSide, time));
 
@@ -275,7 +273,7 @@ TEST_CASE("Testing Gas constructor") {
     CHECK(rndGas.getParticles().size() == 10);
     CHECK(doctest::Approx(std::accumulate(rndGas.getParticles().begin(),
                                           rndGas.getParticles().end(), 0.,
-                                          [](double x, GS::Particle const& p) {
+                                          [](double x, GS::Particle const &p) {
                                             return x + GS::energy(p);
                                           }) *
                           2. / 3. / 10.) == 10.);

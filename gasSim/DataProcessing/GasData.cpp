@@ -1,17 +1,17 @@
 #include "GasData.hpp"
-#include "PhysicsEngine/Gas.hpp"
 
 #include <stdint.h>
+
 #include <cassert>
 #include <stdexcept>
 
-// auxiliary getPIndex function
+#include "PhysicsEngine/Gas.hpp"
 
+// auxiliary getPIndex function
 inline long getPIndex(GS::Particle const* p, GS::Gas const& gas) {
   return static_cast<long>(p - gas.getParticles().data());
 }
 
-// expects a solved collision as argument
 GS::GasData::GasData(Gas const& gas, Collision const* collision) {
   if (!(gas.getParticles().data() <= collision->getP1() &&
         collision->getP1() <=
@@ -88,4 +88,3 @@ bool GS::GasData::operator==(GasData const& data) const {
          boxSide == data.boxSide && p1Index == data.p1Index &&
          p2Index == data.p2Index && wall == data.wall;
 }
-

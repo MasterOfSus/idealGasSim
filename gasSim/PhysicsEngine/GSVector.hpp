@@ -7,6 +7,7 @@ namespace GS {
 
 template <typename FP>
 struct GSVector {  // a three-dimensional vector
+
   static_assert(std::is_floating_point_v<FP>);
 
   FP x{0.}, y{0.}, z{0.};
@@ -19,6 +20,9 @@ struct GSVector {  // a three-dimensional vector
       : x{static_cast<FP>(v.x)},
         y{static_cast<FP>(v.y)},
         z{static_cast<FP>(v.z)} {}
+
+  FP norm() const { return static_cast<FP>(std::sqrt(x * x + y * y + z * z)); }
+  void normalize() { *this = *this / norm(); }
 
   GSVector operator-() const { return {-x, -y, -z}; }
   GSVector& operator+=(GSVector const& v) {
@@ -36,10 +40,10 @@ struct GSVector {  // a three-dimensional vector
 
   GSVector operator*(FP c) const { return {x * c, y * c, z * c}; }
   GSVector operator/(FP c) const { return {x / c, y / c, z / c}; }
-
-  FP norm() const { return static_cast<FP>(std::sqrt(x * x + y * y + z * z)); }
-  void normalize() { *this = *this / norm(); }
 };
+
+using GSVectorF = GSVector<float>;
+using GSVectorD = GSVector<double>;
 
 template <typename FP>
 bool operator==(GSVector<FP> const& v1, GSVector<FP> const& v2) {
@@ -78,9 +82,6 @@ GSVector<FP> cross(GSVector<FP> const& v1, GSVector<FP> const& v2) {
   return {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
           v1.x * v2.y - v1.y * v2.x};
 }
-
-using GSVectorF = GSVector<float>;
-using GSVectorD = GSVector<double>;
 
 }  // namespace GS
 

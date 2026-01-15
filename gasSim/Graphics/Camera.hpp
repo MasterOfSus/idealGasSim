@@ -1,13 +1,13 @@
 #ifndef CAMERAHPP
 #define CAMERAHPP
 
-#include "RenderStyle.hpp"
-#include "../PhysicsEngine/GSVector.hpp"
-
 #include <vector>
 
+#include "PhysicsEngine/GSVector.hpp"
+#include "RenderStyle.hpp"
+
 namespace sf {
-	class RenderTexture;
+class RenderTexture;
 }
 
 namespace GS {
@@ -22,6 +22,16 @@ class Camera {
   Camera(GSVectorF const& focusPosition, GSVectorF const& sightVector,
          float planeDistance = 1.f, float fov = 90.f, unsigned width = 1920,
          unsigned height = 1080);
+
+  GSVectorF getPointProjection(GSVectorF const& point) const;
+  std::vector<GSVectorF> projectParticles(
+      std::vector<Particle> const& particles, double deltaT = 0.) const;
+  std::vector<GSVectorF> projectParticles(GasData const& data,
+                                          double deltaT) const;
+  // auxiliary member functions
+  float getTopSide() const;
+  float getPixelSide() const;
+  float getNPixels(float length) const;
 
   // setters and getters
   void setFocus(GSVectorF const& focusPtV) { focusPoint = focusPtV; }
@@ -40,16 +50,6 @@ class Camera {
   float getFOV() const { return fov; }
   unsigned getHeight() const { return height; }
   unsigned getWidth() const { return width; }
-  // auxiliary member functions
-  float getTopSide() const;
-  float getPixelSide() const;
-  float getNPixels(float length) const;
-
-  GSVectorF getPointProjection(GSVectorF const& point) const;
-  std::vector<GSVectorF> projectParticles(
-      std::vector<Particle> const& particles, double deltaT = 0.) const;
-  std::vector<GSVectorF> projectParticles(GasData const& data,
-                                          double deltaT) const;
 
  private:
   GSVectorF focusPoint;
@@ -62,8 +62,9 @@ class Camera {
 };
 
 template <typename GasLike>
-void drawWalls(GasLike const& gas, Camera const& camera,
-               sf::RenderTexture& texture, RenderStyle const& style);
+void drawGas(GasLike const& gasLike, Camera const& camera,
+             sf::RenderTexture& picture, RenderStyle const& style,
+             double deltaT = 0.);
 
 void drawParticles(Gas const& gas, Camera const& camera,
                    sf::RenderTexture& texture, RenderStyle const& style,
@@ -74,9 +75,8 @@ void drawParticles(GasData const& data, Camera const& camera,
                    double deltaT = 0.);
 
 template <typename GasLike>
-void drawGas(GasLike const& gasLike, Camera const& camera,
-             sf::RenderTexture& picture, RenderStyle const& style,
-             double deltaT = 0.);
+void drawWalls(GasLike const& gas, Camera const& camera,
+               sf::RenderTexture& texture, RenderStyle const& style);
 
 }  // namespace GS
 
