@@ -21,11 +21,6 @@ class GasData {
 
   bool operator==(GasData const& data) const;
 
-  GasData(GasData const&) = default;
-  GasData& operator=(GasData const&) = default;
-  GasData(GasData&&) noexcept;
-  GasData& operator=(GasData&&);
-
  private:
   std::vector<Particle> particles;
   double t0;

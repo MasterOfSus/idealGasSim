@@ -99,7 +99,7 @@ if (BUILD_TESTING)
 
 	target_link_libraries(gasSimTests.t PRIVATE gasSimLib
 		sfml-graphics sfml-window sfml-system ${ROOT_LIBRARIES} 
-			tbb
+		tbb
 	)
 
 	add_test(NAME gasSimTests 
@@ -127,7 +127,6 @@ if (BUILD_TESTING)
 	set_target_properties(getVideoTest.t 
 		PROPERTIES 
 		RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/unitTesting
-		EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug>>
 	)
 
 endif()

@@ -1,5 +1,6 @@
 #include "TdStats.hpp"
 
+#include <limits>
 #include <stdexcept>
 #include <algorithm>
 #include <numeric>
@@ -72,7 +73,7 @@ TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
 
 bool isNegligible(double epsilon, double x) {
   return fabs(epsilon / x) < 1E-6;
-};
+}
 
 TdStats::TdStats(GasData const& data, TdStats&& prevStats)
     : wallPulses{},
@@ -102,8 +103,8 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
   } else {
     prevStats.wallPulses = {};
     prevStats.freePaths.clear();
-    prevStats.t0 = NAN;
-    prevStats.time = NAN;
+    prevStats.t0 = std::numeric_limits<double>::quiet_NaN();
+    prevStats.time = std::numeric_limits<double>::quiet_NaN();
     prevStats.boxSide = 0.;
     prevStats.speedsH.Reset("ICES");
     speedsH = prevStats.speedsH;
@@ -187,8 +188,8 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
 
     prevStats.wallPulses = {};
     prevStats.freePaths.clear();
-    prevStats.t0 = NAN;
-    prevStats.time = NAN;
+    prevStats.t0 = std::numeric_limits<double>::quiet_NaN();
+    prevStats.time = std::numeric_limits<double>::quiet_NaN();
     prevStats.boxSide = 1.;
     speedsH.SetDirectory(nullptr);
 
@@ -263,15 +264,13 @@ TdStats& TdStats::operator=(TdStats const& s) {
   lastCollPositions = s.lastCollPositions;
   T = s.T;
   freePaths = s.freePaths;
-  speedsH = TH1D(s.speedsH);
+  speedsH = s.speedsH;
   speedsH.SetDirectory(nullptr);
   t0 = s.t0;
   time = s.time;
   boxSide = s.boxSide;
   return *this;
 }
-
-// try to run without custom implementation
 
 TdStats& TdStats::operator=(TdStats&& s) noexcept {
   wallPulses = std::move(s.wallPulses);
@@ -286,9 +285,9 @@ TdStats& TdStats::operator=(TdStats&& s) noexcept {
   speedsH.SetDirectory(nullptr);
   s.speedsH.SetDirectory(nullptr);
   t0 = s.t0;
-  s.t0 = NAN;
+  s.t0 = std::numeric_limits<double>::quiet_NaN();
   time = s.time;
-  s.time = NAN;
+  s.time = std::numeric_limits<double>::quiet_NaN();
   boxSide = s.boxSide;
   s.boxSide = 1.;
   return *this;
