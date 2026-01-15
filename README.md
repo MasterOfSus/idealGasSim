@@ -59,13 +59,13 @@ Graph appearance and parameter settings are controlled via an input macro whose 
 
 ### Execution
 
-Run the main binary from the project root. Example: the official demo can be executed with
+The binary can be executed through the command:
 
 ```bash
-./build/idealGasSim -c configs/gasSim_demo.ini
+^path to desired build type dir^/idealGasSim -c ^path to config^
 ```
-
-The demo configuration file serves as a reference for most available runtime parameters.
+The official demo configuration file is located at `configs/gasSim_demo.ini`.
+It also serves as a reference for most available runtime parameters.
 
 ## Additional "tests" and manual tests execution
 The proper unit tests are provided in the same build directory as the main executable, but they rely on the execution environment to provide an `assets` folder equal to that found in the unitTesting directory, it is best to execute them from the unitTesting directory itself.
