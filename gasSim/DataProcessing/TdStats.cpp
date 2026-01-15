@@ -1,6 +1,9 @@
 #include "TdStats.hpp"
 
 #include <stdexcept>
+#include <algorithm>
+#include <numeric>
+#include <cassert>
 
 // Auxiliary addPulse private function, assumes solved collision for input
 
@@ -267,6 +270,8 @@ TdStats& TdStats::operator=(TdStats const& s) {
   boxSide = s.boxSide;
   return *this;
 }
+
+// try to run without custom implementation
 
 TdStats& TdStats::operator=(TdStats&& s) noexcept {
   wallPulses = std::move(s.wallPulses);

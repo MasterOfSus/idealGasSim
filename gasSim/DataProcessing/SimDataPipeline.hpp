@@ -27,9 +27,9 @@ class SimDataPipeline {
   void setFramerate(double framerate);
 
   void addData(std::vector<GasData>&& data);
-  void processData(bool mfpMemory = true);
+  void processData(bool mfpMemory = true, std::function<bool()> stopper = [] { return false; });
   void processData(Camera camera, RenderStyle style,
-                   bool mfpMemory = true);
+                   bool mfpMemory = true, std::function<bool()> stopper = [] { return false; });
   std::vector<sf::Texture> getVideo(
       VideoOpts opt, sf::Vector2u windowSize, sf::Texture const& placeHolderT,
       TList& outputGraphs, bool emptyQueue = false,

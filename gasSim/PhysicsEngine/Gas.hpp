@@ -2,6 +2,7 @@
 #define GAS_HPP
 
 #include <vector>
+#include <functional>
 
 #include "Collision.hpp"
 #include "Particle.hpp"
@@ -24,8 +25,8 @@ class Gas {
   double getBoxSide() const { return boxSide; }
   double getTime() const { return time; }
 
-  void simulate(size_t iterationsN);
-  void simulate(size_t iterationsN, SimDataPipeline& SimOutput);
+  void simulate(size_t iterationsN, std::function<bool()> stopper = [] { return false; });
+  void simulate(size_t iterationsN, SimDataPipeline& SimOutput, std::function<bool()> stopper = [] { return false; });
 
  private:
   std::vector<Particle> particles{};

@@ -172,11 +172,12 @@ int main(int argc, const char* argv[]) {
                                                       : 1));
     double gasSide{gas.getBoxSide()};
 
+    std::atomic<bool> stop{false};
     std::mutex coutMtx;
     std::thread simThread{[&] {
 			try {
       gas.simulate(static_cast<size_t>(cFile.GetInteger("simulation parameters", "nIters", 0)),
-                   output);
+                   output, [&] { return stop.load(); });
 			} catch (std::runtime_error const& e) {
 				std::lock_guard<std::mutex> coutGuard{coutMtx};
 				std::cout << "Runtime error: " << e.what() << std::endl;
@@ -251,7 +252,7 @@ int main(int argc, const char* argv[]) {
         GS::VideoOpts::justStats) {
       processThread =
           std::thread([&, mfpMemory] {
-            output.processData(camera, style, mfpMemory);
+            output.processData(camera, style, mfpMemory, [&] { return stop.load(); });
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Data processing thread done.                         "
                          "               \r"
@@ -261,7 +262,7 @@ int main(int argc, const char* argv[]) {
       processThread =
           std::thread([&, mfpMemory] {
 						try {
-							output.processData(mfpMemory);
+							output.processData(mfpMemory, [&] { return stop.load(); });
 						} catch (std::runtime_error const& e) {
 							std::lock_guard<std::mutex> coutGuard{coutMtx};
 							std::cout << "Runtime error: " << e.what() << std::endl;
@@ -344,7 +345,7 @@ int main(int argc, const char* argv[]) {
 						kBGraph->GetYaxis()->SetRangeUser(0., kBGraphF->GetParameter(0) * 3.25);
           }
           if (opt != GS::VideoOpts::gasPlusCoords) {
-            if (speedsH.GetEntries()) {
+            if (static_cast<bool>(speedsH.GetEntries())) {
               speedsH.Fit(maxwellF.get(), "Q");
 							// skibidi
               cumulatedSpeedsH->Add(&speedsH);
@@ -493,9 +494,8 @@ int main(int argc, const char* argv[]) {
       std::mutex windowMtx; // used both for lastWindowTxtr and window
       window.setFramerateLimit(60);
       window.setActive(false);
-      std::atomic<bool> stopBufferLoop{false};
+      std::atomic<bool> pauseBufferLoop{false};
       std::atomic<bool> bufferKillSignal{false};
-      std::atomic<bool> stop{false};
       std::atomic<int> queueNumber{1};
       std::atomic<int> launchedPlayThreadsN{0};
       std::atomic<int> droppedFrames{0};
@@ -505,13 +505,23 @@ int main(int argc, const char* argv[]) {
       auto playLambda{[&, frameTimems](std::shared_ptr<std::vector<sf::Texture>> rPtr,
                                  int threadN) {
         sf::Sprite auxS;
+				sf::Event e;
         while (threadN != queueNumber) {
-          if (stop.load()) break;
+          if (stop.load()) { break; }
           std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
         }
         if (!stop.load()) {
-          stopBufferLoop = true;
+          pauseBufferLoop.store(true);
           std::lock_guard<std::mutex> windowGuard{windowMtx};
+					while (window.pollEvent(e)) {
+						if (e.type == sf::Event::Closed) {
+							stop.store(true);
+							bufferKillSignal.store(true);
+							pauseBufferLoop.store(true);
+							window.close();
+							break;
+						}
+					}
           window.setActive();
           auto lastDrawEnd{std::chrono::high_resolution_clock::now()};
           float frameTimeS{static_cast<float>(frameTimems / 1000.)};
@@ -549,9 +559,9 @@ int main(int argc, const char* argv[]) {
           queueNumber++;
           if (launchedPlayThreadsN == threadN) {
 						if (rPtr->size()) {
-							lastWindowTxtr = rPtr->back();
+							lastWindowTxtr.update(std::move(rPtr->back()));
 						}
-            stopBufferLoop = false;
+            pauseBufferLoop.store(false);
             std::lock_guard<std::mutex> coutGuard{coutMtx};
             std::cout << "Status: buffering.                                   "
                          "                          \r";
@@ -590,8 +600,6 @@ int main(int argc, const char* argv[]) {
 			progressText.setOutlineColor(sf::Color::White);
 			bufferingText.setOutlineThickness(4);
 			progressText.setOutlineThickness(2);
-			// I have no idea why the x value is that but hey it works
-			// (the character size may() not be in pixels?)
 			bufferingText.setOrigin(
 					bufferingText.getLocalBounds().width / 2.f,
 					bufferingText.getLocalBounds().height / 2.f
@@ -606,14 +614,24 @@ int main(int argc, const char* argv[]) {
 					static_cast<float>(windowSize.y) * .05f,
 					static_cast<float>(windowSize.y) * .05f
 			);
-      std::thread bufferingLoop{[&, frameTimems, windowSize]() {
+      std::thread bufferingLoop{[&, frameTimems]() {
 				sf::Sprite auxS;
-				auxS.setTexture(lastWindowTxtr, true);
+				sf::Event e;
         while (true) {
-          if (!stopBufferLoop) {
+          if (!pauseBufferLoop) {
             std::lock_guard<std::mutex> windowGuard{windowMtx};
             window.setActive();
-            while (window.isOpen() && !stopBufferLoop) {
+						auxS.setTexture(lastWindowTxtr, true);
+            while (window.isOpen() && !pauseBufferLoop.load()) {
+							while (window.pollEvent(e)) {
+								if (e.type == sf::Event::Closed) {
+									stop.store(true);
+									bufferKillSignal.store(true);
+									pauseBufferLoop.store(true);
+									window.close();
+									break;
+								}
+							}
 							window.draw(auxS); // repaint last window texture
 						 	// 120 degrees per second
 							bufferingWheel.setRotation(bufferingWheel.getRotation() + 120.f * static_cast<float>(frameTimems) / 1000.f);
@@ -635,14 +653,13 @@ int main(int argc, const char* argv[]) {
                 break;
               }
             }
+						window.setActive(false);
             if (!window.isOpen()) {
-              window.setActive(false);
               break;
             }
             if (bufferKillSignal) {
               break;
             }
-            window.setActive(false);
           } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(frameTimems));
           }
@@ -652,21 +669,15 @@ int main(int argc, const char* argv[]) {
         }
       }};
       bool lastBatch{false};
-      sf::Event e{};
-      while (!stop) {
+      // sf::Event e{};
+      while (!stop.load()) {
         std::shared_ptr<std::vector<sf::Texture>> rendersPtr{
             std::make_shared<std::vector<sf::Texture>>()};
         rendersPtr->reserve(static_cast<size_t>(output.getFramerate()) * 10);
-        while (static_cast<double>(rendersPtr->size()) <= output.getFramerate() * targetBufferTime) {
-          while (window.pollEvent(e)) {
-            if (e.type == sf::Event::Closed) {
-              window.close();
-              bufferKillSignal.store(true);
-              stop.store(true);
-              std::this_thread::sleep_for(std::chrono::seconds(1));
-              break;
-            }
-          }
+        while (
+						static_cast<double>(rendersPtr->size()) <= output.getFramerate() * targetBufferTime
+						&& !stop.load()
+					) {
           if (output.isDone() &&
               output.getRawDataSize() < output.getStatSize() &&
               !output.isProcessing()) {
@@ -679,7 +690,7 @@ int main(int argc, const char* argv[]) {
           rendersPtr->insert(rendersPtr->end(),
                              std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));
-          if (lastBatch) {
+          if (lastBatch || stop.load()) {
             break;
           }
         }
@@ -689,7 +700,12 @@ int main(int argc, const char* argv[]) {
                 launchedPlayThreadsN.fetch_add(1);
                 playLambda(rendersPtr, launchedPlayThreadsN);
               }};
-          playThread.detach();
+					if (!stop) {
+          	playThread.detach();
+					} else {
+						playThread.join();
+						break;
+					}
         } else {
           std::thread playThread{
               [playLambda, rendersPtr, &launchedPlayThreadsN] {
@@ -705,11 +721,13 @@ int main(int argc, const char* argv[]) {
           break;
         }
       }
-      stopBufferLoop = true;
+      pauseBufferLoop.store(true);
       if (bufferingLoop.joinable()) {
         bufferingLoop.join();
       }
-      window.close();
+			if (window.isOpen()) {
+      	window.close();
+			}
       std::lock_guard<std::mutex> coutGuard{coutMtx};
       std::cout << "Dropped frames: " << droppedFrames.load()
                 << ". Leftover data: " << output.getRawDataSize()

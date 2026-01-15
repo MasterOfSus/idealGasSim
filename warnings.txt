@@ -1,7 +1,2 @@
-[  6%] Building CXX object CMakeFiles/gasSimLib.dir/gasSim/DataProcessing/SimDataPipeline.cpp.o
-[ 12%] Linking CXX shared library libgasSimLib.so
-[ 68%] Built target gasSimLib
-[ 75%] Linking CXX executable idealGasSim
-[ 81%] Built target idealGasSim
-[ 87%] Linking CXX executable gasSimTests
-[100%] Built target gasSimTests
+[1/2] Building CXX object CMakeFiles/idealGasSim.dir/Debug/main.cpp.o
+[2/2] Linking CXX executable Debug/idealGasSim

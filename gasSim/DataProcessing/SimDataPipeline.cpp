@@ -86,11 +86,11 @@ void SimDataPipeline::addData(std::vector<GasData>&& data) {
   }
 }
 
-void SimDataPipeline::processData(bool mfpMemory) {
+void SimDataPipeline::processData(bool mfpMemory, std::function<bool()> stopLambda) {
   processing.store(true);
   std::vector<GasData> data{};
   std::unique_lock<std::mutex> rawDataLock(rawDataMtx, std::defer_lock);
-  while (true) {
+  while (!stopLambda()) {
     rawDataLock.lock();
     rawDataCv.wait_for(rawDataLock, std::chrono::milliseconds(100), [this] {
       return rawData.size() > statSize.load() || dataDone.load();
@@ -136,10 +136,10 @@ void SimDataPipeline::processData(bool mfpMemory) {
 }
 
 void SimDataPipeline::processData(Camera camera,
-                                  RenderStyle style, bool mfpMemory) {
+                                  RenderStyle style, bool mfpMemory, std::function<bool()> stopper) {
   processing.store(true);
   std::unique_lock<std::mutex> rawDataLock{rawDataMtx, std::defer_lock};
-  while (true) {
+  while (!stopper()) {
     rawDataLock.lock();
     rawDataCv.wait_for(rawDataLock, std::chrono::milliseconds(100), [this] {
       return rawData.size() > statSize.load() || dataDone.load();

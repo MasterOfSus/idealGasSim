@@ -87,6 +87,9 @@ bool GS::GasData::operator==(GasData const& data) const {
          p2Index == data.p2Index && wall == data.wall;
 }
 
+
+// no need to implement - delete
+
 GS::GasData::GasData(GasData&& d) noexcept
     : particles{std::move(d.particles)},
       t0{d.t0},

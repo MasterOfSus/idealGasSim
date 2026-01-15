@@ -350,8 +350,8 @@ void Gas::move(double dt) {
   time += dt;
 }
 
-void Gas::simulate(size_t itN) {
-  for (size_t i{0}; i < itN; ++i) {
+void Gas::simulate(size_t itN, std::function<bool()> stopper) {
+  for (size_t i{0}; i < itN && !stopper(); ++i) {
     PPCollision pColl{firstPPColl()};
     PWCollision wColl{firstPWColl()};
     Collision* firstColl{nullptr};
@@ -392,12 +392,12 @@ void Gas::simulate(size_t itN) {
   }
 }
 
-void Gas::simulate(size_t itN, SimDataPipeline& output) {
+void Gas::simulate(size_t itN, SimDataPipeline& output, std::function<bool()> stopper) {
   std::vector<GasData> tempOutput{};
   tempOutput.reserve(output.getStatSize());
 
-  for (size_t i{0}; i < itN;) {
-    for (size_t j{0}; j < output.getStatSize() && i < itN; ++j, ++i) {
+  for (size_t i{0}; i < itN && !stopper();) {
+    for (size_t j{0}; j < output.getStatSize() && i < itN && !stopper(); ++j, ++i) {
       PPCollision pColl{firstPPColl()};
       PWCollision wColl{firstPWColl()};
       Collision* firstColl{nullptr};

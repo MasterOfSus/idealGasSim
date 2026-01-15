@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+// use std::sqrt()
+
 namespace GS {
 
 template <typename FP>

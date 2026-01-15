@@ -11,8 +11,6 @@ Collision::Collision(double timeV, Particle* p1p) : p1{p1p}, time{timeV} {
   }
 }
 
-Collision::~Collision() = default;
-
 PWCollision::PWCollision(double timeV, Particle* p1p, Wall wallV)
     : Collision(timeV, p1p), wall{wallV} {}
 
