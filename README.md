@@ -33,10 +33,8 @@ Developed and tested with:
 
 ## Compilation
 
-1. Ensure that your ROOT include path is exported through your environment variable (e.g. `CPLUS_INCLUDE_PATH`) if ROOT is not installed via a package manager.
-2. Update the linker flags in `CMakeLists.txt` to match your local ROOT installation.
-3. Update the target_link_libraries() field in `CMakeLists.txt` to match the multithreading facilities provided by your environment. (the project was developed on an intel machine, amd machines might differ)
-3. Configure and build using CMake from the project root:
+1. Ensure that your thisroot.sh file has been sourced if ROOT is not installed via a package manager. (It should be located in your ROOT installation's bin directory).
+2. Configure and build using CMake from the project root:
 
 ```
 cmake -S . -B build -G"Ninja Multi-Config"
