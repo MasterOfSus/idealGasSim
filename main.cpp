@@ -151,26 +151,26 @@ int main(int argc, const char* argv[]) {
                            ? opts["config"].as<std::string>()
                            : "configs/gasSim_demo.ini";
 
-    INIReader cFile(path);
-    if (cFile.ParseError() != 0) {
-      throw std::runtime_error("Can't load " + path);
+    INIReader config(path);
+    if (config.ParseError() != 0) {
+      throw std::runtime_error("Failed to load " + path);
     }
 
     std::cout << "Starting resources loading. Using config file at path "
               << path << std::endl;
 
-    GS::Particle::setMass(cFile.GetReal("simulation parameters", "pMass", 1.));
-    GS::Particle::setRadius(
-        cFile.GetReal("simulation parameters", "pRadius", 1.));
+    double pMass{config.GetReal("simulation parameters", "pMass", 1.)};
+    GS::Particle::setMass(pMass);
+    double pRadius{config.GetReal("simulation parameters", "pRadius", 1.)};
+    GS::Particle::setRadius(pRadius);
 
-    TFile inputFile{TFile(
-        (std::ostringstream()
-         << "inputs/"
-         << cFile.Get("simulation parameters", "ROOTInputPath", "input").c_str()
-         << ".root")
-            .str()
-            .c_str())};
-    throwIfZombie(&inputFile, "Failed to load provided input file path.");
+    std::string ROOTInputPath{"inputs/"};
+    ROOTInputPath +=
+        config.Get("simulation parameters", "ROOTInputPath", "input").c_str();
+    ROOTInputPath += ".root";
+    TFile inputFile{TFile(ROOTInputPath.c_str())};
+    throwIfZombie(&inputFile,
+                  "Failed to load provided input file path: " + ROOTInputPath);
 
     std::shared_ptr<TH1D> speedsHTemplate{
         dynamic_cast<TH1D*>(inputFile.Get("speedsHTemplate"))};
@@ -178,24 +178,28 @@ int main(int argc, const char* argv[]) {
     throwIfZombie(speedsHTemplate.get(),
                   "Failed to load speedsHTemplate from input file.");
 
-    long nStats{cFile.GetInteger("simulation parameters", "nStats", 1)};
+    long nStats{config.GetInteger("simulation parameters", "nStats", 1)};
     if (nStats <= 0) {
       throw std::invalid_argument("Provided negative nStats.");
     }
+
+    float framerate{config.GetFloat("output", "framerate", 60.f)};
+
     GS::SimDataPipeline output{
         static_cast<unsigned>(nStats > 0 ? nStats
                                          : throw std::invalid_argument(
                                                "Provided negative nStats.")),
-        cFile.GetFloat("output", "framerate", 60.f), *speedsHTemplate};
+        framerate, *speedsHTemplate};
     sf::Font font;
     font.loadFromFile("assets/JetBrains-Mono-Nerd-Font-Complete.ttf");
     output.setFont(font);
-    GS::Gas gas{static_cast<size_t>(
-                    cFile.GetInteger("simulation parameters", "nParticles", 1)),
-                cFile.GetFloat("simulation parameters", "targetT", 1),
-                cFile.GetFloat("simulation parameters", "boxSide", 1.)};
+    size_t nParticles{static_cast<size_t>(
+        config.GetInteger("simulation parameters", "nParticles", 1))};
+    double targetT{config.GetReal("simulation parameters", "targetT", 1)};
+    double boxSide{config.GetReal("simulation parameters", "boxSide", 1.)};
+    GS::Gas gas{nParticles, targetT, boxSide};
 
-    double targetBufferTime{cFile.GetReal("output", "targetBuffer", 2.5)};
+    double targetBufferTime{config.GetReal("output", "targetBuffer", 2.5)};
 
     double desiredStatChunkSize{
         targetBufferTime * M_PI *
@@ -206,17 +210,18 @@ int main(int argc, const char* argv[]) {
                           return acc + p.speed.norm();
                         }) /
         static_cast<double>(nStats) / gas.getBoxSide()};
+
     output.setStatChunkSize(static_cast<size_t>(
         desiredStatChunkSize > 1 ? desiredStatChunkSize : 1));
     double gasSide{gas.getBoxSide()};
 
     std::atomic<bool> stop{false};
     std::mutex coutMtx;
-    std::thread simThread{[&] {
+    size_t nIters{static_cast<size_t>(
+        config.GetInteger("simulation parameters", "nIters", 0))};
+    std::thread simThread{[&, nIters] {
       try {
-        gas.simulate(static_cast<size_t>(cFile.GetInteger(
-                         "simulation parameters", "nIters", 0)),
-                     output, [&] { return stop.load(); });
+        gas.simulate(nIters, output, [&] { return stop.load(); });
       } catch (std::runtime_error const& e) {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Runtime error: " << e.what() << std::endl;
@@ -233,12 +238,12 @@ int main(int argc, const char* argv[]) {
       std::cout << "Simulation thread running." << std::endl;
     }
 
-    GS::GSVectorF camPos{static_cast<GS::GSVectorF>(stovec(cFile.Get(
+    GS::GSVectorF camPos{static_cast<GS::GSVectorF>(stovec(config.Get(
         "rendering", "camPos",
         (std::ostringstream() << "{" << gasSide * 1.5 << ", " << gasSide * 1.25
                               << ", " << gasSide * 0.75 << '}')
             .str())))};
-    GS::GSVectorF camSight{static_cast<GS::GSVectorF>(stovec(cFile.Get(
+    GS::GSVectorF camSight{static_cast<GS::GSVectorF>(stovec(config.Get(
         "rendering", "camSight",
         (std::ostringstream()
          << "{" << gasSide * 0.5 - camPos.x << ", " << gasSide * 0.5 - camPos.y
@@ -246,11 +251,13 @@ int main(int argc, const char* argv[]) {
             .str())))};
 
     sf::Vector2u windowSize{
-        static_cast<unsigned>(cFile.GetInteger("output", "videoResX", 800)),
-        static_cast<unsigned>(cFile.GetInteger("output", "videoResY", 600))};
+        static_cast<unsigned>(config.GetInteger("output", "videoResX", 800)),
+        static_cast<unsigned>(config.GetInteger("output", "videoResY", 600))};
 
+    GS::VideoOpts videoOpt{
+        stovideoopts(config.Get("output", "videoOpt", "justGas"))};
     sf::Vector2u gasSize{1, 1};
-    switch (stovideoopts(cFile.Get("output", "videoOpt", "justGas"))) {
+    switch (videoOpt) {
       case GS::VideoOpts::justGas:
         gasSize = windowSize;
         break;
@@ -268,29 +275,30 @@ int main(int argc, const char* argv[]) {
 
     GS::Camera camera{camPos,
                       camSight,
-                      cFile.GetFloat("render", "camLength", 1.f),
-                      cFile.GetFloat("render", "fov", 90.f),
+                      config.GetFloat("render", "camLength", 1.f),
+                      config.GetFloat("render", "fov", 90.f),
                       gasSize.x,
                       gasSize.y};
 
     sf::Texture particleTex;
-    particleTex.loadFromFile(
-        "assets/" + cFile.Get("render", "particleTexPath", "lightBall") +
-        ".png");
+    std::string particleTexPath{"assets/"};
+    particleTexPath += config.Get("render", "particleTexPath", "lightBall");
+    particleTexPath += ".png";
+    particleTex.loadFromFile(particleTexPath);
     GS::RenderStyle style{particleTex};
     style.setWallsColor(sf::Color(static_cast<unsigned>(
-        cFile.GetInteger("render", "wallsColor", 0x50fa7b80))));
+        config.GetInteger("render", "wallsColor", 0x50fa7b80))));
     style.setBGColor(sf::Color(static_cast<unsigned>(
-        cFile.GetInteger("render", "gasBgColor", 0xffffffff))));
-    style.setWallsOpts(cFile.Get("render", "wallsOpts", "ufdl"));
+        config.GetInteger("render", "gasBgColor", 0xffffffff))));
+    style.setWallsOpts(config.Get("render", "wallsOpts", "ufdl"));
 
-    bool mfpMemory{cFile.GetBoolean("output", "mfpMemory", true)};
+    bool mfpMemory{config.GetBoolean("output", "mfpMemory", true)};
 
-    const int frameTimems{static_cast<int>(1000. / output.getFramerate())};
+    const int frameTimems{static_cast<int>(1000. / framerate)};
 
     std::thread processThread;
-    if (stovideoopts(cFile.Get("output", "videoOpt", "justGas")) !=
-        GS::VideoOpts::justStats) {
+    if (videoOpt != GS::VideoOpts::justStats) {
+      // process stats and graphics
       processThread = std::thread([&, mfpMemory] {
         output.processData(camera, style, mfpMemory,
                            [&] { return stop.load(); });
@@ -300,6 +308,7 @@ int main(int argc, const char* argv[]) {
                   << std::endl;
       });
     } else {
+      // process only stats
       processThread = std::thread([&, mfpMemory] {
         try {
           output.processData(mfpMemory, [&] { return stop.load(); });
@@ -362,14 +371,10 @@ int main(int argc, const char* argv[]) {
     std::shared_ptr<TF1> expMFP{dynamic_cast<TF1*>(inputFile.Get("expMFP"))};
     throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
 
-    maxwellF->SetParameter(
-        0, cFile.GetReal("simulation parameters", "targetT", 1.));
+    maxwellF->SetParameter(0, targetT);
     maxwellF->FixParameter(
-        1, static_cast<double>(static_cast<size_t>(cFile.GetInteger(
-                                   "simulation parameters", "nParticles", 1)) *
-                               output.getStatSize()));
-    maxwellF->FixParameter(2,
-                           cFile.GetReal("simulation parameters", "pMass", 1));
+        1, static_cast<double>(nParticles * output.getStatSize()));
+    maxwellF->FixParameter(2, pMass);
 
     std::function<void(TH1D&, GS::VideoOpts)> fitLambda{[&](TH1D& speedsH,
                                                             GS::VideoOpts opt) {
@@ -421,19 +426,11 @@ int main(int argc, const char* argv[]) {
       }
     }};
 
-    expP->SetParameter(
-        0, cFile.GetFloat("simulation parameters", "targetT", 1) *
-               static_cast<float>(
-                   cFile.GetInteger("simulation parameters", "nParticles", 1)) /
-               static_cast<float>(std::pow(
-                   cFile.GetReal("simulation parameters", "boxSide", 1), 3.)));
+    expP->SetParameter(0, targetT * static_cast<double>(nParticles) /
+                              static_cast<double>(std::pow(boxSide, 3.)));
     expkB->SetParameter(0, 1);
-    expMFP->SetParameter(
-        0, cFile.GetFloat("simulation parameters", "targetT", 1) / M_SQRT2 /
-               expP->GetParameter(0) /
-               (M_PI * GS::Particle::getRadius() * GS::Particle::getRadius()));
-    // std::cout << "Expected MFP set at " << expMFP->GetParameter(0) << "
-    // units." << std::endl;
+    expMFP->SetParameter(0, targetT / M_SQRT2 / expP->GetParameter(0) /
+                                (M_PI * pRadius * pRadius));
 
     std::array<std::function<void()>, 4> drawLambdas{
         [&]() {
@@ -463,12 +460,10 @@ int main(int argc, const char* argv[]) {
           expMFP->Draw("SAME");
         }};
 
-    GS::VideoOpts videoOpt{
-        stovideoopts(cFile.Get("output", "videoOpt", "all"))};
     sf::Texture placeHolder;
     placeHolder.loadFromFile(
         (std::ostringstream()
-         << "assets/" << cFile.Get("render", "placeHolderName", "placeholder")
+         << "assets/" << config.Get("render", "placeHolderName", "placeholder")
          << ".png")
             .str()
             .c_str());
@@ -483,7 +478,7 @@ int main(int argc, const char* argv[]) {
                 << std::endl;
     }
 
-    if (cFile.GetBoolean("output", "saveVideo", false)) {
+    if (config.GetBoolean("output", "saveVideo", false)) {
       {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Starting video encoding." << std::endl;
@@ -493,7 +488,7 @@ int main(int argc, const char* argv[]) {
           << windowSize.x << "x" << windowSize.y << " -framerate "
           << output.getFramerate() << " -i - -c:v libx264 -pix_fmt yuv420p "
           << "outputs/videos/"
-          << cFile.Get("output", "videoOutputName", "output") << ".mp4";
+          << config.Get("output", "videoOutputName", "output") << ".mp4";
 
       FILE* ffmpeg = popen(cmd.str().c_str(), "w");
       if (!ffmpeg) {
@@ -627,7 +622,8 @@ int main(int argc, const char* argv[]) {
       sf::Texture bufferingWheelT;
       bufferingWheelT.loadFromFile(
           std::string("assets/") +
-          cFile.Get("output", "bufferingWheel", "jesse") + std::string(".png"));
+          config.Get("output", "bufferingWheel", "jesse") +
+          std::string(".png"));
       sf::Sprite bufferingWheel;
       bufferingWheel.setTexture(bufferingWheelT, true);
       bufferingWheel.setOrigin(
@@ -790,10 +786,8 @@ int main(int argc, const char* argv[]) {
     std::cout.flush();
     inputFile.Close();
     auto rootOutput = std::make_unique<TFile>(
-        (std::ostringstream()
-         << "outputs/" << cFile.Get("output", "rootOutputName", "output")
-         << ".root")
-            .str()
+        (std::string("outputs/") +
+         config.Get("output", "rootOutputName", "output") + ".root")
             .c_str(),
         "RECREATE");
 
