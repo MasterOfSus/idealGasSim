@@ -53,7 +53,7 @@ The main binaries can be found in build/^desired build type^
 
 ### Editing the Input File
 
-Graph appearance and parameter settings are controlled via an input macro whose path is specified in the `configuration.ini` file. Modify the macro as needed and execute it with ROOT to regenerate the input file. The program will automatically load it on startup according to the path specified in the configuration file.
+Graph appearance and parameter settings are controlled via an input ROOT file whose path is specified in the `configuration.ini` file. To modify the file, tweak the `makeInputFile.cpp` macro as needed and execute it with ROOT to regenerate the input file.
 
 ### Execution
 
