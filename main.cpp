@@ -1,4 +1,3 @@
-#include <SFML/Graphics/Color.hpp>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -8,6 +7,7 @@
 #include <string>
 #include <thread>
 
+#include "gasSim/Libs/cxxopts.hpp"
 #include "gasSim/Libs/INIReader.h"
 
 #include <RtypesCore.h>
@@ -19,6 +19,7 @@
 #include <TMultiGraph.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/System/Vector2.hpp>
@@ -26,7 +27,6 @@
 #include <SFML/Graphics/Text.hpp>
 
 #include "gasSim/DataProcessing.hpp"
-#include "gasSim/Input.hpp"
 
 std::atomic<double> GS::Particle::radius{1.};
 std::atomic<double> GS::Particle::mass{1.};
@@ -102,18 +102,34 @@ void throwIfZombie(TObject* o, std::string message) {
 }
 
 int main(int argc, const char* argv[]) {
-	// trying to make root stop throwing temper tantrums over my variables
-	TH1D::AddDirectory(kFALSE);
-
   try {
     std::cout << "Welcome. Starting idealGasSim gas simulation.\n";
-    auto opts{GS::optParse(argc, argv)};
-    if (GS::optControl(argc, opts)) {
-      return 0;
-    }
+
+		// trying to make root stop throwing temper tantrums over my variables
+		TH1D::AddDirectory(kFALSE);
+
+		cxxopts::Options options(
+				"idealGasSim",
+				"An event-based ideal gas simulator with graphic data visualization"
+		);
+
+		options.add_options()
+				("h,help", "Print this help message")
+				("c,config", "Use the given path as the configuration file, defaults to configs/gasSim_demo.ini",
+						cxxopts::value<std::string>());
+
+		auto opts = options.parse(argc, argv);
+
+		// No args or explicit help → print help and exit
+		if (argc == 1 || opts["help"].as<bool>()) {
+				std::cout << options.help() << '\n';
+				return 0;
+		}
+
     std::string path = opts.count("config") != 0
                            ? opts["config"].as<std::string>()
                            : "configs/gasSim_demo.ini";
+
     INIReader cFile(path);
     if (cFile.ParseError() != 0) {
       throw std::runtime_error("Can't load " + path);

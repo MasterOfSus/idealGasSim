@@ -12,7 +12,6 @@ struct Collision {
   double getTime() const { return time; }
   virtual char getType() const = 0;
   virtual void solve() = 0;
-  virtual ~Collision() = default;
   Collision(double time, Particle* p);
 
   Particle* getP1() { return p1; }
