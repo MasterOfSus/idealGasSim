@@ -1,6 +1,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <climits>
 #include <cmath>
 #include <cstdio>
 #include <exception>
@@ -53,6 +54,9 @@ std::atomic<double> GS::Particle::radius{1.};
 std::atomic<double> GS::Particle::mass{1.};
 
 GS::GSVectorD stovec(std::string s) {
+	if (s.size() == 0) {
+		throw std::invalid_argument("Cannot provide empty string.");
+	}
   // checking for braces and erasing the first one
   if (s.front() != '{' || s.back() != '}') {
     throw std::invalid_argument("Missing opening and closing braces.");
@@ -160,8 +164,14 @@ int main(int argc, const char* argv[]) {
               << path << std::endl;
 
     double pMass{config.GetReal("simulation parameters", "pMass", 1.)};
+		if (pMass <= 0) {
+			throw std::invalid_argument("Found non-positive mass in config file.");
+		}
     GS::Particle::setMass(pMass);
     double pRadius{config.GetReal("simulation parameters", "pRadius", 1.)};
+		if (pRadius <= 0) {
+			throw std::invalid_argument("Found non-positive radius in config file.");
+		}
     GS::Particle::setRadius(pRadius);
 
     std::string ROOTInputPath{"inputs/"};
@@ -195,11 +205,23 @@ int main(int argc, const char* argv[]) {
     output.setFont(font);
     size_t nParticles{static_cast<size_t>(
         config.GetInteger("simulation parameters", "nParticles", 1))};
+		if (nParticles > LONG_MAX) {
+			throw(std::invalid_argument("Found non-positive radius in config file."));
+		}
     double targetT{config.GetReal("simulation parameters", "targetT", 1)};
+		if (targetT <= 0) {
+			throw std::invalid_argument("Found non-positive target temperature in config file.");
+		}
     double boxSide{config.GetReal("simulation parameters", "boxSide", 1.)};
+		if (boxSide <= 0) {
+			throw std::invalid_argument("Found non-positive box side in config file.");
+		}
     GS::Gas gas{nParticles, targetT, boxSide};
 
     double targetBufferTime{config.GetReal("output", "targetBuffer", 2.5)};
+		if (targetBufferTime <= 0) {
+			throw std::invalid_argument("Found non-positive target buffer time in config file.");
+		}
 
     double desiredStatChunkSize{
         targetBufferTime * M_PI *
@@ -210,15 +232,20 @@ int main(int argc, const char* argv[]) {
                           return acc + p.speed.norm();
                         }) /
         static_cast<double>(nStats) / gas.getBoxSide()};
+		if (desiredStatChunkSize > SIZE_MAX) {
+			throw std::runtime_error("Computed desired stat chunk size is too big. Check your config file.");
+		}
 
     output.setStatChunkSize(static_cast<size_t>(
         desiredStatChunkSize > 1 ? desiredStatChunkSize : 1));
-    double gasSide{gas.getBoxSide()};
 
     std::atomic<bool> stop{false};
     std::mutex coutMtx;
     size_t nIters{static_cast<size_t>(
         config.GetInteger("simulation parameters", "nIters", 0))};
+		if (nIters > LONG_MAX) {
+			throw std::runtime_error("Found negative iterations number in config file.");
+		}
     std::thread simThread{[&, nIters] {
       try {
         gas.simulate(nIters, output, [&] { return stop.load(); });
@@ -240,19 +267,22 @@ int main(int argc, const char* argv[]) {
 
     GS::GSVectorF camPos{static_cast<GS::GSVectorF>(stovec(config.Get(
         "rendering", "camPos",
-        (std::ostringstream() << "{" << gasSide * 1.5 << ", " << gasSide * 1.25
-                              << ", " << gasSide * 0.75 << '}')
+        (std::ostringstream() << "{" << boxSide * 1.5 << ", " << boxSide * 1.25
+                              << ", " << boxSide * 0.75 << '}')
             .str())))};
     GS::GSVectorF camSight{static_cast<GS::GSVectorF>(stovec(config.Get(
         "rendering", "camSight",
         (std::ostringstream()
-         << "{" << gasSide * 0.5 - camPos.x << ", " << gasSide * 0.5 - camPos.y
-         << ", " << gasSide * 0.5 - camPos.z << '}')
+         << "{" << boxSide * 0.5 - camPos.x << ", " << boxSide * 0.5 - camPos.y
+         << ", " << boxSide * 0.5 - camPos.z << '}')
             .str())))};
 
     sf::Vector2u windowSize{
         static_cast<unsigned>(config.GetInteger("output", "videoResX", 800)),
         static_cast<unsigned>(config.GetInteger("output", "videoResY", 600))};
+		if (windowSize.x > INT_MAX || windowSize.y > INT_MAX) {
+			throw std::invalid_argument("Found negative videoResX or videoResY in config file.");
+		}
 
     GS::VideoOpts videoOpt{
         stovideoopts(config.Get("output", "videoOpt", "justGas"))};
@@ -284,7 +314,9 @@ int main(int argc, const char* argv[]) {
     std::string particleTexPath{"assets/"};
     particleTexPath += config.Get("render", "particleTexPath", "lightBall");
     particleTexPath += ".png";
-    particleTex.loadFromFile(particleTexPath);
+		if (!particleTex.loadFromFile(particleTexPath)) {
+			throw std::invalid_argument("Failed to load particle texture from config file path.");
+		}
     GS::RenderStyle style{particleTex};
     style.setWallsColor(sf::Color(static_cast<unsigned>(
         config.GetInteger("render", "wallsColor", 0x50fa7b80))));
@@ -461,12 +493,14 @@ int main(int argc, const char* argv[]) {
         }};
 
     sf::Texture placeHolder;
-    placeHolder.loadFromFile(
+    if (!placeHolder.loadFromFile(
         (std::ostringstream()
          << "assets/" << config.Get("render", "placeHolderName", "placeholder")
          << ".png")
             .str()
-            .c_str());
+            .c_str())) {
+			throw std::invalid_argument("Failed to load placeHolder texture from the path in the config file.");
+		}
 
     while (!output.isProcessing()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -627,10 +661,12 @@ int main(int argc, const char* argv[]) {
             }
           }};
       sf::Texture bufferingWheelT;
-      bufferingWheelT.loadFromFile(
+      if (bufferingWheelT.loadFromFile(
           std::string("assets/") +
           config.Get("output", "bufferingWheel", "jesse") +
-          std::string(".png"));
+          std::string(".png"))) {
+				throw std::invalid_argument("Failed to load buffering wheel texture from the path in the config file.");
+			}
       sf::Sprite bufferingWheel;
       bufferingWheel.setTexture(bufferingWheelT, true);
       bufferingWheel.setOrigin(
@@ -806,6 +842,7 @@ int main(int argc, const char* argv[]) {
            config.Get("output", "rootOutputName", "output") + ".root")
               .c_str(),
           "RECREATE");
+			throwIfZombie(rootOutput.get(), "Failed to load/make root output file with path from config file.");
 
       rootOutput->SetTitle(rootOutput->GetName());
       rootOutput->cd();

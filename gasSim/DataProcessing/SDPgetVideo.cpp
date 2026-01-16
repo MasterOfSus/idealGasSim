@@ -43,9 +43,6 @@
 
 #include "DataProcessing/TdStats.hpp"
 
-// Hi, my name's Liam, I am the person who wrote this,
-// I just wanted to say that I'm sorry for everything
-
 namespace GS {
 
 enum class Wall;
@@ -230,7 +227,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         return {};
       }
       if (renders.size() || stats.size()) {
-        //  dealing with fTime_
+        //  setting/resetting fTime_
         if (!fTime.has_value() || !isIntMultOf(*gTimeL - *fTime, gDeltaTL)) {
           if (!stats.size()) {
             fTime = getRendersT0(renders) - gDeltaTL;
@@ -313,7 +310,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
   }
 
   // recurrent variables setup
-  // declarations
   // text
   std::ostringstream Temp{};
   sf::Text TText;
