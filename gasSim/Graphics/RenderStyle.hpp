@@ -1,9 +1,10 @@
 #ifndef RENDERSTYLE_HPP
 #define RENDERSTYLE_HPP
 
+#include <string>
+
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <string>
 
 namespace GS {
 

@@ -1,19 +1,5 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <TFile.h>
-#include <TGraph.h>
-#include <TH1.h>
-#include <TList.h>
-#include <TMultiGraph.h>
-#include <TObject.h>
-#include <bits/chrono.h>
-
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/VideoMode.hpp>
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <iostream>
 #include <mutex>
@@ -23,12 +9,28 @@
 #include <thread>
 #include <vector>
 
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/VideoMode.hpp>
+
+#include <TFile.h>
+#include <TGraph.h>
+#include <TH1.h>
+#include <TList.h>
+#include <TMultiGraph.h>
+#include <TObject.h>
+
 #include "DataProcessing/SimDataPipeline.hpp"
 #include "Graphics/Camera.hpp"
 #include "Graphics/RenderStyle.hpp"
 #include "PhysicsEngine/Gas.hpp"
 #include "PhysicsEngine/Particle.hpp"
-#include "doctest.h"
 #include "testingAddons.hpp"
 
 std::atomic<double> GS::Particle::mass = 10.;

@@ -1,21 +1,22 @@
 #ifndef SIMDATAPIPELINE_HPP
 #define SIMDATAPIPELINE_HPP
 
-#include <TH1.h>
-#include <stddef.h>
-
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/System/Vector2.hpp>
 #include <array>
 #include <atomic>
 #include <condition_variable>
+#include <cstddef>
 #include <deque>
 #include <functional>
 #include <mutex>
 #include <optional>
 #include <utility>
 #include <vector>
+
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/Vector2.hpp>
+
+#include <TH1.h>
 
 #include "DataProcessing/GasData.hpp"
 #include "Graphics/RenderStyle.hpp"

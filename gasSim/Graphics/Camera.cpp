@@ -1,8 +1,12 @@
 #include "Camera.hpp"
 
-#include <bits/std_abs.h>
-#include <stddef.h>
-#include <string.h>
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <cstring>
+#include <execution>
+#include <stdexcept>
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
@@ -13,11 +17,6 @@
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 #include <SFML/System/Vector2.hpp>
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <execution>
-#include <stdexcept>
 
 #include "DataProcessing/GasData.hpp"
 #include "Graphics/RenderStyle.hpp"

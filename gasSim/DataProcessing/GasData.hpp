@@ -1,8 +1,7 @@
 #ifndef GASDATA_HPP
 #define GASDATA_HPP
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <vector>
 
 #include "PhysicsEngine/Collision.hpp"

@@ -1,16 +1,18 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <TH1.h>
-#include <stddef.h>
-
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <cstddef>
 #include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
+
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Texture.hpp>
+
+#include <TH1.h>
 
 #include "DataProcessing/GasData.hpp"
 #include "DataProcessing/SimDataPipeline.hpp"
@@ -21,7 +23,6 @@
 #include "PhysicsEngine/GSVector.hpp"
 #include "PhysicsEngine/Gas.hpp"
 #include "PhysicsEngine/Particle.hpp"
-#include "doctest.h"
 #include "testingAddons.hpp"
 
 // setting particle mass and radius

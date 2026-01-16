@@ -1,12 +1,12 @@
 #ifndef TDSTATS_HPP
 #define TDSTATS_HPP
 
-#include <TH1.h>
-#include <stddef.h>
-
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <vector>
+
+#include <TH1.h>
 
 #include "PhysicsEngine/GSVector.hpp"
 

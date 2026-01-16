@@ -1,8 +1,7 @@
 #ifndef GAS_HPP
 #define GAS_HPP
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <functional>
 #include <vector>
 

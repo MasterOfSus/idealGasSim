@@ -1,11 +1,7 @@
 #include "SimDataPipeline.hpp"
 
-#include <assert.h>
-#include <bits/chrono.h>
-
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Window/Context.hpp>
-#include <algorithm>
+#include <cassert>
+#include <chrono>
 #include <exception>
 #include <iterator>
 #include <memory>
@@ -13,10 +9,12 @@
 #include <stdexcept>
 #include <thread>
 
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Window/Context.hpp>
+
 #include "DataProcessing/TdStats.hpp"
 #include "GasData.hpp"
 #include "Graphics/Camera.hpp"
-#include "PhysicsEngine/Particle.hpp"
 
 namespace GS {
 

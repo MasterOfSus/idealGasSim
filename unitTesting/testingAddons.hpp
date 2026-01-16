@@ -1,9 +1,8 @@
 #ifndef TESTINGADDONS_HPP
 #define TESTINGADDONS_HPP
 
-#include <stddef.h>
-
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <thread>
 #include <vector>

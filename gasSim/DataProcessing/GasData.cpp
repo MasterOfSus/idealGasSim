@@ -1,8 +1,7 @@
 #include "GasData.hpp"
 
-#include <stdint.h>
-
 #include <cassert>
+#include <cstdint>
 #include <stdexcept>
 
 #include "PhysicsEngine/Gas.hpp"

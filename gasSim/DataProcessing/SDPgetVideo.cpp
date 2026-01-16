@@ -1,31 +1,13 @@
-#include <RtypesCore.h>
-#include <TCanvas.h>
-#include <TGraph.h>
-#include <TH1.h>
-#include <TImage.h>
-#include <TList.h>
-#include <TMultiGraph.h>
-#include <TObject.h>
-#include <assert.h>
-#include <bits/chrono.h>
-#include <stddef.h>
+#include "SimDataPipeline.hpp"
 
-#include <SFML/Config.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Context.hpp>
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cassert>
+#include <chrono>
 #include <cmath>
 #include <condition_variable>
+#include <cstddef>
 #include <deque>
 #include <functional>
 #include <iomanip>
@@ -38,8 +20,28 @@
 #include <utility>
 #include <vector>
 
+#include <SFML/Config.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/String.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Context.hpp>
+
+#include <RtypesCore.h>
+#include <TCanvas.h>
+#include <TGraph.h>
+#include <TH1.h>
+#include <TImage.h>
+#include <TList.h>
+#include <TMultiGraph.h>
+#include <TObject.h>
+
 #include "DataProcessing/TdStats.hpp"
-#include "SimDataPipeline.hpp"
 
 // Hi, my name's Liam, I am the person who wrote this,
 // I just wanted to say that I'm sorry for everything
