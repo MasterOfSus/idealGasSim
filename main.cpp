@@ -927,7 +927,7 @@ int main(int argc, const char* argv[]) {
       std::string rootOutputPath{
           "outputs/" + configFile.Get("output", "rootOutputName", "output") +
           ".root"};
-      throwIfNotExists(rootOutputPath);
+      throwIfNotExists("outputs");
       auto rootOutput =
           std::make_unique<TFile>(rootOutputPath.c_str(), "RECREATE");
       throwIfZombie(
