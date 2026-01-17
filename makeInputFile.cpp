@@ -6,18 +6,10 @@
 #include <TList.h>
 #include <TMultiGraph.h>
 
-double maxwellian(Double_t* x, Double_t* pars) {
-  static double xV;
-  xV = *x;
-  return 4 * xV * xV * pars[1] *
-         std::sqrt(std::pow(pars[2] / 2. / pars[0], 3) / M_PI) *
-         std::pow(M_E, -pars[2] * xV * xV / 2. / pars[0]);
-}
-
 void makeInputFile() {
   TFile* inputFile = new TFile("inputs/input.root", "RECREATE", "inputFile");
   TH1D* speedsHTemplate = new TH1D(
-      "speedsHTemplate", "Squared velocities distribution", 30, 0., 30.);
+      "speedsHTemplate", "Squared velocities distribution", 10, 0., 30.);
   speedsHTemplate->GetXaxis()->SetTitle("Speed norm (m/s)");
   speedsHTemplate->GetYaxis()->SetTitle("Count");
   speedsHTemplate->SetFillColor(kViolet - 6);
@@ -27,7 +19,7 @@ void makeInputFile() {
   TMultiGraph* pGraphs = new TMultiGraph("pGraphs", "Pressure graphs");
   for (int i{1}; i < 7; ++i) {
     TGraph* g = new TGraph();
-    g->SetLineColor(i + 1);
+    g->SetLineColor(static_cast<Color_t>(i + 1));
     pGraphs->Add(g);
   }
   pGraphs->GetXaxis()->SetTitle("Time (s)");

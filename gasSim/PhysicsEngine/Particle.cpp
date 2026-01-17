@@ -1,8 +1,26 @@
 #include "Particle.hpp"
 
+#include <stdexcept>
+
 #include "GSVector.hpp"
 
 namespace GS {
+
+void Particle::setMass(double m) {
+	if (m > 0) {
+		mass.store(m);
+	} else {
+		throw std::invalid_argument("Particle setMass error: non-positive mass provided");
+	}
+}
+
+void Particle::setRadius(double r) {
+	if (r > 0) {
+		mass.store(r);
+	} else {
+		throw std::invalid_argument("Particle setMass error: non-positive mass provided");
+	}
+}
 
 bool overlap(Particle const& p1, Particle const& p2) {
   return (p1.position - p2.position).norm() < 2. * Particle::getRadius();

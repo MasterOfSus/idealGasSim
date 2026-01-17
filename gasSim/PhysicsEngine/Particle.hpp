@@ -12,9 +12,9 @@ struct Particle {
   GSVectorD speed;
 
   static double getMass() { return mass.load(); }
-  static void setMass(double m) { mass.store(m); }
+  static void setMass(double m);
   static double getRadius() { return radius.load(); }
-  static void setRadius(double r) { radius.store(r); }
+  static void setRadius(double r);
 
  private:
   static std::atomic<double> radius;
