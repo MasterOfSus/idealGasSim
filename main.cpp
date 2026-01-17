@@ -120,8 +120,14 @@ GS::VideoOpts stovideoopts(std::string s) {
   }
 }
 
-void throwIfZombie(TObject* o, std::string message) {
+void throwIfZombie(TObject* o, std::string message, bool deleteIfZombie = false) {
+	if (!o) {
+		throw std::runtime_error("Object is not zombie, but nullptr.");
+	}
   if (o->IsZombie()) {
+		if (deleteIfZombie) {
+			delete o;
+		}
     throw std::runtime_error(message);
   }
 }
@@ -174,6 +180,9 @@ int main(int argc, const char* argv[]) {
       std::cout << options.help() << '\n';
       return 0;
     }
+
+		/* RESOURCE LOADING PHASE */
+
     // extract config file path from options
     std::string configPath = opts.count("config") != 0
                                  ? opts["config"].as<std::string>()
@@ -245,11 +254,34 @@ int main(int argc, const char* argv[]) {
                                 "output", "videoResX", 800)),
                             static_cast<unsigned>(configFile.GetInteger(
                                 "output", "videoResY", 600))};
+    if (windowSize.x > INT_MAX || windowSize.y > INT_MAX) {
+      throw std::invalid_argument(
+          "Found negative videoResX or videoResY in config file.");
+    }
+    sf::Vector2u gasSize{1, 1};
+    switch (videoOpt) {
+      case GS::VideoOpts::justGas:
+        gasSize = windowSize;
+        break;
+      case GS::VideoOpts::justStats:
+        break;
+      case GS::VideoOpts::gasPlusCoords:
+        gasSize = {static_cast<unsigned>(windowSize.x * 0.5),
+                   static_cast<unsigned>(windowSize.y * 8. / 9.)};
+        break;
+      case GS::VideoOpts::all:
+        gasSize = {static_cast<unsigned>(windowSize.x * 0.5),
+                   static_cast<unsigned>(windowSize.y * 0.9)};
+        break;
+    }
+
     float framerate{configFile.GetFloat("output", "framerate", 24.f)};
     if (framerate <= 0.f) {
       throw std::invalid_argument(
           "Framerate found in input file is non-positive.");
     }
+    const int frameTimems{static_cast<int>(1000. / framerate)};
+
     bool mfpMemory{configFile.GetBoolean("output", "mfpMemory", true)};
 
     // Loading of ROOT input file and objects
@@ -269,13 +301,13 @@ int main(int argc, const char* argv[]) {
     auto graphsList = std::make_unique<TList>();
     graphsList->SetOwner(kTRUE);
     TMultiGraph* pGraphs{safeTCast<TMultiGraph>(inputFile.Get("pGraphs"))};
-    throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
-    TGraph* kBGraph{safeTCast<TGraph>(inputFile.Get("kBGraph"))};
-    throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.");
-    TGraph* mfpGraph{safeTCast<TGraph>(inputFile.Get("mfpGraph"))};
-    throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.");
+    throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.", true);
     graphsList->Add(pGraphs);
+    TGraph* kBGraph{safeTCast<TGraph>(inputFile.Get("kBGraph"))};
+    throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.", true);
     graphsList->Add(kBGraph);
+    TGraph* mfpGraph{safeTCast<TGraph>(inputFile.Get("mfpGraph"))};
+    throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.", true);
     graphsList->Add(mfpGraph);
 
     std::shared_ptr<TF1> pLineF{safeTCast<TF1>(inputFile.Get("pLineF"))};
@@ -310,13 +342,19 @@ int main(int argc, const char* argv[]) {
         1, static_cast<double>(nParticles * static_cast<size_t>(nStats)) *
                speedsHTemplate->GetBinWidth(0));
     maxwellF->FixParameter(2, pMass);
-
+    expP->SetParameter(0, targetT * static_cast<double>(nParticles) /
+                              static_cast<double>(std::pow(boxSide, 3.)));
+    expkB->SetParameter(0, 1);
+    expMFP->SetParameter(0, targetT / M_SQRT2 / expP->GetParameter(0) /
+                                (M_PI * pRadius * pRadius));
     // Loading of sfml resources
     sf::Font font;
     std::string fontPath{"assets/" +
                          configFile.Get("render", "fontName",
                                         "JetBrains-Mono-Nerd-Font-Complete") +
                          ".ttf"};
+    throwIfNotExists(fontPath);
+    font.loadFromFile(fontPath);
     sf::Texture particleTex;
     std::string particleTexPath{
         "assets/" + configFile.Get("render", "particleTexName", "lightBall") +
@@ -357,18 +395,17 @@ int main(int argc, const char* argv[]) {
       std::cout << "Susy baker";
     }
 
+		/* END OF RESOURCE LOADING PHASE */
+
+		/* SIMULATION AND PROCESSING STARTING PHASE */
+
     GS::Gas gas{nParticles, targetT, boxSide};
-
     GS::SimDataPipeline output{
-        static_cast<unsigned>(nStats > 0 ? nStats
-                                         : throw std::invalid_argument(
-                                               "Provided negative nStats.")),
+        static_cast<unsigned>(nStats),
         framerate, *speedsHTemplate};
-
-    throwIfNotExists(fontPath);
-    font.loadFromFile(fontPath);
     output.setFont(font);
 
+		// RECHECK THIS DUMBASS
     double desiredStatChunkSize{
         targetBufferTime * M_PI *
         std::pow(GS::Particle::getRadius() / gas.getBoxSide(), 2.) *
@@ -388,7 +425,9 @@ int main(int argc, const char* argv[]) {
     output.setStatChunkSize(static_cast<size_t>(
         desiredStatChunkSize > 1 ? desiredStatChunkSize : 1));
 
+		// General stop signal, shared between threads
     std::atomic<bool> stop{false};
+		// Used to protect the standard output
     std::mutex coutMtx;
 
     std::thread simThread{[&, nIters] {
@@ -410,43 +449,18 @@ int main(int argc, const char* argv[]) {
       std::cout << "Simulation thread running." << std::endl;
     }
 
-    if (windowSize.x > INT_MAX || windowSize.y > INT_MAX) {
-      throw std::invalid_argument(
-          "Found negative videoResX or videoResY in config file.");
-    }
-
-    sf::Vector2u gasSize{1, 1};
-    switch (videoOpt) {
-      case GS::VideoOpts::justGas:
-        gasSize = windowSize;
-        break;
-      case GS::VideoOpts::justStats:
-        break;
-      case GS::VideoOpts::gasPlusCoords:
-        gasSize = {static_cast<unsigned>(windowSize.x * 0.5),
-                   static_cast<unsigned>(windowSize.y * 8. / 9.)};
-        break;
-      case GS::VideoOpts::all:
-        gasSize = {static_cast<unsigned>(windowSize.x * 0.5),
-                   static_cast<unsigned>(windowSize.y * 0.9)};
-        break;
-    }
-
     GS::Camera camera{camPos,
                       camSight,
                       configFile.GetFloat("render", "camLength", 1.f),
                       configFile.GetFloat("render", "fov", 90.f),
                       gasSize.x,
                       gasSize.y};
-
     GS::RenderStyle style{particleTex};
     style.setWallsColor(sf::Color(static_cast<unsigned>(
         configFile.GetInteger("render", "wallsColor", 0x50fa7b80))));
     style.setBGColor(sf::Color(static_cast<unsigned>(
         configFile.GetInteger("render", "gasBgColor", 0xffffffff))));
     style.setWallsOpts(configFile.Get("render", "wallsOpts", "ufdl"));
-
-    const int frameTimems{static_cast<int>(1000. / framerate)};
 
     std::thread processThread;
     if (videoOpt != GS::VideoOpts::justStats) {
@@ -481,6 +495,11 @@ int main(int argc, const char* argv[]) {
       std::cout << "Processing thread running." << std::endl;
     }
 
+		/* SIMULATION AND PROCESSING STARTING PHASE END */
+
+		/* GRAPHICAL OUTPUT PREP PHASE */
+
+		// Lambdas called before drawing the objects inside of getVideo
     std::function<void(TH1D&, GS::VideoOpts)> fitLambda{[&](TH1D& speedsH,
                                                             GS::VideoOpts opt) {
       TGraph* genPGraph{
@@ -531,12 +550,6 @@ int main(int argc, const char* argv[]) {
       }
     }};
 
-    expP->SetParameter(0, targetT * static_cast<double>(nParticles) /
-                              static_cast<double>(std::pow(boxSide, 3.)));
-    expkB->SetParameter(0, 1);
-    expMFP->SetParameter(0, targetT / M_SQRT2 / expP->GetParameter(0) /
-                                (M_PI * pRadius * pRadius));
-
     std::array<std::function<void()>, 4> drawLambdas{
         [&]() {
           TGraph* genPGraph{
@@ -578,6 +591,10 @@ int main(int argc, const char* argv[]) {
            !output.isDone() && !output.getNStats() && !output.getNRenders()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+
+		/* GRAPHICAL OUTPUT PREP PHASE */
+
+		/* VIDEO COMPOSITION-OUTPUT PHASE */
 
     if (configFile.GetBoolean("output", "saveVideo", false)) {
       {
@@ -727,6 +744,8 @@ int main(int argc, const char* argv[]) {
               }
             }
           }};
+
+			// buffering thread
       sf::Sprite bufferingWheel;
       bufferingWheel.setTexture(bufferingWheelT, true);
       bufferingWheel.setOrigin(
@@ -813,6 +832,7 @@ int main(int argc, const char* argv[]) {
         }
       }};
       bool lastBatch{false};
+
       // main thread composes video and sends batches through playthreads
       while (!stop.load()) {
         std::shared_ptr<std::vector<sf::Texture>> rendersPtr{
@@ -886,12 +906,19 @@ int main(int argc, const char* argv[]) {
                 << " collisions." << std::endl;
     }
 
+		/* VIDEO COMPOSITION-OUTPUT PHASE */
+
+		/* END PHASE */
+
     if (simThread.joinable()) {
       simThread.join();
     }
     if (processThread.joinable()) {
       processThread.join();
     }
+
+		// all threads should be done by now, but just to be safe
+		std::lock_guard<std::mutex> coutGuard {coutMtx};
 
     if (!stop.load()) {
       std::cout << "Saving results to file... ";
@@ -922,7 +949,11 @@ int main(int argc, const char* argv[]) {
     } else {
       std::cout << "Stop signal detected. Skipping results saving.\n";
     }
+
+		/* END PHASE */
+
     return 0;
+
   } catch (const std::runtime_error& error) {
     std::cout << "RUNTIME ERROR: " << error.what() << std::endl;
     return 1;
