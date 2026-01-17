@@ -187,6 +187,7 @@ int main(int argc, const char* argv[]) {
     std::string configPath = opts.count("config") != 0
                                  ? opts["config"].as<std::string>()
                                  : "configs/gasSim_demo.ini";
+
     throwIfNotExists(configPath);
 
     INIReader configFile(configPath);
@@ -337,6 +338,7 @@ int main(int argc, const char* argv[]) {
     std::shared_ptr<TF1> expMFP{safeTCast<TF1>(inputFile.Get("expMFP"))};
     throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
 
+		// setting fit functions parameters
     maxwellF->SetParameter(0, targetT);
     maxwellF->FixParameter(
         1, static_cast<double>(nParticles * static_cast<size_t>(nStats)) *
@@ -347,7 +349,8 @@ int main(int argc, const char* argv[]) {
     expkB->SetParameter(0, 1);
     expMFP->SetParameter(0, targetT / M_SQRT2 / expP->GetParameter(0) /
                                 (M_PI * pRadius * pRadius));
-    // Loading of sfml resources
+
+    // Loading SFML resources
     sf::Font font;
     std::string fontPath{"assets/" +
                          configFile.Get("render", "fontName",
@@ -359,40 +362,35 @@ int main(int argc, const char* argv[]) {
     std::string particleTexPath{
         "assets/" + configFile.Get("render", "particleTexName", "lightBall") +
         ".png"};
-    std::cout << "Loading particle texture at " << particleTexPath << std::endl;
-    if (!std::filesystem::exists(particleTexPath)) {
-      throw std::invalid_argument(
-          "Couldn't find particle texture at: " + particleTexPath + ".png");
-    }
+		throwIfNotExists(particleTexPath);
     if (!particleTex.loadFromFile(particleTexPath)) {
-      throw std::runtime_error("Failed to load particle texture from: " +
+      throw std::runtime_error("Failed to correctly load particle texture from: " +
                                particleTexPath);
     }
     sf::Texture placeHolder;
     std::string placeHolderPath{
         "assets/" + configFile.Get("render", "placeHolderName", "placeholder") +
         ".png"};
-    std::cout << "Loading placeholder texture at " << placeHolderPath
-              << std::endl;
-    if (!std::filesystem::exists(placeHolderPath)) {
-      throw std::runtime_error("Couldn't find placeholder texture at: " +
-                               placeHolderPath);
-    }
+		throwIfNotExists(placeHolderPath);
     if (!placeHolder.loadFromFile(placeHolderPath)) {
-      std::cout << "Sussy baka";
+			throw std::runtime_error("Failed to correctly load placeHolder texture at " + placeHolderPath);
     }
     sf::Texture bufferingWheelT;
     std::string bufferingWheelPath{
         "assets/" + configFile.Get("render", "bufferingWheelName", "Jesse") +
         ".png"};
-    std::cout << "Loading placeholder texture at " << bufferingWheelPath
-              << std::endl;
-    if (!std::filesystem::exists(bufferingWheelPath)) {
-      throw std::runtime_error("Couldn't find buffering wheel texture at: " +
-                               bufferingWheelPath);
-    }
+		throwIfNotExists(bufferingWheelPath);
     if (!bufferingWheelT.loadFromFile(bufferingWheelPath)) {
-      std::cout << "Susy baker";
+			throw std::runtime_error("Failed to correctly load buffering wheel texture at " + bufferingWheelPath);
+    }
+
+		// Used to protect access to the standard output
+    std::mutex coutMtx;
+
+    {
+      std::lock_guard<std::mutex> coutGuard{coutMtx};
+      std::cout << "All resources loaded. Starting up simulation and processing threads."
+                << std::endl;
     }
 
 		/* END OF RESOURCE LOADING PHASE */
@@ -405,7 +403,7 @@ int main(int argc, const char* argv[]) {
         framerate, *speedsHTemplate};
     output.setFont(font);
 
-		// RECHECK THIS DUMBASS
+		// RECHECK THIS DUde
     double desiredStatChunkSize{
         targetBufferTime * M_PI *
         std::pow(GS::Particle::getRadius() / gas.getBoxSide(), 2.) *
@@ -427,8 +425,6 @@ int main(int argc, const char* argv[]) {
 
 		// General stop signal, shared between threads
     std::atomic<bool> stop{false};
-		// Used to protect the standard output
-    std::mutex coutMtx;
 
     std::thread simThread{[&, nIters] {
       try {
@@ -578,11 +574,11 @@ int main(int argc, const char* argv[]) {
           expMFP->Draw("SAME");
         }};
 
-    {
-      std::lock_guard<std::mutex> coutGuard{coutMtx};
-      std::cout << "All resources loaded. Starting video output processing."
-                << std::endl;
-    }
+
+		{
+			std::lock_guard<std::mutex> coutGuard{coutMtx};
+			std::cout << "Starting video composition and output." << std::endl;
+		}
 
     // wait until there's something to process
     // to avoid premature program exit/hanging on slow/superfast 
