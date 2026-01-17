@@ -1,11 +1,11 @@
 #include <array>
-#include <filesystem>
 #include <atomic>
 #include <chrono>
 #include <climits>
 #include <cmath>
 #include <cstdio>
 #include <exception>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -54,9 +54,9 @@ std::atomic<double> GS::Particle::radius{1.};
 std::atomic<double> GS::Particle::mass{1.};
 
 GS::GSVectorD stovec(std::string s) {
-	if (s.size() == 0) {
-		throw std::invalid_argument("Cannot provide empty string.");
-	}
+  if (s.size() == 0) {
+    throw std::invalid_argument("Cannot provide empty string.");
+  }
   // checking for braces and erasing the first one
   if (s.front() != '{' || s.back() != '}') {
     throw std::invalid_argument("Missing opening and closing braces.");
@@ -128,33 +128,36 @@ void throwIfZombie(TObject* o, std::string message) {
 
 template <class TType>
 TType* safeTCast(TObject* o) {
-	if (o) {
-		if (o->IsA() != TType::Class()) {
-			throw std::invalid_argument(std::string("Actual pointer type of object: ") + o->GetName() + ", " + o->IsA()->GetName() + std::string(" doesn't match target pointer type ") + TType::Class()->GetName());
-		}
-		TType* casted {dynamic_cast<TType*>(o)};
-		if (!casted) {
-			throw std::runtime_error("Failed dynamic cast");
-		}
-		return casted;
-	} else {
-		throw std::runtime_error("Passed nullPtr to safelyConvert");
-	}
+  if (o) {
+    if (o->IsA() != TType::Class()) {
+      throw std::invalid_argument(
+          std::string("Actual pointer type of object: ") + o->GetName() + ", " +
+          o->IsA()->GetName() +
+          std::string(" doesn't match target pointer type ") +
+          TType::Class()->GetName());
+    }
+    TType* casted{dynamic_cast<TType*>(o)};
+    if (!casted) {
+      throw std::runtime_error("Failed dynamic cast");
+    }
+    return casted;
+  } else {
+    throw std::runtime_error("Passed nullPtr to safelyConvert");
+  }
 }
 
 void throwIfNotExists(std::string path) {
-	if (!std::filesystem::exists(path)) {
-		throw std::invalid_argument("Couldn't find file at path " + path);
-	}
+  if (!std::filesystem::exists(path)) {
+    throw std::invalid_argument("Couldn't find file at path " + path);
+  }
 }
 
 int main(int argc, const char* argv[]) {
   try {
-
     std::cout << "Welcome. Starting the simulation.\n";
 
     // keeping ROOT's grubby hands off my histograms
-		TH1D::AddDirectory(kFALSE);
+    TH1D::AddDirectory(kFALSE);
 
     cxxopts::Options options(
         "idealGasSim",
@@ -171,11 +174,11 @@ int main(int argc, const char* argv[]) {
       std::cout << options.help() << '\n';
       return 0;
     }
-		// extract config file path from options
+    // extract config file path from options
     std::string configPath = opts.count("config") != 0
-                           ? opts["config"].as<std::string>()
-                           : "configs/gasSim_demo.ini";
-		throwIfNotExists(configPath);
+                                 ? opts["config"].as<std::string>()
+                                 : "configs/gasSim_demo.ini";
+    throwIfNotExists(configPath);
 
     INIReader configFile(configPath);
     if (configFile.ParseError() != 0) {
@@ -185,90 +188,209 @@ int main(int argc, const char* argv[]) {
     std::cout << "Starting resources loading. Using configFile file at path "
               << configPath << std::endl;
 
+    // Loading and validating all necessary simulation parameters
     double pMass{configFile.GetReal("simulation parameters", "pMass", 1.)};
-		if (pMass <= 0) {
-			throw std::invalid_argument("Found non-positive mass in config file.");
-		}
+    if (pMass <= 0) {
+      throw std::invalid_argument("Found non-positive mass in config file.");
+    }
     GS::Particle::setMass(pMass);
     double pRadius{configFile.GetReal("simulation parameters", "pRadius", 1.)};
-		if (pRadius <= 0) {
-			throw std::invalid_argument("Found non-positive radius in config file.");
-		}
+    if (pRadius <= 0) {
+      throw std::invalid_argument("Found non-positive radius in config file.");
+    }
     GS::Particle::setRadius(pRadius);
-
-		// Loading of ROOT input objects
-    std::string ROOTInputPath{"inputs/" + configFile.Get("simulation parameters", "ROOTInputName", "input") + ".root"};
-		throwIfNotExists(ROOTInputPath);
-    TFile inputFile{TFile(ROOTInputPath.c_str())};
-    throwIfZombie(&inputFile,
-                  "Failed to load provided input file path: " + ROOTInputPath);
-    std::shared_ptr<TH1D> speedsHTemplate{
-        safeTCast<TH1D>(inputFile.Get("speedsHTemplate"))
-		};
-    speedsHTemplate->SetDirectory(nullptr);
-    throwIfZombie(speedsHTemplate.get(),
-                  "Failed to load speedsHTemplate from input file.");
-
+    size_t nParticles{static_cast<size_t>(
+        configFile.GetInteger("simulation parameters", "nParticles", 1))};
+    if (nParticles > LONG_MAX) {
+      throw(std::invalid_argument("Found non-positive radius in config file."));
+    }
+    double targetT{configFile.GetReal("simulation parameters", "targetT", 1.)};
+    if (targetT <= 0) {
+      throw std::invalid_argument(
+          "Found non-positive target temperature in config file.");
+    }
+    double boxSide{configFile.GetReal("simulation parameters", "boxSide", 2.5)};
+    if (boxSide <= 0) {
+      throw std::invalid_argument(
+          "Found non-positive box side in config file.");
+    }
     long nStats{configFile.GetInteger("simulation parameters", "nStats", 1)};
     if (nStats <= 0) {
       throw std::invalid_argument("Provided negative nStats.");
     }
+    double targetBufferTime{configFile.GetReal("output", "targetBuffer", 2.5)};
+    if (targetBufferTime <= 0) {
+      throw std::invalid_argument(
+          "Found non-positive target buffer time in config file.");
+    }
+    size_t nIters{static_cast<size_t>(
+        configFile.GetInteger("simulation parameters", "nIters", 0))};
+    if (nIters > LONG_MAX) {
+      throw std::runtime_error(
+          "Found negative iterations number in config file.");
+    }
+    GS::GSVectorF camPos{static_cast<GS::GSVectorF>(
+        stovec(configFile.Get("rendering", "camPos",
+                              ("{" + std::to_string(boxSide * 1.5) + ", " +
+                               std::to_string(boxSide * 1.25) + ", " +
+                               std::to_string(boxSide * 0.75) + '}'))))};
+    GS::GSVectorF camSight{static_cast<GS::GSVectorF>(stovec(
+        configFile.Get("rendering", "camSight",
+                       "{" + std::to_string(boxSide * 0.5 - camPos.x) + ", " +
+                           std::to_string(boxSide * 0.5 - camPos.y) + ", " +
+                           std::to_string(boxSide * 0.5 - camPos.z) + '}')))};
+    GS::VideoOpts videoOpt{
+        stovideoopts(configFile.Get("output", "videoOpt", "justGas"))};
+    sf::Vector2u windowSize{static_cast<unsigned>(configFile.GetInteger(
+                                "output", "videoResX", 800)),
+                            static_cast<unsigned>(configFile.GetInteger(
+                                "output", "videoResY", 600))};
+    float framerate{configFile.GetFloat("output", "framerate", 24.f)};
+    if (framerate <= 0.f) {
+      throw std::invalid_argument(
+          "Framerate found in input file is non-positive.");
+    }
+    bool mfpMemory{configFile.GetBoolean("output", "mfpMemory", true)};
 
-    float framerate{configFile.GetFloat("output", "framerate", 60.f)};
+    // Loading of ROOT input file and objects
+    std::string ROOTInputPath{
+        "inputs/" +
+        configFile.Get("simulation parameters", "ROOTInputName", "input") +
+        ".root"};
+    throwIfNotExists(ROOTInputPath);
+    TFile inputFile{TFile(ROOTInputPath.c_str())};
+    throwIfZombie(&inputFile,
+                  "Failed to load provided input file path: " + ROOTInputPath);
+    std::shared_ptr<TH1D> speedsHTemplate{
+        safeTCast<TH1D>(inputFile.Get("speedsHTemplate"))};
+    speedsHTemplate->SetDirectory(nullptr);
+    throwIfZombie(speedsHTemplate.get(),
+                  "Failed to load speedsHTemplate from input file.");
+    auto graphsList = std::make_unique<TList>();
+    graphsList->SetOwner(kTRUE);
+    TMultiGraph* pGraphs{safeTCast<TMultiGraph>(inputFile.Get("pGraphs"))};
+    throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
+    TGraph* kBGraph{safeTCast<TGraph>(inputFile.Get("kBGraph"))};
+    throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.");
+    TGraph* mfpGraph{safeTCast<TGraph>(inputFile.Get("mfpGraph"))};
+    throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.");
+    graphsList->Add(pGraphs);
+    graphsList->Add(kBGraph);
+    graphsList->Add(mfpGraph);
+
+    std::shared_ptr<TF1> pLineF{safeTCast<TF1>(inputFile.Get("pLineF"))};
+    throwIfZombie(pLineF.get(), "Failed to load pLineF from input file.");
+    std::shared_ptr<TF1> kBGraphF{safeTCast<TF1>(inputFile.Get("kBGraphF"))};
+    throwIfZombie(kBGraphF.get(), "Failed to load kBGraphF from input file.");
+    std::shared_ptr<TF1> maxwellF{safeTCast<TF1>(inputFile.Get("maxwellF"))};
+    throwIfZombie(maxwellF.get(), "Failed to load maxwellF from input file.");
+    std::shared_ptr<TF1> mfpGraphF{safeTCast<TF1>(inputFile.Get("mfpGraphF"))};
+    throwIfZombie(mfpGraphF.get(), "Failed to load mfpGraphF from input file.");
+    std::shared_ptr<TH1D> cumulatedSpeedsH{
+        safeTCast<TH1D>(inputFile.Get("cumulatedSpeedsH"))};
+    cumulatedSpeedsH->SetDirectory(nullptr);
+    throwIfZombie(cumulatedSpeedsH.get(),
+                  "Failed to load cumulatedSpeedsH from input file.");
+    std::shared_ptr<TLine> meanLine{
+        safeTCast<TLine>(inputFile.Get("meanLine"))};
+    throwIfZombie(meanLine.get(), "Failed to load meanLine from input file.");
+    std::shared_ptr<TLine> meanSqLine{
+        safeTCast<TLine>(inputFile.Get("meanSqLine"))};
+    throwIfZombie(meanSqLine.get(),
+                  "Failed to load meanSqLine from input file.");
+    std::shared_ptr<TF1> expP{safeTCast<TF1>(inputFile.Get("expP"))};
+    throwIfZombie(expP.get(), "Failed to load expP from input file.");
+    std::shared_ptr<TF1> expkB{safeTCast<TF1>(inputFile.Get("expkB"))};
+    throwIfZombie(expkB.get(), "Failed to load expkB from input file.");
+    std::shared_ptr<TF1> expMFP{safeTCast<TF1>(inputFile.Get("expMFP"))};
+    throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
+
+    maxwellF->SetParameter(0, targetT);
+    maxwellF->FixParameter(
+        1, static_cast<double>(nParticles * static_cast<size_t>(nStats)) *
+               speedsHTemplate->GetBinWidth(0));
+    maxwellF->FixParameter(2, pMass);
+
+    // Loading of sfml resources
+    sf::Font font;
+    std::string fontPath{"assets/" +
+                         configFile.Get("render", "fontName",
+                                        "JetBrains-Mono-Nerd-Font-Complete") +
+                         ".ttf"};
+    sf::Texture particleTex;
+    std::string particleTexPath{
+        "assets/" + configFile.Get("render", "particleTexName", "lightBall") +
+        ".png"};
+    std::cout << "Loading particle texture at " << particleTexPath << std::endl;
+    if (!std::filesystem::exists(particleTexPath)) {
+      throw std::invalid_argument(
+          "Couldn't find particle texture at: " + particleTexPath + ".png");
+    }
+    if (!particleTex.loadFromFile(particleTexPath)) {
+      throw std::runtime_error("Failed to load particle texture from: " +
+                               particleTexPath);
+    }
+    sf::Texture placeHolder;
+    std::string placeHolderPath{
+        "assets/" + configFile.Get("render", "placeHolderName", "placeholder") +
+        ".png"};
+    std::cout << "Loading placeholder texture at " << placeHolderPath
+              << std::endl;
+    if (!std::filesystem::exists(placeHolderPath)) {
+      throw std::runtime_error("Couldn't find placeholder texture at: " +
+                               placeHolderPath);
+    }
+    if (!placeHolder.loadFromFile(placeHolderPath)) {
+      std::cout << "Sussy baka";
+    }
+    sf::Texture bufferingWheelT;
+    std::string bufferingWheelPath{
+        "assets/" + configFile.Get("render", "bufferingWheelName", "Jesse") +
+        ".png"};
+    std::cout << "Loading placeholder texture at " << bufferingWheelPath
+              << std::endl;
+    if (!std::filesystem::exists(bufferingWheelPath)) {
+      throw std::runtime_error("Couldn't find buffering wheel texture at: " +
+                               bufferingWheelPath);
+    }
+    if (!bufferingWheelT.loadFromFile(bufferingWheelPath)) {
+      std::cout << "Susy baker";
+    }
+
+    GS::Gas gas{nParticles, targetT, boxSide};
 
     GS::SimDataPipeline output{
         static_cast<unsigned>(nStats > 0 ? nStats
                                          : throw std::invalid_argument(
                                                "Provided negative nStats.")),
         framerate, *speedsHTemplate};
-    sf::Font font;
-		std::string fontPath {"assets/" + configFile.Get("render", "fontName", "JetBrains-Mono-Nerd-Font-Complete") + ".ttf"};
-		throwIfNotExists(fontPath);
-		font.loadFromFile(fontPath);
-    output.setFont(font);
-    size_t nParticles{static_cast<size_t>(
-        configFile.GetInteger("simulation parameters", "nParticles", 1))};
-		if (nParticles > LONG_MAX) {
-			throw(std::invalid_argument("Found non-positive radius in config file."));
-		}
-    double targetT{configFile.GetReal("simulation parameters", "targetT", 1)};
-		if (targetT <= 0) {
-			throw std::invalid_argument("Found non-positive target temperature in config file.");
-		}
-    double boxSide{configFile.GetReal("simulation parameters", "boxSide", 1.)};
-		if (boxSide <= 0) {
-			throw std::invalid_argument("Found non-positive box side in config file.");
-		}
-    GS::Gas gas{nParticles, targetT, boxSide};
 
-    double targetBufferTime{configFile.GetReal("output", "targetBuffer", 2.5)};
-		if (targetBufferTime <= 0) {
-			throw std::invalid_argument("Found non-positive target buffer time in config file.");
-		}
+    throwIfNotExists(fontPath);
+    font.loadFromFile(fontPath);
+    output.setFont(font);
 
     double desiredStatChunkSize{
         targetBufferTime * M_PI *
         std::pow(GS::Particle::getRadius() / gas.getBoxSide(), 2.) *
+        // gas... temperature??
         std::accumulate(gas.getParticles().begin(), gas.getParticles().end(),
                         0.,
                         [](double acc, const GS::Particle& p) {
                           return acc + p.speed.norm();
                         }) /
         static_cast<double>(nStats) / gas.getBoxSide()};
-		if (desiredStatChunkSize > static_cast<float>(SIZE_MAX)) {
-			throw std::runtime_error("Computed desired stat chunk size is too big. Check your config file.");
-		}
+    if (desiredStatChunkSize > static_cast<float>(SIZE_MAX)) {
+      throw std::runtime_error(
+          "Computed desired stat chunk size is too big. Check your config "
+          "file.");
+    }
 
     output.setStatChunkSize(static_cast<size_t>(
         desiredStatChunkSize > 1 ? desiredStatChunkSize : 1));
 
     std::atomic<bool> stop{false};
     std::mutex coutMtx;
-    size_t nIters{static_cast<size_t>(
-        configFile.GetInteger("simulation parameters", "nIters", 0))};
-		if (nIters > LONG_MAX) {
-			throw std::runtime_error("Found negative iterations number in config file.");
-		}
+
     std::thread simThread{[&, nIters] {
       try {
         gas.simulate(nIters, output, [&] { return stop.load(); });
@@ -288,24 +410,11 @@ int main(int argc, const char* argv[]) {
       std::cout << "Simulation thread running." << std::endl;
     }
 
-    GS::GSVectorF camPos{static_cast<GS::GSVectorF>(stovec(configFile.Get(
-        "rendering", "camPos",
-        ("{" + std::to_string(boxSide * 1.5) + ", " + std::to_string(boxSide * 1.25)
-                              + ", " + std::to_string(boxSide * 0.75) + '}'))))};
-    GS::GSVectorF camSight{static_cast<GS::GSVectorF>(stovec(configFile.Get(
-        "rendering", "camSight",
-        "{" + std::to_string(boxSide * 0.5 - camPos.x) + ", " + std::to_string(boxSide * 0.5 - camPos.y)
-         + ", " + std::to_string(boxSide * 0.5 - camPos.z) + '}')))};
+    if (windowSize.x > INT_MAX || windowSize.y > INT_MAX) {
+      throw std::invalid_argument(
+          "Found negative videoResX or videoResY in config file.");
+    }
 
-    sf::Vector2u windowSize{
-        static_cast<unsigned>(configFile.GetInteger("output", "videoResX", 800)),
-        static_cast<unsigned>(configFile.GetInteger("output", "videoResY", 600))};
-		if (windowSize.x > INT_MAX || windowSize.y > INT_MAX) {
-			throw std::invalid_argument("Found negative videoResX or videoResY in config file.");
-		}
-
-    GS::VideoOpts videoOpt{
-        stovideoopts(configFile.Get("output", "videoOpt", "justGas"))};
     sf::Vector2u gasSize{1, 1};
     switch (videoOpt) {
       case GS::VideoOpts::justGas:
@@ -330,23 +439,12 @@ int main(int argc, const char* argv[]) {
                       gasSize.x,
                       gasSize.y};
 
-    sf::Texture particleTex;
-    std::string particleTexPath{"assets/" + configFile.Get("render", "particleTexName", "lightBall") + ".png"};
-		std::cout << "Loading particle texture at " << particleTexPath << std::endl;
-		if (!std::filesystem::exists(particleTexPath)) {
-			throw std::invalid_argument("Couldn't find particle texture at: " + particleTexPath + ".png");
-		}
-		if (!particleTex.loadFromFile(particleTexPath)) {
-			throw std::runtime_error("Failed to load particle texture from: " + particleTexPath);
-		}
     GS::RenderStyle style{particleTex};
     style.setWallsColor(sf::Color(static_cast<unsigned>(
         configFile.GetInteger("render", "wallsColor", 0x50fa7b80))));
     style.setBGColor(sf::Color(static_cast<unsigned>(
         configFile.GetInteger("render", "gasBgColor", 0xffffffff))));
     style.setWallsOpts(configFile.Get("render", "wallsOpts", "ufdl"));
-
-    bool mfpMemory{configFile.GetBoolean("output", "mfpMemory", true)};
 
     const int frameTimems{static_cast<int>(1000. / framerate)};
 
@@ -382,53 +480,6 @@ int main(int argc, const char* argv[]) {
       std::lock_guard<std::mutex> coutGuard{coutMtx};
       std::cout << "Processing thread running." << std::endl;
     }
-
-    auto graphsList = std::make_unique<TList>();
-    graphsList->SetOwner(kFALSE);
-    TMultiGraph* pGraphs{safeTCast<TMultiGraph>(inputFile.Get("pGraphs"))};
-    throwIfZombie(pGraphs, "Failed to load pressure graphs multigraph.");
-    TGraph* kBGraph{safeTCast<TGraph>(inputFile.Get("kBGraph"))};
-    throwIfZombie(kBGraph, "Failed to load pressure graphs multigraph.");
-    TGraph* mfpGraph{safeTCast<TGraph>(inputFile.Get("mfpGraph"))};
-    throwIfZombie(mfpGraph, "Failed to load pressure graphs multigraph.");
-    graphsList->Add(pGraphs);
-    graphsList->Add(kBGraph);
-    graphsList->Add(mfpGraph);
-
-    std::shared_ptr<TF1> pLineF{safeTCast<TF1>(inputFile.Get("pLineF"))};
-    throwIfZombie(pLineF.get(), "Failed to load pLineF from input file.");
-    std::shared_ptr<TF1> kBGraphF{
-        safeTCast<TF1>(inputFile.Get("kBGraphF"))};
-    throwIfZombie(kBGraphF.get(), "Failed to load kBGraphF from input file.");
-    std::shared_ptr<TF1> maxwellF{
-        safeTCast<TF1>(inputFile.Get("maxwellF"))};
-    throwIfZombie(maxwellF.get(), "Failed to load maxwellF from input file.");
-    std::shared_ptr<TF1> mfpGraphF{
-        safeTCast<TF1>(inputFile.Get("mfpGraphF"))};
-    throwIfZombie(mfpGraphF.get(), "Failed to load mfpGraphF from input file.");
-    std::shared_ptr<TH1D> cumulatedSpeedsH{
-        safeTCast<TH1D>(inputFile.Get("cumulatedSpeedsH"))};
-    cumulatedSpeedsH->SetDirectory(nullptr);
-    throwIfZombie(cumulatedSpeedsH.get(),
-                  "Failed to load cumulatedSpeedsH from input file.");
-    std::shared_ptr<TLine> meanLine{
-        safeTCast<TLine>(inputFile.Get("meanLine"))};
-    throwIfZombie(meanLine.get(), "Failed to load meanLine from input file.");
-    std::shared_ptr<TLine> meanSqLine{
-        safeTCast<TLine>(inputFile.Get("meanSqLine"))};
-    throwIfZombie(meanSqLine.get(),
-                  "Failed to load meanSqLine from input file.");
-    std::shared_ptr<TF1> expP{safeTCast<TF1>(inputFile.Get("expP"))};
-    throwIfZombie(expP.get(), "Failed to load expP from input file.");
-    std::shared_ptr<TF1> expkB{safeTCast<TF1>(inputFile.Get("expkB"))};
-    throwIfZombie(expkB.get(), "Failed to load expkB from input file.");
-    std::shared_ptr<TF1> expMFP{safeTCast<TF1>(inputFile.Get("expMFP"))};
-    throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
-
-    maxwellF->SetParameter(0, targetT);
-    maxwellF->FixParameter(
-        1, static_cast<double>(nParticles * output.getStatSize())* speedsHTemplate->GetBinWidth(0));
-    maxwellF->FixParameter(2, pMass);
 
     std::function<void(TH1D&, GS::VideoOpts)> fitLambda{[&](TH1D& speedsH,
                                                             GS::VideoOpts opt) {
@@ -514,24 +565,18 @@ int main(int argc, const char* argv[]) {
           expMFP->Draw("SAME");
         }};
 
-    sf::Texture placeHolder;
-		std::string placeHolderPath {"assets/" + configFile.Get("render", "placeHolderName", "placeholder") + ".png"};
-		std::cout << "Loading placeholder texture at " << placeHolderPath << std::endl;
-		if (!std::filesystem::exists(placeHolderPath)) {
-			throw std::runtime_error("Couldn't find placeholder texture at: " + placeHolderPath);
-		}
-    if (!placeHolder.loadFromFile(placeHolderPath)) {
-			std::cout << "Sussy baka";
-		}
-
-    while (!output.isProcessing()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-
     {
       std::lock_guard<std::mutex> coutGuard{coutMtx};
       std::cout << "All resources loaded. Starting video output processing."
                 << std::endl;
+    }
+
+    // wait until there's something to process
+    // to avoid premature program exit/hanging on slow/superfast 
+		// processing configurations
+    while (!output.isProcessing() && !output.getRawDataSize() &&
+           !output.isDone() && !output.getNStats() && !output.getNRenders()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     if (configFile.GetBoolean("output", "saveVideo", false)) {
@@ -539,11 +584,12 @@ int main(int argc, const char* argv[]) {
         std::lock_guard<std::mutex> coutGuard{coutMtx};
         std::cout << "Starting video encoding." << std::endl;
       }
-      std::string cmd {"ffmpeg -y -f rawvideo -pixel_format rgba -video_size "
-          + std::to_string(windowSize.x) + "x" + std::to_string(windowSize.y) + " -framerate "
-          + std::to_string(output.getFramerate()) + " -i - -c:v libx264 -pix_fmt yuv420p "
-          + "outputs/videos/"
-          + configFile.Get("output", "videoOutputName", "output") + ".mp4"};
+      std::string cmd{
+          "ffmpeg -y -f rawvideo -pixel_format rgba -video_size " +
+          std::to_string(windowSize.x) + "x" + std::to_string(windowSize.y) +
+          " -framerate " + std::to_string(output.getFramerate()) +
+          " -i - -c:v libx264 -pix_fmt yuv420p " + "outputs/videos/" +
+          configFile.Get("output", "videoOutputName", "output") + ".mp4"};
 
       FILE* ffmpeg = popen(cmd.c_str(), "w");
       if (!ffmpeg) {
@@ -681,15 +727,6 @@ int main(int argc, const char* argv[]) {
               }
             }
           }};
-      sf::Texture bufferingWheelT;
-			std::string bufferingWheelPath {"assets/" + configFile.Get("output", "bufferingWheelName", "Jesse") + ".png"};
-			std::cout << "Loading placeholder texture at " << bufferingWheelPath << std::endl;
-			if (!std::filesystem::exists(bufferingWheelPath)) {
-				throw std::runtime_error("Couldn't find buffering wheel texture at: " + bufferingWheelPath);
-			}
-      if (!bufferingWheelT.loadFromFile(bufferingWheelPath)) {
-				std::cout << "Susy baker";
-			}
       sf::Sprite bufferingWheel;
       bufferingWheel.setTexture(bufferingWheelT, true);
       bufferingWheel.setOrigin(
@@ -860,12 +897,15 @@ int main(int argc, const char* argv[]) {
       std::cout << "Saving results to file... ";
       std::cout.flush();
       inputFile.Close();
-      auto rootOutput = std::make_unique<TFile>(
-          (std::string("outputs/") +
-           configFile.Get("output", "rootOutputName", "output") + ".root")
-              .c_str(),
-          "RECREATE");
-			throwIfZombie(rootOutput.get(), "Failed to load/make root output file with path from config file.");
+      std::string rootOutputPath{
+          "outputs/" + configFile.Get("output", "rootOutputName", "output") +
+          ".root"};
+      throwIfNotExists(rootOutputPath);
+      auto rootOutput =
+          std::make_unique<TFile>(rootOutputPath.c_str(), "RECREATE");
+      throwIfZombie(
+          rootOutput.get(),
+          "Failed to load/make root output file with path from config file.");
 
       rootOutput->SetTitle(rootOutput->GetName());
       rootOutput->cd();
@@ -882,9 +922,6 @@ int main(int argc, const char* argv[]) {
     } else {
       std::cout << "Stop signal detected. Skipping results saving.\n";
     }
-
-    graphsList->Delete();
-
     return 0;
   } catch (const std::runtime_error& error) {
     std::cout << "RUNTIME ERROR: " << error.what() << std::endl;
