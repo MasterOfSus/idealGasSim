@@ -274,8 +274,11 @@ bool Gas::contains(Particle const& p) {
 }
 
 PWCollision Gas::firstPWColl() {
+	// elementary auxiliary lambda
   auto getPWCollision{[&, this](double position, double speed, Wall negWall,
                                 Wall posWall, Particle* p) -> PWCollision {
+		// walls are implemented as the xy, yz, xz planes and their parallels, 
+		// shifted by the box side
     double cTime = (speed < 0)
                        ? (position - Particle::getRadius()) / (-speed)
                        : (boxSide - Particle::getRadius() - position) / speed;
@@ -283,6 +286,7 @@ PWCollision Gas::firstPWColl() {
     return {cTime, p, wall};
   }};
 
+	// second elementary auxiliary lambda
   auto getWallColl{[&](Particle* p) {
     PWCollision result =
         getPWCollision(p->position.x, p->speed.x, Wall::Left, Wall::Right, p);
@@ -311,7 +315,9 @@ PWCollision Gas::firstPWColl() {
   });
   if (!firstColl.getP1() && !particles.size()) {
     throw std::runtime_error("firstPWColl error: gas is empty");
-  }
+  } else if (firstColl.getTime() < 0.) {
+		throw std::runtime_error("firstPWColl error: found negative wall collision time -> aborting");
+	}
   return firstColl;
 }
 
