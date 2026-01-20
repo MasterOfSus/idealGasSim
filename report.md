@@ -76,7 +76,18 @@ The "insertion" of a new GasData instance is checked for some minimal compatibil
 The copy and move constructors/assignment operators had to be implemented as non-standard to ensure that ROOT's internal memory management would not cause segmentation faults by calling the TH1 method SetDirectory(nullptr).
 
 #### SimDataPipeline
-The last component of the DataProcessing module, providing a complete, thread safe-ish simulation data pipeline, with two exit points: one for raw processed data in the form of TdStats and/or sf::Textures, and another for a video output, in the form of sf::Textures, containing a customizable assortment of the previous raw results in a graphical form.
+The last component of the DataProcessing module, providing a complete, thread safe simulation data pipeline, with two exit points: one for raw processed data in the form of TdStats and/or sf::Textures, and another for a video output, in the form of sf::Textures, containing a customizable assortment of the previous raw results in a graphical form.
+This class allows for storage of gasData instances, through the addData method, the processing of said instances into TdStats and/or sf::RenderTexture instances (stored inside of the class and available to the user) through the two processData methods, and composition of these intermediary results into a video format through the getVideo method.
+In addition to these, a set of state checking/setting methods is provided, to allow for communication and synchronization with the rest of the program, which can ask the class wether it is:
+ - out of gasData to process
+ - actively processing a batch of gasData
+and inquire about the:
+ - number of gasData instances in the queue
+ - number of TdStats/sf::Textures in the intermediate result queues
+And can use the getDone/setDone methods to communicate across its threads when the simulation thread is done adding gasData instances.
+The behaviour of getVideo under multithreading calls can be tweaked in performance/responsiveness by setting the number of TdStats chunks to be processed in one call of getVideo, through the setStatChunkSize method, so that the simulation doesn't take bites that are too big to chew, leaving you waiting for a minute while it chugs along all TdStats, filling up your memory with sf::Textures that you would be very happy to be seeing while it processes the other.
+Finally, two functions (getStats, getRenders) allow access to the intermediate result queues, either through copy or move semantics, to allow the user to be able to implement with minimal overhead his own secondary processing, if the flexibility provided by getVideo doesn't satisfy their needs.
+All functions are thread-safe under all circumstances, except for the addData function, the two processData functions and the getVideo function, which cannot be called from more than one thread at a time, and the setFont function, which is not thread-safe at all.
 
 ## External libraries
 The project depends on ROOT 6.36.00, which can be installed through the snap package manager or directly through its binary release, and on SFML 2.6.1, provided by the package libsfml-dev.
