@@ -43,9 +43,7 @@ For particle-to-particle collisions, the resulting speeds can be calculated by i
 2. conservation of momentum (principle of conservation of momentum)
 3. for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces.\
 These conditions result in the following system and its solution, providing the general solution to the problem:\
-$$
-\vec{F} = m\vec{a}
-$$
+![Where formula](latex/math.svg)
 This formula clearly produces valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is less than zero.\
 For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
 
