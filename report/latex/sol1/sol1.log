@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=latex 2025.11.11)  21 JAN 2026 15:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=latex 2025.11.11)  21 JAN 2026 16:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**math.tex
-(./math.tex
+**sol1.tex
+(./sol1.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (/usr/share/texmf-dist/tex/latex/standalone/standalone.cls
@@ -153,8 +153,8 @@ File: l3backend-dvips.def 2024-05-08 L3 backend support: dvips
 \g__pdf_backend_link_int=\count287
 \g__pdf_backend_link_sf_int=\count288
 )
-No file math.aux.
-\openout1 = `math.aux'.
+No file sol1.aux.
+\openout1 = `sol1.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 6.
 LaTeX Font Info:    ... okay on input line 6.
@@ -181,19 +181,19 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 8.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 Preview: Tightpage 0 0 0 0
-[1] (./math.aux)
+[1] (./sol1.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2439 strings out of 475172
- 36891 string characters out of 5767120
+ 2436 strings out of 475172
+ 36775 string characters out of 5767120
  420579 words of memory out of 5000000
- 25449 multiletter control sequences out of 15000+600000
+ 25445 multiletter control sequences out of 15000+600000
  560536 words of font info for 44 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 70i,8n,71p,220b,165s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 70i,5n,71p,220b,130s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on math.dvi (1 page, 2036 bytes).
+Output written on sol1.dvi (1 page, 2144 bytes).

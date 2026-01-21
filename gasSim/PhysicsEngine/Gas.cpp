@@ -13,6 +13,7 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #include "DataProcessing/GasData.hpp"
 #include "DataProcessing/SimDataPipeline.hpp"
