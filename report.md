@@ -17,21 +17,31 @@ The project can be seen as divided in a set of three major interdependent compon
 1. a physics engine ([PhysicsEngine](gasSim/PhysicsEngine)), which provides the implementation of the used physical model and of the methods allowing for the simulation of its evolution through time
 2. a graphics module ([Graphics](gasSim/Graphics)), which provides a rudimentary 3D rendering engine with facilities that allow to take an "almost perspectically correct" picture of the gas
 3. a data processing module ([DataProcessing](gasSim/DataProcessing), which provides a set of facilities allowing for storage of data relative to the simulation and its processing into more meaningful data.
-  - This module also contains a pipeline for the data being output from the simulation, which allows for simultaneous (thread-safe) storage of the raw simulation output, processing (both statistical and graphical), direct external access to the statistical and graphical processing results and/or composition of the processed data into a coherent video output.\
-  This component has been developed under the necessity of avoiding either an unsustainable memory footprint or an excessive slowness of the execution.
+    - This module also contains a pipeline for the data being output from the simulation, which allows for simultaneous (thread-safe) storage of the raw simulation output, processing (both statistical and graphical), direct external access to the statistical and graphical processing results and/or composition of the processed data into a coherent video output.\
+    This component has been developed under the necessity of avoiding either an unsustainable memory footprint or an excessive slowness of the execution.
+The codebase has been split up in one header-implementation couple for each class, with names matching the class' name, and one main executable.
 ### PhysicsEngine
 The physics engine provides the following set of components:
- - GSVector, a template floating point vector class, implementing the concept of three-dimensional vectors
-This component allows for usage of the concept of a vector with the flexibility to choose the floating point data structure to use based on the necessities posed by the implementation. It provides the basic operations to perform on vectors (scalar multiplication, dot product, cross product).
- - Particle, a spherical uniform particle representation implementation.
-This component allows for the representation of particles, sharing mass and radius (implemented for thread-safe access).
- - Collision, a set of three small structs providing the abstraction needed for management of particle-to-wall and particle-to-particle collision.
-The dual nature of a collision has been dealt with by making use of dynamic polymorphism, so as to provide an uniform interface (implemented in the pure virtual Collision struct) for the "collision solving" method and collision completion time class member, used to compare collisions to choose the one with the smallest time.
-These structs have been made with speed in mind, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without ensuring correct usage of the provided methods (requiring additional overhead), which has been instead delegated to the Gas class itself.
-The collision solving methods are implemented according to the following formulas:
-For particle-to-particle collisions, the resulting speeds can be calculated by imposing three conditions: conservation of kinetic energy (elastic collision), conservation of momentum (principle of conservation of momentum) and finally, for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for the case of repulsive forces being normal to the contacting surfaces. These conditions result in the following general solution to the problem:
-~insert formula~
-For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is flipped, as per the limit of a collision between an object with finite mass and one with mass approaching infinity (which corresponds to our containers' walls, which are fixed in place)
+**GSVector**\
+A template floating point vector class, implementing the concept of three-dimensional vectors.\
+This component allows for the flexibility to choose the floating point data structure to use based on the necessities posed by the implementation.\
+It also provides the basic operations to perform on vectors (scalar multiplication, dot product, cross product).
+___
+**Particle**\
+A spherical uniform particle implementation.\
+This component allows for the representation and management of particles, sharing a common mass and radius (implemented as static atomic variables for thread-safe access).
+___
+**Collision**\
+A set of three structs providing the facilities to manage particle-to-wall and particle-to-particle collision.\
+The dual nature of a collision has been dealt with through the use of dynamic polymorphism, so as to provide an uniform interface (implemented in the pure virtual Collision struct) for the "collision solving" `solve()` method and collision completion time class member, accessed through `getTime()`, used to compare collisions to choose the one with the smallest time.\
+These structs have been designed with execution speed as the main focus, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without checks ensuring correct usage of the provided methods (which would have required additional overhead), which have instead been delegated to the `gs::Gas` class itself.
+
+The collision solving methods have been implemented according to the following formulas:\
+For particle-to-particle collisions, the resulting speeds can be calculated by imposing three conditions: conservation of kinetic energy (elastic collision), conservation of momentum (principle of conservation of momentum) and finally for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces.\
+These conditions result in the following system and its solution, providing the general solution to the problem:
+~insert formulae~\
+For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
+___
  - Gas, the class implementing the concept of an ideal gas.
 This Class provides two main facilities:
  - Constructors allowing the user to have full control over the desired starting conditions of the particles.
