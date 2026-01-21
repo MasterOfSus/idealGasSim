@@ -44,7 +44,7 @@ class SimDataPipeline {
       std::function<bool()> stopper = [] { return false; });
   std::vector<sf::Texture> getVideo(
       VideoOpts opt, sf::Vector2u windowSize, sf::Texture const& placeHolderT,
-      TList& outputGraphs, bool emptyQueue = false,
+      TList& outputGraphs, bool emptyStats = true,
       std::function<void(TH1D&, VideoOpts)> fitLambda = {},
       std::array<std::function<void()>, 4> drawLambdas = {});
 

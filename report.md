@@ -88,6 +88,42 @@ And can use the getDone/setDone methods to communicate across its threads when t
 The behaviour of getVideo under multithreading calls can be tweaked in performance/responsiveness by setting the number of TdStats chunks to be processed in one call of getVideo, through the setStatChunkSize method, so that the simulation doesn't take bites that are too big to chew, leaving you waiting for a minute while it chugs along all TdStats, filling up your memory with sf::Textures that you would be very happy to be seeing while it processes the other.
 Finally, two functions (getStats, getRenders) allow access to the intermediate result queues, either through copy or move semantics, to allow the user to be able to implement with minimal overhead his own secondary processing, if the flexibility provided by getVideo doesn't satisfy their needs.
 All functions are thread-safe under all circumstances, except for the addData function, the two processData functions and the getVideo function, which cannot be called from more than one thread at a time, and the setFont function, which is not thread-safe at all.
+##### getVideo
+This function is a half-baked video composition facility, which offers the composition of processed TdStats and sf::Texture instances into a coherent video output, in the form of sf::Texture instances.
+It offers four modes of results composition:
+ - justGas, outputting just the renders and inserting placeholders in place of eventual missing ones
+ - justStats, using just the TdStats instances, providing a graph only video feed, thought for visualization of systems with numerous particles
+ - gasPlusCoords, showing just the gas and its measured thermodynamic coordinates
+ - all, showing the gas, its measured thermodynamic coordinates, the particle speed norm distribution and the mean free path graph
+The function can be seen as a big case structure, divided in three stages:
+ - data extraction phase, where chunks of information that can be composed into a video are taken from the intermediate results queues
+ - recurrent variables setup, where variables necessary to the later stage are set up
+ - video composition phase, where the data chunks are processed into a final format
+The data extraction phase operates depending on the case:
+As a first step, it always sets the fTime variable, the variable indicating the time corresponding to the last frame output by getVideo, which is set according to the following fallback structure:
+if any render times are available, it is set so that its difference with the time of the first render is an integer multiple of the time given to each frame (the inverse of the framerate), basically syncing it up to the renders. This happens both if it isn't synced to the renders or if it isn't set.
+if any stats are available and it hasn't been set yet, it is set so as to be as close to the beginning of the first TdStats instance available
+Essentially, fTime constitutes a "memory" of the getVideo function, which thanks to it can know where it stopped, and through the class invariant that where there are published renders, the corresponding TdStats have also necessary been published, always know if the data it has has either been deleted/made unavailable to it (for example by changing the framerate mid run, effectively putting all of the previously processed renders out of sync) or not published, so as to know where to stop to get published data chunks to process.
+After setting the fTime variable and acquiring the necessary parameters, it extracts data depending on the case:
+ - justGas -> extracts all of the available renders available
+ - justStats -> extracts all of the available TdStats available
+ - gasPlusCoords/all -> extracts chunks of TdStats and renders available after fTime, and such that the renders are contained within the TdStats
+The video composition phase, while differing slightly between cases, operates on the same principle: starting from the fTime variable, it proceeds for all subsequent integer multiples of the frame time, checking for missing data/renders and inserting placeholders as needed. Since the user has no way to partially delete TdStats, the function can be sure that if it hasn't touched a TdStats yet (it being after fTime), the presence of a TdStats implies that all successive TdStats in the vector are contiguous in time, so it only has to insert placeholder graph values from fTime to the TdStats instances' front starting time, then can happily chug along without worrying about missing TdStats instances. It makes use of this by rendering once a the graphs corresponding to a TdStats instance, then pasting the renders onto the graphs, checking that for each render the render for the frame time is actually available, and inserting a placeholder if that is not the case.
+In this phase, the user is given the freedom to perform operations on the ROOT object that get drawn, both in the phase directly before the drawing of the root objects and directly after them, by passing std::functions that get called by the getVideo function.
+
+### Main executable
+The main executable uses all of the previously mentioned facilities to simulate a gas, process its data and compose it into a video output.
+It does so in three phases:
+First it gets input parameters and loads resources according to them, validating them for correctness.
+Then it constructs the gas and data pipeline, and sends a simulation and a processing thread.
+Then it starts either the video feed or the video saving process:
+The video saving process simply calls getVideo until the state of the pipeline indicates that the simulation is done and that there is no more processing going on, encoding the results of each getVideo into an ffmpeg pipe opened to an .mp4 file on the filesystem.
+The video feed is more complicated, and is composed of three main components:
+A buffering loop, controlled through an atomic flag, that is started when there are no more frames available to draw while waiting for more to be prepared.
+A set of player threads, which wait for their turn through their queue number, compared with an atomic size_t telling them the queue number that is free to start drawing to the window, then draw to the window the frames passed to them through an std::shared_ptr to a vector of sf::Textures, finally checking if there are any player threads in line behind them and signaling the buffering loop to start up again if that is not the case.
+The main thread, which calls getVideo, storing its result through shared_ptrs and sending the player threads with their queue number and passing them the shared_ptr to the set of renders they need to display.
+The access to the sf::RenderWindow to which the results are displayed is managed through an std::mutex, locked with std::lock_guards, and the player theads and buffering loop are coordinated through an atomic stop signal, which is used for the simulation and processing threads, and a killBufferLoop flag which is used only by the buffer loop. When each thread is in possession of the window, it also checks for an eventual window close signal and sets the stop and killBufferLoop flags to true to stop all drawing.
+In an ending phase, it joins all previously unjoined threads and either saves the results or skips it if it detects an user-driven ending signal.
 
 ## External libraries
 The project depends on ROOT 6.36.00, which can be installed through the snap package manager or directly through its binary release, and on SFML 2.6.1, provided by the package libsfml-dev.
