@@ -33,7 +33,7 @@ A spherical uniform particle implementation.\
 This component allows for the representation and management of particles, sharing a common mass and radius (implemented as static atomic variables for thread-safe access).
 
 [**gs::Collision**](../gasSim/PhysicsEngine/Collision.hpp)\
-A set of three structs providing the facilities to manage particle-to-wall and particle-to-particle collision.\
+A set of three structs providing the facilities to manage particle-to-wall and particle-to-particle collision.
 The dual nature of a collision has been dealt with through the use of dynamic polymorphism, so as to provide an uniform interface (implemented in the pure virtual Collision struct) for the "collision solving" `solve()` method and collision completion time class member, accessed through `getTime()`, used to compare collisions to choose the one with the smallest time.\
 These structs have been designed with execution speed as the main focus, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without checks ensuring correct usage of the provided methods (which would have required additional overhead), which have instead been delegated to the `gs::Gas` class itself.
 
@@ -42,14 +42,16 @@ For particle-to-particle collisions, the resulting speeds can be calculated by i
 1. conservation of kinetic energy (elastic collision)
 2. conservation of momentum (principle of conservation of momentum)
 3. for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces.\
-These conditions result in the following system and its solution, providing the general solution to the problem:\
+These conditions result in the following system and its solution, providing the general solution to the problem:
+
 <p align="center">
   <img src="latex/sys1/sys1.svg" width="300">
 </p>
 <p align="center">
   <img src="latex/sol1/sol1.svg" width="300">
 </p>
-This formula clearly produces valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is less than zero.\
+
+This formula clearly yields valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is negative.\
 For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
 
 [**gs::Gas**](../gasSim/PhysicsEngine/Gas.hpp)\
@@ -64,7 +66,7 @@ The collision finding process, implemented in the firstPPColl() and firstPWColl(
 2. The first particle-to-particle collision is found by computing the collision time for all couples of particles.\
 The time computation is divided in two steps:
     1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite collision time
-    2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:\
+    2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:
 <p align="center">
   <img src="latex/eq2/eq2.svg" width="300">
 </p>
