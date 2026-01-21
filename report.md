@@ -38,24 +38,34 @@ The dual nature of a collision has been dealt with through the use of dynamic po
 These structs have been designed with execution speed as the main focus, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without checks ensuring correct usage of the provided methods (which would have required additional overhead), which have instead been delegated to the `gs::Gas` class itself.
 
 The collision solving methods have been implemented according to the following formulas:\
-For particle-to-particle collisions, the resulting speeds can be calculated by imposing three conditions: conservation of kinetic energy (elastic collision), conservation of momentum (principle of conservation of momentum) and finally for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces.\
-These conditions result in the following system and its solution, providing the general solution to the problem:
-~insert formulae~\
+For particle-to-particle collisions, the resulting speeds can be calculated by imposing three conditions on a pair of particles in contact with one another:
+1. conservation of kinetic energy (elastic collision)
+2. conservation of momentum (principle of conservation of momentum)
+3. for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces.\
+These conditions result in the following system and its solution, providing the general solution to the problem:\
+$$
+\vec{F} = m\vec{a}
+$$
+This formula clearly produces valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is less than zero.\
 For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
 
 [**gs::Gas**](gasSim/PhysicsEngine/Gas.hpp)\
 The class implementing the concept of an ideal gas, as a set of equal spherical particles bound to move inside of a cubical container.\
 This Class provides two main facilities:
- - Constructors allowing the user to have full control over the desired starting conditions of the particles.
- - Methods allowing the user to simulate a given number of interactions, one just to make the system progress, oneoutputting the collision data to the simulation output pipeline.
-The simulation methods rely on the process of getting all possible collision and comparing the time they would take to happen through the getTime() method, selecting the one with the smallest time and moving the entire gas by that time, then calling the solve() method over said collision.
+ - Constructors, allowing the user to have full control over the desired starting conditions of the particles.
+ - Methods allowing the user to simulate any number of interactions, optionally outputting the collision data to the simulation output pipeline.\
+The simulation methods rely on the process of predicting all possible collision and comparing the time they would take to happen, then selecting the one with the smallest time and moving the entire gas by that time, finally calling the `solve()` method over said collision.
+
 The collision finding process, implemented in the firstPPColl() and firstPWColl() methods, is implemented as follows:
-first the first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting a fixed collision's value every time one with smaller time is found. The final result is stored in a "best collision".
-then the first particle-to-particle collision is found by computing the collision time for all couples of particles. The time computation is divided in two steps, the first checks that the relative distance of the two particles has negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite collision time, then if this step succeeds the actual collision time is computed, through the following formula, which results from imposing the distance of the two particles being equal to the sum of their radiuses:
+1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision's value every time one with smaller time is found.
+2. The first particle-to-particle collision is found by computing the collision time for all couples of particles.\
+The time computation is divided in two steps:
+    1. The relative distance of the two particles is checket to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite collision times
+    2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:\
 this quadratic formula usually yields two values, of which the one with smallest modulus is selected.
 this is done across the whole set of particles with multiple threads, using triangular indexing to biject the set of all couples of particles with a set of indexes, through the following formula:
 
-once the two "best" collisions are found, they are compared and the one with the smallest time is selected, then the gas particles are shifted through their speeds by that time, and the collision, once "contact" has been achieved, is solved. This whole process simulates one event, and is repeated for the amount of times specified by the user. In the case that the overload providing data recording is used, the simulation data is recorded inside of a given instance of the pipeline class after the resolution of the collision has been completed.
+Once the two "best" collisions are found, they are compared and the one with the smallest time is selected, then the gas particles are shifted through their speeds by that time, and the collision, once "contact" has been achieved, is solved. This whole process simulates one event, and is repeated for the amount of times specified by the user. In the case that the overload providing data recording is used, the simulation data is recorded inside of a given instance of the pipeline class after the resolution of the collision has been completed.
 ### Graphics
 This module provides two components:
  - RenderStyle, a simple collection of rendering parameters determining the aesthetical characteristics of a drawn gas 
