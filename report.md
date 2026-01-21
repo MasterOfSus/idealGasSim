@@ -1,11 +1,10 @@
 # idealGasSim
 ## Authors
-Lorenzo Liam Baldisserri
-The project was also built on the work of the previous group members:
-Diego Quarantani
-Niccolo Poli
+Lorenzo Liam Baldisserri\
+The project was also built on the work of the previous group members:\
+Diego Quarantani\
+Niccolo Poli\
 Tomaso Tamburini
-
 ## Introduction
 This project is a rudimentary event-based gas simulator operating in an euclidean three-dimensional space, with graphic data visualization and ROOT file output functionalities. It has the intent of allowing for clear visualization of the most basic phenomena described in kinetic theory of ideal gases, and the qualitative comparison of the theoretical results provided by said theory with their simulated counterparts.
 It strives to achieve this by running a physical simulation of a physical system, representing a gas, and by subsequent processing of the raw simulation data into meaningful statistical datasets and thermodynamical variables, mainly stored through the formats provided by the ROOT framework, so that these can both be visualized and saved for later fruition.
