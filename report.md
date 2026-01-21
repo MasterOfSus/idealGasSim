@@ -7,25 +7,18 @@ Niccolo Poli\
 Tomaso Tamburini
 ## Introduction
 This project is a rudimentary event-based gas simulator operating in an euclidean three-dimensional space, with graphic data visualization and ROOT file output functionalities. It has the intent of allowing for clear visualization of the most basic phenomena described in kinetic theory of ideal gases, and the qualitative comparison of the theoretical results provided by said theory with their simulated counterparts.
-It strives to achieve this by running a physical simulation of a physical system, representing a gas, and by subsequent processing of the raw simulation data into meaningful statistical datasets and thermodynamical variables, mainly stored through the formats provided by the ROOT framework, so that these can both be visualized and saved for later fruition.
-The visualization is achieved through the output of a video feed (live or saved to mp4) which enables the user to view the system's progression through time, both through its statistical and thermodynamical characteristics and through a direct video rendering of the system itself.
-The provided experience is customizable to a limited degree, in almost all of its simulation parameters and aesthetical characteristics.
+
+It strives to achieve this by running a simulation of a physical system, representing a gas, and by subsequently processing the raw simulation data into meaningful statistical datasets and thermodynamical variables, stored making use of the formats provided by the ROOT framework, so that these can both be visualized and saved for later use.\
+The visualization is achieved through the output of a video feed (live or saved to mp4) which enables the user to view the system's progression through time, both through its thermodynamical characteristics and through a direct video rendering of the system itself.\
+The behaviour of the provided program is customizable to a limited degree, in almost all of its simulation parameters and aesthetical characteristics.\
 Finally, the developed facilities are also made accessible through the project's library, which can be used to implement more extensive and precise data processing, if desired.
-
 ## Implementation choices
-The concept of a gas is represented as a set of identical rigid spherical particles, freely moving inside of a cubical container, subject only to elastic collisions both with each other and with the container's walls.
-This system is then observed in its evolution through time, through the elaboration of the simulated events' data into statistical values and datasets, trivially convertible to the thermodynamical quantities of interest.
-Finally, the resulting statistical and thermodynamical data is converted to both a graphical format (a video, which can be viewed in real time while the simulation runs, or stored in an mp4 file for repeated viewing) and a statistical format, through the ROOT framework's file output functionality, saved in a ROOT file.
-To make the visualization of the phenomena more intuitive, a direct gas rendering and display functionality has been implemented and integrated with the graphical statistics visualization, providing a unified video output.
-
-The project has also been structured so as to allow for free and customizable usage of the implemented facilities, as these allow for a wider range of data processing than that which has been implemented in the main executable.
-
-The project can be seen as divided in a set of three major interdependent components and a minor one, reflected in the gasSim directory's subdirectory structure:
- - a physics engine (PhysicsEngine subdirectory), which provides the implementation of the physical model and of the methods used to simulate its evolution through time
- - a graphics module (Graphics subdirectory), which provides a rudimentary three-dimensional rendering engine with facilities that allow to "take an almost perspectically correct picture" of the gas (doesn't take into account lateral stretching towards the edges of the screen
- - a data processing module (DataProcessing), which provides a set of facilities allowing for storage and analysis of data relative to the simulation and their processing into more meaningful data structures and quantities
- - a pipeline for the data being output from the simulation (found in DataProcessing as well), which allows for simultaneous (multithreaded-safe) storage of the raw simulation output, processing (both statistical and graphical), direct external access to the statistical and graphical processing results and/or composition of the processed data into a coherent video output
-The last component has been developed under the necessity of avoiding either an unsustainable memory footprint or an excessive slowness of the program.
+The project can be seen as divided in a set of three major interdependent components, and a minor one, reflected in [gasSim](gasSim)'s subdirectory structure:
+1. a physics engine ([PhysicsEngine](gasSim/PhysicsEngine)), which provides the implementation of the used physical model and of the methods allowing for the simulation of its evolution through time
+2. a graphics module ([Graphics](gasSim/Graphics)), which provides a rudimentary 3D rendering engine with facilities that allow to take an "almost perspectically correct" picture of the gas
+3. a data processing module ([DataProcessing](gasSim/DataProcessing), which provides a set of facilities allowing for storage of data relative to the simulation and its processing into more meaningful data.
+  - This module also contains a pipeline for the data being output from the simulation, which allows for simultaneous (thread-safe) storage of the raw simulation output, processing (both statistical and graphical), direct external access to the statistical and graphical processing results and/or composition of the processed data into a coherent video output.\
+  This component has been developed under the necessity of avoiding either an unsustainable memory footprint or an excessive slowness of the execution.
 ### PhysicsEngine
 The physics engine provides the following set of components:
  - GSVector, a template floating point vector class, implementing the concept of three-dimensional vectors
