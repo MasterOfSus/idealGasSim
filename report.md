@@ -22,16 +22,20 @@ The project can be seen as divided in a set of three major interdependent compon
 The codebase has been split up in one header-implementation couple for each class, with names matching the class' name, and one main executable.
 ### PhysicsEngine
 The physics engine provides the following set of components:
-**GSVector**\
+
+
+**gs::GSVector**\
 A template floating point vector class, implementing the concept of three-dimensional vectors.\
 This component allows for the flexibility to choose the floating point data structure to use based on the necessities posed by the implementation.\
 It also provides the basic operations to perform on vectors (scalar multiplication, dot product, cross product).
-___
-**Particle**\
+
+
+**gs::Particle**\
 A spherical uniform particle implementation.\
 This component allows for the representation and management of particles, sharing a common mass and radius (implemented as static atomic variables for thread-safe access).
-___
-**Collision**\
+
+
+**gs::Collision**\
 A set of three structs providing the facilities to manage particle-to-wall and particle-to-particle collision.\
 The dual nature of a collision has been dealt with through the use of dynamic polymorphism, so as to provide an uniform interface (implemented in the pure virtual Collision struct) for the "collision solving" `solve()` method and collision completion time class member, accessed through `getTime()`, used to compare collisions to choose the one with the smallest time.\
 These structs have been designed with execution speed as the main focus, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without checks ensuring correct usage of the provided methods (which would have required additional overhead), which have instead been delegated to the `gs::Gas` class itself.
@@ -41,8 +45,8 @@ For particle-to-particle collisions, the resulting speeds can be calculated by i
 These conditions result in the following system and its solution, providing the general solution to the problem:
 ~insert formulae~\
 For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
-___
- - Gas, the class implementing the concept of an ideal gas.
+
+**gs::Gas**, the class implementing the concept of an ideal gas.
 This Class provides two main facilities:
  - Constructors allowing the user to have full control over the desired starting conditions of the particles.
  - Methods allowing the user to simulate a given number of interactions, one just to make the system progress, oneoutputting the collision data to the simulation output pipeline.
