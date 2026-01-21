@@ -43,7 +43,12 @@ For particle-to-particle collisions, the resulting speeds can be calculated by i
 2. conservation of momentum (principle of conservation of momentum)
 3. for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces.\
 These conditions result in the following system and its solution, providing the general solution to the problem:\
-![Where formula](latex/math.svg)
+<p align="center">
+  <img src="latex/sys1/sys1.svg" width="300">
+</p>
+<p align="center">
+  <img src="latex/sol1/sol1.svg" width="300">
+</p>
 This formula clearly produces valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is less than zero.\
 For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
 
@@ -58,9 +63,15 @@ The collision finding process, implemented in the firstPPColl() and firstPWColl(
 1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision's value every time one with smaller time is found.
 2. The first particle-to-particle collision is found by computing the collision time for all couples of particles.\
 The time computation is divided in two steps:
-    1. The relative distance of the two particles is checket to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite collision times
+    1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite collision time
     2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:\
-this quadratic formula usually yields two values, of which the one with smallest modulus is selected.
+<p align="center">
+  <img src="latex/eq2/eq2.svg" width="300">
+</p>
+<p align="center">
+  <img src="latex/sol2/sol2.svg" width="300">
+</p>
+the quadratic formula above usually yields two values, of which the one with smallest modulus is selected.
 this is done across the whole set of particles with multiple threads, using triangular indexing to biject the set of all couples of particles with a set of indexes, through the following formula:
 
 Once the two "best" collisions are found, they are compared and the one with the smallest time is selected, then the gas particles are shifted through their speeds by that time, and the collision, once "contact" has been achieved, is solved. This whole process simulates one event, and is repeated for the amount of times specified by the user. In the case that the overload providing data recording is used, the simulation data is recorded inside of a given instance of the pipeline class after the resolution of the collision has been completed.
