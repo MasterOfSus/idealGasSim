@@ -13,26 +13,26 @@ The visualization is achieved through the output of a video feed (live or saved 
 The behaviour of the provided program is customizable to a limited degree, in almost all of its simulation parameters and aesthetical characteristics.\
 Finally, the developed facilities are also made accessible through the project's library, which can be used to implement more extensive and precise data processing, if desired.
 ## Implementation choices
-The project can be seen as divided in a set of three major interdependent components, and a minor one, reflected in [gasSim](gasSim)'s subdirectory structure:
-1. a physics engine ([PhysicsEngine](gasSim/PhysicsEngine)), which provides the implementation of the used physical model and of the methods allowing for the simulation of its evolution through time
-2. a graphics module ([Graphics](gasSim/Graphics)), which provides a rudimentary 3D rendering engine with facilities that allow to take an "almost perspectically correct" picture of the gas
-3. a data processing module ([DataProcessing](gasSim/DataProcessing), which provides a set of facilities allowing for storage of data relative to the simulation and its processing into more meaningful data.
+The project can be seen as divided in a set of three major interdependent components, and a minor one, reflected in [gasSim](../gasSim)'s subdirectory structure:
+1. a physics engine ([PhysicsEngine](../gasSim/PhysicsEngine)), which provides the implementation of the used physical model and of the methods allowing for the simulation of its evolution through time
+2. a graphics module ([Graphics](../gasSim/Graphics)), which provides a rudimentary 3D rendering engine with facilities that allow to take an "almost perspectically correct" picture of the gas
+3. a data processing module ([DataProcessing](../gasSim/DataProcessing), which provides a set of facilities allowing for storage of data relative to the simulation and its processing into more meaningful data.
     - This module also contains a pipeline for the data being output from the simulation, which allows for simultaneous (thread-safe) storage of the raw simulation output, processing (both statistical and graphical), direct external access to the statistical and graphical processing results and/or composition of the processed data into a coherent video output.\
     This component has been developed under the necessity of avoiding either an unsustainable memory footprint or an excessive slowness of the execution.
 The codebase has been split up in one header-implementation couple for each class, with names matching the class' name, and one main executable.
 ### PhysicsEngine
 The physics engine provides the following set of components:
 
-[**gs::GSVector**](gasSim/PhysicsEngine/GSVector.hpp)\
+[**gs::GSVector**](../gasSim/PhysicsEngine/GSVector.hpp)\
 A template floating point vector class, implementing the concept of three-dimensional vectors.\
 This component allows for the flexibility to choose the floating point data structure to use based on the necessities posed by the implementation.\
 It also provides the basic operations to perform on vectors (scalar multiplication, dot product, cross product).
 
-[**gs::Particle**](gasSim/PhysicsEngine/Particle.hpp)\
+[**gs::Particle**](../gasSim/PhysicsEngine/Particle.hpp)\
 A spherical uniform particle implementation.\
 This component allows for the representation and management of particles, sharing a common mass and radius (implemented as static atomic variables for thread-safe access).
 
-[**gs::Collision**](gasSim/PhysicsEngine/Collision.hpp)\
+[**gs::Collision**](../gasSim/PhysicsEngine/Collision.hpp)\
 A set of three structs providing the facilities to manage particle-to-wall and particle-to-particle collision.\
 The dual nature of a collision has been dealt with through the use of dynamic polymorphism, so as to provide an uniform interface (implemented in the pure virtual Collision struct) for the "collision solving" `solve()` method and collision completion time class member, accessed through `getTime()`, used to compare collisions to choose the one with the smallest time.\
 These structs have been designed with execution speed as the main focus, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without checks ensuring correct usage of the provided methods (which would have required additional overhead), which have instead been delegated to the `gs::Gas` class itself.
@@ -52,7 +52,7 @@ These conditions result in the following system and its solution, providing the 
 This formula clearly produces valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is less than zero.\
 For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
 
-[**gs::Gas**](gasSim/PhysicsEngine/Gas.hpp)\
+[**gs::Gas**](../gasSim/PhysicsEngine/Gas.hpp)\
 The class implementing the concept of an ideal gas, as a set of equal spherical particles bound to move inside of a cubical container.\
 This Class provides two main facilities:
  - Constructors, allowing the user to have full control over the desired starting conditions of the particles.
@@ -72,8 +72,15 @@ The time computation is divided in two steps:
   <img src="latex/sol2/sol2.svg" width="300">
 </p>
 the quadratic formula above usually yields two values, of which the one with smallest modulus is selected.
-this is done across the whole set of particles with multiple threads, using triangular indexing to biject the set of all couples of particles with a set of indexes, through the following formula:
-
+this is done across the whole set of particles with multiple threads, using triangular indexing to biject the set of all couples of particles with a set of indexes, through the following formulae:
+The number of total checks can be easily found with the well known:
+<p align="center">
+  <img src="latex/eq3/eq3.svg" width="300">
+</p>
+And to get the two particle's indexes from the couple's corresponding index:
+<p align="center">
+  <img src="latex/sol3/sol3.svg" width="300">
+</p>
 Once the two "best" collisions are found, they are compared and the one with the smallest time is selected, then the gas particles are shifted through their speeds by that time, and the collision, once "contact" has been achieved, is solved. This whole process simulates one event, and is repeated for the amount of times specified by the user. In the case that the overload providing data recording is used, the simulation data is recorded inside of a given instance of the pipeline class after the resolution of the collision has been completed.
 ### Graphics
 This module provides two components:
