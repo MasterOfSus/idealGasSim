@@ -59,7 +59,7 @@ The class implementing the concept of an ideal gas, as a set of equal spherical 
 This Class provides two main facilities:
  - Constructors, allowing the user to have full control over the desired starting conditions of the particles.
  - Methods allowing the user to simulate any number of interactions, optionally outputting the collision data to the simulation output pipeline.\
-The simulation methods rely on the process of predicting all possible collision and comparing the time they would take to happen, then selecting the one with the smallest time and moving the entire gas by that time, finally calling the `solve()` method over said collision.
+The simulation methods rely on the process of predicting all possible collision and comparing the time they would take to happen, then selecting the one with the smallest time and moving the entire gas by that time, finally calling the `solve()` method over said collision, and optionally adding the gas data to the data pipeline.
 
 The collision finding process, implemented in the firstPPColl() and firstPWColl() methods, is implemented as follows:
 1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision's value every time one with smaller time is found.
@@ -67,30 +67,47 @@ The collision finding process, implemented in the firstPPColl() and firstPWColl(
 The time computation is divided in two steps:
     1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite collision time
     2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:
+
 <p align="center">
   <img src="latex/eq2/eq2.svg" width="300">
 </p>
+
 <p align="center">
   <img src="latex/sol2/sol2.svg" width="300">
 </p>
+
 the quadratic formula above usually yields two values, of which the one with smallest modulus is selected.
 this is done across the whole set of particles with multiple threads, using triangular indexing to biject the set of all couples of particles with a set of indexes, through the following formulae:
 The number of total checks can be easily found with the well known:
+
 <p align="center">
   <img src="latex/eq3/eq3.svg" width="300">
 </p>
+
 And to get the two particle's indexes from the couple's corresponding index:
+
 <p align="center">
   <img src="latex/sol3/sol3.svg" width="300">
 </p>
-Once the two "best" collisions are found, they are compared and the one with the smallest time is selected, then the gas particles are shifted through their speeds by that time, and the collision, once "contact" has been achieved, is solved. This whole process simulates one event, and is repeated for the amount of times specified by the user. In the case that the overload providing data recording is used, the simulation data is recorded inside of a given instance of the pipeline class after the resolution of the collision has been completed.
+
+Once the two "best" collisions are found, they are compared and the one with the smallest time is selected.
+
 ### Graphics
 This module provides two components:
- - RenderStyle, a simple collection of rendering parameters determining the aesthetical characteristics of a drawn gas 
- - Camera, a class implementing the concept of perspective, allowing for a rudimentary visually intuitive (almost perspectically correct) 3D rendering of a gas.
+ - RenderStyle, a simple collection of rendering parameters determining the aesthetical characteristics of a drawn gas
+ - Camera, a class allowing for a rudimentary visually intuitive (almost perspectically correct) 3D rendering of a gas.
+[gs::Camera](../gasSim/Graphics/Camera.hpp)
+A camera is essentially a focal point and a perspective plane, with the plane's normal vector defining the camera's viewing direction.\
 
-The camera class provides a fundamental point projection method, turning a point in 3D space into its projection, with its pixel coordinates, which can be used to draw it onto an image, and a depth field, which contains the information about its distance from the camera plane, which among other things can be used for scaling purposes.
-This point projection method is then used to add particle drawing functionalities, by drawing a circle where the particle should be and then scaling it according to the depth field. These are used to provide two methods allowing for the drawing of a set of particles in space, which requires only the additional ordering, based on the depth field, of the projections so as to then iterate over the projections container and draw them one over another, having the closest ones seen above the farthest, as is the case for convex objects such as spheres are.
+<p align="center">
+  <img src="camera diagram.svg" width="300">
+</p>
+
+The camera class provides a fundamental point projection method, turning a point in 3D space into its projection.
+A point's projection is the result of intersecting the line that passes between the point and the camera's focus with the perspective plane. The resulting point is then written as a second 3D vector, with the first two components being the point's position relative to the plane's chosen origin, and the third component being a "depth" field, which is the scaling parameter to apply to a segment parallel to the perspective plane to get its projection's length. The first two coordinates are also expressed in term of pixel width units, identifying the indexes of the pixel that corresponds to the point's image.
+\ insert 
+This point projection method is then used to add particle drawing functionalities, by drawing a circle where the particle should be and then scaling its radius according to the depth field; this method doesn't take into consideration the horizontal "stretching" of the images of objects as the projection is farther to the edges of the image.\
+These are used to provide two methods allowing for the drawing of a set of particles in space, which requires only the additional ordering, based on the depth field, of the projections so as to then iterate over the projections container and draw them one over another, having the closest ones seen above the farthest, as is the case for convex objects such as spheres are.
 Finally, the point projection and particle drawing methods are used to add a set of helper functions which make it possible to draw a Gas, through drawing its walls and its particles. Since the Gas class guarantees the enclosure of the particles inside of their container, correctly drawing the gas is easily achieved by drawing the walls facing away from the camera, then the particles over them, then the walls facing the camera over them, as the geometry of a convex object guarantees that looking at it from one direction will have the surfaces hidden from view possess normal vectors facing the same way as the observer's sight, therefore facing away from the observer. The cube happens to be a convex object. The information about the gas's normal vectors has been computed by "brute-forcing"the six cases of the wall, as there was no need for the additional implementation which would have been required to implement it in a more implicit way. SILLYYYYY
 
 ### DataProcessing
