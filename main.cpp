@@ -588,7 +588,7 @@ int main(int argc, const char* argv[]) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-		/* GRAPHICAL OUTPUT PREP PHASE */
+		/* GRAPHICAL OUTPUT PREP PHASE END */
 
 		/* VIDEO COMPOSITION-OUTPUT PHASE */
 
@@ -616,7 +616,7 @@ int main(int argc, const char* argv[]) {
             !output.isProcessing()) {
           lastBatch = true;
         }
-        std::vector<sf::Texture> frames = {
+        std::vector<sf::Texture> frames {
             output.getVideo(videoOpt, {windowSize.x, windowSize.y}, placeHolder,
                             *graphsList, true, fitLambda, drawLambdas)};
         int i{0};

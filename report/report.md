@@ -23,19 +23,19 @@ The codebase has been split up in one header-implementation couple for each clas
 ### PhysicsEngine
 The physics engine provides the following set of components:
 
-[**gs::GSVector**](../gasSim/PhysicsEngine/GSVector.hpp)\
+[**GS::GSVector**](../gasSim/PhysicsEngine/GSVector.hpp)\
 A template floating point vector class, implementing the concept of three-dimensional vectors.\
 This component allows for the flexibility to choose the floating point data structure to use based on the necessities posed by the implementation.\
 It also provides the basic operations to perform on vectors (scalar multiplication, dot product, cross product).
 
-[**gs::Particle**](../gasSim/PhysicsEngine/Particle.hpp)\
+[**GS::Particle**](../gasSim/PhysicsEngine/Particle.hpp)\
 A spherical uniform particle implementation.\
 This component allows for the representation and management of particles, sharing a common mass and radius (implemented as static atomic variables for thread-safe access).
 
-[**gs::Collision**](../gasSim/PhysicsEngine/Collision.hpp)\
+[**GS::Collision**](../gasSim/PhysicsEngine/Collision.hpp)\
 A set of three structs providing the facilities to manage particle-to-wall and particle-to-particle collision.
 The dual nature of a collision has been dealt with through the use of dynamic polymorphism, so as to provide an uniform interface (implemented in the pure virtual Collision struct) for the "collision solving" `solve()` method and collision completion time class member, accessed through `getTime()`, used to compare collisions to choose the one with the smallest time.\
-These structs have been designed with execution speed as the main focus, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without checks ensuring correct usage of the provided methods (which would have required additional overhead), which have instead been delegated to the `gs::Gas` class itself.
+These structs have been designed with execution speed as the main focus, as they are extensively used in the main computational bulk of the simulation, and have therefore been implemented without checks ensuring correct usage of the provided methods (which would have required additional overhead), which have instead been delegated to the `GS::Gas` class itself.
 
 The collision solving methods have been implemented according to the following formulas:\
 For particle-to-particle collisions, the resulting speeds can be calculated by imposing three conditions on a pair of particles in contact with one another:
@@ -54,7 +54,7 @@ These conditions result in the following system and its solution, providing the 
 This formula clearly yields valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is negative.\
 For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
 
-[**gs::Gas**](../gasSim/PhysicsEngine/Gas.hpp)\
+[**GS::Gas**](../gasSim/PhysicsEngine/Gas.hpp)\
 The class implementing the concept of an ideal gas, as a set of equal spherical particles bound to move inside of a cubical container.\
 This Class provides two main facilities:
  - Constructors, allowing the user to have full control over the desired starting conditions of the particles.
@@ -96,7 +96,7 @@ Once the two "best" collisions are found, they are compared and the one with the
 This module provides two components:
  - RenderStyle, a simple collection of rendering parameters determining the aesthetical characteristics of a drawn gas
  - Camera, a class allowing for a rudimentary visually intuitive (almost perspectically correct) 3D rendering of a gas.
-[gs::Camera](../gasSim/Graphics/Camera.hpp)
+[GS::Camera](../gasSim/Graphics/Camera.hpp)
 A camera is essentially a focal point and a perspective plane, with the plane's normal vector defining the camera's viewing direction.
 
 <p align="center">
@@ -110,15 +110,15 @@ The first two coordinates are also expressed in term of "pixel width" units, ide
 The point projection method is then used to add particle drawing functionalities, by drawing a circle where the particle should be and then scaling its radius according to the depth field; this method doesn't take into consideration the horizontal "stretching" of the images of objects as the projection is farther to the edges of the image.\
 These are used to provide two methods allowing for the drawing of a set of particles in space, which requires only the additional sorting, based on the depth field, of the projections so as to then iterate over the sorted projections container and draw them one over another, obtaining the closest ones to be drawn above the farthest, which yields correct results for non-overlapping, convex surfaces.
 
-Finally, the point projection and particle drawing methods are used to add a set of helper functions which make it possible to draw a `gs::Gas` or a `gs::GasData`, through drawing its walls and its particles.\
+Finally, the point projection and particle drawing methods are used to add a set of helper functions which make it possible to draw a `GS::Gas` or a `GS::GasData`, through drawing its walls and its particles.\
 Since the Gas class guarantees the enclosure of the particles inside of their container, correctly drawing the gas is easily achieved by drawing the walls facing away from the camera, then the particles over them, then the walls facing the camera above everything else, as the geometry of a convex object (such as a cube) guarantees that looking at it from one direction will have the surfaces hidden from view possess normal vectors facing the same way as the observer's sight, therefore facing away from the observer.\
 The information about the normal vectors and vertexes of the container sides has been computed by "brute-forcing" the six cases of the wall, as there was no need for the additional implementation which would have been required to implement it in a more implicit way.
 
 ### DataProcessing
 This module provides three components, the third of which has been given a dedicated section:
-- [gs::GasData](../gasSim/DataProcessing/GasData.hpp), which is essentially a Gas snapshot with associated collision information.\
+- [GS::GasData](../gasSim/DataProcessing/GasData.hpp), which is essentially a Gas snapshot with associated collision information.\
 It has been developed for storage of solved collisions, meaning that the contact between the colliding objects is still present, but the speeds have already been changed according to the collision solution.
-- [gs::TdStats](../gasSim/DataProcessing/TdStats.hpp), a class providing the facilities to process GasData instances into meaningful information (through the addData method); used to turn the simulation data into "measurements".\
+- [GS::TdStats](../gasSim/DataProcessing/TdStats.hpp), a class providing the facilities to process GasData instances into meaningful information (through the addData method); used to turn the simulation data into "measurements".\
 This class supports the bulking together of any number of subsequent GasData instances from the same Gas instance, and their processing into information of interest:
 - elapsed time
 - "temperature" (again, just average energy over a degree of freedom)
@@ -128,61 +128,70 @@ This class supports the bulking together of any number of subsequent GasData ins
 - Histogram filled with the norm of the speed of every particle -> can be compared/fitted to a Maxwell-Boltzmann distribution
 The "insertion" of a new GasData instance is checked for minimal compatibility requirements.\
 The copy and move constructors/assignment operators had to be implemented as non-standard to ensure that ROOT's internal memory management would not cause segmentation faults, by calling the TH1 method SetDirectory(nullptr) on new instances of the `speedsH` class member.
-### [gs::SimDataPipeline](../gasSim/DataProcessing/SimDataPipeline.hpp)
+### [GS::SimDataPipeline](../gasSim/DataProcessing/SimDataPipeline.hpp)
 The last component of the DataProcessing module, providing a complete, thread safe simulation data pipeline.\
-This class allows for storage of `gs::gasData` instances, through the addData method, the processing of said instances into `gs::TdStats` and/or `sf::RenderTexture` instances (stored inside of the class and available for access to the user) through the two `processData` methods, and composition of these intermediate results into a video format through the `getVideo` method.\
+This class allows for storage of `GS::gasData` instances, through the `addData method`, the processing of said instances into `GS::TdStats` and/or `sf::RenderTexture` instances (stored inside of the class and available for access to the user) through the two `processData` methods, and composition of these intermediate results into a video format through the `getVideo` method.\
 In addition to these, a set of state checking/setting methods is provided, to allow for communication and synchronization with the rest of the program, which can ask the class whether it is:
- - out of `gs::gasData` to process
- - actively processing a batch of `gs::gasData`
+ - out of `GS::gasData` to process
+ - actively processing a batch of `GS::gasData`
 and inquire about the:
- - number of `gs::gasData` instances in the queue
- - number of `gs::TdStats`/`sf::Textures` in the intermediate result queues
-And can use the `getDone`/`setDone` methods to communicate across its threads when the simulation thread is done adding `gs::gasData` instances.
+ - number of `GS::gasData` instances in the queue
+ - number of `GS::TdStats`/`sf::Textures` in the intermediate result queues
+And can use the `getDone`/`setDone` methods to communicate across its threads when the simulation thread is done adding `GS::gasData` instances.
 
-The behaviour of `getVideo` under multithreading calls can be tweaked in performance/responsiveness by setting the number of `gs::TdStats` chunks to be processed in one call of `getVideo`, through the `setStatChunkSize` method, so that it can provide pieces of the video feed to achieve a "buffering" behaviour, making the user wait less and the memory footprint remain acceptable.
+The behaviour of `getVideo` under multithreading calls can be tweaked in performance/responsiveness by setting the number of `GS::TdStats` chunks to be processed in one call of `getVideo`, through the `setStatChunkSize` method, so that it can provide pieces of the video feed to achieve a "buffering" behaviour, making the user wait less and the memory footprint remain acceptable.
 
 Finally, two functions (getStats, getRenders) allow access to the intermediate result queues, either through copy or move semantics, to allow the user to be able to implement with minimal overhead his own secondary processing, if the flexibility provided by getVideo doesn't satisfy their needs.
 
-All functions are thread-safe under all circumstances, except for the addData function, the two processData functions and the getVideo function, which cannot be called from more than one thread at a time, and the setFont function, which is not thread-safe at all. The access to the private members is synchronized through the use of `std::mutex`, `std::lock_guard`, `std::unique_lock` and `std::condition_variable`, or by making the private members `std::atomic` when possible, and storing their `.load()`ed value at the beginning of functions that would load them multiple times. A basic diagram is provided below to hopefully make the class' innerworkings of easier reading:
+All functions are thread-safe under all circumstances, except for the addData function, the two processData functions and the getVideo function, which cannot be called from more than one thread at a time, and the setFont function, which is not thread-safe at all. The access to the private members is synchronized through the use of `std::mutex`, `std::lock_guard`, `std::unique_lock` and `std::condition_variable`, or by making the private members `std::atomic` when possible, and storing their `.load()`ed value at the beginning of functions that would load them multiple times. A basic diagram is provided below in hopes of giving an intuitive representation of the class' innerworkings:
 
 The class is written so as to ensure that corresponding results are published together in the intermediate result queues, meaning that if there is a render at a given time, the `GS::TdStats` that has a time period in which that render is present has been published as well, while the opposite is not necessarily true as `GS::TdStats` instances can be processed without processing the renders, for speed's sake. This is ensured by making the two data processing functions publish their results under the caller's lock of the `resultsMtx` data member as well as the more widely used `statsMtx` and `rendersMtx`. `resultsMtx` is locked by getVideo as well, since it's the only function which also accesses both queues.
-[**gs::SimDataPipeline::getVideo**](../gasSim/DataProcessing/getVideo.cpp)
-This function is a video composition facility, which allows for the composition of processed `gs::TdStats` and `sf::Texture` instances into a coherent video output, in the form of `sf::Texture` instances.\
-It offers four options for results composition, implemented through an enum class, `gs::VideoOpts`:
+[**GS::SimDataPipeline::getVideo**](../gasSim/DataProcessing/getVideo.cpp)
+This function is a video composition facility, which allows for the composition of processed `GS::TdStats` and `sf::Texture` instances into a coherent video output, in the form of `sf::Texture` instances.\
+It offers four options for results composition, implemented through an enum class, `GS::VideoOpts`:
 1. `justGas`, outputting just the renders and inserting placeholders in place of eventual missing ones
 2. `justStats`, using just the TdStats instances, providing a graph only video feed, thought for visualization of systems with numerous particles
 3. `gasPlusCoords`, showing just the gas and its measured thermodynamic coordinates
 4. `all`, showing the gas, its measured thermodynamic coordinates, the particle speed norm distribution and the mean free path graph
-The function can be seen as a big case structure, divided in three stages:
+The function can be seen as one big case structure, divided in three stages:
 1. data extraction, where chunks of information that can be composed into a video are taken from the intermediate results queues
 2. recurrent variables setup, where variables necessary to the later stage are initialized
 3. video composition, where the data chunks are processed into a final format
-The data extraction phase operates depending on the case:\
-As a first step, it always checks the fTime variable, which indicates the time corresponding to the last frame output by getVideo, needs to be set, and sets it according to the following fallback structure:
-1. if any render times are available, it is set so that its difference with the time of the first render is an integer multiple of the time given to each frame (the inverse of the framerate), basically syncing it up to the renders. This happens both if it isn't synced to the renders or if it isn't set.
-2. if any stats are available and it hasn't been set yet, it is set so as to be as close to the beginning of the first TdStats instance available
-3. if the gTime variable is available, it is set to its value
-Essentially, fTime constitutes a "memory" of the getVideo function, which thanks to it can know where it stopped, and through the class invariant that where there are published renders, the corresponding TdStats have also necessary been published, always know if the data between fTime and gTime has has either been deleted/made unavailable to it (for example by changing the framerate mid run, effectively putting all of the previously processed renders out of sync) or not published, so as to know where to stop to get published data chunks to process.
-After setting the fTime variable and acquiring the necessary parameters, it extracts data depending on the case:
- - justGas -> extracts all of the available renders available
- - justStats -> extracts all of the available TdStats available
- - gasPlusCoords/all -> extracts chunks of TdStats and renders available after fTime, and such that the renders are contained within the TdStats
-The video composition phase, while differing slightly between cases, operates on the same principle: starting from the fTime variable, it proceeds for all subsequent integer multiples of the frame time, checking for missing data/renders and inserting placeholders as needed. Since the user has no way to partially delete TdStats, the function can be sure that if it hasn't touched a TdStats yet (it being after fTime), the presence of a TdStats implies that all successive TdStats in the vector are contiguous in time, so it only has to insert placeholder graph values from fTime to the TdStats instances' front starting time, then can happily chug along without worrying about missing TdStats instances. It makes use of this by rendering once a the graphs corresponding to a TdStats instance, then pasting the renders onto the graphs, checking that for each render the render for the frame time is actually available, and inserting a placeholder if that is not the case.
-In this phase, the user is given the freedom to perform operations on the ROOT object that get drawn, both in the phase directly before the drawing of the root objects and directly after them, by passing std::functions that get called by the getVideo function.
 
+The data extraction phase operates depending on the case:\
+As a first step, it always checks the `fTime` variable, which indicates the time corresponding to the last frame output by `getVideo`, needs to be set, and sets it according to the following fallback structure:
+1. if any renders are available, it is set so that its difference with the time of the first render is an integer multiple of the time given to each frame (the inverse of the framerate), basically syncing it up to the renders. This happens both if it isn't synced to the renders or if it isn't set.
+2. if any `GS::TdStats` instances are available and it hasn't been set yet, it is set so as to be as close to the beginning of the first `GS::TdStats` instance available
+3. if the `gTime` variable is available, it is set to its value
+Essentially, `fTime` constitutes a "memory" of the getVideo function, which thanks to it can know where it stopped, and through the guarantees given about the published data, always know if the data between `fTime` and `gTime` has has either been deleted/made unavailable to it (for example by changing the framerate mid run, effectively putting all of the previously processed renders out of sync) or not published, so as to know where to stop to get published data chunks to process.\
+After setting the `fTime` variable and acquiring the necessary parameters, it extracts data depending on the case:
+ - `justGas` -> extracts all of the available renders available
+ - `justStats` -> extracts all of the available TdStats available
+ - `gasPlusCoords`/`all` -> extracts chunks of `GS::TdStats` and renders available after `fTime`, and such that the render times are contained within the `GS::TdStats` instances' time frames.
+
+The video composition phase, while differing slightly between cases, operates on the same principle: starting from the fTime variable, it proceeds for all subsequent integer multiples of the frame time, checking for missing data/renders and inserting placeholders as needed.\
+Since the user has no way to partially delete the `stats` deque's contents, the function can be sure that if it hasn't touched a member of said queue yet (guaranteed by it being after fTime), the presence of said member implies that all successive instances in the container are contiguous in time, so it only has to insert placeholder graph values from `fTime` to the `stats` container's front starting time.
+After inserting the placeholder values, and drawing all the renders in the placeholder timeframe, it can proceed to draw the `stats` instances one by one.\
+It makes use of this by adding the data from an instance to the ROOT objects and drawing them once, then pasting the renders onto it one over another, checking that for each render the render for the frame time is actually available, and inserting a placeholder if that is not the case.\
+In this phase, the user is given the freedom to perform operations on the ROOT objects that get drawn, both in the phase directly before the drawing of the root objects and directly after them, by passing `std::function` instances that get called by the `getVideo` function.
 ### Main executable
-The main executable uses all of the previously mentioned facilities to simulate a gas, process its data and compose it into a video output.
+The main executable uses all of the previously mentioned facilities to simulate a gas's evolution through time, process its data and compose it into a video output.\
 It does so in three phases:
-First it gets input parameters and loads resources according to them, validating them for correctness.
-Then it constructs the gas and data pipeline, and sends a simulation and a processing thread.
-Then it starts either the video feed or the video saving process:
-The video saving process simply calls getVideo until the state of the pipeline indicates that the simulation is done and that there is no more processing going on, encoding the results of each getVideo into an ffmpeg pipe opened to an .mp4 file on the filesystem.
-The video feed is more complicated, and is composed of three main components:
-A buffering loop, controlled through an atomic flag, that is started when there are no more frames available to draw while waiting for more to be prepared.
-A set of player threads, which wait for their turn through their queue number, compared with an atomic size_t telling them the queue number that is free to start drawing to the window, then draw to the window the frames passed to them through an std::shared_ptr to a vector of sf::Textures, finally checking if there are any player threads in line behind them and signaling the buffering loop to start up again if that is not the case.
-The main thread, which calls getVideo, storing its result through shared_ptrs and sending the player threads with their queue number and passing them the shared_ptr to the set of renders they need to display.
-The access to the sf::RenderWindow to which the results are displayed is managed through an std::mutex, locked with std::lock_guards, and the player theads and buffering loop are coordinated through an atomic stop signal, which is used for the simulation and processing threads, and a killBufferLoop flag which is used only by the buffer loop. When each thread is in possession of the window, it also checks for an eventual window close signal and sets the stop and killBufferLoop flags to true to stop all drawing.
+1. it gets input parameters and loads resources according to them, validating them for correctness.
+2. it constructs the gas and data pipeline, and sends a simulation and a processing thread.
+3. it starts either the video feed or the video saving process:
+
+The video saving process simply calls getVideo until the state of the pipeline indicates that the simulation is done and that there is no more processing going on, encoding the results of each getVideo call into an ffmpeg pipe opened to an .mp4 file on the filesystem.
+
+The video feed is made up of three main components:\
+**A buffering loop**, controlled through an `std::atomic<bool>` flag, that is started when there are no more frames available to draw while waiting for more to be prepared.\
+**A set of player threads**, which wait for their turn through their queue number, compared with an `std::atomic<size_t>` telling them the queue number that is free to start drawing to the window, then draw to the window the frames passed to them through an `std::shared_ptr<std::vector<sf::Texture>>`, finally checking if there are any player threads in line behind them and signaling the buffering loop to start up again if that is not the case.\
+Each player thread therefore depends on the thread before it to be able to run and finish.
+**The main thread**, which calls `getVideo`, storing its result through `std::shared_ptr<std::vector<sf::Texture>>` and sending the player threads with their queue number and passing them the `std::shared_ptr<...>` to the set of renders they need to display, then detatching them so as to be able to keep sending player threads instead of stalling the `getVideo` calls.\
+It ensures that the detatched threads are all finished by joining the last thread it sends, since it depends on the thread sent before it to exit to be able to execute, which therefore ensures inductively that all of other detatched threads are finished.\
 In an ending phase, it joins all previously unjoined threads and either saves the results or skips it if it detects an user-driven ending signal.
+
+The access to the `sf::RenderWindow` to which the results are displayed is managed through an `std::mutex`, locked with `std::lock_guard`, and the player theads and buffering loop are coordinated through an `std::atomic<bool>` stop signal, which is used for the simulation and processing threads, and a buffer loop kill signal of the same type which is used only by the buffer loop. When any one of these threads is in possession of the window, it also checks for a window close signal and sets the stop and killBufferLoop flags to true to stop all drawing and make the threads exit as quickly as possible.
 
 ## External libraries
 The project depends on ROOT 6.36.00, which can be installed through the snap package manager or directly through its binary release, and on SFML 2.6.1, provided by the package libsfml-dev.
