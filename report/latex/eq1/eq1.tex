@@ -6,14 +6,21 @@
 \begin{document}
 
 \[
+\begin{array}{c}
 \left\{
 \begin{array}{l}
 \vec{v_1} + \vec{v_2} = \vec{v_1'} + \vec{v_2'}\\[2mm]
 \|\vec{v_1}\|^2 + \|\vec{v_2}\|^2 = \|\vec{v_1'}\|^2 + \|\vec{v_2'}\|^2\\[2mm]
 \vec{v_1'} - \vec{v_1} = \alpha \vec{n}\\[2mm]
-\vec{n} = \frac{\vec{p1} - \vec{p2}}{\|\vec{p1} - \vec{p2}\|}
+\vec{n} = \dfrac{\vec{p_1} - \vec{p_2}}{\|\vec{p_1} - \vec{p_2}\|}
 \end{array}
 \right.
+\end{array}
+\;\Longrightarrow\;
+\begin{array}{l}
+\vec{v_1'} = \vec{v_1} + \vec{n}\,(\vec{n} \cdot (\vec{v_2} - \vec{v_1}))\\[3mm]
+\vec{v_2'} = \vec{v_2} + \vec{n}\,(\vec{n} \cdot (\vec{v_1} - \vec{v_2}))
+\end{array}
 \]
 
 \end{document}

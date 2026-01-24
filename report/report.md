@@ -46,11 +46,9 @@ For particle-to-particle collisions, the resulting speeds can be calculated by i
 These conditions result in the following system and its solution, providing the general solution to the problem:
 
 <p align="center">
-  <img src="latex/sys1/sys1.svg" width="300">
+  <img src="latex/eq1/eq1.svg" width="75%">
 </p>
-<p align="center">
-  <img src="latex/sol1/sol1.svg" width="300">
-</p>
+
 
 This formula clearly yields valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is negative.
 
@@ -61,7 +59,7 @@ The class implementing the concept of an ideal gas, as a set of equal spherical 
 A simple diagram is shown below to provide a visual idea of how the Gas's container is represented, with walls naming:
 
 <p align="center">
-  <img src="gas diagram.svg" width="300">
+  <img src="gas diagram.svg" width="30%">
 </p>
 
 This Class provides two main facilities:
@@ -77,11 +75,11 @@ The time computation is divided in two steps:
     2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:
 
 <p align="center">
-  <img src="latex/eq2/eq2.svg" width="300">
+  <img src="latex/eq2/eq2.svg" width="10%">
 </p>
 
 <p align="center">
-  <img src="latex/sol2/sol2.svg" width="300">
+  <img src="latex/sol2/sol2.svg" width="40%">
 </p>
 
 the quadratic formula above yields two values, of which the one with smallest modulus is selected.
@@ -89,13 +87,13 @@ this is done across the whole set of particles with multiple threads, using [tri
 The number of total checks can be easily found with the well known:
 
 <p align="center">
-  <img src="latex/eq3/eq3.svg" width="300">
+  <img src="latex/eq3/eq3.svg" width="10%">
 </p>
 
 And to get the two particle's indexes from the couple's corresponding index:
 
 <p align="center">
-  <img src="latex/sol3/sol3.svg" width="300">
+  <img src="latex/sol3/sol3.svg" width="35%">
 </p>
 
 Once the two collision times are found, they are compared and the one with the smallest time is selected.
@@ -115,7 +113,7 @@ A camera is essentially a focal point and a perspective plane, with the plane's 
 The Camera class has been implemented to draw it with its bottom side always parallel to the xy plane, and care has been taken to manage the case of provided sight vectors being perpendicular to it.
 
 The camera class provides a fundamental point projection method, turning a point in 3D space into its projection.\
-A point's projection is the result of intersecting the line that passes between the point and the camera's focus with the perspective plane. The resulting point is then written as a second 3D vector with the third component being a "depth" field, which is the scaling parameter to apply to a segment parallel to the perspective plane to get its projection's length, and the first two components as described after the scaling diagram below.\
+A point's projection is the result of intersecting the line that passes between the point and the camera's focus with the perspective plane. The resulting point is then written as a second 3D vector with the third component being a "depth" field, which is the scaling parameter to apply to a segment parallel to the perspective plane to get its projection's length, and the first two components as described after the scaling diagram below.
 
 <p align="center">
   <img src="scaling diagram.svg" width="50%">
