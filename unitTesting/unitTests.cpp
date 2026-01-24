@@ -103,6 +103,22 @@ TEST_CASE("Testing GSVectorD") {
 }
 
 TEST_CASE("Testing Particle") {
+	SUBCASE("Mass and radius") {
+		CHECK_THROWS(GS::Particle::setMass(-3.));
+		CHECK_THROWS(GS::Particle::setMass(-.5));
+		CHECK_THROWS(GS::Particle::setMass(0.));
+		CHECK_THROWS(GS::Particle::setRadius(-100.));
+		CHECK_THROWS(GS::Particle::setRadius(-0.3));
+		CHECK_THROWS(GS::Particle::setRadius(0.));
+		GS::Particle::setMass(2.);
+		CHECK(GS::Particle::getMass() == 2.);
+		GS::Particle::setMass(10.);
+		CHECK(GS::Particle::getMass() == 10.);
+		GS::Particle::setRadius(100.);
+		CHECK(GS::Particle::getRadius() == 100.);
+		GS::Particle::setRadius(1.);
+		CHECK(GS::Particle::getRadius() == 1.);
+	}
   SUBCASE("Default constructor") {
     GS::GSVectorD zeroVec{0, 0, 0};
     GS::GSVectorD vec1{7.94, 3.60, 4.27};

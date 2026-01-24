@@ -189,9 +189,9 @@ The video feed is made up of three main components:\
 Each player thread therefore depends on the thread before it to be able to run and finish.
 **The main thread**, which calls `getVideo`, storing its result through `std::shared_ptr<std::vector<sf::Texture>>` and sending the player threads with their queue number and passing them the `std::shared_ptr<...>` to the set of renders they need to display, then detatching them so as to be able to keep sending player threads instead of stalling the `getVideo` calls.\
 It ensures that the detatched threads are all finished by joining the last thread it sends, since it depends on the thread sent before it to exit to be able to execute, which therefore ensures inductively that all of other detatched threads are finished.\
-In an ending phase, it joins all previously unjoined threads and either saves the results or skips it if it detects an user-driven ending signal.
-
 The access to the `sf::RenderWindow` to which the results are displayed is managed through an `std::mutex`, locked with `std::lock_guard`, and the player theads and buffering loop are coordinated through an `std::atomic<bool>` stop signal, which is used for the simulation and processing threads, and a buffer loop kill signal of the same type which is used only by the buffer loop. When any one of these threads is in possession of the window, it also checks for a window close signal and sets the stop and killBufferLoop flags to true to stop all drawing and make the threads exit as quickly as possible.
+
+At the end of the execution, the main thread joins all previously unjoined threads and either saves the results or skips it if it detects an user-driven ending signal.
 
 ## External libraries
 The project depends on ROOT 6.36.00, which can be installed through the snap package manager or directly through its binary release, and on SFML 2.6.1, provided by the package libsfml-dev.
@@ -209,6 +209,33 @@ The configuration of the root data structures used during the simulation can be 
  - The objects that act as containers (TGraph, TH1D) must be empty
  - The objects must be saved under the same names and be of the same types as the ones in the default root file
 As for the demo config file, the default file found at `inputs/input.root` provides a set of working and meaningful presets, and the macro used to generate it can be taken as a reference for what to feed the simulation.
+### ROOT output file
+The ROOT output file can be inspected through ROOT's `TBrowser`, by opening up a ROOT prompt and initializing a `TBrowser` instance through it, then using the graphical browser to open up the output file.\
+The program will have stored in it the graphs drawn in the video and a `TH1D` in which all of the drawn speeds histograms have been cumulated, so as to show how over the whole execution time, the average distribution matches a Maxwell-Boltzmann distribution.
+
+## Results interpretation
+Execution with different configuration highlights a predictable deviation from the theoretical results used in the kinetic theory of ideal gases.\
+The deviation shown is from the expected and measured pressures: by changing just the particles' radius in the configuration file, one can observe that with its increase, the measured pressure increases, making the "measured" Boltzmann constant (expected as 1) increase with it. This is due to the fact that the particles, having a non-negligible volume, shrink the effective size of the container as well as the real free volume inside of it, and having less room to move around in hit the walls more frequently, increasing the pressure.
+The mean free path?
+
+The particle speed distribution has instead been observed to perfectly match the expected Maxwell-Boltzmann distribution, and starting the system from a different speed distribution (an almost uniform one) shows the spontaneous progression towards the expected distribution.
+
+## Testing strategy
+The tests have been implemented through two different executable, one using the traditional unit tests approach, and the other providing two less rigorous demos and a "stress test".
+### [Unit tests](../unitTesting/unitTests.cpp)
+The unit tests have been written with two main objectives:
+- To ensure correct parameter validation, by passing parameters in the invalid ranges and at the edges between valid and invalid ranges.
+- To ensure behaviour coherent with the physical models and results used, by testing different cases whose results have been previously worked out on paper. The used configurations have been chosen both in valid ranges and at the edges of the valid ranges.
+The parts of the program tested through this executable are listed as follows:
+- All of PhysicsEngine
+- Most of Graphics, excluding the functions returning image outputs
+- All of `GS::GasData` and most of `GS::TdStats`
+- The functions from `GS::SimDataPipeline` not directly dealing with/outputting images.
+### [Demos/stress test](../unitTesting/getVideoTest.cpp)
+This executable implements two demos and a stress test of the `getVideo` function, and in the process validates the efficacy of the image outputting functions provided by the Graphics module.
+
+It does so by testing the function for correct parameter validation through Doctest's facilities, as has been done in the unit tests, and then calling it to provide a video output with weird parameters, such as non-matching render resolution and window resolution or the smallest available resolutions passed as parameters, which is displayed to the user for inspection, and can be replayed indefinitely to try and spot errors. This is done in the `all` and `justStats` configurations, with a single particle gas and a multiple particle gas respectively.\
+Finally, through a simple thread managing facility, provided in [testing addons](testingAddons.hpp), it performs a `GS::SimDataPipeline` stress test to show how it holds up under calls of all methods by multiple threads at random times, with random deletion of the intermediate results queues and random values of the given `GS::VideoOpts` instance, outputting the video feed to the user while showing which functions get called and with what parameters through the standard output. This test can be run as many times as the user likes.
 
 ## Generative AI usage
 During developement ChatGPT has been used, almost exclusively as a way to get indicative information about the facilities provided by the used libraries, and in a couple of instances to write code snippets:
