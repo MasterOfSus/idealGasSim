@@ -88,8 +88,8 @@ class SimDataPipeline {
   std::optional<TdStats> lastStat;
   std::mutex lastStatMtx;
 
-  std::atomic<double> gDeltaT;
-  std::optional<double> gTime;
+  std::atomic<double> gDeltaT; // frame time
+  std::optional<double> gTime; // time of last published render
   std::mutex gTimeMtx;
   std::deque<std::pair<sf::Texture, double>> renders;
   std::mutex rendersMtx;
@@ -97,7 +97,7 @@ class SimDataPipeline {
   std::mutex outputMtx;
   std::condition_variable outputCv;
 
-  std::optional<double> fTime;
+  std::optional<double> fTime; // time of last published frame
 
   std::optional<size_t> nParticles;
 
