@@ -78,17 +78,10 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
         "TdStats constructor error: provided gas and stats with non-matching "
         "temperatures");
   } else {
-    prevStats.wallPulses = {};
-    prevStats.freePaths.clear();
-    prevStats.t0 = std::numeric_limits<double>::quiet_NaN();
-    prevStats.time = std::numeric_limits<double>::quiet_NaN();
-    prevStats.boxSide = 0.;
     prevStats.speedsH.Reset("ICES");
     speedsH = prevStats.speedsH;
     speedsH.SetDirectory(nullptr);
     lastCollPositions = std::move(prevStats.lastCollPositions);
-    prevStats.lastCollPositions.clear();
-    prevStats.T = 0.;
 
     if (data.getCollType() == 'w') {
       addPulse(data);
@@ -146,11 +139,11 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
   } else {
     {
       TH1D* defH = new TH1D();
-      prevStats.speedsH.Reset("ICES");
+			defH->SetDirectory(nullptr);
       if (speedsHTemplate.IsEqual(defH)) {
+				prevStats.speedsH.Reset("ICES");
         speedsH = prevStats.speedsH;
         speedsH.SetDirectory(nullptr);
-        speedsH.Reset("ICES");
       } else {
         if (speedsHTemplate.GetEntries() != 0.) {
           delete defH;
@@ -158,22 +151,14 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
               "TdStats constructor error: provided non-empty speedsH template");
         } else {
           speedsH = speedsHTemplate;
+					speedsH.SetDirectory(nullptr);
         }
       }
       delete defH;
     }
 
-    prevStats.wallPulses = {};
-    prevStats.freePaths.clear();
-    prevStats.t0 = std::numeric_limits<double>::quiet_NaN();
-    prevStats.time = std::numeric_limits<double>::quiet_NaN();
-    prevStats.boxSide = 1.;
-    speedsH.SetDirectory(nullptr);
-
     lastCollPositions = std::move(prevStats.lastCollPositions);
-    prevStats.lastCollPositions.clear();
     T = prevStats.T;
-    prevStats.T = 0.;
 
     if (data.getCollType() == 'w') {
       addPulse(data);
@@ -219,18 +204,11 @@ TdStats::TdStats(TdStats&& s) noexcept
       lastCollPositions(std::move(s.lastCollPositions)),
       T(s.T),
       freePaths(std::move(s.freePaths)),
-      speedsH(std::move(s.speedsH)),
+      speedsH(s.speedsH),
       t0(s.t0),
       time(s.time),
       boxSide(s.boxSide) {
   speedsH.SetDirectory(nullptr);
-  s.speedsH.SetDirectory(nullptr);
-  s.wallPulses = {};
-  s.lastCollPositions.clear();
-  s.T = 0.;
-  s.freePaths.clear();
-  s.t0 = std::numeric_limits<double>::quiet_NaN();
-  s.time = std::numeric_limits<double>::quiet_NaN();
 }
 
 TdStats& TdStats::operator=(TdStats const& s) {
@@ -251,22 +229,14 @@ TdStats& TdStats::operator=(TdStats const& s) {
 
 TdStats& TdStats::operator=(TdStats&& s) noexcept {
   wallPulses = std::move(s.wallPulses);
-  s.wallPulses = {};
   lastCollPositions = std::move(s.lastCollPositions);
-  s.lastCollPositions.clear();
   T = s.T;
-  s.T = 0.;
   freePaths = std::move(s.freePaths);
-  s.freePaths.clear();
-  speedsH = std::move(s.speedsH);
+  speedsH = s.speedsH;
   speedsH.SetDirectory(nullptr);
-  s.speedsH.SetDirectory(nullptr);
   t0 = s.t0;
-  s.t0 = std::numeric_limits<double>::quiet_NaN();
   time = s.time;
-  s.time = std::numeric_limits<double>::quiet_NaN();
   boxSide = s.boxSide;
-  s.boxSide = 1.;
   return *this;
 }
 

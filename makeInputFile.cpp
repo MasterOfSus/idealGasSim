@@ -9,7 +9,7 @@
 void makeInputFile() {
   TFile* inputFile = new TFile("inputs/input.root", "RECREATE", "inputFile");
   TH1D* speedsHTemplate = new TH1D(
-      "speedsHTemplate", "Squared velocities distribution", 10, 0., 30.);
+      "speedsHTemplate", "Squared velocities distribution", 30, 0., 10.);
   speedsHTemplate->GetXaxis()->SetTitle("Speed norm (m/s)");
   speedsHTemplate->GetYaxis()->SetTitle("Count");
   speedsHTemplate->SetFillColor(kViolet - 6);

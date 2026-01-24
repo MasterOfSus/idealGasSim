@@ -7,7 +7,7 @@
 namespace GS {
 
 void Particle::setMass(double m) {
-	if (m > 0) {
+	if (m > 0.) {
 		mass.store(m);
 	} else {
 		throw std::invalid_argument("Particle setMass error: non-positive mass provided");
@@ -15,8 +15,8 @@ void Particle::setMass(double m) {
 }
 
 void Particle::setRadius(double r) {
-	if (r > 0) {
-		mass.store(r);
+	if (r > 0.) {
+		radius.store(r);
 	} else {
 		throw std::invalid_argument("Particle setMass error: non-positive mass provided");
 	}
@@ -27,7 +27,7 @@ bool overlap(Particle const& p1, Particle const& p2) {
 }
 
 double energy(Particle const& p) {
-  return p.speed * p.speed * Particle::getMass() / 2.;
+  return p.getMass() * p.speed * p.speed / 2.;
 }
 
 bool operator==(Particle const& p1, Particle const& p2) {

@@ -145,6 +145,7 @@ Finally, two functions (getStats, getRenders) allow access to the intermediate r
 
 All functions are thread-safe under all circumstances, except for the addData function, the two processData functions and the getVideo function, which cannot be called from more than one thread at a time, and the setFont function, which is not thread-safe at all. The access to the private members is synchronized through the use of `std::mutex`, `std::lock_guard`, `std::unique_lock` and `std::condition_variable`, or by making the private members `std::atomic` when possible, and storing their `.load()`ed value at the beginning of functions that would load them multiple times. A basic diagram is provided below to hopefully make the class' innerworkings of easier reading:
 
+The class is written so as to ensure that corresponding results are published together in the intermediate result queues, meaning that if there is a render at a given time, the `GS::TdStats` that has a time period in which that render is present has been published as well, while the opposite is not necessarily true as `GS::TdStats` instances can be processed without processing the renders, for speed's sake. This is ensured by making the two data processing functions publish their results under the caller's lock of the `resultsMtx` data member as well as the more widely used `statsMtx` and `rendersMtx`. `resultsMtx` is locked by getVideo as well, since it's the only function which also accesses both queues.
 [**gs::SimDataPipeline::getVideo**](../gasSim/DataProcessing/getVideo.cpp)
 This function is a video composition facility, which allows for the composition of processed `gs::TdStats` and `sf::Texture` instances into a coherent video output, in the form of `sf::Texture` instances.\
 It offers four options for results composition, implemented through an enum class, `gs::VideoOpts`:
@@ -154,12 +155,13 @@ It offers four options for results composition, implemented through an enum clas
 4. `all`, showing the gas, its measured thermodynamic coordinates, the particle speed norm distribution and the mean free path graph
 The function can be seen as a big case structure, divided in three stages:
 1. data extraction, where chunks of information that can be composed into a video are taken from the intermediate results queues
-2. recurrent variables setup, where variables necessary to the later stage are set up
+2. recurrent variables setup, where variables necessary to the later stage are initialized
 3. video composition, where the data chunks are processed into a final format
-The data extraction phase operates depending on the case:
-As a first step, it always sets the fTime variable, the variable indicating the time corresponding to the last frame output by getVideo, which is set according to the following fallback structure:
+The data extraction phase operates depending on the case:\
+As a first step, it always checks the fTime variable, which indicates the time corresponding to the last frame output by getVideo, needs to be set, and sets it according to the following fallback structure:
 1. if any render times are available, it is set so that its difference with the time of the first render is an integer multiple of the time given to each frame (the inverse of the framerate), basically syncing it up to the renders. This happens both if it isn't synced to the renders or if it isn't set.
 2. if any stats are available and it hasn't been set yet, it is set so as to be as close to the beginning of the first TdStats instance available
+3. if the gTime variable is available, it is set to its value
 Essentially, fTime constitutes a "memory" of the getVideo function, which thanks to it can know where it stopped, and through the class invariant that where there are published renders, the corresponding TdStats have also necessary been published, always know if the data between fTime and gTime has has either been deleted/made unavailable to it (for example by changing the framerate mid run, effectively putting all of the previously processed renders out of sync) or not published, so as to know where to stop to get published data chunks to process.
 After setting the fTime variable and acquiring the necessary parameters, it extracts data depending on the case:
  - justGas -> extracts all of the available renders available

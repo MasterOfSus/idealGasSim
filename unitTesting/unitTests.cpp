@@ -26,8 +26,8 @@
 #include "testingAddons.hpp"
 
 // setting particle mass and radius
-std::atomic<double> GS::Particle::mass = 10.;
-std::atomic<double> GS::Particle::radius = 1.;
+std::atomic<double> GS::Particle::mass {10.};
+std::atomic<double> GS::Particle::radius {1.};
 
 TEST_CASE("Testing GSVectorD") {
   GS::GSVectorD vec1{1.1, -2.11, 56.253};
