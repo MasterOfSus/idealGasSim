@@ -42,7 +42,7 @@ GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
   GSVectorF sight{getSight()};
   GSVectorF a{focus +
               (focus - point) / ((focus - point) * sight) * getPlaneDistance()};
-  // a = intersection of line passing through point and focus and the
+  // a = intersection of line passing through point and focus with the
   // perspective plane
 
   GSVectorF b{a - (focus + sight * getPlaneDistance())};
@@ -61,8 +61,8 @@ GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
   m = m / getPixelSide();
   o = o / getPixelSide();
 
-  // returning base-changed vector with scaling factor, with sign for positional
-  // information as the third coordinate
+  // returning base-changed vector with scaling factor
+  // as the third coordinate
   return {
       m * b + static_cast<float>(getWidth()) / 2.f,
       o * b + static_cast<float>(getHeight()) / 2.f,

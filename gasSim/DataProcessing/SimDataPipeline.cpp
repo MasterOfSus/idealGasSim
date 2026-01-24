@@ -103,18 +103,18 @@ void SimDataPipeline::processData(bool mfpMemory,
     }  // chunkSize nspcEnd
 
     if (nStats) {
-      {  // guard scope begin
-        data.insert(
-            data.end(), std::make_move_iterator(rawData.begin()),
-            std::make_move_iterator(rawData.begin() +
-                                    static_cast<long>(nStats * statSizeL)));
-        assert(data.size());
-        rawData.erase(rawData.begin(),
-                      rawData.begin() + static_cast<long>(nStats * statSizeL));
-        rawDataLock.unlock();
-        std::vector<TdStats> tempStats;
+			data.insert(
+					data.end(), std::make_move_iterator(rawData.begin()),
+					std::make_move_iterator(rawData.begin() +
+																	static_cast<long>(nStats * statSizeL)));
+			assert(data.size());
+			rawData.erase(rawData.begin(),
+										rawData.begin() + static_cast<long>(nStats * statSizeL));
+			rawDataLock.unlock();
+			std::vector<TdStats> tempStats;
 
-        processStats(data, mfpMemory, tempStats);
+			processStats(data, mfpMemory, tempStats);
+      {  // guard scope begin
         std::lock_guard<std::mutex> outputGuard{outputMtx};
         std::lock_guard<std::mutex> statsGuard{statsMtx};
         stats.insert(stats.end(), std::make_move_iterator(tempStats.begin()),
@@ -204,7 +204,6 @@ void SimDataPipeline::processData(Camera camera, RenderStyle style,
       }  // output guard scope end
       addedResults.store(true);
       outputCv.notify_all();
-      data->clear();
       tempStats.clear();
       tempRenders.clear();
     } else {

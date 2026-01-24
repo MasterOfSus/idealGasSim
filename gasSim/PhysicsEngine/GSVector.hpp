@@ -21,7 +21,7 @@ struct GSVector {  // a three-dimensional vector
         y{static_cast<FP>(v.y)},
         z{static_cast<FP>(v.z)} {}
 
-  FP norm() const { return static_cast<FP>(std::sqrt(x * x + y * y + z * z)); }
+  FP norm() const { return std::hypot(x, y, z); }
   void normalize() { *this = *this / norm(); }
 
   GSVector operator-() const { return {-x, -y, -z}; }
