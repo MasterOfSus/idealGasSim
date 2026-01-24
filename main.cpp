@@ -403,25 +403,25 @@ int main(int argc, const char* argv[]) {
         framerate, *speedsHTemplate};
     output.setFont(font);
 
-		// RECHECK THIS DUde
+		// target buffer time / hits per second / collisions per TdStats
+		// hits per second = particles n / avg coll time
+		// avg collision time = 1/(particles n / volume * cross section * speed average)
     double desiredStatChunkSize{
-        targetBufferTime * M_PI *
-        std::pow(GS::Particle::getRadius() / gas.getBoxSide(), 2.) *
-        // gas... temperature??
-        std::accumulate(gas.getParticles().begin(), gas.getParticles().end(),
-                        0.,
-                        [](double acc, const GS::Particle& p) {
-                          return acc + p.speed.norm();
-                        }) /
-        static_cast<double>(nStats) / gas.getBoxSide()};
-    if (desiredStatChunkSize > static_cast<float>(SIZE_MAX)) {
+        targetBufferTime * std::pow(boxSide, 3.) / (
+        M_PI * std::pow(GS::Particle::getRadius(), 2.) *
+				std::accumulate(gas.getParticles().begin(), gas.getParticles().end(),
+								0.,
+								[](double acc, const GS::Particle& p) {
+									return acc + p.speed.norm();
+								})
+				* static_cast<double>(nStats))};
+    if (desiredStatChunkSize > static_cast<double>(SIZE_MAX)) {
       throw std::runtime_error(
           "Computed desired stat chunk size is too big. Check your config "
           "file.");
     }
-
     output.setStatChunkSize(static_cast<size_t>(
-        desiredStatChunkSize > 1 ? desiredStatChunkSize : 1));
+        desiredStatChunkSize >= 1. ? desiredStatChunkSize : 1.));
 
 		// General stop signal, shared between threads
     std::atomic<bool> stop{false};
