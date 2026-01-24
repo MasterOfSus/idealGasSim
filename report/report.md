@@ -75,7 +75,7 @@ The time computation is divided in two steps:
     2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:
 
 <p align="center">
-  <img src="latex/eq2/eq2.svg" width="25%">
+  <img src="latex/eq2/eq2.svg" width="17%">
 </p>
 
 <p align="center">
