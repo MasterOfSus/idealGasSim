@@ -46,7 +46,7 @@ For particle-to-particle collisions, the resulting speeds can be calculated by i
 These conditions result in the following system and its solution, providing the general solution to the problem:
 
 <p align="center">
-  <img src="latex/eq1/eq1.svg" width="75%">
+  <img src="latex/eq1/eq1.svg" width="50%">
 </p>
 
 
@@ -59,7 +59,7 @@ The class implementing the concept of an ideal gas, as a set of equal spherical 
 A simple diagram is shown below to provide a visual idea of how the Gas's container is represented, with walls naming:
 
 <p align="center">
-  <img src="gas diagram.svg" width="30%">
+  <img src="gas diagram.svg" width="60%">
 </p>
 
 This Class provides two main facilities:
@@ -75,7 +75,7 @@ The time computation is divided in two steps:
     2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:
 
 <p align="center">
-  <img src="latex/eq2/eq2.svg" width="10%">
+  <img src="latex/eq2/eq2.svg" width="25%">
 </p>
 
 <p align="center">
@@ -87,7 +87,7 @@ this is done across the whole set of particles with multiple threads, using [tri
 The number of total checks can be easily found with the well known:
 
 <p align="center">
-  <img src="latex/eq3/eq3.svg" width="10%">
+  <img src="latex/eq3/eq3.svg" width="20%">
 </p>
 
 And to get the two particle's indexes from the couple's corresponding index:
