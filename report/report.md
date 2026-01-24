@@ -255,7 +255,7 @@ Execution with different configuration highlights a predictable deviation from t
 The deviation shown is from the expected and measured pressures: by changing just the particles' radius in the configuration file, one can observe that with its increase, the measured pressure increases, making the "measured" Boltzmann constant (expected as 1 J/(Temperature unit)) increase with it.\
 This is due to the fact that the particles, having a non-negligible volume, shrink the effective size of the container as well as the real free volume inside of it, and, having less room to move around in, hit the walls more frequently, increasing the pressure.
 
-The mean free path?
+On all of the used configurations, the mean free path's expected value was way above the measured value, and while the fact that the container's size is usually of the same order of magnitude as the mean free path might be the cause of this discrepancy, no definitive conclusions have been made.
 
 The particle speed distribution has instead been observed to perfectly match the expected Maxwell-Boltzmann distribution, and starting the system from a different speed distribution (an almost uniform one) shows the spontaneous progression towards the expected distribution.
 

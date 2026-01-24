@@ -349,6 +349,7 @@ int main(int argc, const char* argv[]) {
     expkB->SetParameter(0, 1);
     expMFP->SetParameter(0, targetT / M_SQRT2 / expP->GetParameter(0) /
                                 (M_PI * pRadius * pRadius));
+			std::cout << "mean free path expected at " << expMFP->GetParameter(0);
 
     // Loading SFML resources
     sf::Font font;
