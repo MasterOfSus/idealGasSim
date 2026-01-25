@@ -62,7 +62,7 @@ A simple diagram is shown below to provide a visual idea of how the Gas's contai
   <img src="gas diagram.svg" width="60%">
 </p>
 
-This Class provides two main facilities:
+This class provides two main facilities:
  - Constructors, allowing the user to have full control over the desired starting conditions of the particles.
  - Methods allowing the user to simulate any number of interactions, optionally outputting the collision data to the simulation output pipeline.\
 The simulation methods rely on the process of predicting all possible collision and comparing the time they would take to happen, then selecting the one with the smallest time and moving the entire gas by that time, finally calling the `solve()` method over said collision, and optionally adding the collision data to a provided data pipeline.
@@ -71,7 +71,7 @@ The collision finding process, implemented in the `firstPPColl()` and `firstPWCo
 1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision's value every time one with smaller time is found.
 2. The first particle-to-particle collision is found in the same way by computing the collision time for all couples of particles and choosing the one with the smallest time.\
 The time computation is divided in two steps:
-    1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite collision time
+    1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite, positive collision time
     2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:
 
 <p align="center">
@@ -82,7 +82,7 @@ The time computation is divided in two steps:
   <img src="latex/sol2/sol2.svg" width="40%">
 </p>
 
-the quadratic formula above yields two values, of which the one with smallest modulus is selected.
+the quadratic formula above yields two values, and the smallest positive one is selected (if both are negative, `INFINITY` is substituted instead).
 this is done across the whole set of particles with multiple threads, using [triangular indexing](https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix) to biject the set of all couples of particles with a set of indexes, through the following formulae:
 The number of total checks can be easily found with the well known:
 
@@ -110,10 +110,10 @@ A camera is essentially a focal point and a perspective plane, with the plane's 
   <img src="camera diagram.svg" width="50%">
 </p>
 
-`GS::Camera` has been implemented to have its bottom side always parallel to the xy plane, and care has been taken to manage the case of provided sight vector being perpendicular to it.
+`GS::Camera` has been implemented to have its bottom side always parallel to the xy plane, and care has been taken to manage the case of the provided sight vector being perpendicular to it.
 
 `GS::Camera` provides a fundamental point projection method, `getPointProjection`, turning a point in 3D space into its projection.\
-A point's projection is the result of intersecting the line that passes between the point and the camera's focus with the perspective plane. The resulting point is then written as a second 3D vector with the third component being a "depth" field, which is the scaling parameter to apply to a segment parallel to the perspective plane to get its projection's length, and the first two components as described after the scaling diagram below.
+A point's projection is the result of intersecting the line that passes between the point and the camera's focus with the perspective plane. The resulting point is then written as a second 3D vector with the third component being a "depth" field, which is the scaling parameter to apply to a segment parallel to the perspective plane to get its projection's length (whose sign tells if the point is behind or in front of the focus), and the first two components as described after the scaling diagram below.
 
 <p align="center">
   <img src="scaling diagram.svg" width="50%">
