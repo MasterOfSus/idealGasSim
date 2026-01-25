@@ -63,13 +63,13 @@ A simple diagram is shown below to provide a visual idea of how the gas containe
 </p>
 
 This class provides two main facilities:
- - Constructors, allowing the user to have full control over the desired starting conditions of the particles.
- - Methods allowing the user to simulate any number of interactions, optionally outputting the collision data to the simulation output pipeline.\
+ - Constructors, allowing the user to have full control over the desired starting conditions for the particles
+ - Methods allowing the user to simulate any number of interactions, optionally outputting the collision data to the simulation output pipeline\
 The simulation methods rely on the process of predicting all possible collision and comparing the time they would take to happen, then selecting the one with the smallest time and moving the entire gas by that time, finally calling the `solve()` method over said collision, and optionally adding the collision data to a provided data pipeline.
 
 The collision finding process, implemented in the `firstPPColl()` and `firstPWColl()` private methods, is implemented as follows:
-1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision value every time one with smaller time is found.
-2. The first particle-to-particle collision is found in the same way by computing the collision time for all couples of particles and choosing the one with the smallest time.\
+1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision value every time one with smaller time is found
+2. The first particle-to-particle collision is found in the same way by computing the collision time for all couples of particles and choosing the one with the smallest time\
 The time computation is divided in two steps:
     1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite, positive collision time
     2. if the first step succeeds the collision time is computed by enforcing that the distance between the particles equals the sum of their radii, through the following formula:
@@ -82,7 +82,7 @@ The time computation is divided in two steps:
   <img src="latex/sol2/sol2.svg" width="40%">
 </p>
 
-the quadratic formula above yields two values, and the smallest positive one is selected (if both are negative, `INFINITY` is returned instead).
+this quadratic formula yields two values, of which the smallest positive one is selected (if both are negative, `INFINITY` is returned instead).
 this is done across the whole set of particles with multiple threads, using [triangular indexing](https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix) to biject the set of all couples of particles with a set of indexes, through the following formulae:
 The number of total checks can be easily found with:
 
@@ -101,7 +101,7 @@ Once the two collision times are found, they are compared and the one with the s
 ### Graphics
 This module provides two components:
  - [`GS::RenderStyle`](../gasSim/Graphics/RenderStyle.hpp), a simple collection of rendering parameters determining the aesthetical characteristics of a drawn gas
- - `GS::Camera`, a class allowing for a rudimentary, visually intuitive (almost perspectically correct) 3D rendering of a gas.
+ - `GS::Camera`, a class allowing for a rudimentary, visually intuitive (almost perspectically correct) 3D rendering of a gas
 
 [**GS::Camera**](../gasSim/Graphics/Camera.hpp)\
 A camera is essentially a focal point and a perspective plane, with the normal vector of the plane defining the camera's viewing direction.
@@ -135,9 +135,9 @@ The information about the normal vectors and vertexes of the container sides has
 
 ### DataProcessing
 This module provides three components, the third of which has been given a dedicated section:
-- [`GS::GasData`](../gasSim/DataProcessing/GasData.hpp), which is essentially a Gas snapshot with associated collision information.\
+- [`GS::GasData`](../gasSim/DataProcessing/GasData.hpp), which is essentially a Gas snapshot with associated collision information\
 It has been developed for storage of solved collisions' data, meaning that the contact between the colliding particle is still present, but the speeds have already been changed according to the collision solution.
-- [`GS::TdStats`](../gasSim/DataProcessing/TdStats.hpp), a class providing the facilities to process GasData instances into meaningful information (through the `addData` method); used to turn the simulation data into "measurements".\
+- [`GS::TdStats`](../gasSim/DataProcessing/TdStats.hpp), a class providing the facilities to process GasData instances into meaningful information (through the `addData` method); used to turn the simulation data into "measurements"\
 This class supports the bulking together of any number of subsequent GasData instances from the same Gas instance, through their processing into information of interest:
     - elapsed time
     - "temperature" (again, equivalent to average energy over a degree of freedom)
@@ -199,7 +199,7 @@ Essentially, `fTime` gives "memory" to the getVideo function, which thanks to it
 After setting the `fTime` variable and acquiring the necessary parameters, it extracts data depending on the case:
  - `justGas` > extracts all of the available renders
  - `justStats` > extracts all of the available TdStats after `fTime`
- - `gasPlusCoords`/`all` > extracts chunks of `GS::TdStats` and renders available after `fTime`, and such that the render times are contained within the `GS::TdStats` instances' time frames.
+ - `gasPlusCoords`/`all` > extracts chunks of `GS::TdStats` and renders available after `fTime`, and such that the render times are contained within the `GS::TdStats` instances' time frames
 
 The video composition phase, while differing slightly between cases, operates on the same principle: starting from the `fTime` variable, it proceeds for all subsequent integer multiples of the frame time, checking for missing data/renders and inserting placeholders as needed.\
 Since the user has no way to partially delete the `stats` deque's contents, the function can be sure that if it hasn't touched a member of said queue yet (guaranteed by it being after `fTime`), the presence of said member implies that all successive instances in the container are contiguous in time, so it only has to insert placeholder graph values from `fTime` to the front starting time of the `stats container`.\
@@ -209,8 +209,8 @@ In this phase, the user is given the freedom to perform operations on the ROOT o
 ### Main executable
 The main executable uses all of the previously mentioned facilities to simulate the gas's evolution through time, process its data and compose it into a video output.\
 It does so in three phases:
-1. it gets input parameters and loads resources according to them, validating them for acceptability.
-2. it constructs the gas and data pipeline, and sends a simulation and a processing thread.
+1. it gets input parameters and loads resources according to them, validating them for acceptability
+2. it constructs the gas and data pipeline, and sends a simulation and a processing thread
 3. it starts either the video feed or the video saving process
 
 The video saving process simply calls getVideo until the state of the pipeline indicates that the simulation is done and that there is no more processing going on, encoding the results of each getVideo call into an ffmpeg pipe opened to an .mp4 file on the filesystem.
@@ -265,13 +265,13 @@ The particle speed distribution has instead been observed to perfectly match the
 The tests have been implemented through two different executables, one using the traditional unit tests approach, and the other providing two less rigorous demos and a "stress test".
 ### [Unit tests](../unitTesting/unitTests.cpp)
 The unit tests have been written with two main objectives:
-- To ensure correct parameter validation, by passing parameters in the invalid ranges and at the edges between valid and invalid ranges.
-- To ensure behaviour coherent with the physical models and results used, by testing different cases whose results have been previously worked out on paper. The used configurations have been chosen both in valid ranges and at the edges of the valid ranges.
+- To ensure correct parameter validation, by passing parameters in the invalid ranges and at the edges between valid and invalid ranges
+- To ensure behaviour coherent with the physical models and results used, by testing different cases whose results have been previously worked out on paper. The used configurations have been chosen both in valid ranges and at the edges of the valid ranges
 The parts of the program tested through this executable are listed as follows:
 - All of PhysicsEngine
 - Most of Graphics, excluding the functions returning image outputs
 - All of `GS::GasData` and most of `GS::TdStats`
-- The functions from `GS::SimDataPipeline` not directly dealing with/outputting images.
+- The functions from `GS::SimDataPipeline` not directly dealing with/outputting images
 
 These can be executed through CMake, appending to the compile command the `--target test` flags.
 ### [Demos/stress test](../unitTesting/getVideoTest.cpp)
