@@ -146,7 +146,7 @@ This class supports the bulking together of any number of subsequent `GS::GasDat
     - last collision positions > can calculate the traveled distance for colliding particles from their previous collision positions > the mean free path
     - a histogram filled with the norm of the speed of every particle > can be compared/fitted to a Maxwell-Boltzmann distribution
 
-The "insertion" of a new GasData instance is checked for minimal compatibility requirements.\
+The "insertion" of a new `GS::GasData` instance is checked to comply with minimal compatibility requirements.\
 The copy and move constructors/assignment operators had to be implemented as non-standard to ensure that ROOT's internal memory management would not cause segmentation faults, by calling the `TH1` method `SetDirectory(nullptr)` on new instances of the `speedsH` class member.
 ### [GS::SimDataPipeline](../gasSim/DataProcessing/SimDataPipeline.hpp)
 The last component of the DataProcessing module, providing a complete, thread safe simulation data pipeline.\
@@ -161,7 +161,7 @@ and inquire about the:
 
 Finally, it can use the `getDone`/`setDone` methods to communicate across its threads when the simulation thread is done adding `GS::gasData` instances for processing.
 
-The behaviour of `getVideo` under multithreading calls can be tweaked in performance/responsiveness by setting the number of `GS::TdStats` chunks to be processed in one call of `getVideo`, through the `setStatChunkSize` method, so that it can provide pieces of the video feed to achieve a "buffering" behaviour, making the user wait less and the memory footprint remain acceptable.
+The behaviour of `getVideo` under multithreading calls can be tweaked in performance/responsiveness by setting the number of `GS::TdStats` chunks to be processed in one call of `getVideo` through the `setStatChunkSize` method, so that it can provide pieces of the video feed to achieve a "buffering" behaviour, making the user wait less and the memory footprint remain acceptable.
 
 Finally, two functions (`getStats`, `getRenders`) allow access to the intermediate result queues, either through copy or move semantics, to allow the user to be able to implement with minimal overhead their own secondary processing, if the options provided by `getVideo` don't satisfy their needs.
 
@@ -190,21 +190,21 @@ The function can be seen as one big case structure, divided in three stages:
 3. video composition, where the data chunks are processed into a final format
 
 The data extraction phase operates depending on the case:\
-As a first step, it always checks the `fTime` variable, which indicates the time corresponding to the last frame output by `getVideo`, needs to be set, and sets it according to the following fallback structure:
+As a first step, it always checks if the `fTime` variable, which indicates the time corresponding to the last frame output by `getVideo`, needs to be set, and sets it according to the following fallback structure:
 1. if `gTime` is available, it is set so that its difference with it is an integer multiple of the time given to each frame (the inverse of the framerate), basically syncing it up to the renders. This happens both if it isn't synced to `gTime` or if it isn't set. It is also set so as to include all possible renders if it hasn't been set yet
 2. if any `GS::TdStats` instances are available and it hasn't been set yet, it is set so as to be as close as possible to the beginning of the first `GS::TdStats` instance available
 3. if only the `gTime` variable is available and the intermediate results queues are empty, it is set to its value
 
-Essentially, `fTime` gives "memory" to the getVideo function, which thanks to it can know where it stopped, and through the guarantees given about the published data, always know if the data between `fTime` and `gTime` has has either been deleted/made unavailable to it (for example by changing the framerate mid run, effectively putting all of the previously processed renders out of sync) or not published, so as to know where to stop to get published data chunks to process.\
+Essentially, `fTime` gives "memory" to the getVideo function, which thanks to it can know where it stopped, and through the guarantees given by the class invariant for the published data, always know if the data between `fTime` and `gTime` has has either been deleted/made unavailable to it (for example by changing the framerate mid run, effectively putting all of the previously processed renders out of sync) or not published, so as to know where to stop to get published data chunks to process.\
 After setting the `fTime` variable and acquiring the necessary parameters, it extracts data depending on the case:
  - `justGas` > extracts all of the available renders
  - `justStats` > extracts all of the available TdStats after `fTime`
  - `gasPlusCoords`/`all` > extracts chunks of `GS::TdStats` and renders available after `fTime`, and such that the render times are contained within the `GS::TdStats` instances' time frames
 
-The video composition phase, while differing slightly between cases, operates on the same principle: starting from the `fTime` variable, it proceeds for all subsequent integer multiples of the frame time, checking for missing data/renders and inserting placeholders as needed.\
+The video composition phase, while differing slightly between cases, operates on the same principle: starting from the `fTime` variable, it iterates over all of the subsequent integer multiples of the frame time until `gTime`, checking for missing data/renders and inserting placeholders as needed.\
 Since the user has no way to partially delete the `stats` deque's contents, the function can be sure that if it hasn't touched a member of said queue yet (guaranteed by it being after `fTime`), the presence of said member implies that all successive instances in the container are contiguous in time, so it only has to insert placeholder graph values from `fTime` to the front starting time of the `stats container`.\
 After inserting the placeholder values, and drawing all the renders in the placeholder timeframe, it can proceed to draw the `stats` instances one by one.\
-It makes use of this by adding the data from an instance to the ROOT objects and drawing them once, then pasting the renders onto it one over another, checking that for each render the render for the frame time is actually available, and inserting a placeholder if that is not the case.\
+It adds the data from an instance to the ROOT objects and drawing them once, then pasting the renders onto it one over another, checking that for each render the render for the frame time is actually available, and inserting a placeholder if that is not the case.\
 In this phase, the user is given the freedom to perform operations on the ROOT objects that get drawn, both in the phase directly before the drawing of the root objects and directly after them, by passing `std::function` instances that get called by the `getVideo` function.
 ### Main executable
 The main executable uses all of the previously mentioned facilities to simulate the gas's evolution through time, process its data and compose it into a video output.\
@@ -213,18 +213,18 @@ It does so in three phases:
 2. it constructs the gas and data pipeline, and sends a simulation and a processing thread
 3. it starts either the video feed or the video saving process
 
-The video saving process simply calls getVideo until the state of the pipeline indicates that the simulation is done and that there is no more processing going on, encoding the results of each getVideo call into an ffmpeg pipe opened to an .mp4 file on the filesystem.
+The video saving process simply calls `getVideo` until the state of the pipeline indicates that the simulation is done and that there is no more processing going on, encoding the results of each `getVideo` call into an ffmpeg pipe opened to an .mp4 file on the filesystem.
 
 The video feed is made up of three main components:\
 **A buffering loop**\
 Controlled through an `std::atomic<bool>` `stop` flag; it is started when there are no more frames available to draw while waiting for more to be prepared. It draws a buffering wheel and some info about the state of the simulation.\
 **A set of player threads**\
-These wait for their turn through their queue number, compared with an `std::atomic<size_t>` telling them the queue number that is free to start drawing to the `sf::RenderWindow`, then draw to the window the frames passed to them through an `std::shared_ptr<std::vector<sf::Texture>>`, finally checking if there are any player threads in line behind them and signaling the buffering loop to start up again if that is not the case.\
-Each player thread therefore depends on the thread before it to be able to run and finish.\
+These wait for their turn through their queue number, compared with an `std::atomic<size_t>` holding the queue number that is free to start drawing to the `sf::RenderWindow`, then draw to the window the frames passed to them through an `std::shared_ptr<std::vector<sf::Texture>>`, finally checking if there are any player threads in line behind them and signaling the buffering loop to start up again if that is not the case.\
+Each player thread therefore depends on the thread before it to have finished to be able to run.\
 **The main thread**\
 It calls `getVideo`, storing its result through `std::shared_ptr<std::vector<sf::Texture>>` and sending the player threads with their queue number and passing them the `std::shared_ptr<...>`, then detatching them so as to be able to keep sending player threads instead of stalling the `getVideo` calls.\
 It ensures that the detatched threads are all finished by joining the last thread it sends, since it depends on the thread sent before it to exit to be able to execute, which therefore ensures inductively that all of other detatched threads are finished.\
-The access to the `sf::RenderWindow` to which the results are displayed is managed through an `std::mutex`, locked with `std::lock_guard`, and the player theads and buffering loop are coordinated through an `std::atomic<bool>` stop signal, which is used for the simulation and processing threads, and a buffer loop kill signal of the same type which is used only by the buffer loop.\
+The access to the `sf::RenderWindow` to which the results are displayed is managed through an `std::mutex`, locked with `std::lock_guard`, and the player theads and buffering loop are coordinated through an `std::atomic<bool>` stop signal, which is used for the simulation and processing threads, and a buffer loop kill signal of the same type which is used only by the buffer loop as an additional, faster stopping mechanism.\
 When any one of these threads is in possession of the window, it also checks for a window close signal, setting the `stop` and `killBufferLoop` flags to true if it is found, to stop all drawing and make the threads exit as quickly as possible.
 
 At the end of the execution, the main thread joins all previously unjoined threads and either saves the results or skips it if it detects a user-driven ending signal.
@@ -236,11 +236,12 @@ To install SFML, run:
 sudo apt install libsfml-dev
 ```
 ## Execution instructions
-The project provides a main executable, found under the name `idealGasSim` in the build directory. Execution allows for passing a .ini configuration file path, through the -c option.
+The project provides a main executable, found under the name `idealGasSim` in the build directory. Execution allows for passing a `.ini` configuration file path, through the `-c` option.
 ### Customizing the parameters
-The simulation tries to generate the gas as a set of particles with randomized speeds, with uniformly distributed module and direction, fitting them in a cubical lattice inside of the container; it then proceeds to simulate the system's evolution through a given number of events (collisions), and divides the collisions in sets of equal number, on which statistical analysis and "measurements" are performed.\
+The simulation tries to generate the gas as a set of particles with randomized speeds, with uniformly distributed norm and direction, fitting them in a cubical lattice inside of the container; it then proceeds to simulate the system's evolution through a given number of events (collisions), and divides the collisions in sets of equal number, on which statistical analysis and "measurements" are performed.\
 It either saves the video output or streams it as the simulation is run.\
-The user can customize the parameters determining the output through a .ini configuration file. A reference version, containing all of the customizable parameters and their accurate description, set to values that output a meaningful demo, can be found at `configs/gasSim_demo.ini`.
+The user can customize the parameters determining the output through the aforementioned `.ini` configuration file.\
+A reference version, containing all of the customizable parameters and their accurate description, set to values that output a meaningful demo, can be found at `configs/gasSim_demo.ini`.
 ### Tweaking the ROOT input file
 The configuration of the root data structures used during the simulation can be tweaked by regenerating the input file itself, from which they are loaded, using the macro [`makeInputFile.cpp`](../makeInputFile.cpp) from a ROOT prompt, which can be modified as desired.\
 The requirements for the objects are as follows:
@@ -250,11 +251,11 @@ The requirements for the objects are as follows:
 As for the demo config file, the default file found at `inputs/input.root` provides a set of working and meaningful presets, and the macro used to generate it can be taken as a reference for what to feed the simulation.
 ### ROOT output file
 The ROOT output file can be inspected through ROOT's `TBrowser`, by opening up a ROOT prompt and initializing a `TBrowser` instance through it, then using the graphical browser to open up the output file.\
-The program will have stored in it the graphs drawn in the video and a `TH1D` in which all of the drawn speeds histograms have been cumulated, so as to show how over the whole execution time, the average distribution matches a Maxwell-Boltzmann distribution.
+The program will have stored in it the graphs drawn in the video and a `TH1D` in which all of the drawn speeds histograms have been cumulated, so as to show how over the whole execution time the average distribution matches a Maxwell-Boltzmann distribution.
 
 ## Results interpretation
-Execution with different configuration highlights a predictable deviation from the theoretical results used in the kinetic theory of ideal gases.\
-The deviation shown is from the expected and measured pressures: by changing just the particles' radius in the configuration file, one can observe that with its increase, the measured pressure increases, making the "measured" Boltzmann constant (expected as 1 J/(Temperature unit)) increase with it.\
+Execution with different configurations highlights a predictable deviation from the theoretical results used in the kinetic theory of gases.\
+The deviation shown is from the expected and measured pressures: by changing just the particle radius in the configuration file, one can observe that with its increase, the measured pressure increases, making the "measured" Boltzmann constant (expected as 1 J/(Temperature unit)) increase with it.\
 This is due to the fact that the particles, having a non-negligible volume, shrink the effective size of the container as well as the real free volume inside of it, and, having less room to move around in, hit the walls more frequently, increasing the pressure.
 
 On all of the used configurations, the expected value for the mean free path was way above the measured value, and while the fact that the container's size is usually of the same order of magnitude as the mean free path might be the cause of this discrepancy, no definitive conclusions have been made.
