@@ -16,8 +16,8 @@ The project can be seen as divided in a set of three major interdependent compon
 1. a physics engine ([PhysicsEngine](../gasSim/PhysicsEngine)), which provides the implementation of the used physical model and of the methods allowing for the simulation of its evolution through time
 2. a graphics module ([Graphics](../gasSim/Graphics)), which provides a rudimentary 3D rendering engine with facilities that allow to take an "almost perspectically correct" picture of the gas
 3. a data processing module ([DataProcessing](../gasSim/DataProcessing)), which provides a set of facilities allowing for storage of data relative to the simulation and its processing into more meaningful data.
-    - This module also contains a pipeline for the data being output from the simulation, which allows for simultaneous (thread-safe) storage and processing (both statistical and graphical) of the raw simulation output,  direct external access to the statistical and graphical processing results and/or composition of the processed data into a coherent video output.\
-    This component has been developed under the necessity of avoiding either an unsustainable memory footprint or an excessive slowness of the execution.
+    - this module also contains a pipeline for the data being output from the simulation, which allows for simultaneous (thread-safe) storage and processing (both statistical and graphical) of the raw simulation output,  direct external access to the statistical and graphical processing results and/or composition of the processed data into a coherent video output\
+    This component has been developed under the necessity of avoiding either an unsustainable memory footprint or an excessive slowness of the execution
 
 The codebase has been split up in one `.hpp`-`.cpp` couple for each class, with names matching the class' name, and one main executable. The only exception to this is the `getVideo` method for the `GS::SimDataPipeline` class, which has its own implementation file.
 ### PhysicsEngine
@@ -41,7 +41,7 @@ The collision solving methods have been implemented as follows:\
 For particle-to-particle collisions, the resulting speeds can be calculated by imposing three conditions on a pair of particles in contact with one another:
 1. conservation of kinetic energy (elastic collision)
 2. conservation of momentum (principle of conservation of momentum)
-3. for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces.
+3. for the momentum exchange between the particles to be a vector linearly dependent with the vector connecting the two spheres' centers, as is the case for repulsive forces that are perpendicular to the contacting surfaces
 
 These conditions result in the following system and its solution, providing the general solution to the problem:
 
@@ -49,10 +49,9 @@ These conditions result in the following system and its solution, providing the 
   <img src="latex/eq1/eq1.svg" width="50%">
 </p>
 
-
 This formula clearly yields valid results only under the condition that the two particles are actually in contact and that the dot product between their relative speed and their relative distance is negative.
 
-For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with mass approaching infinity.
+For particle-to-wall collisions, the coordinate relative to the wall's perpendicular axis is simply flipped, as per the limit of a collision between an object with finite mass and a stationary one with its mass approaching infinity.
 
 [**GS::Gas**](../gasSim/PhysicsEngine/Gas.hpp)\
 The class implementing the concept of an ideal gas, as a set of equal spherical particles bound to move inside of a cubical container.\
@@ -63,15 +62,16 @@ A simple diagram is shown below to provide a visual idea of how the gas containe
 </p>
 
 This class provides two main facilities:
- - Constructors, allowing the user to have full control over the desired starting conditions for the particles
- - Methods allowing the user to simulate any number of interactions, optionally outputting the collision data to the simulation output pipeline\
+ - constructors, allowing the user to have full control over the desired starting conditions for the particles
+ - methods allowing the user to simulate any number of interactions, optionally outputting the collision data to the simulation output pipeline
+
 The simulation methods rely on the process of predicting all possible collision and comparing the time they would take to happen, then selecting the one with the smallest time and moving the entire gas by that time, finally calling the `solve()` method over said collision, and optionally adding the collision data to a provided data pipeline.
 
 The collision finding process, implemented in the `firstPPColl()` and `firstPWColl()` private methods, is implemented as follows:
-1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision value every time one with smaller time is found
-2. The first particle-to-particle collision is found in the same way by computing the collision time for all couples of particles and choosing the one with the smallest time\
+1. the first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision value every time one with smaller time is found
+2. the first particle-to-particle collision is found in the same way by computing the collision time for all couples of particles and choosing the one with the smallest time\
 The time computation is divided in two steps:
-    1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite, positive collision time
+    1. the relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite, positive collision time
     2. if the first step succeeds the collision time is computed by enforcing that the distance between the particles equals the sum of their radii, through the following formula:
 
 <p align="center">
@@ -83,11 +83,11 @@ The time computation is divided in two steps:
 </p>
 
 this quadratic formula yields two values, of which the smallest positive one is selected (if both are negative, `INFINITY` is returned instead).
-this is done across the whole set of particles with multiple threads, using [triangular indexing](https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix) to biject the set of all couples of particles with a set of indexes, through the following formulae:
+this is done across the whole set of particles with multiple threads, using [triangular indexing](https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix) to biject the set of all couples of particles with a set of indexes, through the following formulae:\
 The number of total checks can be easily found with:
 
 <p align="center">
-  <img src="latex/eq3/eq3.svg" width="20%">
+  <img src="latex/eq3/eq3.svg" width="15%">
 </p>
 
 And to get the indexes of the two particles from the couple's corresponding index:
@@ -96,21 +96,21 @@ And to get the indexes of the two particles from the couple's corresponding inde
   <img src="latex/sol3/sol3.svg" width="35%">
 </p>
 
-Once the two collision times are found, they are compared and the one with the smallest time is selected.
+Once the two collision times are found the one with the smallest time is selected.
 
 ### Graphics
 This module provides two components:
  - [`GS::RenderStyle`](../gasSim/Graphics/RenderStyle.hpp), a simple collection of rendering parameters determining the aesthetical characteristics of a drawn gas
  - `GS::Camera`, a class allowing for a rudimentary, visually intuitive (almost perspectically correct) 3D rendering of a gas
 
-[**GS::Camera**](../gasSim/Graphics/Camera.hpp)\
+[`GS::Camera`](../gasSim/Graphics/Camera.hpp)\
 A camera is essentially a focal point and a perspective plane, with the normal vector of the plane defining the camera's viewing direction.
 
 <p align="center">
   <img src="camera diagram.svg" width="50%">
 </p>
 
-`GS::Camera` has been implemented to have its bottom side always parallel to the xy plane, and care has been taken to manage the case of the provided sight vector being perpendicular to it.
+`GS::Camera` has been implemented to have its bottom side always parallel to the xy plane.
 
 `GS::Camera` provides a fundamental point projection method, `getPointProjection`, turning a point in 3D space into its projection.\
 A point's projection is the result of intersecting the line that passes between the point and the camera's focus with the perspective plane. The resulting point is then written as a second 3D vector with the third component being a "depth" field, which is the scaling parameter to apply to a segment parallel to the perspective plane to get its projection's length (whose sign tells if the point is behind or in front of the focus), and the first two components as described after the scaling diagram below.
@@ -126,8 +126,8 @@ The camera's internal reference system is represented in the following diagram:
   <img src="camera base diagram.svg" width="50%">
 </p>
 
-The point projection method is then used to add `GS::Particle` drawing functionalities, by drawing a circle where the particle should be and then scaling its radius according to the depth field; this method doesn't take into consideration the horizontal and vertical "stretching" of the images of objects as the projection gets closer to the edges of the image, but for reasonable fields of view this has no visible effect.\
-These are used to provide two methods allowing for the drawing of a set of `GS::Particle` in space, which requires only the additional sorting, based on the depth field, of the projections so as to then iterate over the sorted projections container to draw them over each other, obtaining the closest ones to be drawn above the farthest, which yields correct results for non-overlapping, convex surfaces.
+The point projection method is then used to add `GS::Particle` drawing functionalities, which in essence draw a circle where the particle should be, scaling its radius according to the depth field; these functions don't take into consideration the horizontal and vertical "stretching" of the images of objects as the projection gets closer to the edges of the image, but for reasonable fields of view this has no visible effect.\
+Two methods allowing for the drawing of a set of `GS::Particle` in space are provided, which sort the particles' projections through the depth field, and then iterate over the sorted projections container to draw them over each other, obtaining the closest ones to be drawn above the farthest, which yields correct results for non-overlapping, convex surfaces.
 
 Finally, the point projection and particle drawing methods are used to add a set of helper functions which make it possible to draw a `GS::Gas` or a `GS::GasData`, through drawing its walls and its particles.\
 Since the `GS::Gas` class guarantees the enclosure of the particles inside of their container, correctly drawing the gas is easily achieved by drawing the walls facing away from the camera, then the particles over them, then the walls facing the camera above everything else, as the geometry of a convex object (such as a cube) guarantees that looking at it from one direction will have the surfaces hidden from view possess normal vectors facing the same way as the observer's sight, therefore facing away from the observer.\
@@ -136,9 +136,9 @@ The information about the normal vectors and vertexes of the container sides has
 ### DataProcessing
 This module provides three components, the third of which has been given a dedicated section:
 - [`GS::GasData`](../gasSim/DataProcessing/GasData.hpp), which is essentially a Gas snapshot with associated collision information\
-It has been developed for storage of solved collisions' data, meaning that the contact between the colliding particle is still present, but the speeds have already been changed according to the collision solution.
+It has been developed for storage of solved collisions' data, meaning that it is initialized after the `solve` method has been called on the collision.
 - [`GS::TdStats`](../gasSim/DataProcessing/TdStats.hpp), a class providing the facilities to process GasData instances into meaningful information (through the `addData` method); used to turn the simulation data into "measurements"\
-This class supports the bulking together of any number of subsequent GasData instances from the same Gas instance, through their processing into information of interest:
+This class supports the bulking together of any number of subsequent `GS::GasData` instances from the same `GS::Gas` instance, through their processing into information of interest:
     - elapsed time
     - "temperature" (again, equivalent to average energy over a degree of freedom)
     - side of the box > walls area, box volume
@@ -244,8 +244,8 @@ The user can customize the parameters determining the output through a .ini conf
 ### Tweaking the ROOT input file
 The configuration of the root data structures used during the simulation can be tweaked by regenerating the input file itself, from which they are loaded, using the macro [`makeInputFile.cpp`](../makeInputFile.cpp) from a ROOT prompt, which can be modified as desired.\
 The requirements for the objects are as follows:
-- The objects that act as containers (`TGraph`, `TH1D`) must be empty
-- The objects must be saved under the same names and be of the same types as the ones in the default [`input.root`](../inputs/input.root) file 
+- the objects that act as containers (`TGraph`, `TH1D`) must be empty
+- the objects must be saved under the same names and be of the same types as the ones in the default [`input.root`](../inputs/input.root) file 
 
 As for the demo config file, the default file found at `inputs/input.root` provides a set of working and meaningful presets, and the macro used to generate it can be taken as a reference for what to feed the simulation.
 ### ROOT output file
@@ -265,13 +265,13 @@ The particle speed distribution has instead been observed to perfectly match the
 The tests have been implemented through two different executables, one using the traditional unit tests approach, and the other providing two less rigorous demos and a "stress test".
 ### [Unit tests](../unitTesting/unitTests.cpp)
 The unit tests have been written with two main objectives:
-- To ensure correct parameter validation, by passing parameters in the invalid ranges and at the edges between valid and invalid ranges
-- To ensure behaviour coherent with the physical models and results used, by testing different cases whose results have been previously worked out on paper. The used configurations have been chosen both in valid ranges and at the edges of the valid ranges
+- to ensure correct parameter validation, by passing parameters in the invalid ranges and at the edges between valid and invalid ranges
+- to ensure behaviour coherent with the physical models and results used, by testing different cases whose results have been previously worked out on paper. The used configurations have been chosen both in valid ranges and at the edges of the valid ranges
 The parts of the program tested through this executable are listed as follows:
-- All of PhysicsEngine
-- Most of Graphics, excluding the functions returning image outputs
-- All of `GS::GasData` and most of `GS::TdStats`
-- The functions from `GS::SimDataPipeline` not directly dealing with/outputting images
+- all of PhysicsEngine
+- most of Graphics, excluding the functions returning image outputs
+- all of `GS::GasData` and most of `GS::TdStats`
+- the functions from `GS::SimDataPipeline` not directly dealing with/outputting images
 
 These can be executed through CMake, appending to the compile command the `--target test` flags.
 ### [Demos/stress test](../unitTesting/getVideoTest.cpp)
