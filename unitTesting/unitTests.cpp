@@ -630,7 +630,7 @@ TEST_CASE("Testing the GasData class and TdStats constructor throws") {
 	}
 }
 
-TEST_CASE("Testing the TdStats class and simOutput processStats function") {
+TEST_CASE("Testing the TdStats class and SimDataPipeline processStats function") {
   std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
   std::vector<GS::Particle> moreParticles{
       {{2., 3., 4.}, {1., 0., 0.}},
@@ -640,8 +640,10 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
   GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
   GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
   GS::SimDataPipeline output{5, 1., defaultH};
+	
   gas.simulate(5, output);
   output.processData();
+	SUBCASE("Testing throws") {}
   SUBCASE("Testing the constructor") {
     GS::TdStats stats{output.getStats()[0]};
     CHECK(stats.getBoxSide() == 4.);
@@ -677,4 +679,70 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
     CHECK(moreStats.getMeanFreePath() == 2.5);
 		CHECK_THROWS(moreStats.getPressure(GS::Wall::VOID));
   }
+}
+
+TEST_CASE("Testing part of the SimDataPipeline class") {
+  SUBCASE("Throwing behaviour") {
+    // Null statsize
+    CHECK_THROWS(GS::SimDataPipeline(0, 1., defaultH));
+    // Null and negative framerate
+    CHECK_THROWS(GS::SimDataPipeline(1, 0., defaultH));
+    CHECK_THROWS(GS::SimDataPipeline(1, -10., defaultH));
+
+		TH1D badH {"badH", "badH", 1, 0., 1.};
+		badH.Fill(0.5);
+		CHECK_THROWS(GS::SimDataPipeline(1, 1., badH));
+
+    GS::SimDataPipeline output{1, 1., defaultH};
+    // Setting various parameters to invalid values
+    CHECK_THROWS(output.setStatChunkSize(0));
+    CHECK_THROWS(output.setFramerate(0.));
+    CHECK_THROWS(output.setFramerate(-15.));
+    CHECK_THROWS(output.setStatSize(0));
+		// Empty font
+		sf::Font f {};
+		CHECK_THROWS(output.setFont(f));
+  }
+	SUBCASE("AddData throwing behaviour") {
+		// simulate two gas, add data to the outputs
+		std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+		std::vector<GS::Particle> moreParticles{
+				{{2., 3., 4.}, {1., 0., 0.}},
+				{{5., 3., 7.}, {0., 0., 0.}},
+				{{5., 6., 7.}, {0., -1., 0.}},
+		};
+		GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
+		GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
+		GS::SimDataPipeline output{5, 1., defaultH};
+		GS::SimDataPipeline outputCopy{5, 1., defaultH};
+    GS::SimDataPipeline moreOutput{5, 1., defaultH};
+		GS::SimDataPipeline moreOutputCopy{5, 1., defaultH};
+		std::vector<GS::GasData> data {gas.rawDataSimulate(5)};
+		auto missingData{data};
+		missingData.erase(missingData.begin() + 2);
+		std::vector<GS::GasData> moreData {moreGas.rawDataSimulate(5)};
+		auto moreMissingData{moreData};
+		moreMissingData.erase(moreMissingData.begin() + 3);
+		SUBCASE("Correct data nothrow") {
+			CHECK_NOTHROW(output.addData(std::move(data)));
+			CHECK_NOTHROW(moreOutput.addData(std::move(moreData)));
+		}
+		SUBCASE("Non-contiguous data (missing instances)") {
+			CHECK_THROWS(output.addData(std::move(missingData)));
+			CHECK_THROWS(moreOutput.addData(std::move(moreMissingData)));
+		}
+		auto differentParticlesNData {data};
+		differentParticlesNData.insert(
+				differentParticlesNData.end(),
+				moreData.begin(), moreData.end()
+		);
+		auto invertedData {data};
+		std::reverse(invertedData.begin(), invertedData.end());
+		SUBCASE("Other cases") {
+			CHECK_THROWS(output.addData(std::move(differentParticlesNData)));
+			CHECK_THROWS(outputCopy.addData(std::move(invertedData)));
+			CHECK_NOTHROW(moreOutputCopy.addData(std::move(moreData)));
+			CHECK_THROWS(moreOutputCopy.addData(std::move(data)));
+		}
+	}
 }

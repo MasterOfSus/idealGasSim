@@ -39,19 +39,6 @@ std::atomic<double> GS::Particle::radius = 1.;
 TH1D defaultH{};
 
 TEST_CASE("Loosely testing the SimDataPipeline class") {
-  SUBCASE("Throwing behaviour") {
-    // Null statsize
-    CHECK_THROWS(GS::SimDataPipeline(0, 1., defaultH));
-    // Null and negative framerate
-    CHECK_THROWS(GS::SimDataPipeline(1, 0., defaultH));
-    CHECK_THROWS(GS::SimDataPipeline(1, -10., defaultH));
-    GS::SimDataPipeline output{1, 1., defaultH};
-    // Setting various parameters to invalid values
-    CHECK_THROWS(output.setStatChunkSize(0));
-    CHECK_THROWS(output.setFramerate(0.));
-    CHECK_THROWS(output.setFramerate(-15.));
-    CHECK_THROWS(output.setStatSize(0));
-  }
   static bool i{0};
   SUBCASE("Simulation test demos") {
     std::string texts[2]{
@@ -205,7 +192,7 @@ TEST_CASE("Loosely testing the SimDataPipeline class") {
       }
       std::cout << "Done, going to next test case." << std::endl;
     } else {
-      std::cout << "OK. Going to next text case." << std::endl;
+      std::cout << "OK. Going to next test case." << std::endl;
     }
   }
 }

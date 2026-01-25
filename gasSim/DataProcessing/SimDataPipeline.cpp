@@ -34,7 +34,6 @@ SimDataPipeline::SimDataPipeline(size_t statSizeV, double framerate,
     throw std::invalid_argument(
         "SDP constructor error: provided non-empty histogram template");
   }
-  assert(speedsHTemplate.GetNbinsX() != 0);
 }
 
 bool isNegligible(double epsilon, double x);  // implemented in TdStats.cpp

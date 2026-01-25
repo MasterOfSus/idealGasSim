@@ -10,6 +10,7 @@
 
 namespace GS {
 
+class GasData;
 class SimDataPipeline;
 
 class Gas {
@@ -24,6 +25,7 @@ class Gas {
   void simulate(
       size_t iterationsN, SimDataPipeline& SimOutput,
       std::function<bool()> stopper = [] { return false; });
+	std::vector<GS::GasData> rawDataSimulate(size_t iterationsN); // mainly for testing purposes
   bool contains(const Particle& p);
 
   const std::vector<Particle>& getParticles() const { return particles; }

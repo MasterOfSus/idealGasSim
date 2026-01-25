@@ -262,6 +262,54 @@ void Gas::simulate(size_t itN, SimDataPipeline& output,
   output.setDone();
 }
 
+std::vector<GasData> Gas::rawDataSimulate(size_t itN) {
+  std::vector<GasData> tempOutput{};
+	tempOutput.reserve(itN);
+
+  for (size_t i{0}; i < itN; ++i) {
+		PPCollision pColl{firstPPColl()};
+		PWCollision wColl{firstPWColl()};
+		Collision* firstColl{nullptr};
+
+		if (pColl.getTime() < wColl.getTime()) {
+			firstColl = &pColl;
+		} else {
+			firstColl = &wColl;
+		}
+
+		double collTime{firstColl->getTime()};
+
+		if (std::isfinite(collTime) && collTime >= 0.) {
+			move(firstColl->getTime());
+			firstColl->solve();
+			tempOutput.emplace_back(*this, firstColl);
+		} else if (particles.size() == 0) {
+			throw std::runtime_error(
+					"Simulate error: called simulate on an empty gas");
+		} else if (collTime < 0.) {
+			throw std::runtime_error(
+					"Simulate error: found negative collision time found -> aborting");
+		} else if (!std::isfinite(collTime)) {
+			bool allSpeeds0{true};
+			for (Particle const& p : particles) {
+				if (allSpeeds0 && p.speed.norm() != 0) {
+					allSpeeds0 = false;
+				}
+			}
+			if (allSpeeds0) {
+				throw std::runtime_error(
+						"Simulate error: called on gas with no moving particles");
+			} else {
+				throw std::runtime_error(
+						"Simulate error: unexplained non finite collision time found -> "
+						"aborting");
+			}
+		}
+	}
+	return tempOutput;
+}
+
+
 bool Gas::contains(Particle const& p) {
   if (particles.size()) {
     double r = p.getRadius();
