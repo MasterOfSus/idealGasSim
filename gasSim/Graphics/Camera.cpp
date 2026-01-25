@@ -35,6 +35,8 @@ Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVectorV,
   setPlaneDistance(planeDistanceV);
   setFOV(FOV);
   setResolution(heightV, widthV);
+	computeCamBase();
+	constructed = true;
 }
 
 GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
@@ -48,24 +50,11 @@ GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
   GSVectorF b{a - (focus + sight * getPlaneDistance())};
   // b = a relative to perspective plane ref. sys.
 
-  // making an orthonormal base for the camera, m and o lying on the persp.
-  // plane, sight for the normal vector
-  GSVectorF m;
-  if (sight.x == 0. && sight.y == 0.)
-    m = {0., sight.z, 0.};
-  else {
-    m = {sight.y, -sight.x, 0.f};
-    m = m / m.norm();
-  }
-  GSVectorF o{cross(m, sight)};
-  m = m / getPixelSide();
-  o = o / getPixelSide();
-
   // returning base-changed vector with scaling factor
   // as the third coordinate
   return {
-      m * b + static_cast<float>(getWidth()) / 2.f,
-      o * b + static_cast<float>(getHeight()) / 2.f,
+      cameraBase[0] * b + static_cast<float>(getWidth()) / 2.f,
+      cameraBase[1] * b + static_cast<float>(getHeight()) / 2.f,
       (a - focus) * (a - focus) /
           ((a - focus) *
            (point - focus))  // scaling factor, degenerate if > 1 V < 0
@@ -235,9 +224,19 @@ float Camera::getNPixels(float length) const {
 
 // Getters and setters
 
+void Camera::setFocus(GSVectorF const& focusPt) {
+	focusPoint = focusPt;
+	if (constructed) {
+		computeCamBase();
+	}
+}
+
 void Camera::setSightVector(GSVectorF const& sightVectorV) {
   if (sightVectorV.norm() > 0.f) {
     sightVector = sightVectorV / sightVectorV.norm();
+		if (constructed) {
+			computeCamBase();
+		}
   } else {
     throw std::invalid_argument(
         "setSightVector error: O vector doesn't have direction information");
@@ -248,7 +247,10 @@ void Camera::setAspectRatio(
     const float ratio) {  // ratio set by keeping the image width
   if (ratio > 0.f) {
     height = static_cast<unsigned>(static_cast<float>(width) / ratio);
-  } else {
+		if (constructed) {
+			computeCamBase();
+		}  
+	} else {
     throw std::invalid_argument(
         "setAspectRatio error: non-positive ratio provided");
   }
@@ -257,6 +259,9 @@ void Camera::setAspectRatio(
 void Camera::setPlaneDistance(const float distance) {
   if (distance > 0.f) {
     planeDistance = distance;
+		if (constructed) {
+			computeCamBase();
+		}  
   } else {
     throw std::invalid_argument(
         "setPlaneDistance error: provided non positive distance");
@@ -266,6 +271,9 @@ void Camera::setPlaneDistance(const float distance) {
 void Camera::setFOV(const float FOV) {  // in degrees
   if (FOV > 0.f && FOV < 180.f) {
     fov = FOV;
+		if (constructed) {
+			computeCamBase();
+		}  
   } else {
     throw std::invalid_argument(
         "setFOV error: provided bad FOV (accepted range: 0.f, 180.f)");
@@ -279,6 +287,30 @@ void Camera::setResolution(unsigned heightV, unsigned widthV) {
   }
   height = heightV;
   width = widthV;
+	if (constructed) {
+		computeCamBase();
+	}  
+}
+
+void Camera::computeCamBase() {
+	GSVectorF sight {sightVector};
+  // making an orthonormal base for the camera, m and o lying on the persp.
+  // plane, sight for the normal vector
+  GSVectorF m;
+  if (sight.x == 0. && sight.y == 0.)
+    m = {0., sight.z, 0.};
+  else {
+    m = {sight.y, -sight.x, 0.f};
+    m = m / m.norm();
+  }
+  GSVectorF o{cross(m, sight)};
+  m = m / getPixelSide();
+  o = o / getPixelSide();
+
+	cameraBase = {
+		m,
+		o
+	};
 }
 
 template <typename GasLike>

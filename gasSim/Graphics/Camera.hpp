@@ -2,6 +2,7 @@
 #define CAMERAHPP
 
 #include <vector>
+#include <array>
 
 #include "PhysicsEngine/GSVector.hpp"
 #include "RenderStyle.hpp"
@@ -34,7 +35,7 @@ class Camera {
   float getNPixels(float length) const;
 
   // setters and getters
-  void setFocus(GSVectorF const& focusPtV) { focusPoint = focusPtV; }
+  void setFocus(GSVectorF const& focusPtV);
   void setSightVector(GSVectorF const& sightVector);
   void setAspectRatio(float ratio);
   void setPlaneDistance(float distance);
@@ -52,6 +53,10 @@ class Camera {
   unsigned getWidth() const { return width; }
 
  private:
+	bool constructed {false};
+	void computeCamBase();
+	std::array<GSVectorF, 2> cameraBase;
+
   GSVectorF focusPoint;
   GSVectorF sightVector;
   float planeDistance;
