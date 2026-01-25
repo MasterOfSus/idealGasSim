@@ -36,9 +36,11 @@ class SimDataPipeline {
                   TH1D const& speedsHTemplate);
 
   void addData(std::vector<GasData>&& data);
+	// just stats overload
   void processData(
       bool mfpMemory = true,
       std::function<bool()> stopper = [] { return false; });
+	// stats and renders overload
   void processData(
       Camera camera, RenderStyle style, bool mfpMemory = true,
       std::function<bool()> stopper = [] { return false; });
@@ -63,7 +65,7 @@ class SimDataPipeline {
   double getFramerate() const { return 1. / gDeltaT.load(); }
   size_t getStatSize() const { return statSize.load(); }
   void setStatSize(size_t size);
-  void setFont(sf::Font const& font);
+  void setFont(sf::Font const& font); // non thread-safe
 
  private:
   void processStats(std::vector<GasData> const& data, bool mfpMemory,
@@ -88,7 +90,7 @@ class SimDataPipeline {
   std::optional<TdStats> lastStat;
   std::mutex lastStatMtx;
 
-  std::atomic<double> gDeltaT; // frame time
+  std::atomic<double> gDeltaT; // last render time
   std::optional<double> gTime; // time of last published render
   std::mutex gTimeMtx;
   std::deque<std::pair<sf::Texture, double>> renders;

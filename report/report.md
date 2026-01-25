@@ -119,7 +119,7 @@ A point's projection is the result of intersecting the line that passes between 
   <img src="scaling diagram.svg" width="50%">
 </p>
 
-The first two components are obtained by a change of coordinates, from the starting space to the reference system with its origin in the "camera sensor"'s center, and its x and y axes being the sensor's natural axes. They are then converted to their equivalent in pixels.\
+The first two components are obtained by a change of coordinates, from the starting space to the reference system with its origin in the "camera sensor"'s center, and its x and y axes being the sensor's natural axes, scaled to the unit of length corresponding to a pixel's side.\
 The camera's internal reference system is represented in the following diagram:
 
 <p align="center">
@@ -142,7 +142,7 @@ This class supports the bulking together of any number of subsequent GasData ins
     - elapsed time
     - "temperature" (again, equivalent to average energy over a degree of freedom)
     - side of the box > walls area, box volume
-    - cumulated wall pulses (necessary for average pulse/time > average force > average pressure)
+    - cumulated wall pulses (necessary for average pulse over time > average force > average pressure)
     - last collision positions > can calculate the traveled distance for colliding particles from their previous collision positions > the mean free path
     - a histogram filled with the norm of the speed of every particle > can be compared/fitted to a Maxwell-Boltzmann distribution
 
@@ -166,10 +166,11 @@ The behaviour of `getVideo` under multithreading calls can be tweaked in perform
 Finally, two functions (`getStats`, `getRenders`) allow access to the intermediate result queues, either through copy or move semantics, to allow the user to be able to implement with minimal overhead their own secondary processing, if the options provided by `getVideo` don't satisfy their needs.
 
 All functions are thread-safe under all circumstances, except for the `addData` function, the two `processData` functions and the `getVideo` function, which cannot be called from more than one thread at a time, and the `setFont` function, which is not thread-safe at all.\
-The access to the private members is synchronized through the use of `std::mutex`, `std::lock_guard`, `std::unique_lock` and `std::condition_variable`, or by making the private members `std::atomic` when possible, and storing their `.load()`ed value at the beginning of functions that use them multiple times. A basic diagram is provided below in hopes of giving an intuitive representation of the class' main innerworkings:
+The access to the private members is synchronized through the use of `std::mutex`, `std::lock_guard`, `std::unique_lock` and `std::condition_variable`, or by making the private members `std::atomic` when possible, and storing their `.load()`ed value at the beginning of functions that use them multiple times.
 
 The class is written so as to ensure that corresponding results are published together in the intermediate result queues, meaning that if there is a render at a given time, the `GS::TdStats` that covers a time period in which that render is present has been published as well, while the opposite is not necessarily true as `GS::TdStats` instances can be processed without processing the renders, for speed's sake.\
-This is ensured by publishing results under the lock of the `outputMtx` data member as well as the more widely used `statsMtx` and `rendersMtx`. `outputMtx` is locked by getVideo as well, since it's the only function which also accesses both queues.
+This is ensured by publishing results under the lock of the `outputMtx` data member as well as the more widely used `statsMtx` and `rendersMtx`. `outputMtx` is locked by getVideo as well, since it's the only function which also accesses both queues.\
+ A basic diagram is provided below in hopes of giving an intuitive representation of the class' main innerworkings.
 
 <p align="center">
   <img src="SimDataPipeline diagram.svg" width="50%">
@@ -185,7 +186,7 @@ It offers four options for results composition, implemented through an enum clas
 
 The function can be seen as one big case structure, divided in three stages:
 1. data extraction, where chunks of information that can be composed into a video are taken from the intermediate results queues
-2. recurrent variables setup, where variables necessary to the later stage are initialized
+2. recurrent variables setup, where variables necessary to the next stage are initialized
 3. video composition, where the data chunks are processed into a final format
 
 The data extraction phase operates depending on the case:\

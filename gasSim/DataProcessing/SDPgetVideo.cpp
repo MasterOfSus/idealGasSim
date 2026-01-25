@@ -174,9 +174,10 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
       gTimeL = gTime;
       gDeltaTL = gDeltaT.load();
       if (stats.size()) {
-        // setting fTime_
+        // setting fTime
         if (!fTime.has_value()) {
           if (gTimeL.has_value()) {
+						// sync to gTime
             fTime = *gTimeL +
                     gDeltaTL *
                         std::floor((stats[0].getTime0() - *gTimeL) / gDeltaTL);
@@ -187,7 +188,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         if (stats.back().getTime() >= *fTime + gDeltaTL) {
           // find first where the next frame's time is before it
           // -> the one before it necessarily "contains" the frame time
-          // this pattern used in the rest of this file
+          // this pattern is used in the rest of this file
           auto sStartI{std::upper_bound(stats.begin(), stats.end(),
                                         *fTime + gDeltaTL,
                                         [](double value, TdStats const& s) {
@@ -365,13 +366,13 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     frame.draw(auxSprt);
   }};
 
-  {  // charSize
+  {  // charSize nspc
     unsigned charSize{static_cast<unsigned>(
         windowSize.y * (opt == VideoOpts::gasPlusCoords ? 0.5 / 9. : 0.05))};
     TText.setCharacterSize(charSize);
     VText.setCharacterSize(charSize);
     NText.setCharacterSize(charSize);
-  }
+  } // charsize nspc end
   // definitions as per available data
   switch (opt) {
     case VideoOpts::gasPlusCoords:
@@ -415,6 +416,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
           if (rendersL.size() > rIndex &&
               isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
+						// fit render
             box.setScale(
                 static_cast<float>(windowSize.x) /
                     static_cast<float>(rendersL[rIndex].first.getSize().x),
@@ -425,6 +427,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(timeText);
             frame.display();
           } else {
+						// fit placeholder
             box.setScale(static_cast<float>(windowSize.x) /
                              static_cast<float>(placeholder.getSize().x),
                          static_cast<float>(windowSize.y) /
@@ -436,7 +439,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           }
           frames.emplace_back(frame.getTexture());
         }
-        rendersL.clear();
       }
       break;
     }
@@ -590,7 +592,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frames.emplace_back(frame.getTexture());
           }
         }
-        statsL.clear();
       }
       break;
     case VideoOpts::gasPlusCoords:
@@ -840,7 +841,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             }
           }
         }  // else if rendersL.size()
-        rendersL.clear();
         break;
       }  // case scope end
     case VideoOpts::all: {  // case scope
@@ -1092,7 +1092,6 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           frames.emplace_back(frame.getTexture());
         }
       }  // else if renders.size()
-      rendersL.clear();
       break;
     }  // case scope end
     default:
