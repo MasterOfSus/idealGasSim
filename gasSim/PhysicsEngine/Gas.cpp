@@ -309,7 +309,6 @@ std::vector<GasData> Gas::rawDataSimulate(size_t itN) {
 	return tempOutput;
 }
 
-
 bool Gas::contains(Particle const& p) {
   if (particles.size()) {
     double r = p.getRadius();

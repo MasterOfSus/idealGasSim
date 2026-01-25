@@ -2,6 +2,10 @@
 
 **idealGasSim** is a rudimentary ideal‑gas simulator implementing an event‑based three‑dimensional system of freely moving identical particles inside a cubic container. The project includes visualization, data processing, and a fully configurable workflow.
 
+## Project Report
+The project report is found [here](report/report.md)
+Note that since the used `svg` images are drawn in white, to correctly see them github should be set to dark mode.
+
 ## Features
 
 * Event‑based simulation of a 3D system with an arbitrary number of equal particles in a cubic box

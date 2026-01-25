@@ -893,6 +893,8 @@ int main(int argc, const char* argv[]) {
       if (bufferingLoop.joinable()) {
         bufferingLoop.join();
       }
+
+			std::lock_guard<std::mutex> windowGuard{windowMtx};
       if (window.isOpen()) {
         window.close();
       }

@@ -738,6 +738,14 @@ TEST_CASE("Testing part of the SimDataPipeline class") {
 		);
 		auto invertedData {data};
 		std::reverse(invertedData.begin(), invertedData.end());
+		SUBCASE("Addition of repeating but otherwise valid rawData") {
+			CHECK_NOTHROW(output.addData(std::vector<GS::GasData>(data)));
+			CHECK_THROWS(output.addData(std::vector<GS::GasData>(data)));
+			CHECK_THROWS(output.addData(std::vector<GS::GasData>{data.back()}));
+			CHECK_NOTHROW(moreOutput.addData(std::vector<GS::GasData>(moreData)));
+			CHECK_THROWS(moreOutput.addData(std::vector<GS::GasData>(moreData)));
+			CHECK_THROWS(moreOutput.addData(std::vector<GS::GasData>{moreData.back()}));
+		}
 		SUBCASE("Other cases") {
 			CHECK_THROWS(output.addData(std::move(differentParticlesNData)));
 			CHECK_THROWS(outputCopy.addData(std::move(invertedData)));
