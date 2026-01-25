@@ -6,13 +6,13 @@ Diego Quarantani\
 Niccolo Poli\
 Tomaso Tamburini
 ## Introduction
-This project is a rudimentary event-based gas simulator operating in an euclidean three-dimensional space, with graphic data visualization and ROOT file output functionalities. It has the intent of allowing for clear visualization of the most basic phenomena described in kinetic theory of ideal gases, and the qualitative comparison of the theoretical results provided by said theory with their simulated counterparts.
+This project is a rudimentary event-based gas simulator operating in an euclidean three-dimensional space, with graphic data visualization and ROOT file output functionalities. It has the intent of allowing for clear visualization of the most basic phenomena described in kinetic theory of gases, and the qualitative comparison of the theoretical results provided by said theory with their simulated counterparts.
 
-It strives to achieve this by running a simulation of a physical system, representing a gas, and by subsequently processing the raw simulation data into meaningful statistical datasets and thermodynamical variables, stored making use of the formats provided by the ROOT framework, so that these can both be visualized and saved for later use.\
+It strives to achieve this by running a simulation of a physical system representing a gas and by subsequently processing the raw simulation data into meaningful statistical datasets and thermodynamical variables, stored making use of the formats provided by the ROOT framework, so that these can both be visualized and saved for later use.\
 The visualization is also achieved through the output of a video feed (live or saved to a `.mp4` file) which enables the user to view the system's progression through time, both through its thermodynamical characteristics and through a direct video rendering of the system itself.\
 The behaviour of the provided program is customizable to a limited degree, in almost all of its simulation parameters and aesthetical characteristics.
 ## Implementation choices
-The project can be seen as divided in a set of three major interdependent components, and a minor one, reflected in [gasSim](../gasSim)'s subdirectory structure:
+The project can be seen as divided in a set of three major interdependent components, and a minor one, reflected in the subdirectory structure of the [gasSim](../gasSim) directory:
 1. a physics engine ([PhysicsEngine](../gasSim/PhysicsEngine)), which provides the implementation of the used physical model and of the methods allowing for the simulation of its evolution through time
 2. a graphics module ([Graphics](../gasSim/Graphics)), which provides a rudimentary 3D rendering engine with facilities that allow to take an "almost perspectically correct" picture of the gas
 3. a data processing module ([DataProcessing](../gasSim/DataProcessing)), which provides a set of facilities allowing for storage of data relative to the simulation and its processing into more meaningful data.
@@ -24,9 +24,9 @@ The codebase has been split up in one `.hpp`-`.cpp` couple for each class, with 
 The physics engine provides the following set of components:
 
 [`GS::GSVector`](../gasSim/PhysicsEngine/GSVector.hpp)\
-A template floating point vector class, implementing the concept of three-dimensional vectors.\
+A template floating point vector class, representing the concept of three-dimensional vectors.\
 This component allows for the flexibility to choose the floating point data structure to use based on the necessities posed by the implementation.\
-It also provides the basic operations that can be performed on vectors (scalar multiplication, dot product, cross product).
+It also provides access to the basic operations that can be performed on vectors (scalar multiplication, dot product, cross product).
 
 [`GS::Particle`](../gasSim/PhysicsEngine/Particle.hpp)\
 A uniform spherical particle implementation.\
@@ -56,7 +56,7 @@ For particle-to-wall collisions, the coordinate relative to the wall's perpendic
 
 [**GS::Gas**](../gasSim/PhysicsEngine/Gas.hpp)\
 The class implementing the concept of an ideal gas, as a set of equal spherical particles bound to move inside of a cubical container.\
-A simple diagram is shown below to provide a visual idea of how the Gas's container is represented, with the names given to the walls in the `GS::Wall` enum class:
+A simple diagram is shown below to provide a visual idea of how the gas container is represented, with the names given to the walls in the `GS::Wall` enum class:
 
 <p align="center">
   <img src="gas diagram.svg" width="60%">
@@ -68,11 +68,11 @@ This class provides two main facilities:
 The simulation methods rely on the process of predicting all possible collision and comparing the time they would take to happen, then selecting the one with the smallest time and moving the entire gas by that time, finally calling the `solve()` method over said collision, and optionally adding the collision data to a provided data pipeline.
 
 The collision finding process, implemented in the `firstPPColl()` and `firstPWColl()` private methods, is implemented as follows:
-1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision's value every time one with smaller time is found.
+1. The first particle-to-wall collision is found by computing the collision time over the whole container of particles, substituting the result collision value every time one with smaller time is found.
 2. The first particle-to-particle collision is found in the same way by computing the collision time for all couples of particles and choosing the one with the smallest time.\
 The time computation is divided in two steps:
     1. The relative distance of the two particles is checked to have negative dot product with the relative speed of the two particles, a cheap computation which provides the state of a condition necessary to the existance of a finite, positive collision time
-    2. if the first step succeeds the actual collision time is computed through the following formula, which results from imposing the distance of the two particles to equate to the sum of their radiuses:
+    2. if the first step succeeds the collision time is computed by enforcing that the distance between the particles equals the sum of their radii, through the following formula:
 
 <p align="center">
   <img src="latex/eq2/eq2.svg" width="17%">
@@ -82,15 +82,15 @@ The time computation is divided in two steps:
   <img src="latex/sol2/sol2.svg" width="40%">
 </p>
 
-the quadratic formula above yields two values, and the smallest positive one is selected (if both are negative, `INFINITY` is substituted instead).
+the quadratic formula above yields two values, and the smallest positive one is selected (if both are negative, `INFINITY` is returned instead).
 this is done across the whole set of particles with multiple threads, using [triangular indexing](https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix) to biject the set of all couples of particles with a set of indexes, through the following formulae:
-The number of total checks can be easily found with the well known:
+The number of total checks can be easily found with:
 
 <p align="center">
   <img src="latex/eq3/eq3.svg" width="20%">
 </p>
 
-And to get the two particle's indexes from the couple's corresponding index:
+And to get the indexes of the two particles from the couple's corresponding index:
 
 <p align="center">
   <img src="latex/sol3/sol3.svg" width="35%">
@@ -104,7 +104,7 @@ This module provides two components:
  - `GS::Camera`, a class allowing for a rudimentary, visually intuitive (almost perspectically correct) 3D rendering of a gas.
 
 [**GS::Camera**](../gasSim/Graphics/Camera.hpp)\
-A camera is essentially a focal point and a perspective plane, with the plane's normal vector defining the camera's viewing direction.
+A camera is essentially a focal point and a perspective plane, with the normal vector of the plane defining the camera's viewing direction.
 
 <p align="center">
   <img src="camera diagram.svg" width="50%">
@@ -119,7 +119,7 @@ A point's projection is the result of intersecting the line that passes between 
   <img src="scaling diagram.svg" width="50%">
 </p>
 
-The first two components are obtained by a change of coordinates, from the starting space to the reference system with its origin in the "camera sensor"'s center, and its x and y axes being the sensor's natural axes, scaled to the unit of length corresponding to a pixel's side.\
+The first two components are obtained by a change of coordinates, from the starting space to the reference system with its origin in the "camera sensor"'s center, and its x and y axes being the sensor's natural axes, scaled to the unit of length corresponding to the side of a pixel.\
 The camera's internal reference system is represented in the following diagram:
 
 <p align="center">
@@ -202,12 +202,12 @@ After setting the `fTime` variable and acquiring the necessary parameters, it ex
  - `gasPlusCoords`/`all` > extracts chunks of `GS::TdStats` and renders available after `fTime`, and such that the render times are contained within the `GS::TdStats` instances' time frames.
 
 The video composition phase, while differing slightly between cases, operates on the same principle: starting from the `fTime` variable, it proceeds for all subsequent integer multiples of the frame time, checking for missing data/renders and inserting placeholders as needed.\
-Since the user has no way to partially delete the `stats` deque's contents, the function can be sure that if it hasn't touched a member of said queue yet (guaranteed by it being after `fTime`), the presence of said member implies that all successive instances in the container are contiguous in time, so it only has to insert placeholder graph values from `fTime` to the `stats` container's front starting time.\
+Since the user has no way to partially delete the `stats` deque's contents, the function can be sure that if it hasn't touched a member of said queue yet (guaranteed by it being after `fTime`), the presence of said member implies that all successive instances in the container are contiguous in time, so it only has to insert placeholder graph values from `fTime` to the front starting time of the `stats container`.\
 After inserting the placeholder values, and drawing all the renders in the placeholder timeframe, it can proceed to draw the `stats` instances one by one.\
 It makes use of this by adding the data from an instance to the ROOT objects and drawing them once, then pasting the renders onto it one over another, checking that for each render the render for the frame time is actually available, and inserting a placeholder if that is not the case.\
 In this phase, the user is given the freedom to perform operations on the ROOT objects that get drawn, both in the phase directly before the drawing of the root objects and directly after them, by passing `std::function` instances that get called by the `getVideo` function.
 ### Main executable
-The main executable uses all of the previously mentioned facilities to simulate a gas's evolution through time, process its data and compose it into a video output.\
+The main executable uses all of the previously mentioned facilities to simulate the gas's evolution through time, process its data and compose it into a video output.\
 It does so in three phases:
 1. it gets input parameters and loads resources according to them, validating them for acceptability.
 2. it constructs the gas and data pipeline, and sends a simulation and a processing thread.
@@ -257,7 +257,7 @@ Execution with different configuration highlights a predictable deviation from t
 The deviation shown is from the expected and measured pressures: by changing just the particles' radius in the configuration file, one can observe that with its increase, the measured pressure increases, making the "measured" Boltzmann constant (expected as 1 J/(Temperature unit)) increase with it.\
 This is due to the fact that the particles, having a non-negligible volume, shrink the effective size of the container as well as the real free volume inside of it, and, having less room to move around in, hit the walls more frequently, increasing the pressure.
 
-On all of the used configurations, the mean free path's expected value was way above the measured value, and while the fact that the container's size is usually of the same order of magnitude as the mean free path might be the cause of this discrepancy, no definitive conclusions have been made.
+On all of the used configurations, the expected value for the mean free path was way above the measured value, and while the fact that the container's size is usually of the same order of magnitude as the mean free path might be the cause of this discrepancy, no definitive conclusions have been made.
 
 The particle speed distribution has instead been observed to perfectly match the expected Maxwell-Boltzmann distribution, and starting the system from a different speed distribution (an almost uniform one) shows the spontaneous progression towards the expected distribution.
 
@@ -277,7 +277,7 @@ These can be executed through CMake, appending to the compile command the `--tar
 ### [Demos/stress test](../unitTesting/getVideoTest.cpp)
 This executable implements two demos and a stress test of the `getVideo` function, and in the process validates the efficacy of the image outputting functions provided by the Graphics module.
 
-It does so by testing the function for correct parameter validation through Doctest's facilities, as has been done in the unit tests, and then calling it to provide a video output with weird parameters, such as non-matching render resolution and window resolution or the smallest available resolutions passed as parameters, which is displayed to the user for inspection, and can be replayed indefinitely to try and spot errors. This is done in the `all` and `justStats` configurations, with a single particle gas and a multiple particle gas respectively.\
+It does so by testing the function for correct parameter validation through `Doctest`'s facilities, as has been done in the unit tests, and then calling it to provide a video output with weird parameters, such as non-matching render resolution and window resolution or the smallest available resolutions passed as parameters, which is displayed to the user for inspection, and can be replayed indefinitely to try and spot errors. This is done in the `all` and `justStats` configurations, with a single particle gas and a multiple particle gas respectively.\
 Finally, through a simple thread managing facility, provided in the [testing addons](testingAddons.hpp), it performs a `GS::SimDataPipeline` stress test to show how it holds up under calls of all methods by multiple threads at random times, with random deletion of the intermediate results queues and random values of the given `GS::VideoOpts` instance, outputting the video feed to the user while showing which functions get called, and with what parameters, through the standard output. This test can be run as many times as the user likes.
 
 To execute it, from the unitTesting directory, call the executable found in the build directory, called `getVideoTest.t`. The environment is necessary as a folder named `assets` equal to that found in the unitTesting directory needs to be in the directory from which the binary is called, as the paths have been hardcoded inside of it.
