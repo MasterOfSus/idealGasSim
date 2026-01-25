@@ -514,7 +514,7 @@ TEST_CASE("Testing the camera class") {
 
 // STATISTICS Testing
 
-TEST_CASE("Testing the GasData class") {
+TEST_CASE("Testing the GasData class and TdStats throws") {
   std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
   std::vector<GS::Particle> moreParticles{
       {{2., 3., 4.}, {1., 0., 0.}},
@@ -537,6 +537,8 @@ TEST_CASE("Testing the GasData class") {
   GS::GasData moreData{moreGas, &moreCollision};
 
   SUBCASE("Testing the constructor and getters") {
+		CHECK_THROWS(GS::GasData{gas, &moreCollision});
+		CHECK_THROWS(GS::GasData{moreGas, &collision});
     CHECK(gas.getParticles() == data.getParticles());
     CHECK(data.getTime() == gas.getTime());
     CHECK(data.getBoxSide() == gas.getBoxSide());
@@ -554,6 +556,9 @@ TEST_CASE("Testing the GasData class") {
     CHECK_THROWS(data.getP2());
     CHECK_THROWS(moreData.getWall());
   }
+
+	SUBCASE("Testing TdStats throws") {
+	}
 }
 
 TEST_CASE("Testing the TdStats class and simOutput processStats function") {

@@ -191,14 +191,14 @@ The function can be seen as one big case structure, divided in three stages:
 
 The data extraction phase operates depending on the case:\
 As a first step, it always checks the `fTime` variable, which indicates the time corresponding to the last frame output by `getVideo`, needs to be set, and sets it according to the following fallback structure:
-1. if any renders are available, it is set so that its difference with the time of the first render is an integer multiple of the time given to each frame (the inverse of the framerate), basically syncing it up to the renders. This happens both if it isn't synced to the renders or if it isn't set.
+1. if `gTime` is available, it is set so that its difference with it is an integer multiple of the time given to each frame (the inverse of the framerate), basically syncing it up to the renders. This happens both if it isn't synced to `gTime` or if it isn't set. It is also set so as to include all possible renders if it hasn't been set yet
 2. if any `GS::TdStats` instances are available and it hasn't been set yet, it is set so as to be as close as possible to the beginning of the first `GS::TdStats` instance available
-3. if the `gTime` variable is available, it is set to its value
+3. if only the `gTime` variable is available and the intermediate results queues are empty, it is set to its value
 
 Essentially, `fTime` gives "memory" to the getVideo function, which thanks to it can know where it stopped, and through the guarantees given about the published data, always know if the data between `fTime` and `gTime` has has either been deleted/made unavailable to it (for example by changing the framerate mid run, effectively putting all of the previously processed renders out of sync) or not published, so as to know where to stop to get published data chunks to process.\
 After setting the `fTime` variable and acquiring the necessary parameters, it extracts data depending on the case:
  - `justGas` > extracts all of the available renders
- - `justStats` > extracts all of the available TdStats
+ - `justStats` > extracts all of the available TdStats after `fTime`
  - `gasPlusCoords`/`all` > extracts chunks of `GS::TdStats` and renders available after `fTime`, and such that the render times are contained within the `GS::TdStats` instances' time frames.
 
 The video composition phase, while differing slightly between cases, operates on the same principle: starting from the `fTime` variable, it proceeds for all subsequent integer multiples of the frame time, checking for missing data/renders and inserting placeholders as needed.\
@@ -217,7 +217,7 @@ The video saving process simply calls getVideo until the state of the pipeline i
 
 The video feed is made up of three main components:\
 **A buffering loop**\
-Controlled through an `std::atomic<bool>` flag, that is started when there are no more frames available to draw while waiting for more to be prepared. It draws a buffering wheel and some info about the state of the simulation.\
+Controlled through an `std::atomic<bool>` `stop` flag; it is started when there are no more frames available to draw while waiting for more to be prepared. It draws a buffering wheel and some info about the state of the simulation.\
 **A set of player threads**\
 These wait for their turn through their queue number, compared with an `std::atomic<size_t>` telling them the queue number that is free to start drawing to the `sf::RenderWindow`, then draw to the window the frames passed to them through an `std::shared_ptr<std::vector<sf::Texture>>`, finally checking if there are any player threads in line behind them and signaling the buffering loop to start up again if that is not the case.\
 Each player thread therefore depends on the thread before it to be able to run and finish.\
@@ -225,7 +225,7 @@ Each player thread therefore depends on the thread before it to be able to run a
 It calls `getVideo`, storing its result through `std::shared_ptr<std::vector<sf::Texture>>` and sending the player threads with their queue number and passing them the `std::shared_ptr<...>`, then detatching them so as to be able to keep sending player threads instead of stalling the `getVideo` calls.\
 It ensures that the detatched threads are all finished by joining the last thread it sends, since it depends on the thread sent before it to exit to be able to execute, which therefore ensures inductively that all of other detatched threads are finished.\
 The access to the `sf::RenderWindow` to which the results are displayed is managed through an `std::mutex`, locked with `std::lock_guard`, and the player theads and buffering loop are coordinated through an `std::atomic<bool>` stop signal, which is used for the simulation and processing threads, and a buffer loop kill signal of the same type which is used only by the buffer loop.\
-When any one of these threads is in possession of the window, it also checks for a window close signal and sets the `stop` and `killBufferLoop` flags to true to stop all drawing and make the threads exit as quickly as possible.
+When any one of these threads is in possession of the window, it also checks for a window close signal, setting the `stop` and `killBufferLoop` flags to true if it is found, to stop all drawing and make the threads exit as quickly as possible.
 
 At the end of the execution, the main thread joins all previously unjoined threads and either saves the results or skips it if it detects a user-driven ending signal.
 
@@ -287,5 +287,5 @@ During developement ChatGPT has been used, almost exclusively as a way to get in
  - in the file found at `main.cpp`, to write the ffmpeg pipe opening command
 
 ## Writing period
-This project has been written in the period between the 7th of May, 2024 and the 16th of January, 2026
+This project has been written in the period between the 7th of May, 2024 and the 25th of January, 2026
 
