@@ -55,7 +55,8 @@ void SimDataPipeline::addData(std::vector<GasData>&& data) {
         }
       }
       if (!firstD &&
-          !isNegligible(d.getT0() - prevDTime, d.getTime() - d.getT0())) {
+          (!isNegligible(d.getT0() - prevDTime, d.getTime() - d.getT0()) ||
+					 d.getTime() <= prevDTime)) {
         throw std::invalid_argument(
             "SDP addData error: provided non sequential data vector");
       }

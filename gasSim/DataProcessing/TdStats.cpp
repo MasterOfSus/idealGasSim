@@ -27,10 +27,6 @@ TdStats::TdStats(GasData const& firstState, TH1D const& speedsHTemplate)
       t0(firstState.getT0()),
       time(firstState.getTime()),
       boxSide(firstState.getBoxSide()) {
-  if (!firstState.getParticles().size()) {
-    throw std::invalid_argument(
-        "TdStats constructor error: provided empty gasData");
-  }
   if (speedsHTemplate.GetEntries() != 0.) {
     throw std::invalid_argument(
         "TdStats constructor error: non-empty speedsH template provided");
@@ -66,14 +62,15 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
     throw std::invalid_argument(
         "TdStats constructor error: provided data with non-matching particle "
         "number");
-  } else if (data.getBoxSide() != prevStats.getBoxSide()) {
+  } else if (data.getBoxSide() != prevStats.boxSide) {
     throw std::invalid_argument(
         "TdStats constructor error: provided data with non-matching box side");
-  } else if (data.getTime() < prevStats.getTime()) {
+  } else if (
+			!isNegligible(t0 - prevStats.time, t0 + prevStats.time) ||
+			time <= prevStats.time) {
     throw std::invalid_argument(
-        "TdStats constructor error: provided gas with time smaller than stats "
-        "time");
-  } else if (!isNegligible(T - prevStats.getTemp(), prevStats.getTemp())) {
+        "TdStats constructor error: provided non time-contiguous data and TdStats");
+  } else if (!isNegligible(T - prevStats.T, prevStats.T)) {
     throw std::invalid_argument(
         "TdStats constructor error: provided gas and stats with non-matching "
         "temperatures");
@@ -125,14 +122,15 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
     throw std::invalid_argument(
         "TdStats constructor error: provided data with different particle "
         "number");
-  } else if (data.getBoxSide() != prevStats.getBoxSide()) {
+  } else if (data.getBoxSide() != prevStats.boxSide) {
     throw std::invalid_argument(
         "TdStats constructor error: provided data with different box side");
-  } else if (data.getTime() < prevStats.getTime()) {
+  } else if (
+			!isNegligible(t0 - prevStats.time, t0 + prevStats.time) ||
+			time <= prevStats.time) {
     throw std::invalid_argument(
-        "TdStats constructor error: provided gas with time smaller than stats "
-        "time");
-  } else if (!isNegligible(T - prevStats.getTemp(), prevStats.getTemp())) {
+        "TdStats constructor error: provided non time-contiguous data and TdStats");
+  } else if (!isNegligible(T - prevStats.T, prevStats.T + T)) {
     throw std::invalid_argument(
         "TdStats constructor error: provided gas and stats with non-matching "
         "temperatures");
@@ -244,10 +242,23 @@ void TdStats::addData(GasData const& data) {
   if (data.getParticles().size() != getNParticles()) {
     throw std::invalid_argument(
         "TdStats addData error: non-matching gas particles number");
-  } else if (data.getTime() < time) {
+  } else if (
+			!isNegligible(data.getT0() - time, time + data.getT0()) ||
+			data.getTime() <= time) {
     throw std::invalid_argument(
-        "TdStats addData error: data time less than internal time");
-  } else {
+        "TdStats addData error: provided non-time contiguous GasData instance");
+  } else if (data.getBoxSide() != boxSide) {
+		throw std::invalid_argument(
+				"TdStats addData error: provided non-matching data box side"
+		);
+	} else if (!isNegligible(std::accumulate(
+            data.getParticles().begin(), data.getParticles().end(), 0.,
+            [](double x, Particle const& p) { return x + energy(p); }) *
+        2. / static_cast<double>(data.getParticles().size()) / 3. - T, T)) {
+		throw std::invalid_argument(
+				"TdStats addData error: provided non-matching data temperature"
+		);
+	} else {
     time = data.getTime();
     if (data.getCollType() == 'w') {
       addPulse(data);

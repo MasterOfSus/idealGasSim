@@ -514,8 +514,8 @@ TEST_CASE("Testing the camera class") {
 
 // STATISTICS Testing
 
-TEST_CASE("Testing the GasData class and TdStats throws") {
-  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+TEST_CASE("Testing the GasData class and TdStats constructor throws") {
+  std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., -3., 0.75}}};
   std::vector<GS::Particle> moreParticles{
       {{2., 3., 4.}, {1., 0., 0.}},
       {{5., 3., 7.}, {0., 0., 0.}},
@@ -527,7 +527,7 @@ TEST_CASE("Testing the GasData class and TdStats throws") {
   gas.simulate(1);
   GS::PWCollision collision{
       1. / 3., const_cast<GS::Particle *>(gas.getParticles().data()),
-      GS::Wall::Back};
+      GS::Wall::Front};
   GS::GasData data{gas, &collision};
 
   moreGas.simulate(1);
@@ -536,14 +536,23 @@ TEST_CASE("Testing the GasData class and TdStats throws") {
       const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
   GS::GasData moreData{moreGas, &moreCollision};
 
+	TH1D goodH {};
+	TH1D badH {"badH", "badH", 1, 0., 1.};
+	badH.Fill(0.5);
+
+	GS::Gas emptyGas {};
+	GS::PPCollision emptyCollision {1., nullptr, nullptr};
+
   SUBCASE("Testing the constructor and getters") {
 		CHECK_THROWS(GS::GasData{gas, &moreCollision});
 		CHECK_THROWS(GS::GasData{moreGas, &collision});
+		CHECK_THROWS(GS::GasData{emptyGas, &emptyCollision});
     CHECK(gas.getParticles() == data.getParticles());
+		CHECK(data.getT0() == 0.);
     CHECK(data.getTime() == gas.getTime());
     CHECK(data.getBoxSide() == gas.getBoxSide());
     CHECK(data.getP1Index() == 0);
-    CHECK(data.getWall() == GS::Wall::Back);
+    CHECK(data.getWall() == GS::Wall::Front);
     CHECK(data.getCollType() == 'w');
     CHECK(moreGas.getParticles() == moreData.getParticles());
     CHECK(moreData.getTime() == moreGas.getTime());
@@ -558,6 +567,46 @@ TEST_CASE("Testing the GasData class and TdStats throws") {
   }
 
 	SUBCASE("Testing TdStats throws") {
+		CHECK_THROWS(GS::TdStats{{gas, &collision}, badH});
+		GS::TdStats stats {data, goodH};
+		GS::TdStats moreStats {moreData, goodH};
+		CHECK_THROWS(stats.addData(data));
+		CHECK_THROWS(stats.addData(moreData));
+		CHECK_THROWS(moreStats.addData(moreData));
+		CHECK_THROWS(moreStats.addData(data));
+
+		GS::Gas biggerBoxGas {std::vector<GS::Particle>(particles), gas.getBoxSide() * 1.5, gas.getTime()};
+		biggerBoxGas.simulate(2);
+		GS::PWCollision biggerBoxCollision{
+				7. / 6., const_cast<GS::Particle *>(biggerBoxGas.getParticles().data()),
+				GS::Wall::Right};
+		GS::GasData biggerBoxData{biggerBoxGas, &biggerBoxCollision};
+		CHECK_THROWS(stats.addData(biggerBoxData));
+		CHECK_THROWS(GS::TdStats(biggerBoxData, GS::TdStats(stats)));
+		CHECK_THROWS(GS::TdStats(biggerBoxData, GS::TdStats(stats), goodH));
+
+		GS::Gas biggerTimeGas {std::vector<GS::Particle>(particles), gas.getBoxSide(), 1.};
+		biggerTimeGas.simulate(2);
+		GS::PWCollision biggerTimeCollision{
+				1. / 6., const_cast<GS::Particle *>(biggerTimeGas.getParticles().data()),
+				GS::Wall::Right};
+		GS::GasData biggerTimeData{biggerTimeGas, &biggerTimeCollision};
+		CHECK_THROWS(stats.addData(biggerTimeData));
+		CHECK_THROWS(GS::TdStats(biggerTimeData, GS::TdStats(stats)));
+		CHECK_THROWS(GS::TdStats(biggerTimeData, GS::TdStats(stats), goodH));
+
+		GS::Gas biggerTempGas {
+			{GS::Particle{particles.front().position, particles.front().speed * 10}},
+			gas.getBoxSide(), 9./30.
+		};
+		biggerTempGas.simulate(2);
+		GS::PWCollision biggerTempCollision{
+				1. / 60., const_cast<GS::Particle *>(biggerTempGas.getParticles().data()),
+				GS::Wall::Right};
+		GS::GasData biggerTempData{biggerTempGas, &biggerTempCollision};
+		CHECK_THROWS(stats.addData(biggerTempData));
+		CHECK_THROWS(GS::TdStats(biggerTempData, GS::TdStats(stats)));
+		CHECK_THROWS(GS::TdStats(biggerTempData, GS::TdStats(stats), goodH));
 	}
 }
 
@@ -593,6 +642,7 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
     CHECK(stats.getTime() == 1.5);
     CHECK(stats.getDeltaT() == 1.5);
     CHECK(stats.getMeanFreePath() == doctest::Approx(4.2964998799 / 4.));
+		CHECK_THROWS(stats.getPressure(GS::Wall::VOID));
     GS::SimDataPipeline moreOutput{5, 1., defaultH};
     moreGas.simulate(5, moreOutput);
     moreOutput.processData();
@@ -605,5 +655,6 @@ TEST_CASE("Testing the TdStats class and simOutput processStats function") {
     CHECK(moreStats.getPressure(GS::Wall::Top) == 0.);
     CHECK(moreStats.getPressure(GS::Wall::Bottom) == 0.);
     CHECK(moreStats.getMeanFreePath() == 2.5);
+		CHECK_THROWS(moreStats.getPressure(GS::Wall::VOID));
   }
 }
