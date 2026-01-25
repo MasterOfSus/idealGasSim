@@ -566,7 +566,27 @@ TEST_CASE("Testing the GasData class and TdStats constructor throws") {
     CHECK_THROWS(moreData.getWall());
   }
 
-	SUBCASE("Testing TdStats throws") {
+	SUBCASE("Verifying no-throw with good data") {
+		CHECK_THROWS(GS::TdStats{{gas, &collision}, badH});
+		GS::TdStats stats {data, goodH};
+		GS::TdStats moreStats {moreData, goodH};
+		gas.simulate(1);
+		GS::PWCollision secondCollision{
+				1. / 6., const_cast<GS::Particle *>(gas.getParticles().data()),
+				GS::Wall::Right};
+		GS::GasData secondData{gas, &secondCollision};
+		SUBCASE("addData") {
+			CHECK_NOTHROW(stats.addData(secondData));
+		}
+		SUBCASE("memory constructor") {
+			CHECK_NOTHROW(GS::TdStats(secondData, GS::TdStats(stats)));
+		}
+		SUBCASE("memory constructor with new TH1D") {
+			CHECK_NOTHROW(GS::TdStats(secondData, GS::TdStats(stats), goodH));
+		}
+	}
+	
+	SUBCASE("Testing TdStats addData/memory constructors throws") {
 		CHECK_THROWS(GS::TdStats{{gas, &collision}, badH});
 		GS::TdStats stats {data, goodH};
 		GS::TdStats moreStats {moreData, goodH};
