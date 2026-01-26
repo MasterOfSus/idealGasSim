@@ -69,7 +69,7 @@ class SimDataPipeline {
 
  private:
   void processStats(std::vector<GasData> const& data, bool mfpMemory,
-                    std::vector<TdStats>& tempResults);
+                    size_t statSizeL, std::vector<TdStats>& tempResults);
   void processGraphics(
       std::vector<GasData> const& data, Camera const& camera,
       RenderStyle const& style,

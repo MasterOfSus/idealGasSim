@@ -114,12 +114,14 @@ void SimDataPipeline::processData(bool mfpMemory,
       rawDataLock.unlock();
       std::vector<TdStats> tempStats;
 
-      processStats(data, mfpMemory, tempStats);
+      processStats(data, mfpMemory, statSizeL, tempStats);
       {  // guard scope begin
         std::lock_guard<std::mutex> outputGuard{outputMtx};
+        std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
         std::lock_guard<std::mutex> statsGuard{statsMtx};
         stats.insert(stats.end(), std::make_move_iterator(tempStats.begin()),
                      std::make_move_iterator(tempStats.end()));
+        lastStat = stats.back();
       }  // guards scope end
       addedResults.store(true);
       outputCv.notify_all();
@@ -165,15 +167,15 @@ void SimDataPipeline::processData(Camera camera, RenderStyle style,
                     rawData.begin() + static_cast<long>(nStats * statSizeL));
       rawDataLock.unlock();
 
-      std::thread sThread{[this, mfpMemory, data, &tempStats]() {
+      std::thread sThread{[=, &tempStats]() {
         try {
-          processStats(*data, mfpMemory, tempStats);
+          processStats(*data, mfpMemory, statSizeL, tempStats);
         } catch (std::exception const& e) {
           std::terminate();
         }
       }};
 
-      std::thread gThread{[camera, style, this, data, &tempRenders]() {
+      std::thread gThread{[=, &tempRenders]() {
         try {
           processGraphics(*data, camera, style, tempRenders);
         } catch (std::exception const& e) {
@@ -190,9 +192,11 @@ void SimDataPipeline::processData(Camera camera, RenderStyle style,
       {  // output guard scope begin
         std::lock_guard<std::mutex> outputGuard{outputMtx};
         {  // stats guard scope begin
+          std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
           std::lock_guard<std::mutex> statsGuard{statsMtx};
           stats.insert(stats.end(), std::make_move_iterator(tempStats.begin()),
                        std::make_move_iterator(tempStats.end()));
+          lastStat = stats.back();
         }  // stats guard scope end
         {  // renders guard scope begin
           std::lock_guard<std::mutex> gTimeGuard{gTimeMtx};
@@ -253,9 +257,8 @@ void SimDataPipeline::processGraphics(
 }
 
 void SimDataPipeline::processStats(std::vector<GasData> const& data,
-                                   bool mfpMemory,
+                                   bool mfpMemory, size_t statSizeL,
                                    std::vector<GS::TdStats>& tempStats) {
-  size_t statSizeL = statSize.load();  // local statSize for this call
   assert(!(data.size() % statSizeL));
 
   tempStats.reserve(data.size() / statSizeL);
@@ -268,6 +271,7 @@ void SimDataPipeline::processStats(std::vector<GasData> const& data,
                    : lastStat.has_value()
                        ? TdStats{data[i * statSizeL], std::move(*lastStat)}
                        : TdStats{data[i * statSizeL], speedsHTemplate}};
+      lastStat.reset();
       for (size_t j{1}; j < statSizeL; ++j) {
         stat.addData(data[i * statSizeL + j]);
       }
@@ -298,8 +302,8 @@ size_t SimDataPipeline::getNStats() {
 std::vector<TdStats> SimDataPipeline::getStats(bool emptyQueue) {
   if (emptyQueue) {
     std::deque<TdStats> tempStats{};
-    std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
     {  // lock scope
+      std::lock_guard<std::mutex> lastStatGuard{lastStatMtx};
       std::lock_guard<std::mutex> statsGuard{statsMtx};
       if (stats.size()) {
         lastStat = stats.back();
