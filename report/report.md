@@ -288,5 +288,5 @@ During developement ChatGPT has been used, almost exclusively as a way to get in
  - in the file found at `main.cpp`, to write the ffmpeg pipe opening command
 
 ## Writing period
-This project has been written in the period between the 7th of May, 2024 and the 25th of January, 2026
+This project has been written in the period between the 7th of May, 2024 and the 26th of January, 2026
 
