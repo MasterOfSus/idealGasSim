@@ -238,6 +238,7 @@ sudo apt install libsfml-dev
 ```
 ## Execution instructions
 The project provides a main executable, found under the name `idealGasSim` in the build directory. Execution allows for passing a `.ini` configuration file path, through the `-c` option.
+Make sure to create the `outputs/` and `outputs/video` directories before execution, otherwise the program will throw an error because of the missing paths.
 ### Customizing the parameters
 The simulation tries to generate the gas as a set of particles with randomized speeds, with uniformly distributed norm and direction, fitting them in a cubical lattice inside of the container; it then proceeds to simulate the system's evolution through a given number of events (collisions), and divides the collisions in sets of equal number, on which statistical analysis and "measurements" are performed.\
 It either saves the video output or streams it as the simulation is run.\

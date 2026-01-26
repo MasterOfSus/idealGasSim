@@ -360,132 +360,146 @@ TEST_CASE("Testing Gas::simulate method") {
     CHECK_THROWS(empty.simulate(5));
     CHECK_THROWS(empty.simulate(1, output));
     CHECK_THROWS(empty.simulate(4, output));
-		CHECK_THROWS(empty.rawDataSimulate(3));
+    CHECK_THROWS(empty.rawDataSimulate(3));
     GS::Gas zeroKelvin{5, 0., 10, -2.};
     CHECK_THROWS(zeroKelvin.simulate(1));
     CHECK_THROWS(zeroKelvin.simulate(7));
     CHECK_THROWS(zeroKelvin.simulate(1, output));
     CHECK_THROWS(zeroKelvin.simulate(3, output));
-		CHECK_THROWS(zeroKelvin.rawDataSimulate(3));
+    CHECK_THROWS(zeroKelvin.rawDataSimulate(3));
   }
-	SUBCASE("Simple simulation") {
-		std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., -3., 0.75}}};
-		std::vector<GS::Particle> moreParticles{
-				{{2., 3., 4.}, {1., 0., 0.}},
-				{{5., 3., 7.}, {0., 0., 0.}},
-				{{5., 6., 7.}, {0., -1., 0.}},
-		};
-		GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
-		GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
+  SUBCASE("Simple simulation") {
+    std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., -3., 0.75}}};
+    std::vector<GS::Particle> moreParticles{
+        {{2., 3., 4.}, {1., 0., 0.}},
+        {{5., 3., 7.}, {0., 0., 0.}},
+        {{5., 6., 7.}, {0., -1., 0.}},
+    };
+    GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
+    GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
 
-		SUBCASE("Zero iterations") {
-			gas.simulate(0);
-			CHECK(gas.getTime() == 0.);
-			CHECK(gas.getParticles() == particles);
-			moreGas.simulate(0);
-			CHECK(moreGas.getTime() == 0.);
-			CHECK(moreGas.getParticles() == moreParticles);
-			gas.rawDataSimulate(0);
-			CHECK(gas.getTime() == 0.);
-			CHECK(gas.getParticles() == particles);
-			moreGas.rawDataSimulate(0);
-			CHECK(moreGas.getTime() == 0.);
-			CHECK(moreGas.getParticles() == moreParticles);
-		}
+    SUBCASE("Zero iterations") {
+      gas.simulate(0);
+      CHECK(gas.getTime() == 0.);
+      CHECK(gas.getParticles() == particles);
+      moreGas.simulate(0);
+      CHECK(moreGas.getTime() == 0.);
+      CHECK(moreGas.getParticles() == moreParticles);
+      gas.rawDataSimulate(0);
+      CHECK(gas.getTime() == 0.);
+      CHECK(gas.getParticles() == particles);
+      moreGas.rawDataSimulate(0);
+      CHECK(moreGas.getTime() == 0.);
+      CHECK(moreGas.getParticles() == moreParticles);
+    }
 
-		SUBCASE("One iteration, simple simulate") {
-			gas.simulate(1);
-			CHECK(gas.getTime() == 1./3.);
-			GS::Particle nextStateParticle {{2. + 2./3., 1., 2. + 0.75/3.}, {2., 3., 0.75}};
-			CHECK(gas.getParticles()[0] == nextStateParticle);
-			moreGas.simulate(1);
-			CHECK(moreGas.getTime() == 1.);
-			std::vector<GS::Particle> nextStateParticles {
-				{{3., 3., 4.}, {1., 0., 0.}},
-				{{5., 3., 7.}, {0., -1., 0.}},
-				{{5., 5., 7.}, {0., 0., 0.}}
-			};
-			for (size_t i {0}; i < 3; ++i) {
-				CHECK(nextStateParticles[i] == moreGas.getParticles()[i]);
-			}
-		}
+    SUBCASE("One iteration, simple simulate") {
+      gas.simulate(1);
+      CHECK(gas.getTime() == 1. / 3.);
+      GS::Particle nextStateParticle{{2. + 2. / 3., 1., 2. + 0.75 / 3.},
+                                     {2., 3., 0.75}};
+      CHECK(gas.getParticles()[0] == nextStateParticle);
+      moreGas.simulate(1);
+      CHECK(moreGas.getTime() == 1.);
+      std::vector<GS::Particle> nextStateParticles{
+          {{3., 3., 4.}, {1., 0., 0.}},
+          {{5., 3., 7.}, {0., -1., 0.}},
+          {{5., 5., 7.}, {0., 0., 0.}}};
+      for (size_t i{0}; i < 3; ++i) {
+        CHECK(nextStateParticles[i] == moreGas.getParticles()[i]);
+      }
+    }
 
-		SUBCASE("One iteration, rawData simulate") {
-			gas.rawDataSimulate(1);
-			CHECK(gas.getTime() == 1./3.);
-			GS::Particle nextStateParticle {{2. + 2./3., 1., 2. + 0.75/3.}, {2., 3., 0.75}};
-			CHECK(gas.getParticles()[0] == nextStateParticle);
-			moreGas.rawDataSimulate(1);
-			CHECK(moreGas.getTime() == 1.);
-			std::vector<GS::Particle> nextStateParticles {
-				{{3., 3., 4.}, {1., 0., 0.}},
-				{{5., 3., 7.}, {0., -1., 0.}},
-				{{5., 5., 7.}, {0., 0., 0.}}
-			};
-			for (size_t i {0}; i < 3; ++i) {
-				CHECK(nextStateParticles[i] == moreGas.getParticles()[i]);
-			}
-		}
+    SUBCASE("One iteration, rawData simulate") {
+      gas.rawDataSimulate(1);
+      CHECK(gas.getTime() == 1. / 3.);
+      GS::Particle nextStateParticle{{2. + 2. / 3., 1., 2. + 0.75 / 3.},
+                                     {2., 3., 0.75}};
+      CHECK(gas.getParticles()[0] == nextStateParticle);
+      moreGas.rawDataSimulate(1);
+      CHECK(moreGas.getTime() == 1.);
+      std::vector<GS::Particle> nextStateParticles{
+          {{3., 3., 4.}, {1., 0., 0.}},
+          {{5., 3., 7.}, {0., -1., 0.}},
+          {{5., 5., 7.}, {0., 0., 0.}}};
+      for (size_t i{0}; i < 3; ++i) {
+        CHECK(nextStateParticles[i] == moreGas.getParticles()[i]);
+      }
+    }
 
-		SUBCASE("Two iterations, simple simulate") {
-			gas.simulate(2);
-			CHECK(gas.getTime() == 0.5);
-			GS::Particle actualFinalState = gas.getParticles()[0];
-			GS::Particle expFinalState {{3., 1.5, 2. + 0.375}, {-2., 3., 0.75}};
-			CHECK(expFinalState.position.x == doctest::Approx(actualFinalState.position.x));
-			CHECK(expFinalState.position.y == doctest::Approx(actualFinalState.position.y));
-			CHECK(expFinalState.position.z == doctest::Approx(actualFinalState.position.z));
-			CHECK(expFinalState.speed.x == doctest::Approx(actualFinalState.speed.x));
-			CHECK(expFinalState.speed.y == doctest::Approx(actualFinalState.speed.y));
-			CHECK(expFinalState.speed.z == doctest::Approx(actualFinalState.speed.z));
-			moreGas.simulate(2);
-			CHECK(moreGas.getTime() == 3.);
-			std::vector<GS::Particle> moreExpFinalState {
-				{{5., 3., 4.}, {1., 0., 0.}},
-				{{5., 1., 7.}, {0., 1., 0.}},
-				{{5., 5., 7.}, {0., 0., 0.}}
-			};
-			std::vector<GS::Particle> moreActualFinalState {moreGas.getParticles()};
-			for (size_t i {0}; i < 3; ++i) {
-				CHECK(moreExpFinalState[i].position.x == doctest::Approx(moreActualFinalState[i].position.x));
-				CHECK(moreExpFinalState[i].position.y == doctest::Approx(moreActualFinalState[i].position.y));
-				CHECK(moreExpFinalState[i].position.z == doctest::Approx(moreActualFinalState[i].position.z));
-				CHECK(moreExpFinalState[i].speed.x == doctest::Approx(moreActualFinalState[i].speed.x));
-				CHECK(moreExpFinalState[i].speed.y == doctest::Approx(moreActualFinalState[i].speed.y));
-				CHECK(moreExpFinalState[i].speed.z == doctest::Approx(moreActualFinalState[i].speed.z));
-			}
-		}
-		SUBCASE("Two iterations, rawData simulate") {
-			gas.simulate(2);
-			CHECK(gas.getTime() == 0.5);
-			GS::Particle actualFinalState = gas.getParticles()[0];
-			GS::Particle expFinalState {{3., 1.5, 2. + 0.375}, {-2., 3., 0.75}};
-			CHECK(expFinalState.position.x == doctest::Approx(actualFinalState.position.x));
-			CHECK(expFinalState.position.y == doctest::Approx(actualFinalState.position.y));
-			CHECK(expFinalState.position.z == doctest::Approx(actualFinalState.position.z));
-			CHECK(expFinalState.speed.x == doctest::Approx(actualFinalState.speed.x));
-			CHECK(expFinalState.speed.y == doctest::Approx(actualFinalState.speed.y));
-			CHECK(expFinalState.speed.z == doctest::Approx(actualFinalState.speed.z));
-			moreGas.simulate(2);
-			CHECK(moreGas.getTime() == 3.);
-			std::vector<GS::Particle> moreExpFinalState {
-				{{5., 3., 4.}, {1., 0., 0.}},
-				{{5., 1., 7.}, {0., 1., 0.}},
-				{{5., 5., 7.}, {0., 0., 0.}}
-			};
-			std::vector<GS::Particle> moreActualFinalState {moreGas.getParticles()};
-			for (size_t i {0}; i < 3; ++i) {
-				CHECK(moreExpFinalState[i].position.x == doctest::Approx(moreActualFinalState[i].position.x));
-				CHECK(moreExpFinalState[i].position.y == doctest::Approx(moreActualFinalState[i].position.y));
-				CHECK(moreExpFinalState[i].position.z == doctest::Approx(moreActualFinalState[i].position.z));
-				CHECK(moreExpFinalState[i].speed.x == doctest::Approx(moreActualFinalState[i].speed.x));
-				CHECK(moreExpFinalState[i].speed.y == doctest::Approx(moreActualFinalState[i].speed.y));
-				CHECK(moreExpFinalState[i].speed.z == doctest::Approx(moreActualFinalState[i].speed.z));
-			}
-		}
-	}
+    SUBCASE("Two iterations, simple simulate") {
+      gas.simulate(2);
+      CHECK(gas.getTime() == 0.5);
+      GS::Particle actualFinalState = gas.getParticles()[0];
+      GS::Particle expFinalState{{3., 1.5, 2. + 0.375}, {-2., 3., 0.75}};
+      CHECK(expFinalState.position.x ==
+            doctest::Approx(actualFinalState.position.x));
+      CHECK(expFinalState.position.y ==
+            doctest::Approx(actualFinalState.position.y));
+      CHECK(expFinalState.position.z ==
+            doctest::Approx(actualFinalState.position.z));
+      CHECK(expFinalState.speed.x == doctest::Approx(actualFinalState.speed.x));
+      CHECK(expFinalState.speed.y == doctest::Approx(actualFinalState.speed.y));
+      CHECK(expFinalState.speed.z == doctest::Approx(actualFinalState.speed.z));
+      moreGas.simulate(2);
+      CHECK(moreGas.getTime() == 3.);
+      std::vector<GS::Particle> moreExpFinalState{{{5., 3., 4.}, {1., 0., 0.}},
+                                                  {{5., 1., 7.}, {0., 1., 0.}},
+                                                  {{5., 5., 7.}, {0., 0., 0.}}};
+      std::vector<GS::Particle> moreActualFinalState{moreGas.getParticles()};
+      for (size_t i{0}; i < 3; ++i) {
+        CHECK(moreExpFinalState[i].position.x ==
+              doctest::Approx(moreActualFinalState[i].position.x));
+        CHECK(moreExpFinalState[i].position.y ==
+              doctest::Approx(moreActualFinalState[i].position.y));
+        CHECK(moreExpFinalState[i].position.z ==
+              doctest::Approx(moreActualFinalState[i].position.z));
+        CHECK(moreExpFinalState[i].speed.x ==
+              doctest::Approx(moreActualFinalState[i].speed.x));
+        CHECK(moreExpFinalState[i].speed.y ==
+              doctest::Approx(moreActualFinalState[i].speed.y));
+        CHECK(moreExpFinalState[i].speed.z ==
+              doctest::Approx(moreActualFinalState[i].speed.z));
+      }
+    }
+    SUBCASE("Two iterations, rawData simulate") {
+      gas.simulate(2);
+      CHECK(gas.getTime() == 0.5);
+      GS::Particle actualFinalState = gas.getParticles()[0];
+      GS::Particle expFinalState{{3., 1.5, 2. + 0.375}, {-2., 3., 0.75}};
+      CHECK(expFinalState.position.x ==
+            doctest::Approx(actualFinalState.position.x));
+      CHECK(expFinalState.position.y ==
+            doctest::Approx(actualFinalState.position.y));
+      CHECK(expFinalState.position.z ==
+            doctest::Approx(actualFinalState.position.z));
+      CHECK(expFinalState.speed.x == doctest::Approx(actualFinalState.speed.x));
+      CHECK(expFinalState.speed.y == doctest::Approx(actualFinalState.speed.y));
+      CHECK(expFinalState.speed.z == doctest::Approx(actualFinalState.speed.z));
+      moreGas.simulate(2);
+      CHECK(moreGas.getTime() == 3.);
+      std::vector<GS::Particle> moreExpFinalState{{{5., 3., 4.}, {1., 0., 0.}},
+                                                  {{5., 1., 7.}, {0., 1., 0.}},
+                                                  {{5., 5., 7.}, {0., 0., 0.}}};
+      std::vector<GS::Particle> moreActualFinalState{moreGas.getParticles()};
+      for (size_t i{0}; i < 3; ++i) {
+        CHECK(moreExpFinalState[i].position.x ==
+              doctest::Approx(moreActualFinalState[i].position.x));
+        CHECK(moreExpFinalState[i].position.y ==
+              doctest::Approx(moreActualFinalState[i].position.y));
+        CHECK(moreExpFinalState[i].position.z ==
+              doctest::Approx(moreActualFinalState[i].position.z));
+        CHECK(moreExpFinalState[i].speed.x ==
+              doctest::Approx(moreActualFinalState[i].speed.x));
+        CHECK(moreExpFinalState[i].speed.y ==
+              doctest::Approx(moreActualFinalState[i].speed.y));
+        CHECK(moreExpFinalState[i].speed.z ==
+              doctest::Approx(moreActualFinalState[i].speed.z));
+      }
+    }
+  }
 
-	// additional tests of same type
+  // additional tests of same type
   SUBCASE("Simple collision 2 particles") {
     double side{1E3};
     GS::Particle part1{{2, 2, 2}, {1, 1, 1}};
