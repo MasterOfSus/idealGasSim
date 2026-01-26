@@ -4,7 +4,7 @@
 
 ## Project Report
 The project report is found [here](report/report.md)
-Note that since the used `svg` images are drawn in white, to correctly see them github should be set to dark mode.
+For correct viewing it is recommended to use a markdown reader that supports github flavoured markdown, and to set the reader to dark mode, since the used `svg` images are drawn in white and will not be visible against a white background.
 
 ## Features
 
