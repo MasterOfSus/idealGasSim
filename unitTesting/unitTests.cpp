@@ -1,4 +1,3 @@
-#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <numeric>
@@ -28,7 +27,7 @@
 // setting particle mass and radius
 TEST_CASE("Setting radius and mass") {
   GS::Particle::setMass(10.);
-  GS::Particle::setRadius(10.);
+  GS::Particle::setRadius(1.);
 }
 
 TEST_CASE("Testing GSVectorD") {
