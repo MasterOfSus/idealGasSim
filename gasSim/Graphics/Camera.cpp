@@ -35,20 +35,19 @@ Camera::Camera(GSVectorF const& focusPosition, GSVectorF const& sightVectorV,
   setPlaneDistance(planeDistanceV);
   setFOV(FOV);
   setResolution(heightV, widthV);
-	computeCamBase();
-	constructed = true;
+  constructed = true;
+  computeCamBase();
 }
 
 GSVectorF Camera::getPointProjection(GSVectorF const& point) const {
   GSVectorF focus{getFocus()};
   GSVectorF sight{getSight()};
-  GSVectorF a{focus +
-              (focus - point) / ((focus - point) * sight) * getPlaneDistance()};
   // a = intersection of line passing through point and focus with the
   // perspective plane
+  GSVectorF a{focus +
+              (focus - point) / ((focus - point) * sight) * getPlaneDistance()};
 
   GSVectorF b{a - (focus + sight * getPlaneDistance())};
-  // b = a relative to perspective plane ref. sys.
 
   // returning base-changed vector with scaling factor
   // as the third coordinate
@@ -76,10 +75,6 @@ std::vector<GSVectorF> Camera::projectParticles(
   }
   return projections;
 }
-
-// the speeds after the collision are reversed, so a particle who just had a
-// collision needs to be drawn with the speed preceding the collision
-// otherwise it is drawn shifted opposite of what it should have been
 
 inline GSVectorD preCollSpeed(GSVectorD& v, Wall wall) {
   switch (wall) {
@@ -126,6 +121,7 @@ std::vector<GSVectorF> Camera::projectParticles(GasData const& data,
       }
     }
 
+    // reverse speed for colliding particle
     {
       GSVectorD speed{particles[p1I].speed};
 
@@ -225,18 +221,18 @@ float Camera::getNPixels(float length) const {
 // Getters and setters
 
 void Camera::setFocus(GSVectorF const& focusPt) {
-	focusPoint = focusPt;
-	if (constructed) {
-		computeCamBase();
-	}
+  focusPoint = focusPt;
+  if (constructed) {
+    computeCamBase();
+  }
 }
 
 void Camera::setSightVector(GSVectorF const& sightVectorV) {
   if (sightVectorV.norm() > 0.f) {
     sightVector = sightVectorV / sightVectorV.norm();
-		if (constructed) {
-			computeCamBase();
-		}
+    if (constructed) {
+      computeCamBase();
+    }
   } else {
     throw std::invalid_argument(
         "setSightVector error: O vector doesn't have direction information");
@@ -247,10 +243,10 @@ void Camera::setAspectRatio(
     const float ratio) {  // ratio set by keeping the image width
   if (ratio > 0.f) {
     height = static_cast<unsigned>(static_cast<float>(width) / ratio);
-		if (constructed) {
-			computeCamBase();
-		}  
-	} else {
+    if (constructed) {
+      computeCamBase();
+    }
+  } else {
     throw std::invalid_argument(
         "setAspectRatio error: non-positive ratio provided");
   }
@@ -259,9 +255,9 @@ void Camera::setAspectRatio(
 void Camera::setPlaneDistance(const float distance) {
   if (distance > 0.f) {
     planeDistance = distance;
-		if (constructed) {
-			computeCamBase();
-		}  
+    if (constructed) {
+      computeCamBase();
+    }
   } else {
     throw std::invalid_argument(
         "setPlaneDistance error: provided non positive distance");
@@ -271,9 +267,9 @@ void Camera::setPlaneDistance(const float distance) {
 void Camera::setFOV(const float FOV) {  // in degrees
   if (FOV > 0.f && FOV < 180.f) {
     fov = FOV;
-		if (constructed) {
-			computeCamBase();
-		}  
+    if (constructed) {
+      computeCamBase();
+    }
   } else {
     throw std::invalid_argument(
         "setFOV error: provided bad FOV (accepted range: 0.f, 180.f)");
@@ -287,13 +283,13 @@ void Camera::setResolution(unsigned heightV, unsigned widthV) {
   }
   height = heightV;
   width = widthV;
-	if (constructed) {
-		computeCamBase();
-	}  
+  if (constructed) {
+    computeCamBase();
+  }
 }
 
 void Camera::computeCamBase() {
-	GSVectorF sight {sightVector};
+  GSVectorF sight{sightVector};
   // making an orthonormal base for the camera, m and o lying on the persp.
   // plane, sight for the normal vector
   GSVectorF m;
@@ -307,10 +303,7 @@ void Camera::computeCamBase() {
   m = m / getPixelSide();
   o = o / getPixelSide();
 
-	cameraBase = {
-		m,
-		o
-	};
+  cameraBase = {m, o};
 }
 
 template <typename GasLike>

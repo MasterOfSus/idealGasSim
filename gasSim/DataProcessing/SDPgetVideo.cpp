@@ -177,7 +177,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
         // setting fTime
         if (!fTime.has_value()) {
           if (gTimeL.has_value()) {
-						// sync to gTime
+            // sync to gTime
             fTime = *gTimeL +
                     gDeltaTL *
                         std::floor((stats[0].getTime0() - *gTimeL) / gDeltaTL);
@@ -372,7 +372,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
     TText.setCharacterSize(charSize);
     VText.setCharacterSize(charSize);
     NText.setCharacterSize(charSize);
-  } // charsize nspc end
+  }  // charsize nspc end
   // definitions as per available data
   switch (opt) {
     case VideoOpts::gasPlusCoords:
@@ -416,7 +416,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
           assert(isIntMultOf(*gTimeL - *fTime, gDeltaTL));
           if (rendersL.size() > rIndex &&
               isNegligible(*fTime - rendersL[rIndex].second, gDeltaTL)) {
-						// fit render
+            // fit render
             box.setScale(
                 static_cast<float>(windowSize.x) /
                     static_cast<float>(rendersL[rIndex].first.getSize().x),
@@ -427,7 +427,7 @@ std::vector<sf::Texture> GS::SimDataPipeline::getVideo(
             frame.draw(timeText);
             frame.display();
           } else {
-						// fit placeholder
+            // fit placeholder
             box.setScale(static_cast<float>(windowSize.x) /
                              static_cast<float>(placeholder.getSize().x),
                          static_cast<float>(windowSize.y) /

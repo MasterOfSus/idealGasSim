@@ -26,8 +26,10 @@
 #include "testingAddons.hpp"
 
 // setting particle mass and radius
-std::atomic<double> GS::Particle::mass {10.};
-std::atomic<double> GS::Particle::radius {1.};
+TEST_CASE("Setting radius and mass") {
+  GS::Particle::setMass(10.);
+  GS::Particle::setRadius(10.);
+}
 
 TEST_CASE("Testing GSVectorD") {
   GS::GSVectorD vec1{1.1, -2.11, 56.253};
@@ -103,22 +105,22 @@ TEST_CASE("Testing GSVectorD") {
 }
 
 TEST_CASE("Testing Particle") {
-	SUBCASE("Mass and radius") {
-		CHECK_THROWS(GS::Particle::setMass(-3.));
-		CHECK_THROWS(GS::Particle::setMass(-.5));
-		CHECK_THROWS(GS::Particle::setMass(0.));
-		CHECK_THROWS(GS::Particle::setRadius(-100.));
-		CHECK_THROWS(GS::Particle::setRadius(-0.3));
-		CHECK_THROWS(GS::Particle::setRadius(0.));
-		GS::Particle::setMass(2.);
-		CHECK(GS::Particle::getMass() == 2.);
-		GS::Particle::setMass(10.);
-		CHECK(GS::Particle::getMass() == 10.);
-		GS::Particle::setRadius(100.);
-		CHECK(GS::Particle::getRadius() == 100.);
-		GS::Particle::setRadius(1.);
-		CHECK(GS::Particle::getRadius() == 1.);
-	}
+  SUBCASE("Mass and radius") {
+    CHECK_THROWS(GS::Particle::setMass(-3.));
+    CHECK_THROWS(GS::Particle::setMass(-.5));
+    CHECK_THROWS(GS::Particle::setMass(0.));
+    CHECK_THROWS(GS::Particle::setRadius(-100.));
+    CHECK_THROWS(GS::Particle::setRadius(-0.3));
+    CHECK_THROWS(GS::Particle::setRadius(0.));
+    GS::Particle::setMass(2.);
+    CHECK(GS::Particle::getMass() == 2.);
+    GS::Particle::setMass(10.);
+    CHECK(GS::Particle::getMass() == 10.);
+    GS::Particle::setRadius(100.);
+    CHECK(GS::Particle::getRadius() == 100.);
+    GS::Particle::setRadius(1.);
+    CHECK(GS::Particle::getRadius() == 1.);
+  }
   SUBCASE("Default constructor") {
     GS::GSVectorD zeroVec{0, 0, 0};
     GS::GSVectorD vec1{7.94, 3.60, 4.27};
@@ -145,7 +147,7 @@ TEST_CASE("Testing Particle") {
   }
 }
 
-TEST_CASE("Testing WallCollision") {
+TEST_CASE("Testing PWCollision") {
   double time{4};
 
   GS::GSVectorD vec1{10, 10, 0};
@@ -175,7 +177,7 @@ TEST_CASE("Testing WallCollision") {
     CHECK(doctest::Approx(coll.getP1()->speed.z) == -10.);
   }
 }
-TEST_CASE("Testing PartCollision") {
+TEST_CASE("Testing PPCollision") {
   double time{4};
 
   GS::GSVectorD vec1{4.23, -5.34, 6.45};
@@ -244,6 +246,46 @@ TEST_CASE("Testing collisionTime") {
 }
 
 TEST_CASE("Testing Gas constructor") {
+  SUBCASE("Locking of radius modification by Gas instances existance") {
+    // checking that existance of gas instances forbids radius modification
+    {  // default constructor
+      GS::Gas g{};
+      CHECK_THROWS(GS::Particle::setRadius(1.));
+      CHECK_NOTHROW(GS::Particle::setMass(1.));
+      GS::Particle::setMass(10.);
+    }
+    CHECK_NOTHROW(GS::Particle::setRadius(1.));
+    {  // vector constructor
+      GS::Gas g{{GS::Particle{{2., 2., 2.}, {}}}, 5., -1.};
+      CHECK_THROWS(GS::Particle::setRadius(1.));
+      CHECK_NOTHROW(GS::Particle::setMass(1.));
+      GS::Particle::setMass(10.);
+    }
+    CHECK_NOTHROW(GS::Particle::setRadius(1.));
+    {  // random constructor
+      GS::Gas g{1, 1., 3.};
+      CHECK_THROWS(GS::Particle::setRadius(1.));
+      CHECK_NOTHROW(GS::Particle::setMass(1.));
+      GS::Particle::setMass(10.);
+    }
+    CHECK_NOTHROW(GS::Particle::setRadius(1.));
+    {  // ref copy constructor
+      GS::Gas *gptr{new GS::Gas(1, 1., 3.)};
+      GS::Gas g{*gptr};
+      delete gptr;
+      CHECK_THROWS(GS::Particle::setRadius(1.));
+      CHECK_NOTHROW(GS::Particle::setMass(1.));
+      GS::Particle::setMass(10.);
+    }
+    CHECK_NOTHROW(GS::Particle::setRadius(1.));
+    {  // rval copy constructor
+      GS::Gas g{GS::Gas(1, 1., 3.)};
+      CHECK_THROWS(GS::Particle::setRadius(1.));
+      CHECK_NOTHROW(GS::Particle::setMass(1.));
+      GS::Particle::setMass(10.);
+    }
+    CHECK_NOTHROW(GS::Particle::setRadius(1.));
+  }
   SUBCASE("Throwing behaviour") {
     // Negative and null box side
     CHECK_THROWS(GS::Gas(0, 1., -1.));
@@ -256,34 +298,40 @@ TEST_CASE("Testing Gas constructor") {
     // approximation, better to be safe than sorry and not round down by any
     // means, therefore depending on value the theoretical maximum number might
     // not be accepted, like here
-    GS::Particle::setRadius(.5);
+    CHECK_NOTHROW(GS::Particle::setRadius(.5));
+    // On different machines this CHECK_THROWS below may fail
     CHECK_THROWS(GS::Gas(18 * 18 * 18, 1., 20.));
     CHECK_NOTHROW(GS::Gas(18 * 18 * 18 - 1, 1., 20.));
-    GS::Particle::setRadius(1.);
+    CHECK_NOTHROW(GS::Particle::setRadius(1.));
     std::vector<GS::Particle> goodPs{{{1.01, 1.01, 1.01}, {1., 0., -1.}},
                                      {{2.01, 3.99, 1.01}, {1., 2., 3.}},
                                      {{3.01, 3.99, 3.01}, {1., 5., 6.}}};
     std::vector<GS::Particle> almostGoodPs{{{1., 1., 1.}, {1., 0., -1.}},
                                            {{2., 4., 1.}, {1., 2., 3.}},
                                            {{3., 4., 3.}, {1., 5., 6.}}};
-    double boxSide{5.};
-    double time{1.};
-    GS::Gas goodGas;
-    CHECK_NOTHROW(
-        goodGas = GS::Gas(std::vector<GS::Particle>(goodPs), boxSide, time));
-    CHECK_THROWS(
-        GS::Gas(std::vector<GS::Particle>(almostGoodPs), boxSide, time));
-    CHECK(goodGas.getParticles() == goodPs);
-    CHECK(goodGas.getBoxSide() == 5.);
-    // overlap issue
-    std::vector<GS::Particle> badPs{{{1.1, 2., 3.}, {1., 1., 2.}},     // !!!
-                                    {{1.1, 2.5, 3.99}, {1., 2., 0.}},  // !!!
-                                    {{3.99, 3.99, 3.99}, {1., 5., 6.}}};
-    GS::Gas badGas;
-    CHECK_THROWS(badGas = GS::Gas(std::move(badPs), boxSide, time));
+    {  // gas instances scope
+      double boxSide{5.};
+      double time{1.};
+      GS::Gas goodGas;
+      CHECK_NOTHROW(
+          goodGas = GS::Gas(std::vector<GS::Particle>(goodPs), boxSide, time));
+      CHECK_THROWS(
+          GS::Gas(std::vector<GS::Particle>(almostGoodPs), boxSide, time));
+      CHECK(goodGas.getParticles() == goodPs);
+      CHECK(goodGas.getBoxSide() == 5.);
+      // overlap issue
+      std::vector<GS::Particle> badPs{{{1.1, 2., 3.}, {1., 1., 2.}},     // !!!
+                                      {{1.1, 2.5, 3.99}, {1., 2., 0.}},  // !!!
+                                      {{3.99, 3.99, 3.99}, {1., 5., 6.}}};
+      GS::Gas badGas;
+      CHECK_THROWS(badGas = GS::Gas(std::move(badPs), boxSide, time));
 
-    std::vector<GS::Particle> moreBadPs{{{}, {}}};  // outside of box
-    CHECK_THROWS(badGas = GS::Gas(std::move(moreBadPs), boxSide, time));
+      std::vector<GS::Particle> moreBadPs{{{}, {}}};  // outside of box
+      CHECK_THROWS(badGas = GS::Gas(std::move(moreBadPs), boxSide, time));
+    }  // end of gas instances scope
+    // if throws are safe, the number of alive gas instances has been managed
+    // correctly therefore this doesn't throw
+    CHECK_NOTHROW(GS::Particle::setRadius(1.));
   }
   SUBCASE("Random constructor") {
     GS::Gas rndGas{10, 10., 10.};
@@ -536,19 +584,19 @@ TEST_CASE("Testing the GasData class and TdStats constructor throws") {
       const_cast<GS::Particle *>(&moreGas.getParticles()[2])};
   GS::GasData moreData{moreGas, &moreCollision};
 
-	TH1D goodH {};
-	TH1D badH {"badH", "badH", 1, 0., 1.};
-	badH.Fill(0.5);
+  TH1D goodH{};
+  TH1D badH{"badH", "badH", 1, 0., 1.};
+  badH.Fill(0.5);
 
-	GS::Gas emptyGas {};
-	GS::PPCollision emptyCollision {1., nullptr, nullptr};
+  GS::Gas emptyGas{};
+  GS::PPCollision emptyCollision{1., nullptr, nullptr};
 
   SUBCASE("Testing the constructor and getters") {
-		CHECK_THROWS(GS::GasData{gas, &moreCollision});
-		CHECK_THROWS(GS::GasData{moreGas, &collision});
-		CHECK_THROWS(GS::GasData{emptyGas, &emptyCollision});
+    CHECK_THROWS(GS::GasData{gas, &moreCollision});
+    CHECK_THROWS(GS::GasData{moreGas, &collision});
+    CHECK_THROWS(GS::GasData{emptyGas, &emptyCollision});
     CHECK(gas.getParticles() == data.getParticles());
-		CHECK(data.getT0() == 0.);
+    CHECK(data.getT0() == 0.);
     CHECK(data.getTime() == gas.getTime());
     CHECK(data.getBoxSide() == gas.getBoxSide());
     CHECK(data.getP1Index() == 0);
@@ -566,71 +614,74 @@ TEST_CASE("Testing the GasData class and TdStats constructor throws") {
     CHECK_THROWS(moreData.getWall());
   }
 
-	SUBCASE("Verifying no-throw with good data") {
-		CHECK_THROWS(GS::TdStats{{gas, &collision}, badH});
-		GS::TdStats stats {data, goodH};
-		GS::TdStats moreStats {moreData, goodH};
-		gas.simulate(1);
-		GS::PWCollision secondCollision{
-				1. / 6., const_cast<GS::Particle *>(gas.getParticles().data()),
-				GS::Wall::Right};
-		GS::GasData secondData{gas, &secondCollision};
-		SUBCASE("addData") {
-			CHECK_NOTHROW(stats.addData(secondData));
-		}
-		SUBCASE("memory constructor") {
-			CHECK_NOTHROW(GS::TdStats(secondData, GS::TdStats(stats)));
-		}
-		SUBCASE("memory constructor with new TH1D") {
-			CHECK_NOTHROW(GS::TdStats(secondData, GS::TdStats(stats), goodH));
-		}
-	}
-	
-	SUBCASE("Testing TdStats addData/memory constructors throws") {
-		CHECK_THROWS(GS::TdStats{{gas, &collision}, badH});
-		GS::TdStats stats {data, goodH};
-		GS::TdStats moreStats {moreData, goodH};
-		CHECK_THROWS(stats.addData(data));
-		CHECK_THROWS(stats.addData(moreData));
-		CHECK_THROWS(moreStats.addData(moreData));
-		CHECK_THROWS(moreStats.addData(data));
+  SUBCASE("Verifying no-throw with good data") {
+    CHECK_THROWS(GS::TdStats{{gas, &collision}, badH});
+    GS::TdStats stats{data, goodH};
+    GS::TdStats moreStats{moreData, goodH};
+    gas.simulate(1);
+    GS::PWCollision secondCollision{
+        1. / 6., const_cast<GS::Particle *>(gas.getParticles().data()),
+        GS::Wall::Right};
+    GS::GasData secondData{gas, &secondCollision};
+    SUBCASE("addData") { CHECK_NOTHROW(stats.addData(secondData)); }
+    SUBCASE("memory constructor") {
+      CHECK_NOTHROW(GS::TdStats(secondData, GS::TdStats(stats)));
+    }
+    SUBCASE("memory constructor with new TH1D") {
+      CHECK_NOTHROW(GS::TdStats(secondData, GS::TdStats(stats), goodH));
+    }
+  }
 
-		GS::Gas biggerBoxGas {std::vector<GS::Particle>(particles), gas.getBoxSide() * 1.5, gas.getTime()};
-		biggerBoxGas.simulate(2);
-		GS::PWCollision biggerBoxCollision{
-				7. / 6., const_cast<GS::Particle *>(biggerBoxGas.getParticles().data()),
-				GS::Wall::Right};
-		GS::GasData biggerBoxData{biggerBoxGas, &biggerBoxCollision};
-		CHECK_THROWS(stats.addData(biggerBoxData));
-		CHECK_THROWS(GS::TdStats(biggerBoxData, GS::TdStats(stats)));
-		CHECK_THROWS(GS::TdStats(biggerBoxData, GS::TdStats(stats), goodH));
+  SUBCASE("Testing TdStats addData/memory constructors throws") {
+    CHECK_THROWS(GS::TdStats{{gas, &collision}, badH});
+    GS::TdStats stats{data, goodH};
+    GS::TdStats moreStats{moreData, goodH};
+    CHECK_THROWS(stats.addData(data));
+    CHECK_THROWS(stats.addData(moreData));
+    CHECK_THROWS(moreStats.addData(moreData));
+    CHECK_THROWS(moreStats.addData(data));
 
-		GS::Gas biggerTimeGas {std::vector<GS::Particle>(particles), gas.getBoxSide(), 1.};
-		biggerTimeGas.simulate(2);
-		GS::PWCollision biggerTimeCollision{
-				1. / 6., const_cast<GS::Particle *>(biggerTimeGas.getParticles().data()),
-				GS::Wall::Right};
-		GS::GasData biggerTimeData{biggerTimeGas, &biggerTimeCollision};
-		CHECK_THROWS(stats.addData(biggerTimeData));
-		CHECK_THROWS(GS::TdStats(biggerTimeData, GS::TdStats(stats)));
-		CHECK_THROWS(GS::TdStats(biggerTimeData, GS::TdStats(stats), goodH));
+    GS::Gas biggerBoxGas{std::vector<GS::Particle>(particles),
+                         gas.getBoxSide() * 1.5, gas.getTime()};
+    biggerBoxGas.simulate(2);
+    GS::PWCollision biggerBoxCollision{
+        7. / 6., const_cast<GS::Particle *>(biggerBoxGas.getParticles().data()),
+        GS::Wall::Right};
+    GS::GasData biggerBoxData{biggerBoxGas, &biggerBoxCollision};
+    CHECK_THROWS(stats.addData(biggerBoxData));
+    CHECK_THROWS(GS::TdStats(biggerBoxData, GS::TdStats(stats)));
+    CHECK_THROWS(GS::TdStats(biggerBoxData, GS::TdStats(stats), goodH));
 
-		GS::Gas biggerTempGas {
-			{GS::Particle{particles.front().position, particles.front().speed * 10}},
-			gas.getBoxSide(), 9./30.
-		};
-		biggerTempGas.simulate(2);
-		GS::PWCollision biggerTempCollision{
-				1. / 60., const_cast<GS::Particle *>(biggerTempGas.getParticles().data()),
-				GS::Wall::Right};
-		GS::GasData biggerTempData{biggerTempGas, &biggerTempCollision};
-		CHECK_THROWS(stats.addData(biggerTempData));
-		CHECK_THROWS(GS::TdStats(biggerTempData, GS::TdStats(stats)));
-		CHECK_THROWS(GS::TdStats(biggerTempData, GS::TdStats(stats), goodH));
-	}
+    GS::Gas biggerTimeGas{std::vector<GS::Particle>(particles),
+                          gas.getBoxSide(), 1.};
+    biggerTimeGas.simulate(2);
+    GS::PWCollision biggerTimeCollision{
+        1. / 6.,
+        const_cast<GS::Particle *>(biggerTimeGas.getParticles().data()),
+        GS::Wall::Right};
+    GS::GasData biggerTimeData{biggerTimeGas, &biggerTimeCollision};
+    CHECK_THROWS(stats.addData(biggerTimeData));
+    CHECK_THROWS(GS::TdStats(biggerTimeData, GS::TdStats(stats)));
+    CHECK_THROWS(GS::TdStats(biggerTimeData, GS::TdStats(stats), goodH));
+
+    GS::Gas biggerTempGas{{GS::Particle{particles.front().position,
+                                        particles.front().speed * 10}},
+                          gas.getBoxSide(),
+                          9. / 30.};
+    biggerTempGas.simulate(2);
+    GS::PWCollision biggerTempCollision{
+        1. / 60.,
+        const_cast<GS::Particle *>(biggerTempGas.getParticles().data()),
+        GS::Wall::Right};
+    GS::GasData biggerTempData{biggerTempGas, &biggerTempCollision};
+    CHECK_THROWS(stats.addData(biggerTempData));
+    CHECK_THROWS(GS::TdStats(biggerTempData, GS::TdStats(stats)));
+    CHECK_THROWS(GS::TdStats(biggerTempData, GS::TdStats(stats), goodH));
+  }
 }
 
-TEST_CASE("Testing the TdStats class and SimDataPipeline processStats function") {
+TEST_CASE(
+    "Testing the TdStats class and SimDataPipeline processStats function") {
   std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
   std::vector<GS::Particle> moreParticles{
       {{2., 3., 4.}, {1., 0., 0.}},
@@ -640,10 +691,10 @@ TEST_CASE("Testing the TdStats class and SimDataPipeline processStats function")
   GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
   GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
   GS::SimDataPipeline output{5, 1., defaultH};
-	
+
   gas.simulate(5, output);
   output.processData();
-	SUBCASE("Testing throws") {}
+  SUBCASE("Testing throws") {}
   SUBCASE("Testing the constructor") {
     GS::TdStats stats{output.getStats()[0]};
     CHECK(stats.getBoxSide() == 4.);
@@ -664,7 +715,7 @@ TEST_CASE("Testing the TdStats class and SimDataPipeline processStats function")
     CHECK(stats.getTime() == 1.5);
     CHECK(stats.getDeltaT() == 1.5);
     CHECK(stats.getMeanFreePath() == doctest::Approx(4.2964998799 / 4.));
-		CHECK_THROWS(stats.getPressure(GS::Wall::VOID));
+    CHECK_THROWS(stats.getPressure(GS::Wall::VOID));
     GS::SimDataPipeline moreOutput{5, 1., defaultH};
     moreGas.simulate(5, moreOutput);
     moreOutput.processData();
@@ -677,7 +728,7 @@ TEST_CASE("Testing the TdStats class and SimDataPipeline processStats function")
     CHECK(moreStats.getPressure(GS::Wall::Top) == 0.);
     CHECK(moreStats.getPressure(GS::Wall::Bottom) == 0.);
     CHECK(moreStats.getMeanFreePath() == 2.5);
-		CHECK_THROWS(moreStats.getPressure(GS::Wall::VOID));
+    CHECK_THROWS(moreStats.getPressure(GS::Wall::VOID));
   }
 }
 
@@ -689,9 +740,9 @@ TEST_CASE("Testing part of the SimDataPipeline class") {
     CHECK_THROWS(GS::SimDataPipeline(1, 0., defaultH));
     CHECK_THROWS(GS::SimDataPipeline(1, -10., defaultH));
 
-		TH1D badH {"badH", "badH", 1, 0., 1.};
-		badH.Fill(0.5);
-		CHECK_THROWS(GS::SimDataPipeline(1, 1., badH));
+    TH1D badH{"badH", "badH", 1, 0., 1.};
+    badH.Fill(0.5);
+    CHECK_THROWS(GS::SimDataPipeline(1, 1., badH));
 
     GS::SimDataPipeline output{1, 1., defaultH};
     // Setting various parameters to invalid values
@@ -699,58 +750,57 @@ TEST_CASE("Testing part of the SimDataPipeline class") {
     CHECK_THROWS(output.setFramerate(0.));
     CHECK_THROWS(output.setFramerate(-15.));
     CHECK_THROWS(output.setStatSize(0));
-		// Empty font
-		sf::Font f {};
-		CHECK_THROWS(output.setFont(f));
+    // Empty font
+    sf::Font f{};
+    CHECK_THROWS(output.setFont(f));
   }
-	SUBCASE("AddData throwing behaviour") {
-		// simulate two gas, add data to the outputs
-		std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
-		std::vector<GS::Particle> moreParticles{
-				{{2., 3., 4.}, {1., 0., 0.}},
-				{{5., 3., 7.}, {0., 0., 0.}},
-				{{5., 6., 7.}, {0., -1., 0.}},
-		};
-		GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
-		GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
-		GS::SimDataPipeline output{5, 1., defaultH};
-		GS::SimDataPipeline outputCopy{5, 1., defaultH};
+  SUBCASE("AddData throwing behaviour") {
+    // simulate two gas, add data to the outputs
+    std::vector<GS::Particle> particles{{{2., 2., 2.}, {2., 3., 0.75}}};
+    std::vector<GS::Particle> moreParticles{
+        {{2., 3., 4.}, {1., 0., 0.}},
+        {{5., 3., 7.}, {0., 0., 0.}},
+        {{5., 6., 7.}, {0., -1., 0.}},
+    };
+    GS::Gas gas{std::vector<GS::Particle>(particles), 4.};
+    GS::Gas moreGas{std::vector<GS::Particle>(moreParticles), 12.};
+    GS::SimDataPipeline output{5, 1., defaultH};
+    GS::SimDataPipeline outputCopy{5, 1., defaultH};
     GS::SimDataPipeline moreOutput{5, 1., defaultH};
-		GS::SimDataPipeline moreOutputCopy{5, 1., defaultH};
-		std::vector<GS::GasData> data {gas.rawDataSimulate(5)};
-		auto missingData{data};
-		missingData.erase(missingData.begin() + 2);
-		std::vector<GS::GasData> moreData {moreGas.rawDataSimulate(5)};
-		auto moreMissingData{moreData};
-		moreMissingData.erase(moreMissingData.begin() + 3);
-		SUBCASE("Correct data nothrow") {
-			CHECK_NOTHROW(output.addData(std::move(data)));
-			CHECK_NOTHROW(moreOutput.addData(std::move(moreData)));
-		}
-		SUBCASE("Non-contiguous data (missing instances)") {
-			CHECK_THROWS(output.addData(std::move(missingData)));
-			CHECK_THROWS(moreOutput.addData(std::move(moreMissingData)));
-		}
-		auto differentParticlesNData {data};
-		differentParticlesNData.insert(
-				differentParticlesNData.end(),
-				moreData.begin(), moreData.end()
-		);
-		auto invertedData {data};
-		std::reverse(invertedData.begin(), invertedData.end());
-		SUBCASE("Addition of repeating but otherwise valid rawData") {
-			CHECK_NOTHROW(output.addData(std::vector<GS::GasData>(data)));
-			CHECK_THROWS(output.addData(std::vector<GS::GasData>(data)));
-			CHECK_THROWS(output.addData(std::vector<GS::GasData>{data.back()}));
-			CHECK_NOTHROW(moreOutput.addData(std::vector<GS::GasData>(moreData)));
-			CHECK_THROWS(moreOutput.addData(std::vector<GS::GasData>(moreData)));
-			CHECK_THROWS(moreOutput.addData(std::vector<GS::GasData>{moreData.back()}));
-		}
-		SUBCASE("Other cases") {
-			CHECK_THROWS(output.addData(std::move(differentParticlesNData)));
-			CHECK_THROWS(outputCopy.addData(std::move(invertedData)));
-			CHECK_NOTHROW(moreOutputCopy.addData(std::move(moreData)));
-			CHECK_THROWS(moreOutputCopy.addData(std::move(data)));
-		}
-	}
+    GS::SimDataPipeline moreOutputCopy{5, 1., defaultH};
+    std::vector<GS::GasData> data{gas.rawDataSimulate(5)};
+    auto missingData{data};
+    missingData.erase(missingData.begin() + 2);
+    std::vector<GS::GasData> moreData{moreGas.rawDataSimulate(5)};
+    auto moreMissingData{moreData};
+    moreMissingData.erase(moreMissingData.begin() + 3);
+    SUBCASE("Correct data nothrow") {
+      CHECK_NOTHROW(output.addData(std::move(data)));
+      CHECK_NOTHROW(moreOutput.addData(std::move(moreData)));
+    }
+    SUBCASE("Non-contiguous data (missing instances)") {
+      CHECK_THROWS(output.addData(std::move(missingData)));
+      CHECK_THROWS(moreOutput.addData(std::move(moreMissingData)));
+    }
+    auto differentParticlesNData{data};
+    differentParticlesNData.insert(differentParticlesNData.end(),
+                                   moreData.begin(), moreData.end());
+    auto invertedData{data};
+    std::reverse(invertedData.begin(), invertedData.end());
+    SUBCASE("Addition of repeating but otherwise valid rawData") {
+      CHECK_NOTHROW(output.addData(std::vector<GS::GasData>(data)));
+      CHECK_THROWS(output.addData(std::vector<GS::GasData>(data)));
+      CHECK_THROWS(output.addData(std::vector<GS::GasData>{data.back()}));
+      CHECK_NOTHROW(moreOutput.addData(std::vector<GS::GasData>(moreData)));
+      CHECK_THROWS(moreOutput.addData(std::vector<GS::GasData>(moreData)));
+      CHECK_THROWS(
+          moreOutput.addData(std::vector<GS::GasData>{moreData.back()}));
+    }
+    SUBCASE("Other cases") {
+      CHECK_THROWS(output.addData(std::move(differentParticlesNData)));
+      CHECK_THROWS(outputCopy.addData(std::move(invertedData)));
+      CHECK_NOTHROW(moreOutputCopy.addData(std::move(moreData)));
+      CHECK_THROWS(moreOutputCopy.addData(std::move(data)));
+    }
+  }
 }

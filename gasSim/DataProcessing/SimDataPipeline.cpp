@@ -53,9 +53,11 @@ void SimDataPipeline::addData(std::vector<GasData>&& data) {
               "SDP addData error: non-matching particle numbers");
         }
       }
+      // safe because check stops at firstD if it is true
+      // and it is false only if prevDTime is initialized
       if (!firstD &&
           (!isNegligible(d.getT0() - prevDTime, d.getTime() - d.getT0()) ||
-					 d.getTime() <= prevDTime)) {
+           d.getTime() <= prevDTime)) {
         throw std::invalid_argument(
             "SDP addData error: provided non sequential data vector");
       }
@@ -100,20 +102,19 @@ void SimDataPipeline::processData(bool mfpMemory,
       if (chunkSize) {
         nStats = nStats > chunkSize ? chunkSize : nStats;
       }
-    }  // chunkSize nspcEnd
+    }  // chunkSize nspc end
 
     if (nStats) {
-			data.insert(
-					data.end(), std::make_move_iterator(rawData.begin()),
-					std::make_move_iterator(rawData.begin() +
-																	static_cast<long>(nStats * statSizeL)));
-			assert(data.size());
-			rawData.erase(rawData.begin(),
-										rawData.begin() + static_cast<long>(nStats * statSizeL));
-			rawDataLock.unlock();
-			std::vector<TdStats> tempStats;
+      data.insert(data.end(), std::make_move_iterator(rawData.begin()),
+                  std::make_move_iterator(
+                      rawData.begin() + static_cast<long>(nStats * statSizeL)));
+      assert(data.size());
+      rawData.erase(rawData.begin(),
+                    rawData.begin() + static_cast<long>(nStats * statSizeL));
+      rawDataLock.unlock();
+      std::vector<TdStats> tempStats;
 
-			processStats(data, mfpMemory, tempStats);
+      processStats(data, mfpMemory, tempStats);
       {  // guard scope begin
         std::lock_guard<std::mutex> outputGuard{outputMtx};
         std::lock_guard<std::mutex> statsGuard{statsMtx};

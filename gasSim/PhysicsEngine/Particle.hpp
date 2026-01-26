@@ -17,8 +17,8 @@ struct Particle {
   static void setRadius(double r);
 
  private:
-  static std::atomic<double> radius;
-  static std::atomic<double> mass;
+  inline static std::atomic<double> radius{1.};
+  inline static std::atomic<double> mass{1.};
 };
 
 bool overlap(Particle const& p1, Particle const& p2);

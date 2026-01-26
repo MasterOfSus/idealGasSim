@@ -50,9 +50,6 @@
 #include "gasSim/Libs/INIReader.h"
 #include "gasSim/Libs/cxxopts.hpp"
 
-std::atomic<double> GS::Particle::radius{1.};
-std::atomic<double> GS::Particle::mass{1.};
-
 GS::GSVectorD stovec(std::string s) {
   if (s.size() == 0) {
     throw std::invalid_argument("Cannot provide empty string.");
@@ -120,14 +117,15 @@ GS::VideoOpts stovideoopts(std::string s) {
   }
 }
 
-void throwIfZombie(TObject* o, std::string message, bool deleteIfZombie = false) {
-	if (!o) {
-		throw std::runtime_error("Object is not zombie, but nullptr.");
-	}
+void throwIfZombie(TObject* o, std::string message,
+                   bool deleteIfZombie = false) {
+  if (!o) {
+    throw std::runtime_error("Object is not zombie, but nullptr.");
+  }
   if (o->IsZombie()) {
-		if (deleteIfZombie) {
-			delete o;
-		}
+    if (deleteIfZombie) {
+      delete o;
+    }
     throw std::runtime_error(message);
   }
 }
@@ -181,7 +179,7 @@ int main(int argc, const char* argv[]) {
       return 0;
     }
 
-		/* RESOURCE LOADING PHASE */
+    /* RESOURCE LOADING PHASE */
 
     // extract config file path from options
     std::string configPath = opts.count("config") != 0
@@ -338,7 +336,7 @@ int main(int argc, const char* argv[]) {
     std::shared_ptr<TF1> expMFP{safeTCast<TF1>(inputFile.Get("expMFP"))};
     throwIfZombie(expMFP.get(), "Failed to load expMFP from input file.");
 
-		// setting fit functions parameters
+    // setting fit functions parameters
     maxwellF->SetParameter(0, targetT);
     maxwellF->FixParameter(
         1, static_cast<double>(nParticles * static_cast<size_t>(nStats)) *
@@ -362,59 +360,63 @@ int main(int argc, const char* argv[]) {
     std::string particleTexPath{
         "assets/" + configFile.Get("render", "particleTexName", "lightBall") +
         ".png"};
-		throwIfNotExists(particleTexPath);
+    throwIfNotExists(particleTexPath);
     if (!particleTex.loadFromFile(particleTexPath)) {
-      throw std::runtime_error("Failed to correctly load particle texture from: " +
-                               particleTexPath);
+      throw std::runtime_error(
+          "Failed to correctly load particle texture from: " + particleTexPath);
     }
     sf::Texture placeHolder;
     std::string placeHolderPath{
         "assets/" + configFile.Get("render", "placeHolderName", "placeholder") +
         ".png"};
-		throwIfNotExists(placeHolderPath);
+    throwIfNotExists(placeHolderPath);
     if (!placeHolder.loadFromFile(placeHolderPath)) {
-			throw std::runtime_error("Failed to correctly load placeHolder texture at " + placeHolderPath);
+      throw std::runtime_error(
+          "Failed to correctly load placeHolder texture at " + placeHolderPath);
     }
     sf::Texture bufferingWheelT;
     std::string bufferingWheelPath{
         "assets/" + configFile.Get("render", "bufferingWheelName", "Jesse") +
         ".png"};
-		throwIfNotExists(bufferingWheelPath);
+    throwIfNotExists(bufferingWheelPath);
     if (!bufferingWheelT.loadFromFile(bufferingWheelPath)) {
-			throw std::runtime_error("Failed to correctly load buffering wheel texture at " + bufferingWheelPath);
+      throw std::runtime_error(
+          "Failed to correctly load buffering wheel texture at " +
+          bufferingWheelPath);
     }
 
-		// Used to protect access to the standard output
+    // Used to protect access to the standard output
     std::mutex coutMtx;
 
     {
       std::lock_guard<std::mutex> coutGuard{coutMtx};
-      std::cout << "All resources loaded. Starting up simulation and processing threads."
+      std::cout << "All resources loaded. Starting up simulation and "
+                   "processing threads."
                 << std::endl;
     }
 
-		/* END OF RESOURCE LOADING PHASE */
+    /* END OF RESOURCE LOADING PHASE */
 
-		/* SIMULATION AND PROCESSING STARTING PHASE */
+    /* SIMULATION AND PROCESSING STARTING PHASE */
 
     GS::Gas gas{nParticles, targetT, boxSide};
-    GS::SimDataPipeline output{
-        static_cast<unsigned>(nStats),
-        framerate, *speedsHTemplate};
+    GS::SimDataPipeline output{static_cast<unsigned>(nStats), framerate,
+                               *speedsHTemplate};
     output.setFont(font);
 
-		// target buffer time / hits per second / collisions per TdStats
-		// hits per second = particles n / avg coll time
-		// avg collision time = 1/(particles n / volume * cross section * speed average)
+    // target buffer time / hits per second / collisions per TdStats
+    // hits per second = particles n / avg coll time
+    // avg collision time = 1/(particles n / volume * cross section * speed
+    // average)
     double desiredStatChunkSize{
-        targetBufferTime * std::pow(boxSide, 3.) / (
-        M_PI * std::pow(GS::Particle::getRadius(), 2.) *
-				std::accumulate(gas.getParticles().begin(), gas.getParticles().end(),
-								0.,
-								[](double acc, const GS::Particle& p) {
-									return acc + p.speed.norm();
-								})
-				* static_cast<double>(nStats))};
+        targetBufferTime * std::pow(boxSide, 3.) /
+        (M_PI * std::pow(GS::Particle::getRadius(), 2.) *
+         std::accumulate(gas.getParticles().begin(), gas.getParticles().end(),
+                         0.,
+                         [](double acc, const GS::Particle& p) {
+                           return acc + p.speed.norm();
+                         }) *
+         static_cast<double>(nStats))};
     if (desiredStatChunkSize > static_cast<double>(SIZE_MAX)) {
       throw std::runtime_error(
           "Computed desired stat chunk size is too big. Check your config "
@@ -423,7 +425,7 @@ int main(int argc, const char* argv[]) {
     output.setStatChunkSize(static_cast<size_t>(
         desiredStatChunkSize >= 1. ? desiredStatChunkSize : 1.));
 
-		// General stop signal, shared between threads
+    // General stop signal, shared between threads
     std::atomic<bool> stop{false};
 
     std::thread simThread{[&, nIters] {
@@ -491,11 +493,11 @@ int main(int argc, const char* argv[]) {
       std::cout << "Processing thread running." << std::endl;
     }
 
-		/* SIMULATION AND PROCESSING STARTING PHASE END */
+    /* SIMULATION AND PROCESSING STARTING PHASE END */
 
-		/* GRAPHICAL OUTPUT PREP PHASE */
+    /* GRAPHICAL OUTPUT PREP PHASE */
 
-		// Lambdas called before drawing the objects inside of getVideo
+    // Lambdas called before drawing the objects inside of getVideo
     std::function<void(TH1D&, GS::VideoOpts)> fitLambda{[&](TH1D& speedsH,
                                                             GS::VideoOpts opt) {
       TGraph* genPGraph{
@@ -574,23 +576,22 @@ int main(int argc, const char* argv[]) {
           expMFP->Draw("SAME");
         }};
 
-
-		{
-			std::lock_guard<std::mutex> coutGuard{coutMtx};
-			std::cout << "Starting video composition and output." << std::endl;
-		}
+    {
+      std::lock_guard<std::mutex> coutGuard{coutMtx};
+      std::cout << "Starting video composition and output." << std::endl;
+    }
 
     // wait until there's something to process
-    // to avoid premature program exit/hanging on slow/superfast 
-		// processing configurations
+    // to avoid premature program exit/hanging on slow/superfast
+    // processing configurations
     while (!output.isProcessing() && !output.getRawDataSize() &&
            !output.isDone() && !output.getNStats() && !output.getNRenders()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-		/* GRAPHICAL OUTPUT PREP PHASE END */
+    /* GRAPHICAL OUTPUT PREP PHASE END */
 
-		/* VIDEO COMPOSITION-OUTPUT PHASE */
+    /* VIDEO COMPOSITION-OUTPUT PHASE */
 
     if (configFile.GetBoolean("output", "saveVideo", false)) {
       {
@@ -616,7 +617,7 @@ int main(int argc, const char* argv[]) {
             !output.isProcessing()) {
           lastBatch = true;
         }
-        std::vector<sf::Texture> frames {
+        std::vector<sf::Texture> frames{
             output.getVideo(videoOpt, {windowSize.x, windowSize.y}, placeHolder,
                             *graphsList, true, fitLambda, drawLambdas)};
         int i{0};
@@ -741,7 +742,7 @@ int main(int argc, const char* argv[]) {
             }
           }};
 
-			// buffering thread
+      // buffering thread
       sf::Sprite bufferingWheel;
       bufferingWheel.setTexture(bufferingWheelT, true);
       bufferingWheel.setOrigin(
@@ -894,7 +895,7 @@ int main(int argc, const char* argv[]) {
         bufferingLoop.join();
       }
 
-			std::lock_guard<std::mutex> windowGuard{windowMtx};
+      std::lock_guard<std::mutex> windowGuard{windowMtx};
       if (window.isOpen()) {
         window.close();
       }
@@ -904,9 +905,9 @@ int main(int argc, const char* argv[]) {
                 << " collisions." << std::endl;
     }
 
-		/* VIDEO COMPOSITION-OUTPUT PHASE */
+    /* VIDEO COMPOSITION-OUTPUT PHASE */
 
-		/* END PHASE */
+    /* END PHASE */
 
     if (simThread.joinable()) {
       simThread.join();
@@ -915,8 +916,8 @@ int main(int argc, const char* argv[]) {
       processThread.join();
     }
 
-		// all threads should be done by now, but just to be safe
-		std::lock_guard<std::mutex> coutGuard {coutMtx};
+    // all threads should be done by now, but just to be safe
+    std::lock_guard<std::mutex> coutGuard{coutMtx};
 
     if (!stop.load()) {
       std::cout << "Saving results to file... ";
@@ -948,7 +949,7 @@ int main(int argc, const char* argv[]) {
       std::cout << "Stop signal detected. Skipping results saving.\n";
     }
 
-		/* END PHASE */
+    /* END PHASE */
 
     return 0;
 

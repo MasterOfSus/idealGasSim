@@ -18,11 +18,11 @@ enum class Wall;
 
 class TdStats {
  public:
-	// construction from scratch of a TdStats
+  // construction from scratch of a TdStats
   TdStats(GasData const& firstState, TH1D const& speedsHTemplate);
-	// to transfer previous collision positions information
+  // to transfer previous collision positions information
   TdStats(GasData const& data, TdStats&& prevStats);
-	// to change the speedsHTemplate
+  // to change the speedsHTemplate
   TdStats(GasData const& data, TdStats&& prevStats,
           TH1D const& speedsHTemplate);
   ~TdStats() = default;

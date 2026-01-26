@@ -65,12 +65,12 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats)
   } else if (data.getBoxSide() != prevStats.boxSide) {
     throw std::invalid_argument(
         "TdStats constructor error: provided data with non-matching box side");
-  } else if (
-			!isNegligible(t0 - prevStats.time, t0 + prevStats.time) ||
-			time <= prevStats.time) {
+  } else if (!isNegligible(t0 - prevStats.time, t0 + prevStats.time) ||
+             time <= prevStats.time) {
     throw std::invalid_argument(
-        "TdStats constructor error: provided non time-contiguous data and TdStats");
-  } else if (!isNegligible(T - prevStats.T, prevStats.T)) {
+        "TdStats constructor error: provided non time-contiguous data and "
+        "TdStats");
+  } else if (!isNegligible(T - prevStats.T, prevStats.T + T)) {
     throw std::invalid_argument(
         "TdStats constructor error: provided gas and stats with non-matching "
         "temperatures");
@@ -125,11 +125,11 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
   } else if (data.getBoxSide() != prevStats.boxSide) {
     throw std::invalid_argument(
         "TdStats constructor error: provided data with different box side");
-  } else if (
-			!isNegligible(t0 - prevStats.time, t0 + prevStats.time) ||
-			time <= prevStats.time) {
+  } else if (!isNegligible(t0 - prevStats.time, t0 + prevStats.time) ||
+             time <= prevStats.time) {
     throw std::invalid_argument(
-        "TdStats constructor error: provided non time-contiguous data and TdStats");
+        "TdStats constructor error: provided non time-contiguous data and "
+        "TdStats");
   } else if (!isNegligible(T - prevStats.T, prevStats.T + T)) {
     throw std::invalid_argument(
         "TdStats constructor error: provided gas and stats with non-matching "
@@ -137,9 +137,9 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
   } else {
     {
       TH1D* defH = new TH1D();
-			defH->SetDirectory(nullptr);
+      defH->SetDirectory(nullptr);
       if (speedsHTemplate.IsEqual(defH)) {
-				prevStats.speedsH.Reset("ICES");
+        prevStats.speedsH.Reset("ICES");
         speedsH = prevStats.speedsH;
         speedsH.SetDirectory(nullptr);
       } else {
@@ -149,7 +149,7 @@ TdStats::TdStats(GasData const& data, TdStats&& prevStats,
               "TdStats constructor error: provided non-empty speedsH template");
         } else {
           speedsH = speedsHTemplate;
-					speedsH.SetDirectory(nullptr);
+          speedsH.SetDirectory(nullptr);
         }
       }
       delete defH;
@@ -239,26 +239,24 @@ TdStats& TdStats::operator=(TdStats&& s) noexcept {
 }
 
 void TdStats::addData(GasData const& data) {
+  double dataT{std::accumulate(
+                   data.getParticles().begin(), data.getParticles().end(), 0.,
+                   [](double x, Particle const& p) { return x + energy(p); }) *
+               2. / static_cast<double>(data.getParticles().size()) / 3.};
   if (data.getParticles().size() != getNParticles()) {
     throw std::invalid_argument(
         "TdStats addData error: non-matching gas particles number");
-  } else if (
-			!isNegligible(data.getT0() - time, time + data.getT0()) ||
-			data.getTime() <= time) {
+  } else if (!isNegligible(data.getT0() - time, time + data.getT0()) ||
+             data.getTime() <= time) {
     throw std::invalid_argument(
         "TdStats addData error: provided non-time contiguous GasData instance");
   } else if (data.getBoxSide() != boxSide) {
-		throw std::invalid_argument(
-				"TdStats addData error: provided non-matching data box side"
-		);
-	} else if (!isNegligible(std::accumulate(
-            data.getParticles().begin(), data.getParticles().end(), 0.,
-            [](double x, Particle const& p) { return x + energy(p); }) *
-        2. / static_cast<double>(data.getParticles().size()) / 3. - T, T)) {
-		throw std::invalid_argument(
-				"TdStats addData error: provided non-matching data temperature"
-		);
-	} else {
+    throw std::invalid_argument(
+        "TdStats addData error: provided non-matching data box side");
+  } else if (!isNegligible(dataT - T, dataT + T)) {
+    throw std::invalid_argument(
+        "TdStats addData error: provided non-matching data temperature");
+  } else {
     time = data.getTime();
     if (data.getCollType() == 'w') {
       addPulse(data);

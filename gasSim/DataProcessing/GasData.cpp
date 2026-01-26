@@ -12,9 +12,11 @@ inline long getPIndex(GS::Particle const* p, GS::Gas const& gas) {
 }
 
 GS::GasData::GasData(Gas const& gas, Collision const* collision) {
-	if (!collision->getP1()) {
-		throw std::invalid_argument("GasData constructor error: provided nullptr as first particle pointer.");
-	}
+  if (!collision->getP1()) {
+    throw std::invalid_argument(
+        "GasData constructor error: provided nullptr as first particle "
+        "pointer.");
+  }
   if (!(gas.getParticles().data() <= collision->getP1() &&
         collision->getP1() <=
             gas.getParticles().data() + gas.getParticles().size()))
@@ -24,9 +26,11 @@ GS::GasData::GasData(Gas const& gas, Collision const* collision) {
   else {
     if (collision->getType() == 'p') {
       PPCollision const* coll{static_cast<PPCollision const*>(collision)};
-			if (!coll->getP2()) {
-				throw std::invalid_argument("GasData constructor error: provided nullptr as second particle pointer.");
-			}
+      if (!coll->getP2()) {
+        throw std::invalid_argument(
+            "GasData constructor error: provided nullptr as second particle "
+            "pointer.");
+      }
       if (!(gas.getParticles().data() <= coll->getP2() &&
             coll->getP2() <=
                 gas.getParticles().data() + gas.getParticles().size())) {

@@ -1,15 +1,13 @@
 #ifndef CAMERAHPP
 #define CAMERAHPP
 
-#include <vector>
 #include <array>
+#include <vector>
+
+#include <SFML/Graphics/RenderTexture.hpp>
 
 #include "PhysicsEngine/GSVector.hpp"
 #include "RenderStyle.hpp"
-
-namespace sf {
-class RenderTexture;
-}
 
 namespace GS {
 
@@ -39,7 +37,7 @@ class Camera {
   void setSightVector(GSVectorF const& sightVector);
   void setAspectRatio(float ratio);
   void setPlaneDistance(float distance);
-  void setFOV(float FOV);  // field of view setting (in degrees)
+  void setFOV(float FOV);  // lateral field of view setting (in degrees)
   void setResolution(unsigned height, unsigned width);
 
   GSVectorF const& getFocus() const { return focusPoint; }
@@ -53,9 +51,9 @@ class Camera {
   unsigned getWidth() const { return width; }
 
  private:
-	bool constructed {false};
-	void computeCamBase();
-	std::array<GSVectorF, 2> cameraBase;
+  bool constructed{false};
+  void computeCamBase();
+  std::array<GSVectorF, 2> cameraBase;
 
   GSVectorF focusPoint;
   GSVectorF sightVector;

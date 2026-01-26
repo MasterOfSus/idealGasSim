@@ -33,10 +33,13 @@
 #include "PhysicsEngine/Particle.hpp"
 #include "testingAddons.hpp"
 
-std::atomic<double> GS::Particle::mass = 10.;
-std::atomic<double> GS::Particle::radius = 1.;
-
 TH1D defaultH{};
+
+// setting particle mass and radius
+TEST_CASE("Setting radius and mass") {
+  GS::Particle::setMass(10.);
+  GS::Particle::setRadius(10.);
+}
 
 TEST_CASE("Loosely testing the SimDataPipeline class") {
   static bool i{0};
