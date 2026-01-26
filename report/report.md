@@ -30,7 +30,8 @@ It also provides access to the basic operations that can be performed on vectors
 
 [`GS::Particle`](../gasSim/PhysicsEngine/Particle.hpp)\
 A uniform spherical particle implementation.\
-This component allows for the representation and management of particles, sharing a common mass and radius (implemented as static atomic variables for thread-safe access).
+This component allows for the representation and management of particles, sharing a common mass and radius.\
+These have been implemented as static atomic variables for thread-safe access, with synchronization with the `GS::Gas` class to block changes to the particle radius while instances of this class are present, which is known through an `std::atomic<size_t>` count that gets increased at construction and decreased at destruction (or before throwing an exception in constructors) of `GS::Gas instances`.
 
 [`GS::Collision`](../gasSim/PhysicsEngine/Collision.hpp)\
 A set of three structs providing the facilities to manage particle-to-wall and particle-to-particle collision.
